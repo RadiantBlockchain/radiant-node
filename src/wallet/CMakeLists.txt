@@ -26,3 +26,7 @@ add_library(wallet
 )
 
 target_link_libraries(wallet server script univalue Event::event BerkeleyDB::CXX)
+
+# wallet-tool library
+add_library(wallet-tool wallettool.cpp)
+target_link_libraries(wallet-tool wallet)
