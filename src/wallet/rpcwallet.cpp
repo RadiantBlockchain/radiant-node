@@ -1645,9 +1645,6 @@ UniValue listtransactions(const Config &config, const JSONRPCRequest &request) {
     // the user could have gotten from another RPC command prior to now
     pwallet->BlockUntilSyncedToCurrentChain();
 
-    auto locked_chain = pwallet->chain().lock();
-    LOCK(pwallet->cs_wallet);
-
     const std::string *filter_label = nullptr;
     if (!request.params[0].isNull() && request.params[0].get_str() != "*") {
         filter_label = &request.params[0].get_str();
@@ -1680,16 +1677,21 @@ UniValue listtransactions(const Config &config, const JSONRPCRequest &request) {
     }
     UniValue ret(UniValue::VARR);
 
-    const CWallet::TxItems &txOrdered = pwallet->wtxOrdered;
+    {
+        auto locked_chain = pwallet->chain().lock();
+        LOCK(pwallet->cs_wallet);
 
-    // iterate backwards until we have nCount items to return:
-    for (CWallet::TxItems::const_reverse_iterator it = txOrdered.rbegin();
-         it != txOrdered.rend(); ++it) {
-        CWalletTx *const pwtx = (*it).second;
-        ListTransactions(*locked_chain, pwallet, *pwtx, 0, true, ret, filter,
-                         filter_label);
-        if ((int)ret.size() >= (nCount + nFrom)) {
-            break;
+        const CWallet::TxItems &txOrdered = pwallet->wtxOrdered;
+
+        // iterate backwards until we have nCount items to return:
+        for (CWallet::TxItems::const_reverse_iterator it = txOrdered.rbegin();
+             it != txOrdered.rend(); ++it) {
+            CWalletTx *const pwtx = (*it).second;
+            ListTransactions(*locked_chain, pwallet, *pwtx, 0, true, ret,
+                             filter, filter_label);
+            if (int(ret.size()) >= (nCount + nFrom)) {
+                break;
+            }
         }
     }
 
