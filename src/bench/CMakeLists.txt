@@ -7,6 +7,7 @@ add_executable(bench_bitcoin
 	base58.cpp
 	bench.cpp
 	bench_bitcoin.cpp
+	block_assemble.cpp
 	cashaddr.cpp
 	ccoins_caching.cpp
 	checkblock.cpp
