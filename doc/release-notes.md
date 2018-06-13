@@ -18,7 +18,10 @@ Bitcoin Cash Node version 22.2.0 is now available from:
 
 ## Added functionality
 
-...
+### Thread names in logs
+
+Log lines can be prefixed with the name of the thread that caused the log. To
+enable this behavior, use`-logthreadnames=1`.
 
 ## Deprecated functionality
 

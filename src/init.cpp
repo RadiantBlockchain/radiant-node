@@ -52,6 +52,7 @@
 #include <ui_interface.h>
 #include <util/moneystr.h>
 #include <util/system.h>
+#include <util/threadnames.h>
 #include <validation.h>
 #include <validationinterface.h>
 #include <walletinitinterface.h>
@@ -206,11 +207,11 @@ void Shutdown(InitInterfaces &interfaces) {
         return;
     }
 
-    /// Note: Shutdown() must be able to handle cases in which initialization
-    /// failed part of the way, for example if the data directory was found to
-    /// be locked. Be sure that anything that writes files or flushes caches
-    /// only does this if the respective module was initialized.
-    RenameThread("bitcoin-shutoff");
+    /// Note: Shutdown() must be able to handle cases in which initialization failed part of the way,
+    /// for example if the data directory was found to be locked.
+    /// Be sure that anything that writes files or flushes caches only does this if the respective
+    /// module was initialized.
+    util::ThreadRename("shutoff");
     g_mempool.AddTransactionsUpdated(1);
 
     StopHTTPRPC();
@@ -1216,7 +1217,7 @@ static void CleanupBlockRevFiles() {
 
 static void ThreadImport(const Config &config,
                          std::vector<fs::path> vImportFiles) {
-    RenameThread("bitcoin-loadblk");
+    util::ThreadRename("loadblk");
     ScheduleBatchPriority();
 
     {
@@ -2036,7 +2037,7 @@ bool AppInitMain(Config &config, RPCServer &rpcServer,
               nScriptCheckThreads);
     if (nScriptCheckThreads) {
         for (int i = 0; i < nScriptCheckThreads - 1; i++) {
-            threadGroup.create_thread(&ThreadScriptCheck);
+            threadGroup.create_thread([i]() { return ThreadScriptCheck(i); });
         }
     }
 
