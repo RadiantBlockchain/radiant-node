@@ -1466,16 +1466,12 @@ static void RelayAddress(const CAddress &addr, bool fReachable, const CConnman &
     assert(nRelayNodes <= best.size());
 
     auto sortfunc = [&best, &hasher, nRelayNodes](CNode *pnode) {
-        if (pnode->nVersion >= CADDR_TIME_VERSION) {
-            uint64_t hashKey =
-                CSipHasher(hasher).Write(pnode->GetId()).Finalize();
-            for (unsigned int i = 0; i < nRelayNodes; i++) {
-                if (hashKey > best[i].first) {
-                    std::copy(best.begin() + i, best.begin() + nRelayNodes - 1,
-                              best.begin() + i + 1);
-                    best[i] = std::make_pair(hashKey, pnode);
-                    break;
-                }
+        uint64_t hashKey = CSipHasher(hasher).Write(pnode->GetId()).Finalize();
+        for (unsigned int i = 0; i < nRelayNodes; i++) {
+            if (hashKey > best[i].first) {
+                std::copy(best.begin() + i, best.begin() + nRelayNodes - 1, best.begin() + i + 1);
+                best[i] = std::make_pair(hashKey, pnode);
+                break;
             }
         }
     };
@@ -2050,8 +2046,6 @@ static bool ProcessHeadersMessage(const Config &config, CNode *pfrom,
 //! - GETADDR is sent precisely once after VERACK
 static void PushGetAddrOnceIfAfterVerAck(CConnman *connman, CNode *pfrom) {
     if ( !pfrom->fInbound
-         && (pfrom->fOneShot || pfrom->nVersion >= CADDR_TIME_VERSION
-             || connman->GetAddressCount() < 1000)
          && pfrom->GetBytesSentForMsgType(NetMsgType::VERACK) > 0
          && pfrom->GetBytesSentForMsgType(NetMsgType::GETADDR) == 0)
     {
@@ -2436,11 +2430,6 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         std::vector<CAddress> vAddr;
         vRecv >> vAddr;
 
-        // Don't want addr from older versions unless seeding
-        if (pfrom->nVersion < CADDR_TIME_VERSION &&
-            connman->GetAddressCount() > 1000) {
-            return true;
-        }
         if (vAddr.size() > 1000) {
             LOCK(cs_main);
             Misbehaving(pfrom, 20, "oversized-addr");
