@@ -12,6 +12,15 @@ Overview
 ...
 
 
+Account API removed
+------------------
+ - The 'account' API was deprecated in ABC v0.20.6 and has been fully removed in v0.21
+ - The 'label' API was introduced in ABC v0.20.6 as a replacement for accounts.
+
+ - See the release notes from v0.20.6 for a full description of the changes from the
+'account' API to the 'label' API.
+
+
 Usage recommendations
 ---------------------
 
