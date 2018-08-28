@@ -9,6 +9,7 @@ add_dependencies(check check-lint)
 add_lint_script_tests_to_suite(lint
 TESTS
 	check-doc.py
+	lint-assertions.sh
 	lint-boost-dependencies.sh
 	lint-circular-dependencies.sh
 	lint-python-mutable-default-parameters.sh
