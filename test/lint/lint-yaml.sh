@@ -6,6 +6,8 @@
 #
 # Lint YAML files.
 
+export LC_ALL=C
+
 SCRIPT_DIR="$(dirname "$0")"
 LINT_CONFIG="$SCRIPT_DIR/lint-yaml-config.yml"
 
