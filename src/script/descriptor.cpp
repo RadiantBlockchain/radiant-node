@@ -200,6 +200,7 @@ public:
         : m_destination(std::move(destination)) {}
 
     bool IsRange() const override { return false; }
+    bool IsSolvable() const override { return false; }
     std::string ToString() const override {
         return "addr(" + EncodeDestination(m_destination, GetConfig()) + ")";
     }
@@ -225,6 +226,7 @@ public:
     RawDescriptor(CScript script) : m_script(std::move(script)) {}
 
     bool IsRange() const override { return false; }
+    bool IsSolvable() const override { return false; }
     std::string ToString() const override {
         return "raw(" + HexStr(m_script.begin(), m_script.end()) + ")";
     }
@@ -254,6 +256,7 @@ public:
         : m_script_fn(fn), m_fn_name(name), m_provider(std::move(prov)) {}
 
     bool IsRange() const override { return m_provider->IsRange(); }
+    bool IsSolvable() const override { return true; }
     std::string ToString() const override {
         return m_fn_name + "(" + m_provider->ToString() + ")";
     }
@@ -304,6 +307,8 @@ public:
         }
         return false;
     }
+
+    bool IsSolvable() const override { return true; }
 
     std::string ToString() const override {
         std::string ret = strprintf("multi(%i", m_threshold);
@@ -362,6 +367,7 @@ public:
           m_descriptor(std::move(descriptor)) {}
 
     bool IsRange() const override { return m_descriptor->IsRange(); }
+    bool IsSolvable() const override { return m_descriptor->IsSolvable(); }
     std::string ToString() const override {
         return m_fn_name + "(" + m_descriptor->ToString() + ")";
     }
@@ -404,6 +410,7 @@ public:
         : m_provider(std::move(provider)) {}
 
     bool IsRange() const override { return m_provider->IsRange(); }
+    bool IsSolvable() const override { return true; }
     std::string ToString() const override {
         return "combo(" + m_provider->ToString() + ")";
     }
