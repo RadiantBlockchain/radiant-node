@@ -38,6 +38,11 @@ BIP9 is inactive due to no available proposals to vote on and it may be
 removed in a future release.
 
 
+New RPC methods
+------------
+ - `listwalletdir` returns a list of wallets in the wallet directory which is
+   configured with `-walletdir` parameter.
+
 
 Low-level RPC changes
 ----------------------
