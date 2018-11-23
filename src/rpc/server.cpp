@@ -236,9 +236,6 @@ std::vector<uint8_t> ParseHexO(const UniValue &o, const std::string& strKey) {
     return ParseHexV(o.at(strKey), strKey);
 }
 
-/**
- * Note: This interface may still be subject to change.
- */
 std::string CRPCTable::help(Config &config, const std::string &strCommand,
                             const JSONRPCRequest &helpreq) const {
     std::string strRet;
@@ -304,11 +301,9 @@ static UniValue help(Config &config, const JSONRPCRequest &jsonRequest) {
             RPCHelpMan{"help",
                 "\nList all commands, or get help for a specified command.\n",
                 {
-                    {"command", RPCArg::Type::STR, true},
+                    {"command", RPCArg::Type::STR, /* opt */ true, /* default_val */ "", "The command to get help on"},
                 }}
                 .ToString() +
-            "\nArguments:\n"
-            "1. \"command\"     (string, optional) The command to get help on\n"
             "\nResult:\n"
             "\"text\"     (string) The help text\n");
     }
@@ -363,8 +358,9 @@ static UniValue uptime(const Config &config,
 static UniValue getrpcinfo(const Config &config,
                            const JSONRPCRequest &request) {
     if (request.fHelp || request.params.size() > 0) {
-        throw std::runtime_error("getrpcinfo\n"
-                                 "\nReturns details of the RPC server.\n");
+        throw std::runtime_error(
+                RPCHelpMan{"getrpcinfo",
+                    "\nReturns details of the RPC server.\n", {}}.ToString());
     }
 
     LOCK(g_rpc_server_info.mutex);
@@ -385,9 +381,6 @@ static UniValue getrpcinfo(const Config &config,
     return result;
 }
 
-/**
- * Call Table
- */
 // clang-format off
 static const ContextFreeRPCCommand vRPCCommands[] = {
     //  category            name                      actor (function)        argNames

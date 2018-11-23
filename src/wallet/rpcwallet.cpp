@@ -175,15 +175,9 @@ static UniValue getnewaddress(const Config &config,
                 "If 'label' is specified, it is added to the address book\n"
                 "so payments received with the address will be associated with 'label'.\n",
                 {
-                    {"label", RPCArg::Type::STR, true},
+                    {"label", RPCArg::Type::STR, /* opt */ true, /* default_val */ "", "The label name for the address to be linked to. If not provided, the default label \"\" is used. It can also be set to the empty string \"\" to represent the default label. The label does not need to exist, it will be created if there is no label by the given name."},
                 }}
                 .ToString() +
-            "\nArguments:\n"
-            "1. \"label\"          (string, optional) The label name for the "
-            "address to be linked to. If not provided, the default label \"\" "
-            "is used. It can also be set to the empty string \"\" to represent "
-            "the default label. The label does not need to exist, it will be "
-            "created if there is no label by the given name.\n"
             "\nResult:\n"
             "\"address\"    (string) The new bitcoin address\n"
             "\nExamples:\n" +
@@ -318,22 +312,16 @@ static UniValue setlabel(const Config &config, const JSONRPCRequest &request) {
             RPCHelpMan{"setlabel",
                 "\nSets the label associated with the given address.\n",
                 {
-                    {"address", RPCArg::Type::STR, false},
-                    {"label", RPCArg::Type::STR, false},
+                    {"address", RPCArg::Type::STR, /* opt */ false, /* default_val */ "", "The bitcoin address to be associated with a label."},
+                    {"label", RPCArg::Type::STR, /* opt */ false, /* default_val */ "", "The label to assign to the address."},
                 }}
                 .ToString() +
-            "\nArguments:\n"
-            "1. \"address\"         (string, required) The bitcoin address to "
-            "be associated with a label.\n"
-            "2. \"label\"           (string, required) The label to assign to "
-            "the address.\n"
-            "\nExamples:\n" +
-            HelpExampleCli("setlabel",
-                           "\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XX\" \"tabby\"") +
-            HelpExampleRpc(
-                "setlabel",
-                "\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XX\", \"tabby\""));
+            "\nExamples:\n"
+            + HelpExampleCli("setlabel", "\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XX\" \"tabby\"")
+            + HelpExampleRpc("setlabel", "\"1D1ZrZNe3JUo7ZycKEYQQiQAWd9y54F4XX\", \"tabby\"")
+        );
     }
+
     LOCK(pwallet->cs_wallet);
 
     CTxDestination dest =
@@ -438,46 +426,28 @@ static UniValue sendtoaddress(const Config &config,
         request.params.size() > 6) {
         throw std::runtime_error(
             RPCHelpMan{"sendtoaddress",
-                "\nSend an amount to a given address.\n",
+                "\nSend an amount to a given address." +
+                    HelpRequiringPassphrase(pwallet) + "\n",
                 {
-                    {"address", RPCArg::Type::STR, false},
-                    {"amount", RPCArg::Type::AMOUNT, false},
-                    {"comment", RPCArg::Type::STR, true},
-                    {"comment_to", RPCArg::Type::STR, true},
-                    {"subtractfeefromamount", RPCArg::Type::BOOL, true},
-                    {"coinsel", RPCArg::Type::NUM, true},
+                    {"address", RPCArg::Type::STR, /* opt */ false, /* default_val */ "", "The bitcoin address to send to."},
+                    {"amount", RPCArg::Type::AMOUNT, /* opt */ false, /* default_val */ "", "The amount in " + CURRENCY_UNIT + " to send. eg 0.1"},
+                    {"comment", RPCArg::Type::STR, /* opt */ true, /* default_val */ "", "A comment used to store what the transaction is for.\n"
+            "                             This is not part of the transaction, just kept in your wallet."},
+                    {"comment_to", RPCArg::Type::STR, /* opt */ true, /* default_val */ "", "A comment to store the name of the person or organization\n"
+            "                             to which you're sending the transaction. This is not part of the\n"
+            "                             transaction, just kept in your wallet."},
+                    {"subtractfeefromamount", RPCArg::Type::BOOL, /* opt */ true, /* default_val */ "false", "The fee will be deducted from the amount being sent.\n"
+            "                             The recipient will receive less bitcoins than you enter in the amount field."},
+                    {"coinsel", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "0",
+                        "Which coin selection algorithm to use. A value of 1 will use a faster algorithm "
+                        "suitable for stress tests or use with large wallets. "
+                        "This algorithm is likely to produce larger transactions on average."
+                        "0 is a slower algorithm using BNB and a knapsack solver, but"
+                        "which can produce transactions with slightly better privacy and "
+                        "smaller transaction sizes. Values other than 0 or 1 are reserved"
+                        "for future algorithms."},
                 }}
                 .ToString() +
-            HelpRequiringPassphrase(pwallet) +
-            "\nArguments:\n"
-            "1. \"address\"            (string, required) The bitcoin address "
-            "to send to.\n"
-            "2. \"amount\"             (numeric or string, required) The "
-            "amount in " +
-            CURRENCY_UNIT +
-            " to send. eg 0.1\n"
-            "3. \"comment\"            (string, optional) A comment used to "
-            "store what the transaction is for.\n"
-            "                             This is not part of the transaction, "
-            "just kept in your wallet.\n"
-            "4. \"comment_to\"         (string, optional) A comment to store "
-            "the name of the person or organization\n"
-            "                             to which you're sending the "
-            "transaction. This is not part of the\n"
-            "                             transaction, just kept in your "
-            "wallet.\n"
-            "5. subtractfeefromamount  (boolean, optional, default=false) The "
-            "fee will be deducted from the amount being sent.\n"
-            "                             The recipient will receive less "
-            "bitcoins than you enter in the amount field.\n"
-            "6. coinsel  (int, optional, default=0) Which coin selection\n"
-            "algorithm to use. A value of 1 will use a faster algorithm "
-            "suitable for stress tests or use with large wallets. This\n"
-            "algorithm is likely to produce larger transactions on average."
-            "0 is a slower algorithm using BNB and a knapsack solver, but\n"
-            "which can produce transactions with slightly better privacy and "
-            "smaller transaction sizes. Values other than 0 or 1 are reserved\n"
-            "for future algorithms.\n"
             "\nResult:\n"
             "\"txid\"                  (string) The transaction id.\n"
             "\nExamples:\n" +
@@ -626,18 +596,13 @@ static UniValue signmessage(const Config &config,
     if (request.fHelp || request.params.size() != 2) {
         throw std::runtime_error(
             RPCHelpMan{"signmessage",
-                "\nSign a message with the private key of an address",
+                "\nSign a message with the private key of an address" +
+                    HelpRequiringPassphrase(pwallet) + "\n",
                 {
-                    {"address", RPCArg::Type::STR, false},
-                    {"message", RPCArg::Type::STR, false},
+                    {"address", RPCArg::Type::STR, /* opt */ false, /* default_val */ "", "The bitcoin address to use for the private key."},
+                    {"message", RPCArg::Type::STR, /* opt */ false, /* default_val */ "", "The message to create a signature of."},
                 }}
                 .ToString() +
-            HelpRequiringPassphrase(pwallet) + "\n"
-            "\nArguments:\n"
-            "1. \"address\"         (string, required) The bitcoin address to "
-            "use for the private key.\n"
-            "2. \"message\"         (string, required) The message to create a "
-            "signature of.\n"
             "\nResult:\n"
             "\"signature\"          (string) The signature of the message "
             "encoded in base 64\n"
@@ -709,15 +674,10 @@ static UniValue getreceivedbyaddress(const Config &config,
             RPCHelpMan{"getreceivedbyaddress",
                 "\nReturns the total amount received by the given address in transactions with at least minconf confirmations.\n",
                 {
-                    {"address", RPCArg::Type::STR, false},
-                    {"minconf", RPCArg::Type::NUM, true},
+                    {"address", RPCArg::Type::STR, /* opt */ false, /* default_val */ "", "The bitcoin address for transactions."},
+                    {"minconf", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "1", "Only include transactions confirmed at least this many times."},
                 }}
                 .ToString() +
-            "\nArguments:\n"
-            "1. \"address\"         (string, required) The bitcoin address for "
-            "transactions.\n"
-            "2. minconf             (numeric, optional, default=1) Only "
-            "include transactions confirmed at least this many times.\n"
             "\nResult:\n"
             "amount   (numeric) The total amount in " +
             CURRENCY_UNIT +
@@ -805,15 +765,10 @@ static UniValue getreceivedbylabel(const Config &config,
             RPCHelpMan{"getreceivedbylabel",
                 "\nReturns the total amount received by addresses with <label> in transactions with at least [minconf] confirmations.\n",
                 {
-                    {"label", RPCArg::Type::STR, false},
-                    {"minconf", RPCArg::Type::NUM, true},
+                    {"label", RPCArg::Type::STR, /* opt */ false, /* default_val */ "", "The selected label, may be the default label using \"\"."},
+                    {"minconf", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "1", "Only include transactions confirmed at least this many times."},
                 }}
                 .ToString() +
-            "\nArguments:\n"
-            "1. \"label\"        (string, required) The selected label, may be "
-            "the default label using \"\".\n"
-            "2. minconf          (numeric, optional, default=1) Only include "
-            "transactions confirmed at least this many times.\n"
             "\nResult:\n"
             "amount              (numeric) The total amount in " +
             CURRENCY_UNIT +
@@ -892,20 +847,11 @@ static UniValue getbalance(const Config &config,
                 "The available balance is what the wallet considers currently spendable, and is\n"
                 "thus affected by options which limit spendability such as -spendzeroconfchange.\n",
                 {
-                    {"dummy", RPCArg::Type::STR, true},
-                    {"minconf", RPCArg::Type::NUM, true},
-                    {"include_watchonly", RPCArg::Type::BOOL, true},
+                    {"dummy", RPCArg::Type::STR, /* opt */ true, /* default_val */ "", "Remains for backward compatibility. Must be excluded or set to \"*\"."},
+                    {"minconf", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "0", "Only include transactions confirmed at least this many times."},
+                    {"include_watchonly", RPCArg::Type::BOOL, /* opt */ true, /* default_val */ "false", "Also include balance in watch-only addresses (see 'importaddress')"},
                 }}
                 .ToString() +
-            "\nArguments:\n"
-            "1. (dummy)           (string, optional) Remains for "
-            "backward compatibility. Must be excluded or set to "
-            "\"*\".\n"
-            "2. minconf           (numeric, optional, default=0) "
-            "Only include transactions confirmed at least this many "
-            "times.\n"
-            "3. include_watchonly (bool, optional, default=false) Also include "
-            "balance in watch-only addresses (see 'importaddress')\n"
             "\nResult:\n"
             "amount              (numeric) The total amount in " +
             CURRENCY_UNIT +
@@ -983,55 +929,29 @@ static UniValue sendmany(const Config &config, const JSONRPCRequest &request) {
         request.params.size() > 5) {
         throw std::runtime_error(
             RPCHelpMan{"sendmany",
-                "\nSend multiple times. Amounts are double-precision floating point numbers.\n",
+                "\nSend multiple times. Amounts are double-precision floating point numbers." +
+                    HelpRequiringPassphrase(pwallet) + "\n",
                 {
-                    {"dummy", RPCArg::Type::STR, false, "\"\""},
-                    {"amounts", RPCArg::Type::OBJ,
+                    {"dummy", RPCArg::Type::STR, /* opt */ false, /* default_val */ "", "Must be set to \"\" for backwards compatibility.", "\"\""},
+                    {"amounts", RPCArg::Type::OBJ, /* opt */ false, /* default_val */ "", "A json object with addresses and amounts",
                         {
-                            {"address", RPCArg::Type::AMOUNT, false},
+                            {"address", RPCArg::Type::AMOUNT, /* opt */ false, /* default_val */ "", "The bitcoin address is the key, the numeric amount (can be string) in " + CURRENCY_UNIT + " is the value"},
                         },
-                        false},
-                    {"minconf", RPCArg::Type::NUM, true},
-                    {"comment", RPCArg::Type::STR, true},
-                    {"subtractfeefrom", RPCArg::Type::ARR,
+                    },
+                    {"minconf", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "1", "Only use the balance confirmed at least this many times."},
+                    {"comment", RPCArg::Type::STR, /* opt */ true, /* default_val */ "", "A comment"},
+                    {"subtractfeefrom", RPCArg::Type::ARR, /* opt */ true, /* default_val */ "", "A json array with addresses.\n"
+            "                           The fee will be equally deducted from the amount of each selected address.\n"
+            "                           Those recipients will receive less bitcoins than you enter in their corresponding amount field.\n"
+            "                           If no addresses are specified here, the sender pays the fee.",
                         {
-                            {"address", RPCArg::Type::STR, true},
+                            {"address", RPCArg::Type::STR, /* opt */ true, /* default_val */ "", "Subtract fee from this address"},
                         },
-                        true},
+                    },
                 }}
                 .ToString() +
-            HelpRequiringPassphrase(pwallet) + "\n"
-            "\nArguments:\n"
-            "1. \"dummy\"               (string, required) Must be set to \"\" "
-            "for backwards compatibility.\n"
-            "2. \"amounts\"             (string, required) A json object with "
-            "addresses and amounts\n"
-            "    {\n"
-            "      \"address\":amount   (numeric or string) The bitcoin "
-            "address is the key, the numeric amount (can be string) in " +
-            CURRENCY_UNIT +
-            " is the value\n"
-            "      ,...\n"
-            "    }\n"
-            "3. minconf                 (numeric, optional, default=1) Only "
-            "use the balance confirmed at least this many times.\n"
-            "4. \"comment\"             (string, optional) A comment\n"
-            "5. subtractfeefrom         (array, optional) A json array with "
-            "addresses.\n"
-            "                           The fee will be equally deducted from "
-            "the amount of each selected address.\n"
-            "                           Those recipients will receive less "
-            "bitcoins than you enter in their corresponding amount field.\n"
-            "                           If no addresses are specified here, "
-            "the sender pays the fee.\n"
-            "    [\n"
-            "      \"address\"          (string) Subtract fee from this "
-            "address\n"
-            "      ,...\n"
-            "    ]\n"
-            "\nResult:\n"
-            "\"txid\"                   (string) The transaction id for the "
-            "send. Only 1 transaction is created regardless of\n"
+             "\nResult:\n"
+            "\"txid\"                   (string) The transaction id for the send. Only 1 transaction is created regardless of\n"
             "                                    the number of addresses.\n"
             "\nExamples:\n"
             "\nSend two amounts to two different addresses:\n" +
@@ -1182,27 +1102,23 @@ static UniValue addmultisigaddress(const Config &config,
 
     if (request.fHelp || request.params.size() < 2 ||
         request.params.size() > 3) {
-        std::string msg =
-            "addmultisigaddress nrequired [\"key\",...] ( \"label\" )\n"
-            "\nAdd a nrequired-to-sign multisignature address to the wallet. "
-            "Requires a new wallet backup.\n"
-            "Each key is a Bitcoin address or hex-encoded public key.\n"
-            "If 'label' is specified (DEPRECATED), assign address to that "
-            "label.\n"
-
-            "\nArguments:\n"
-            "1. nrequired        (numeric, required) The number of required "
-            "signatures out of the n keys or addresses.\n"
-            "2. \"keys\"         (string, required) A json array of bitcoin "
-            "addresses or hex-encoded public keys\n"
-            "     [\n"
-            "       \"address\"  (string) bitcoin address or hex-encoded "
-            "public key\n"
-            "       ...,\n"
-            "     ]\n"
-            "3. \"label\"                        (string, optional) A label to "
-            "assign the addresses to.\n"
-
+        const std::string msg =
+            RPCHelpMan{"addmultisigaddress",
+                "\nAdd a nrequired-to-sign multisignature address to the wallet. Requires a new wallet backup.\n"
+                "Each key is a Bitcoin address or hex-encoded public key.\n"
+                "This functionality is only intended for use with non-watchonly addresses.\n"
+                "See `importaddress` for watchonly p2sh address support.\n"
+                "If 'label' is specified (DEPRECATED), assign address to that label.\n",
+                {
+                    {"nrequired", RPCArg::Type::NUM, /* opt */ false, /* default_val */ "", "The number of required signatures out of the n keys or addresses."},
+                    {"keys", RPCArg::Type::ARR, /* opt */ false, /* default_val */ "", "A json array of bitcoin addresses or hex-encoded public keys",
+                        {
+                            {"key", RPCArg::Type::STR, /* opt */ false, /* default_val */ "", "bitcoin address or hex-encoded public key"},
+                        },
+                        },
+                    {"label", RPCArg::Type::STR, /* opt */ true, /* default_val */ "", "A label to assign the addresses to."},
+                }}
+                .ToString() +
             "\nResult:\n"
             "{\n"
             "  \"address\":\"multisigaddress\",    (string) The value of the "
@@ -1446,21 +1362,12 @@ static UniValue listreceivedbyaddress(const Config &config,
             RPCHelpMan{"listreceivedbyaddress",
                 "\nList balances by receiving address.\n",
                 {
-                    {"minconf", RPCArg::Type::NUM, true},
-                    {"include_empty", RPCArg::Type::BOOL, true},
-                    {"include_watchonly", RPCArg::Type::BOOL, true},
-                    {"address_filter", RPCArg::Type::STR, true},
+                    {"minconf", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "1", "The minimum number of confirmations before payments are included."},
+                    {"include_empty", RPCArg::Type::BOOL, /* opt */ true, /* default_val */ "false", "Whether to include addresses that haven't received any payments."},
+                    {"include_watchonly", RPCArg::Type::BOOL, /* opt */ true, /* default_val */ "false", "Whether to include watch-only addresses (see 'importaddress')."},
+                    {"address_filter", RPCArg::Type::STR, /* opt */ true, /* default_val */ "", "If present, only return information on this address."},
                 }}
                 .ToString() +
-            "\nArguments:\n"
-            "1. minconf           (numeric, optional, default=1) The minimum "
-            "number of confirmations before payments are included.\n"
-            "2. include_empty     (bool, optional, default=false) Whether to "
-            "include addresses that haven't received any payments.\n"
-            "3. include_watchonly (bool, optional, default=false) Whether to "
-            "include watch-only addresses (see 'importaddress').\n"
-            "4. address_filter    (string, optional) If present, only return "
-            "information on this address.\n"
             "\nResult:\n"
             "[\n"
             "  {\n"
@@ -1518,19 +1425,11 @@ static UniValue listreceivedbylabel(const Config &config,
             RPCHelpMan{"listreceivedbylabel",
                 "\nList received transactions by label.\n",
                 {
-                    {"minconf", RPCArg::Type::NUM, true},
-                    {"include_empty", RPCArg::Type::BOOL, true},
-                    {"include_watchonly", RPCArg::Type::BOOL, true},
+                    {"minconf", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "1", "The minimum number of confirmations before payments are included."},
+                    {"include_empty", RPCArg::Type::BOOL, /* opt */ true, /* default_val */ "false", "Whether to include labels that haven't received any payments."},
+                    {"include_watchonly", RPCArg::Type::BOOL, /* opt */ true, /* default_val */ "false", "Whether to include watch-only addresses (see 'importaddress')."},
                 }}
                 .ToString() +
-            "\nArguments:\n"
-            "1. minconf           (numeric, optional, default=1) The minimum "
-            "number of confirmations before payments are included.\n"
-            "2. include_empty     (bool, optional, default=false) Whether to "
-            "include labels that haven't received any payments.\n"
-            "3. include_watchonly (bool, optional, default=false) Whether to "
-            "include watch-only addresses (see 'importaddress').\n"
-
             "\nResult:\n"
             "[\n"
             "  {\n"
@@ -1672,23 +1571,13 @@ UniValue listtransactions(const Config &config, const JSONRPCRequest &request) {
                 "\nIf a label name is provided, this will return only incoming transactions paying to addresses with the specified label.\n"
                 "\nReturns up to 'count' most recent transactions skipping the first 'from' transactions.\n",
                 {
-                    {"label", RPCArg::Type::STR, true},
-                    {"count", RPCArg::Type::NUM, true},
-                    {"skip", RPCArg::Type::NUM, true},
-                    {"include_watchonly", RPCArg::Type::BOOL, true},
+                    {"label", RPCArg::Type::STR, /* opt */ true, /* default_val */ "", "If set, should be a valid label name to return only incoming transactions\n"
+            "              with the specified label, or \"*\" to disable filtering and return all transactions."},
+                    {"count", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "10", "The number of transactions to return"},
+                    {"skip", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "0", "The number of transactions to skip"},
+                    {"include_watchonly", RPCArg::Type::BOOL, /* opt */ true, /* default_val */ "false", "Include transactions to watch-only addresses (see 'importaddress')"},
                 }}
                 .ToString() +
-            "\nArguments:\n"
-            "1. \"label\"    (string, optional) If set, should be a valid "
-            "label name to return only incoming transactions with the "
-            "specified label, or \"*\" to disable filtering and return all "
-            "transactions.\n"
-            "2. count          (numeric, optional, default=10) The number of "
-            "transactions to return\n"
-            "3. skip           (numeric, optional, default=0) The number of "
-            "transactions to skip\n"
-            "4. include_watchonly (bool, optional, default=false) Include "
-            "transactions to watch-only addresses (see 'importaddress')\n"
             "\nResult:\n"
             "[\n"
             "  {\n"
@@ -1838,27 +1727,13 @@ static UniValue listsinceblock(const Config &config,
                 "If \"blockhash\" is no longer a part of the main chain, transactions from the fork point onward are included.\n"
                 "Additionally, if include_removed is set, transactions affecting the wallet which were removed are returned in the \"removed\" array.\n",
                 {
-                    {"blockhash", RPCArg::Type::STR, true},
-                    {"target_confirmations", RPCArg::Type::NUM, true},
-                    {"include_watchonly", RPCArg::Type::BOOL, true},
-                    {"include_removed", RPCArg::Type::BOOL, true},
+                    {"blockhash", RPCArg::Type::STR, /* opt */ true, /* default_val */ "", "The block hash to list transactions since"},
+                    {"target_confirmations", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "1", "Return the nth block hash from the main chain. e.g. 1 would mean the best block hash. Note: this is not used as a filter, but only affects [lastblock] in the return value"},
+                    {"include_watchonly", RPCArg::Type::BOOL, /* opt */ true, /* default_val */ "false", "Include transactions to watch-only addresses (see 'importaddress')"},
+                    {"include_removed", RPCArg::Type::BOOL, /* opt */ true, /* default_val */ "true", "Show transactions that were removed due to a reorg in the \"removed\" array\n"
+            "                                                           (not guaranteed to work on pruned nodes)"},
                 }}
                 .ToString() +
-            "\nArguments:\n"
-            "1. \"blockhash\"            (string, optional) The block hash to "
-            "list transactions since\n"
-            "2. target_confirmations:    (numeric, optional, default=1) Return "
-            "the nth block hash from the main chain. e.g. 1 would mean the "
-            "best block hash. Note: this is not used as a filter, but only "
-            "affects [lastblock] in the return value\n"
-            "3. include_watchonly:       (bool, optional, default=false) "
-            "Include transactions to watch-only addresses (see "
-            "'importaddress')\n"
-            "4. include_removed:         (bool, optional, default=true) Show "
-            "transactions that were removed due to a reorg in the \"removed\" "
-            "array\n"
-            "                                                           (not "
-            "guaranteed to work on pruned nodes)\n"
             "\nResult:\n"
             "{\n"
             "  \"transactions\": [\n"
@@ -2042,16 +1917,10 @@ static UniValue gettransaction(const Config &config,
             RPCHelpMan{"gettransaction",
                 "\nGet detailed information about in-wallet transaction <txid>\n",
                 {
-                    {"txid", RPCArg::Type::STR, false},
-                    {"include_watchonly", RPCArg::Type::BOOL, true},
+                    {"txid", RPCArg::Type::STR, /* opt */ false, /* default_val */ "", "The transaction id"},
+                    {"include_watchonly", RPCArg::Type::BOOL, /* opt */ true, /* default_val */ "false", "Whether to include watch-only addresses in balance calculation and details[]"},
                 }}
                 .ToString() +
-            "\nArguments:\n"
-            "1. \"txid\"                  (string, required) The transaction "
-            "id\n"
-            "2. \"include_watchonly\"     (bool, optional, default=false) "
-            "Whether to include watch-only addresses in balance calculation "
-            "and details[]\n"
             "\nResult:\n"
             "{\n"
             "  \"amount\" : x.xxx,        (numeric) The transaction amount "
@@ -2186,11 +2055,9 @@ static UniValue abandontransaction(const Config &config,
                 "It only works on transactions which are not included in a block and are not currently in the mempool.\n"
                 "It has no effect on transactions which are already abandoned.\n",
                 {
-                    {"txid", RPCArg::Type::STR_HEX, false},
+                    {"txid", RPCArg::Type::STR_HEX, /* opt */ false, /* default_val */ "", "The transaction id"},
                 }}
                 .ToString() +
-            "\nArguments:\n"
-            "1. \"txid\"    (string, required) The transaction id\n"
             "\nResult:\n"
             "\nExamples:\n" +
             HelpExampleCli("abandontransaction", "\"1075db55d416d3ca199f55b6084"
@@ -2237,14 +2104,13 @@ static UniValue backupwallet(const Config &config,
             RPCHelpMan{"backupwallet",
                 "\nSafely copies current wallet file to destination, which can be a directory or a path with filename.\n",
                 {
-                    {"destination", RPCArg::Type::STR, false},
+                    {"destination", RPCArg::Type::STR, /* opt */ false, /* default_val */ "", "The destination directory or file"},
                 }}
                 .ToString() +
-            "\nArguments:\n"
-            "1. \"destination\"   (string) The destination directory or file\n"
-            "\nExamples:\n" +
-            HelpExampleCli("backupwallet", "\"backup.dat\"") +
-            HelpExampleRpc("backupwallet", "\"backup.dat\""));
+            "\nExamples:\n"
+            + HelpExampleCli("backupwallet", "\"backup.dat\"")
+            + HelpExampleRpc("backupwallet", "\"backup.dat\"")
+        );
     }
 
     // Make sure the results are valid at least up to the most recent block
@@ -2274,18 +2140,16 @@ static UniValue keypoolrefill(const Config &config,
     if (request.fHelp || request.params.size() > 1) {
         throw std::runtime_error(
             RPCHelpMan{"keypoolrefill",
-                "\nFills the keypool.",
+                "\nFills the keypool."+
+                    HelpRequiringPassphrase(pwallet) + "\n",
                 {
-                    {"newsize", RPCArg::Type::NUM, true},
+                    {"newsize", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "100", "The new keypool size"},
                 }}
                 .ToString() +
-            HelpRequiringPassphrase(pwallet) + "\n"
-            "\nArguments\n"
-            "1. newsize     (numeric, optional, default=100) "
-            "The new keypool size\n"
-            "\nExamples:\n" +
-            HelpExampleCli("keypoolrefill", "") +
-            HelpExampleRpc("keypoolrefill", ""));
+            "\nExamples:\n"
+            + HelpExampleCli("keypoolrefill", "")
+            + HelpExampleRpc("keypoolrefill", "")
+        );
     }
 
     if (pwallet->IsWalletFlagSet(WALLET_FLAG_DISABLE_PRIVATE_KEYS)) {
@@ -2332,14 +2196,10 @@ static UniValue walletpassphrase(const Config &config,
                 "\nStores the wallet decryption key in memory for 'timeout' seconds.\n"
                 "This is needed prior to performing transactions related to private keys such as sending bitcoins\n",
                 {
-                    {"passphrase", RPCArg::Type::STR, false},
-                    {"timeout", RPCArg::Type::NUM, false},
+                    {"passphrase", RPCArg::Type::STR, /* opt */ false, /* default_val */ "", "The wallet passphrase"},
+                    {"timeout", RPCArg::Type::NUM, /* opt */ false, /* default_val */ "", "The time to keep the decryption key in seconds; capped at 100000000 (~3 years)."},
                 }}
                 .ToString() +
-            "\nArguments:\n"
-            "1. \"passphrase\"     (string, required) The wallet passphrase\n"
-            "2. timeout            (numeric, required) The time to keep the "
-            "decryption key in seconds; capped at 100000000 (~3 years).\n"
             "\nNote:\n"
             "Issuing the walletpassphrase command while the wallet is already "
             "unlocked will set a new unlock\n"
@@ -2433,18 +2293,14 @@ static UniValue walletpassphrasechange(const Config &config,
             RPCHelpMan{"walletpassphrasechange",
                 "\nChanges the wallet passphrase from 'oldpassphrase' to 'newpassphrase'.\n",
                 {
-                    {"oldpassphrase", RPCArg::Type::STR, false},
-                    {"newpassphrase", RPCArg::Type::STR, false},
+                    {"oldpassphrase", RPCArg::Type::STR, /* opt */ false, /* default_val */ "", "The current passphrase"},
+                    {"newpassphrase", RPCArg::Type::STR, /* opt */ false, /* default_val */ "", "The new passphrase"},
                 }}
                 .ToString() +
-            "\nArguments:\n"
-            "1. \"oldpassphrase\"      (string) The current passphrase\n"
-            "2. \"newpassphrase\"      (string) The new passphrase\n"
-            "\nExamples:\n" +
-            HelpExampleCli("walletpassphrasechange",
-                           "\"old one\" \"new one\"") +
-            HelpExampleRpc("walletpassphrasechange",
-                           "\"old one\", \"new one\""));
+            "\nExamples:\n"
+            + HelpExampleCli("walletpassphrasechange", "\"old one\" \"new one\"")
+            + HelpExampleRpc("walletpassphrasechange", "\"old one\", \"new one\"")
+        );
     }
 
     auto locked_chain = pwallet->chain().lock();
@@ -2550,13 +2406,9 @@ static UniValue encryptwallet(const Config &config,
                 "Use the walletpassphrase call for this, and then walletlock call.\n"
                 "If the wallet is already encrypted, use the walletpassphrasechange call.\n",
                 {
-                    {"passphrase", RPCArg::Type::STR, false},
+                    {"passphrase", RPCArg::Type::STR, /* opt */ false, /* default_val */ "", "The pass phrase to encrypt the wallet with. It must be at least 1 character, but should be long."},
                 }}
                 .ToString() +
-            "\nArguments:\n"
-            "1. \"passphrase\"    (string) The pass phrase to encrypt the "
-            "wallet with. It must be at least 1 character, but should be "
-            "long.\n"
             "\nExamples:\n"
             "\nEncrypt your wallet\n" +
             HelpExampleCli("encryptwallet", "\"my pass phrase\"") +
@@ -2625,32 +2477,19 @@ static UniValue lockunspent(const Config &config,
                 "is always cleared (by virtue of process exit) when a node stops or fails.\n"
                 "Also see the listunspent call\n",
                 {
-                    {"unlock", RPCArg::Type::BOOL, false},
-                    {"transactions", RPCArg::Type::ARR,
+                    {"unlock", RPCArg::Type::BOOL, /* opt */ false, /* default_val */ "", "Whether to unlock (true) or lock (false) the specified transactions"},
+                    {"transactions", RPCArg::Type::ARR, /* opt */ true, /* default_val */ "", "A json array of objects. Each object the txid (string) vout (numeric)",
                         {
-                            {"", RPCArg::Type::OBJ,
+                            {"", RPCArg::Type::OBJ, /* opt */ true, /* default_val */ "", "",
                                 {
-                                    {"txid", RPCArg::Type::STR_HEX, false},
-                                    {"vout", RPCArg::Type::NUM, false},
+                                    {"txid", RPCArg::Type::STR_HEX, /* opt */ false, /* default_val */ "", "The transaction id"},
+                                    {"vout", RPCArg::Type::NUM, /* opt */ false, /* default_val */ "", "The output number"},
                                 },
-                                true},
+                            },
                         },
-                        true},
+                    },
                 }}
                 .ToString() +
-            "\nArguments:\n"
-            "1. unlock            (boolean, required) Whether to unlock (true) "
-            "or lock (false) the specified transactions\n"
-            "2. \"transactions\"  (string, optional) A json array of objects. "
-            "Each object the txid (string) vout (numeric)\n"
-            "     [           (json array of json objects)\n"
-            "       {\n"
-            "         \"txid\":\"id\",    (string) The transaction id\n"
-            "         \"vout\": n         (numeric) The output number\n"
-            "       }\n"
-            "       ,...\n"
-            "     ]\n"
-
             "\nResult:\n"
             "true|false    (boolean) Whether the command was successful or "
             "not\n"
@@ -2843,14 +2682,9 @@ static UniValue settxfee(const Config &config, const JSONRPCRequest &request) {
             RPCHelpMan{"settxfee",
                 "\nSet the transaction fee per kB for this wallet. Overrides the global -paytxfee command line parameter.\n",
                 {
-                    {"amount", RPCArg::Type::NUM, false},
+                    {"amount", RPCArg::Type::AMOUNT, /* opt */ false, /* default_val */ "", "The transaction fee in " + CURRENCY_UNIT + "/kB"},
                 }}
                 .ToString() +
-            "\nArguments:\n"
-            "1. amount         (numeric or string, required) The transaction "
-            "fee in " +
-            CURRENCY_UNIT +
-            "/kB\n"
             "\nResult\n"
             "true|false        (boolean) Returns true if successful\n"
             "\nExamples:\n" +
@@ -3057,12 +2891,9 @@ static UniValue loadwallet(const Config &config,
                 "\nNote that all wallet command-line options used when starting bitcoind will be"
                 "\napplied to the new wallet (eg -zapwallettxes, upgradewallet, rescan, etc).\n",
                 {
-                    {"filename", RPCArg::Type::STR, false},
+                    {"filename", RPCArg::Type::STR, /* opt */ false, /* default_val */ "", "The wallet directory or .dat file."},
                 }}
                 .ToString() +
-            "\nArguments:\n"
-            "1. \"filename\"    (string, required) The wallet directory or "
-            ".dat file.\n"
             "\nResult:\n"
             "{\n"
             "  \"name\" :    <wallet_name>,        (string) The wallet name if "
@@ -3125,20 +2956,11 @@ static UniValue createwallet(const Config &config,
             RPCHelpMan{"createwallet",
                 "\nCreates and loads a new wallet.\n",
                 {
-                    {"wallet_name", RPCArg::Type::STR, false},
-                    {"disable_private_keys", RPCArg::Type::BOOL, true},
+                    {"wallet_name", RPCArg::Type::STR, /* opt */ false, /* default_val */ "", "The name for the new wallet. If this is a path, the wallet will be created at the path location."},
+                    {"disable_private_keys", RPCArg::Type::BOOL, /* opt */ true, /* default_val */ "false", "Disable the possibility of private keys (only watchonlys are possible in this mode)."},
+                    {"blank", RPCArg::Type::BOOL, /* opt */ true, /* default_val */ "false", "Create a blank wallet. A blank wallet has no keys or HD seed. One can be set using sethdseed."},
                 }}
                 .ToString() +
-            "\nArguments:\n"
-            "1. \"wallet_name\"    (string, required) The name for the new "
-            "wallet. If this is a path, the wallet will be created at the path "
-            "location.\n"
-            "2. disable_private_keys   (boolean, optional, default: false) "
-            "Disable the possibility of private keys (only watchonlys are "
-            "possible in this mode).\n"
-            "3. blank   (boolean, optional, default: false) Create a blank "
-            "wallet. A blank wallet has no keys or HD seed. One can be set "
-            "using sethdseed.\n"
             "\nResult:\n"
             "{\n"
             "  \"name\" :    <wallet_name>,        (string) The wallet name if "
@@ -3204,15 +3026,13 @@ static UniValue unloadwallet(const Config &config,
                 "Unloads the wallet referenced by the request endpoint otherwise unloads the wallet specified in the argument.\n"
                 "Specifying the wallet name on a wallet endpoint is invalid.",
                 {
-                    {"wallet_name", RPCArg::Type::STR, true},
+                    {"wallet_name", RPCArg::Type::STR, /* opt */ true, /* default_val */ "", "The name of the wallet to unload."},
                 }}
                 .ToString() +
-            "\nArguments:\n"
-            "1. \"wallet_name\"    (string, optional) The name of the wallet "
-            "to unload.\n"
-            "\nExamples:\n" +
-            HelpExampleCli("unloadwallet", "wallet_name") +
-            HelpExampleRpc("unloadwallet", "wallet_name"));
+            "\nExamples:\n"
+            + HelpExampleCli("unloadwallet", "wallet_name")
+            + HelpExampleRpc("unloadwallet", "wallet_name")
+        );
     }
 
     std::string wallet_name;
@@ -3306,55 +3126,25 @@ static UniValue listunspent(const Config &config,
                 "with between minconf and maxconf (inclusive) confirmations.\n"
                 "Optionally filter to only include txouts paid to specified addresses.\n",
                 {
-                    {"minconf", RPCArg::Type::NUM, true},
-                    {"maxconf", RPCArg::Type::NUM, true},
-                    {"addresses", RPCArg::Type::ARR,
+                    {"minconf", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "1", "The minimum confirmations to filter"},
+                    {"maxconf", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "9999999", "The maximum confirmations to filter"},
+                    {"addresses", RPCArg::Type::ARR, /* opt */ true, /* default_val */ "", "A json array of bitcoin addresses to filter",
                         {
-                            {"address", RPCArg::Type::STR, true},
+                            {"address", RPCArg::Type::STR, /* opt */ true, /* default_val */ "", "bitcoin address"},
                         },
-                        true},
-                    {"include_unsafe", RPCArg::Type::BOOL, true},
-                    {"query_options", RPCArg::Type::OBJ,
+                    },
+                    {"include_unsafe", RPCArg::Type::BOOL, /* opt */ true, /* default_val */ "true", "Include outputs that are not safe to spend\n"
+            "                  See description of \"safe\" attribute below."},
+                    {"query_options", RPCArg::Type::OBJ, /* opt */ true, /* default_val */ "", "JSON with query options",
                         {
-                            {"minimumAmount", RPCArg::Type::AMOUNT, true},
-                            {"maximumAmount", RPCArg::Type::AMOUNT, true},
-                            {"maximumCount", RPCArg::Type::NUM, true},
-                            {"minimumSumAmount", RPCArg::Type::AMOUNT, true},
+                            {"minimumAmount", RPCArg::Type::AMOUNT, /* opt */ true, /* default_val */ "0", "Minimum value of each UTXO in " + CURRENCY_UNIT + ""},
+                            {"maximumAmount", RPCArg::Type::AMOUNT, /* opt */ true, /* default_val */ "unlimited", "Maximum value of each UTXO in " + CURRENCY_UNIT + ""},
+                            {"maximumCount", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "unlimited", "Maximum number of UTXOs"},
+                            {"minimumSumAmount", RPCArg::Type::AMOUNT, /* opt */ true, /* default_val */ "unlimited", "Minimum sum value of all UTXOs in " + CURRENCY_UNIT + ""},
                         },
-                        true, "query_options"},
+                        "query_options"},
                 }}
                 .ToString() +
-            "\nArguments:\n"
-            "1. minconf          (numeric, optional, default=1) The minimum "
-            "confirmations to filter\n"
-            "2. maxconf          (numeric, optional, default=9999999) The "
-            "maximum confirmations to filter\n"
-            "3. \"addresses\"      (string, optional) A json array of bitcoin "
-            "addresses to filter\n"
-            "    [\n"
-            "      \"address\"     (string) bitcoin address\n"
-            "      ,...\n"
-            "    ]\n"
-            "4. include_unsafe (bool, optional, default=true) Include outputs "
-            "that are not safe to spend\n"
-            "                  See description of \"safe\" attribute below.\n"
-            "5. query_options    (json, optional) JSON with query options\n"
-            "    {\n"
-            "      \"minimumAmount\"    (numeric or string, default=0) Minimum "
-            "value of each UTXO in " +
-            CURRENCY_UNIT +
-            "\n"
-            "      \"maximumAmount\"    (numeric or string, default=unlimited) "
-            "Maximum value of each UTXO in " +
-            CURRENCY_UNIT +
-            "\n"
-            "      \"maximumCount\"     (numeric or string, default=unlimited) "
-            "Maximum number of UTXOs\n"
-            "      \"minimumSumAmount\" (numeric or string, default=unlimited) "
-            "Minimum sum value of all UTXOs in " +
-            CURRENCY_UNIT +
-            "\n"
-            "    }\n"
             "\nResult\n"
             "[                   (array of json object)\n"
             "  {\n"
@@ -3648,81 +3438,55 @@ static UniValue fundrawtransaction(const Config &config,
     if (request.fHelp || request.params.size() < 1 ||
         request.params.size() > 2) {
         throw std::runtime_error(
-            "fundrawtransaction \"hexstring\" ( options )\n"
-            "\nAdd inputs to a transaction until it has enough in value to "
-            "meet its out value.\n"
-            "This will not modify existing inputs, and will add at most one "
-            "change output to the outputs.\n"
-            "No existing outputs will be modified unless "
-            "\"subtractFeeFromOutputs\" is specified.\n"
-            "Note that inputs which were signed may need to be resigned after "
-            "completion since in/outputs have been added.\n"
-            "The inputs added will not be signed, use "
-            "signrawtransactionwithkey or signrawtransactionwithwallet for "
-            "that.\n"
-            "Note that all existing inputs must have their previous output "
-            "transaction be in the wallet.\n"
-            "Note that all inputs selected must be of standard form and P2SH "
-            "scripts must be\n"
-            "in the wallet using importaddress or addmultisigaddress (to "
-            "calculate fees).\n"
-            "You can see whether this is the case by checking the \"solvable\" "
-            "field in the listunspent output.\n"
-            "Only pay-to-pubkey, multisig, and P2SH versions thereof are "
-            "currently supported for watch-only\n"
-            "\nArguments:\n"
-            "1. \"hexstring\"           (string, required) The hex string of "
-            "the raw transaction\n"
-            "2. options                 (object, optional)\n"
-            "   {\n"
-            "     \"changeAddress\"          (string, optional, default pool "
-            "address) The bitcoin address to receive the change\n"
-            "     \"changePosition\"         (numeric, optional, default "
-            "random) The index of the change output\n"
-            "     \"includeWatching\"        (boolean, optional, default "
-            "false) Also select inputs which are watch only\n"
-            "     \"lockUnspents\"           (boolean, optional, default "
-            "false) Lock selected unspent outputs\n"
-            "     \"feeRate\"                (numeric, optional, default not "
-            "set: makes wallet determine the fee) Set a specific fee rate in " +
-            CURRENCY_UNIT +
-            "/kB\n"
-            "     \"subtractFeeFromOutputs\" (array, optional) A json array of "
-            "integers.\n"
-            "                              The fee will be equally deducted "
-            "from the amount of each specified output.\n"
-            "                              The outputs are specified by their "
-            "zero-based index, before any change output is added.\n"
-            "                              Those recipients will receive less "
-            "bitcoins than you enter in their corresponding amount field.\n"
-            "                              If no outputs are specified here, "
-            "the sender pays the fee.\n"
-            "                                  [vout_index,...]\n"
-            "   }\n"
-            "                         for backward compatibility: passing in a "
-            "true instead of an object will result in "
-            "{\"includeWatching\":true}\n"
-            "\nResult:\n"
-            "{\n"
-            "  \"hex\":       \"value\", (string)  The resulting raw "
-            "transaction (hex-encoded string)\n"
-            "  \"fee\":       n,         (numeric) Fee in " +
-            CURRENCY_UNIT +
-            " the resulting transaction pays\n"
-            "  \"changepos\": n          (numeric) The position of the added "
-            "change output, or -1\n"
-            "}\n"
-            "\nExamples:\n"
-            "\nCreate a transaction with no inputs\n" +
-            HelpExampleCli("createrawtransaction",
-                           "\"[]\" \"{\\\"myaddress\\\":0.01}\"") +
-            "\nAdd sufficient unsigned inputs to meet the output value\n" +
-            HelpExampleCli("fundrawtransaction", "\"rawtransactionhex\"") +
-            "\nSign the transaction\n" +
-            HelpExampleCli("signrawtransactionwithwallet",
-                           "\"fundedtransactionhex\"") +
-            "\nSend the transaction\n" +
-            HelpExampleCli("sendrawtransaction", "\"signedtransactionhex\""));
+            RPCHelpMan{"fundrawtransaction",
+                "\nAdd inputs to a transaction until it has enough in value to meet its out value.\n"
+                "This will not modify existing inputs, and will add at most one change output to the outputs.\n"
+                "No existing outputs will be modified unless \"subtractFeeFromOutputs\" is specified.\n"
+                "Note that inputs which were signed may need to be resigned after completion since in/outputs have been added.\n"
+                "The inputs added will not be signed, use signrawtransactionwithkey or signrawtransactionwithwallet for that.\n"
+                "Note that all existing inputs must have their previous output transaction be in the wallet.\n"
+                "Note that all inputs selected must be of standard form and P2SH scripts must be\n"
+                "in the wallet using importaddress or addmultisigaddress (to calculate fees).\n"
+                "You can see whether this is the case by checking the \"solvable\" field in the listunspent output.\n"
+                "Only pay-to-pubkey, multisig, and P2SH versions thereof are currently supported for watch-only\n",
+                {
+                    {"hexstring", RPCArg::Type::STR_HEX, /* opt */ false, /* default_val */ "", "The hex string of the raw transaction"},
+                    {"options", RPCArg::Type::OBJ, /* opt */ true, /* default_val */ "", "for backward compatibility: passing in a true instead of an object will result in {\"includeWatching\":true}",
+                        {
+                            {"changeAddress", RPCArg::Type::STR, /* opt */ true, /* default_val */ "pool address", "The bitcoin address to receive the change"},
+                            {"changePosition", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "random", "The index of the change output"},
+                            {"includeWatching", RPCArg::Type::BOOL, /* opt */ true, /* default_val */ "false", "Also select inputs which are watch only"},
+                            {"lockUnspents", RPCArg::Type::BOOL, /* opt */ true, /* default_val */ "false", "Lock selected unspent outputs"},
+                            {"feeRate", RPCArg::Type::AMOUNT, /* opt */ true, /* default_val */ "not set: makes wallet determine the fee", "Set a specific fee rate in " + CURRENCY_UNIT + "/kB"},
+                            {"subtractFeeFromOutputs", RPCArg::Type::ARR, /* opt */ true, /* default_val */ "", "A json array of integers.\n"
+                            "                              The fee will be equally deducted from the amount of each specified output.\n"
+                            "                              The outputs are specified by their zero-based index, before any change output is added.\n"
+                            "                              Those recipients will receive less bitcoins than you enter in their corresponding amount field.\n"
+                            "                              If no outputs are specified here, the sender pays the fee.",
+                                {
+                                    {"vout_index", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "", "The zero-based output index, before a change output is added."},
+                                },
+                            },
+                        },
+                        "options"},
+                }}
+                .ToString() +
+                            "\nResult:\n"
+                            "{\n"
+                            "  \"hex\":       \"value\", (string)  The resulting raw transaction (hex-encoded string)\n"
+                            "  \"fee\":       n,         (numeric) Fee in " + CURRENCY_UNIT + " the resulting transaction pays\n"
+                            "  \"changepos\": n          (numeric) The position of the added change output, or -1\n"
+                            "}\n"
+                            "\nExamples:\n"
+                            "\nCreate a transaction with no inputs\n"
+                            + HelpExampleCli("createrawtransaction", "\"[]\" \"{\\\"myaddress\\\":0.01}\"") +
+                            "\nAdd sufficient unsigned inputs to meet the output value\n"
+                            + HelpExampleCli("fundrawtransaction", "\"rawtransactionhex\"") +
+                            "\nSign the transaction\n"
+                            + HelpExampleCli("signrawtransactionwithwallet", "\"fundedtransactionhex\"") +
+                            "\nSend the transaction\n"
+                            + HelpExampleCli("sendrawtransaction", "\"signedtransactionhex\"")
+                            );
     }
 
     RPCTypeCheck(request.params, {UniValue::VSTR, UniValueType()});
@@ -3760,59 +3524,32 @@ UniValue signrawtransactionwithwallet(const Config &config,
             RPCHelpMan{"signrawtransactionwithwallet",
                 "\nSign inputs for raw transaction (serialized, hex-encoded).\n"
                 "The second optional argument (may be null) is an array of previous transaction outputs that\n"
-                "this transaction depends on but may not yet be in the block chain.\n",
+                "this transaction depends on but may not yet be in the block chain." +
+                    HelpRequiringPassphrase(pwallet) + "\n",
                 {
-                    {"hexstring", RPCArg::Type::STR_HEX, false},
-                    {"prevtxs",
-                     RPCArg::Type::ARR,
-                     {
-                         {"",
-                          RPCArg::Type::OBJ,
-                          {
-                              {"txid", RPCArg::Type::STR_HEX, false},
-                              {"vout", RPCArg::Type::NUM, false},
-                              {"scriptPubKey", RPCArg::Type::STR_HEX, false},
-                              {"redeemScript", RPCArg::Type::STR_HEX, false},
-                              {"amount", RPCArg::Type::AMOUNT, false},
-                          },
-                          false},
-                     },
-                     true},
-                    {"sighashtype", RPCArg::Type::STR, true},
-                }}
-                .ToString() +
-            HelpRequiringPassphrase(pwallet) + "\n"
-
-            "\nArguments:\n"
-            "1. \"hexstring\"                      (string, required) The "
-            "transaction hex string\n"
-            "2. \"prevtxs\"                        (string, optional) An json "
-            "array of previous dependent transaction outputs\n"
-            "     [                              (json array of json objects, "
-            "or 'null' if none provided)\n"
-            "       {\n"
-            "         \"txid\":\"id\",               (string, required) The "
-            "transaction id\n"
-            "         \"vout\":n,                  (numeric, required) The "
-            "output number\n"
-            "         \"scriptPubKey\": \"hex\",     (string, required) script "
-            "key\n"
-            "         \"redeemScript\": \"hex\",     (string, required for "
-            "P2SH) redeem script\n"
-            "         \"amount\": value            (numeric, required) The "
-            "amount spent\n"
-            "       }\n"
-            "       ,...\n"
-            "    ]\n"
-            "3. \"sighashtype\"                    (string, optional, "
-            "default=ALL|FORKID) The signature hash type. Must be one of\n"
+                    {"hexstring", RPCArg::Type::STR_HEX, /* opt */ false, /* default_val */ "", "The transaction hex string"},
+                    {"prevtxs", RPCArg::Type::ARR, /* opt */ true, /* default_val */ "", "A json array of previous dependent transaction outputs",
+                        {
+                            {"", RPCArg::Type::OBJ, /* opt */ false, /* default_val */ "", "",
+                                {
+                                    {"txid", RPCArg::Type::STR_HEX, /* opt */ false, /* default_val */ "", "The transaction id"},
+                                    {"vout", RPCArg::Type::NUM, /* opt */ false, /* default_val */ "", "The output number"},
+                                    {"scriptPubKey", RPCArg::Type::STR_HEX, /* opt */ false, /* default_val */ "", "script key"},
+                                    {"redeemScript", RPCArg::Type::STR_HEX, /* opt */ true, /* default_val */ "", "(required for P2SH)"},
+                                    {"amount", RPCArg::Type::AMOUNT, /* opt */ false, /* default_val */ "", "The amount spent"},
+                                },
+                            },
+                        },
+                    },
+                    {"sighashtype", RPCArg::Type::STR, /* opt */ true, /* default_val */ "ALL|FORKID", "The signature hash type. Must be one of\n"
             "       \"ALL|FORKID\"\n"
             "       \"NONE|FORKID\"\n"
             "       \"SINGLE|FORKID\"\n"
             "       \"ALL|FORKID|ANYONECANPAY\"\n"
             "       \"NONE|FORKID|ANYONECANPAY\"\n"
-            "       \"SINGLE|FORKID|ANYONECANPAY\"\n"
-
+            "       \"SINGLE|FORKID|ANYONECANPAY\""},
+                }}
+                .ToString() +
             "\nResult:\n"
             "{\n"
             "  \"hex\" : \"value\",                  (string) The hex-encoded "
@@ -3873,15 +3610,10 @@ UniValue generate(const Config &config, const JSONRPCRequest &request) {
             RPCHelpMan{"generate",
                 "\nMine up to nblocks blocks immediately (before the RPC call returns) to an address in the wallet.\n",
                 {
-                    {"nblocks", RPCArg::Type::NUM, false},
-                    {"maxtries", RPCArg::Type::NUM, true},
+                    {"nblocks", RPCArg::Type::NUM, /* opt */ false, /* default_val */ "", "How many blocks are generated immediately."},
+                    {"maxtries", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "", "How many iterations to try (default = 1000000)."},
                 }}
                 .ToString() +
-            "\nArguments:\n"
-            "1. nblocks      (numeric, required) How many blocks are generated "
-            "immediately.\n"
-            "2. maxtries     (numeric, optional) How many iterations to try "
-            "(default = 1000000).\n"
             "\nResult:\n"
             "[ blockhashes ]     (array) hashes of blocks generated\n"
             "\nExamples:\n"
@@ -3927,15 +3659,10 @@ UniValue rescanblockchain(const Config &config, const JSONRPCRequest &request) {
             RPCHelpMan{"rescanblockchain",
                 "\nRescan the local blockchain for wallet related transactions.\n",
                 {
-                    {"start_height", RPCArg::Type::NUM, true},
-                    {"stop_height", RPCArg::Type::NUM, true},
+                    {"start_height", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "", "block height where the rescan should start"},
+                    {"stop_height", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "", "the last block height that should be scanned"},
                 }}
                 .ToString() +
-            "\nArguments:\n"
-            "1. \"start_height\"    (numeric, optional) block height where the "
-            "rescan should start\n"
-            "2. \"stop_height\"     (numeric, optional) the last block height "
-            "that should be scanned\n"
             "\nResult:\n"
             "{\n"
             "  \"start_height\"     (numeric) The block height where the "
@@ -4142,12 +3869,9 @@ UniValue getaddressinfo(const Config &config, const JSONRPCRequest &request) {
                 "\nReturn information about the given bitcoin address. Some information requires the address\n"
                 "to be in the wallet.\n",
                 {
-                    {"address", RPCArg::Type::STR, false},
+                    {"address", RPCArg::Type::STR, /* opt */ false, /* default_val */ "", "The bitcoin address to get the information of."},
                 }}
                 .ToString() +
-            "\nArguments:\n"
-            "1. \"address\"                    (string, required) The bitcoin "
-            "address to get the information of.\n"
             "\nResult:\n"
             "{\n"
             "  \"address\" : \"address\",        (string) The bitcoin address "
@@ -4294,11 +4018,9 @@ UniValue getaddressesbylabel(const Config &config,
             RPCHelpMan{"getaddressesbylabel",
                 "\nReturns the list of addresses assigned the specified label.\n",
                 {
-                    {"label", RPCArg::Type::STR, false},
+                    {"label", RPCArg::Type::STR, /* opt */ false, /* default_val */ "", "The label."},
                 }}
                 .ToString() +
-            "\nArguments:\n"
-            "1. \"label\"  (string, required) The label.\n"
             "\nResult:\n"
             "{ (json object with addresses as keys)\n"
             "  \"address\": { (json object with information about address)\n"
@@ -4344,13 +4066,9 @@ UniValue listlabels(const Config &config, const JSONRPCRequest &request) {
             RPCHelpMan{"listlabels",
                 "\nReturns the list of all labels, or labels that are assigned to addresses with a specific purpose.\n",
                 {
-                    {"purpose", RPCArg::Type::STR, true},
+                    {"purpose", RPCArg::Type::STR, /* opt */ true, /* default_val */ "", "Address purpose to list labels for ('send','receive'). An empty string is the same as not providing this argument."},
                 }}
                 .ToString() +
-            "\nArguments:\n"
-            "1. \"purpose\"    (string, optional) Address purpose to list "
-            "labels for ('send','receive'). An empty string is the same as not "
-            "providing this argument.\n"
             "\nResult:\n"
             "[               (json array of string)\n"
             "  \"label\",      (string) Label name\n"
@@ -4403,36 +4121,23 @@ static UniValue sethdseed(const Config &config, const JSONRPCRequest &request) {
             RPCHelpMan{"sethdseed",
                 "\nSet or generate a new HD wallet seed. Non-HD wallets will not be upgraded to being a HD wallet. Wallets that are already\n"
                 "HD will have a new HD seed set so that new keys added to the keypool will be derived from this new seed.\n"
-                "\nNote that you will need to MAKE A NEW BACKUP of your wallet after setting the HD wallet seed.\n",
+                "\nNote that you will need to MAKE A NEW BACKUP of your wallet after setting the HD wallet seed." +
+                    HelpRequiringPassphrase(pwallet) + "\n",
                 {
-                    {"newkeypool", RPCArg::Type::BOOL, true},
-                    {"seed", RPCArg::Type::STR, true},
+                    {"newkeypool", RPCArg::Type::BOOL, /* opt */ true, /* default_val */ "true", "Whether to flush old unused addresses, including change addresses, from the keypool and regenerate it.\n"
+            "                             If true, the next address from getnewaddress and change address from getrawchangeaddress will be from this new seed.\n"
+            "                             If false, addresses (including change addresses if the wallet already had HD Chain Split enabled) from the existing\n"
+            "                             keypool will be used until it has been depleted."},
+                    {"seed", RPCArg::Type::STR, /* opt */ true, /* default_val */ "", "The WIF private key to use as the new HD seed; if not provided a random seed will be used.\n"
+            "                             The seed value can be retrieved using the dumpwallet command. It is the private key marked hdseed=1"},
                 }}
-                .ToString()
-            + HelpRequiringPassphrase(pwallet) +
-            "\nArguments:\n"
-            "1. \"newkeypool\"         (boolean, optional, default=true) "
-            "Whether to flush old unused addresses, including change "
-            "addresses, from the keypool and regenerate it.\n"
-            "                             If true, the next address from "
-            "getnewaddress and change address from getrawchangeaddress will be "
-            "from this new seed.\n"
-            "                             If false, addresses (including "
-            "change addresses if the wallet already had HD Chain Split "
-            "enabled) from the existing\n"
-            "                             keypool will be used until it has "
-            "been depleted.\n"
-            "2. \"seed\"               (string, optional) The WIF private key "
-            "to use as the new HD seed; if not provided a random seed will be "
-            "used.\n"
-            "                             The seed value can be retrieved "
-            "using the dumpwallet command. It is the private key marked "
-            "hdseed=1\n"
-            "\nExamples:\n" +
-            HelpExampleCli("sethdseed", "") +
-            HelpExampleCli("sethdseed", "false") +
-            HelpExampleCli("sethdseed", "true \"wifkey\"") +
-            HelpExampleRpc("sethdseed", "true, \"wifkey\""));
+                .ToString() +
+            "\nExamples:\n"
+            + HelpExampleCli("sethdseed", "")
+            + HelpExampleCli("sethdseed", "false")
+            + HelpExampleCli("sethdseed", "true \"wifkey\"")
+            + HelpExampleRpc("sethdseed", "true, \"wifkey\"")
+            );
     }
 
     if (IsInitialBlockDownload()) {
@@ -4506,34 +4211,21 @@ static UniValue walletprocesspsbt(const Config &config,
         throw std::runtime_error(
             RPCHelpMan{"walletprocesspsbt",
                 "\nUpdate a PSBT with input information from our wallet and then sign inputs\n"
-                "that we can sign for.\n",
+                "that we can sign for." +
+                    HelpRequiringPassphrase(pwallet) + "\n",
                 {
-                    {"psbt", RPCArg::Type::STR, false},
-                    {"sign", RPCArg::Type::BOOL, true},
-                    {"sighashtype", RPCArg::Type::STR, true},
-                    {"bip32derivs", RPCArg::Type::BOOL, true},
-                }}
-                .ToString() +
-            HelpRequiringPassphrase(pwallet) + "\n"
-
-            "\nArguments:\n"
-            "1. \"psbt\"                      (string, required) The "
-            "transaction base64 string\n"
-            "2. sign                          (boolean, optional, "
-            "default=true) Also sign the transaction when updating\n"
-            "3. \"sighashtype\"            (string, optional, "
-            "default=ALL|FORKID) The signature hash type to sign with if not "
-            "specified by the PSBT. Must be one of\n"
+                    {"psbt", RPCArg::Type::STR, /* opt */ false, /* default_val */ "", "The transaction base64 string"},
+                    {"sign", RPCArg::Type::BOOL, /* opt */ true, /* default_val */ "true", "Also sign the transaction when updating"},
+                    {"sighashtype", RPCArg::Type::STR, /* opt */ true, /* default_val */ "ALL", "The signature hash type to sign with if not specified by the PSBT. Must be one of\n"
             "       \"ALL|FORKID\"\n"
             "       \"NONE|FORKID\"\n"
             "       \"SINGLE|FORKID\"\n"
             "       \"ALL|FORKID|ANYONECANPAY\"\n"
             "       \"NONE|FORKID|ANYONECANPAY\"\n"
-            "       \"SINGLE|FORKID|ANYONECANPAY\"\n"
-            "4. bip32derivs                    (boolean, optional, "
-            "default=false) If true, includes the BIP 32 derivation paths for "
-            "public keys if we know them\n"
-
+            "       \"SINGLE|FORKID|ANYONECANPAY\""},
+                    {"bip32derivs", RPCArg::Type::BOOL, /* opt */ true, /* default_val */ "false", "If true, includes the BIP 32 derivation paths for public keys if we know them"},
+                }}
+                .ToString() +
             "\nResult:\n"
             "{\n"
             "  \"psbt\" : \"value\",          (string) The base64-encoded "
@@ -4597,86 +4289,56 @@ static UniValue walletcreatefundedpsbt(const Config &config,
                 "\nCreates and funds a transaction in the Partially Signed Transaction format. Inputs will be added if supplied inputs are not enough\n"
                 "Implements the Creator and Updater roles.\n",
                 {
-                    {"inputs", RPCArg::Type::ARR,
+                    {"inputs", RPCArg::Type::ARR, /* opt */ false, /* default_val */ "", "A json array of json objects",
                         {
-                            {"", RPCArg::Type::OBJ,
+                            {"", RPCArg::Type::OBJ, /* opt */ false, /* default_val */ "", "",
                                 {
-                                    {"txid", RPCArg::Type::STR_HEX, false},
-                                    {"vout", RPCArg::Type::NUM, false},
-                                    {"sequence", RPCArg::Type::NUM, false},
+                                    {"txid", RPCArg::Type::STR_HEX, /* opt */ false, /* default_val */ "", "The transaction id"},
+                                    {"vout", RPCArg::Type::NUM, /* opt */ false, /* default_val */ "", "The output number"},
+                                    {"sequence", RPCArg::Type::NUM, /* opt */ false, /* default_val */ "", "The sequence number"},
                                 },
-                                false},
+                            },
                         },
-                        false},
-                    {"outputs", RPCArg::Type::ARR,
+                        },
+                    {"outputs", RPCArg::Type::ARR, /* opt */ false, /* default_val */ "", "a json array with outputs (key-value pairs)."
+                            "For compatibility reasons, a dictionary, which holds the key-value pairs directly, is also\n"
+                            "                             accepted as second parameter.",
                         {
-                            {"", RPCArg::Type::OBJ,
+                            {"", RPCArg::Type::OBJ, /* opt */ true, /* default_val */ "", "",
                                 {
-                                    {"address", RPCArg::Type::AMOUNT, true},
+                                    {"address", RPCArg::Type::AMOUNT, /* opt */ true, /* default_val */ "", "A key-value pair. The key (string) is the bitcoin address, the value (float or string) is the amount in " + CURRENCY_UNIT + ""},
                                 },
-                                true},
-                            {"", RPCArg::Type::OBJ,
+                                },
+                            {"", RPCArg::Type::OBJ, /* opt */ true, /* default_val */ "", "",
                                 {
-                                    {"data", RPCArg::Type::STR_HEX, true},
+                                    {"data", RPCArg::Type::STR_HEX, /* opt */ true, /* default_val */ "", "A key-value pair. The key must be \"data\", the value is hex-encoded data"},
                                 },
-                                true},
+                            },
                         },
-                        false},
-                    {"locktime", RPCArg::Type::NUM, true},
-                    {"options", RPCArg::Type::OBJ,
+                    },
+                    {"locktime", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "0", "Raw locktime. Non-0 value also locktime-activates inputs\n"
+                            "                             Allows this transaction to be replaced by a transaction with higher fees. If provided, it is an error if explicit sequence numbers are incompatible."},
+                    {"options", RPCArg::Type::OBJ, /* opt */ true, /* default_val */ "", "",
                         {
-                            {"changeAddress", RPCArg::Type::STR_HEX, true},
-                            {"changePosition", RPCArg::Type::NUM, true},
-                            {"includeWatching", RPCArg::Type::BOOL, true},
-                            {"lockUnspents", RPCArg::Type::BOOL, true},
-                            {"feeRate", RPCArg::Type::AMOUNT, true},
-                            {"subtractFeeFromOutputs", RPCArg::Type::ARR,
-                                {
-                                    {"int", RPCArg::Type::NUM, true},
-                                },
-                                true},
-                        },
-                        true, "options"},
-                    {"bip32derivs", RPCArg::Type::BOOL, true},
-                }}
-                .ToString() +
-                            "\nArguments:\n"
-                            "1. \"inputs\"                (array, required) A json array of json objects\n"
-                            "     [\n"
-                            "       {\n"
-                            "         \"txid\":\"id\",      (string, required) The transaction id\n"
-                            "         \"vout\":n,         (numeric, required) The output number\n"
-                            "         \"sequence\":n      (numeric, optional) The sequence number\n"
-                            "       }\n"
-                            "       ,...\n"
-                            "     ]\n"
-                            "2. \"outputs\"               (array, required) a json array with outputs (key-value pairs)\n"
-                            "   [\n"
-                            "    {\n"
-                            "      \"address\": x.xxx,    (obj, optional) A key-value pair. The key (string) is the bitcoin address, the value (float or string) is the amount in " + CURRENCY_UNIT + "\n"
-                            "    },\n"
-                            "    {\n"
-                            "      \"data\": \"hex\"        (obj, optional) A key-value pair. The key must be \"data\", the value is hex-encoded data\n"
-                            "    }\n"
-                            "    ,...                     More key-value pairs of the above form. For compatibility reasons, a dictionary, which holds the key-value pairs directly, is also\n"
-                            "                             accepted as second parameter.\n"
-                            "   ]\n"
-                            "3. locktime                  (numeric, optional, default=0) Raw locktime. Non-0 value also locktime-activates inputs\n"
-                            "4. options                 (object, optional)\n"
-                            "   {\n"
-                            "     \"changeAddress\"          (string, optional, default pool address) The bitcoin address to receive the change\n"
-                            "     \"changePosition\"         (numeric, optional, default random) The index of the change output\n"
-                            "     \"includeWatching\"        (boolean, optional, default false) Also select inputs which are watch only\n"
-                            "     \"lockUnspents\"           (boolean, optional, default false) Lock selected unspent outputs\n"
-                            "     \"feeRate\"                (numeric, optional, default not set: makes wallet determine the fee) Set a specific fee rate in " + CURRENCY_UNIT + "/kB\n"
-                            "     \"subtractFeeFromOutputs\" (array, optional) A json array of integers.\n"
+                            {"changeAddress", RPCArg::Type::STR_HEX, /* opt */ true, /* default_val */ "pool address", "The bitcoin address to receive the change"},
+                            {"changePosition", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "random", "The index of the change output"},
+                            {"includeWatching", RPCArg::Type::BOOL, /* opt */ true, /* default_val */ "false", "Also select inputs which are watch only"},
+                            {"lockUnspents", RPCArg::Type::BOOL, /* opt */ true, /* default_val */ "false", "Lock selected unspent outputs"},
+                            {"feeRate", RPCArg::Type::AMOUNT, /* opt */ true, /* default_val */ "not set: makes wallet determine the fee", "Set a specific fee rate in " + CURRENCY_UNIT + "/kB"},
+                            {"subtractFeeFromOutputs", RPCArg::Type::ARR, /* opt */ true, /* default_val */ "", "A json array of integers.\n"
                             "                              The fee will be equally deducted from the amount of each specified output.\n"
                             "                              The outputs are specified by their zero-based index, before any change output is added.\n"
                             "                              Those recipients will receive less bitcoins than you enter in their corresponding amount field.\n"
-                            "                              If no outputs are specified here, the sender pays the fee.\n"
-                            "                                  [vout_index,...]\n"
-                            "   }\n"
-                            "5. bip32derivs                    (boolean, optional, default=false) If true, includes the BIP 32 derivation paths for public keys if we know them\n"
+                            "                              If no outputs are specified here, the sender pays the fee.",
+                                {
+                                    {"vout_index", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "", ""},
+                                },
+                            },
+                        },
+                        "options"},
+                    {"bip32derivs", RPCArg::Type::BOOL, /* opt */ true, /* default_val */ "false", "If true, includes the BIP 32 derivation paths for public keys if we know them"},
+                }}
+                .ToString() +
                             "\nResult:\n"
                             "{\n"
                             "  \"psbt\": \"value\",        (string)  The resulting raw transaction (base64-encoded string)\n"
