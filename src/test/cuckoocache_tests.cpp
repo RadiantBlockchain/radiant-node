@@ -236,7 +236,7 @@ template <typename Cache> static void test_cache_erase(size_t megabytes) {
     }
     /** Erase the first quarter */
     for (uint32_t i = 0; i < (n_insert / 4); ++i) {
-        set.contains(hashes[i], true);
+        BOOST_CHECK(set.contains(hashes[i], true));
     }
     /** Insert the second half */
     for (uint32_t i = (n_insert / 2); i < n_insert; ++i) {
@@ -321,7 +321,7 @@ static void test_cache_erase_parallel(size_t megabytes) {
             size_t start = ntodo * x;
             size_t end = ntodo * (x + 1);
             for (uint32_t i = start; i < end; ++i) {
-                set.contains(hashes[i], true);
+                BOOST_CHECK(set.contains(hashes[i], true));
             }
         });
     }
