@@ -39,12 +39,15 @@
 #include <ui_interface.h>
 #include <util/system.h>
 
+#include <memory>
+
 #include <QAction>
 #include <QApplication>
 #include <QComboBox>
 #include <QDateTime>
 #include <QDragEnterEvent>
 #include <QListWidget>
+#include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QMimeData>
@@ -55,6 +58,7 @@
 #include <QStackedWidget>
 #include <QStatusBar>
 #include <QStyle>
+#include <QSystemTrayIcon>
 #include <QTimer>
 #include <QToolBar>
 #include <QUrlQuery>
@@ -74,8 +78,9 @@ const std::string BitcoinGUI::DEFAULT_UIPLATFORM =
 BitcoinGUI::BitcoinGUI(interfaces::Node &node, const Config *configIn,
                        const PlatformStyle *_platformStyle,
                        const NetworkStyle *networkStyle, QWidget *parent)
-    : QMainWindow(parent), m_node(node), config(configIn),
-      platformStyle(_platformStyle), m_network_style(networkStyle) {
+    : QMainWindow(parent), m_node(node), trayIconMenu{new QMenu()},
+      config(configIn), platformStyle(_platformStyle),
+      m_network_style(networkStyle) {
     QSettings settings;
     if (!restoreGeometry(settings.value("MainWindowGeometry").toByteArray())) {
         // Restore failed (perhaps missing setting), center the window
@@ -771,9 +776,7 @@ void BitcoinGUI::createTrayIconMenu() {
         return;
     }
 
-    trayIconMenu = new QMenu(this);
-    trayIcon->setContextMenu(trayIconMenu);
-
+    trayIcon->setContextMenu(trayIconMenu.get());
     connect(trayIcon, &QSystemTrayIcon::activated, this,
             &BitcoinGUI::trayIconActivated);
 #else
@@ -782,7 +785,6 @@ void BitcoinGUI::createTrayIconMenu() {
     MacDockIconHandler *dockIconHandler = MacDockIconHandler::instance();
     connect(dockIconHandler, &MacDockIconHandler::dockIconClicked, this,
             &BitcoinGUI::macosDockIconActivated);
-    trayIconMenu = new QMenu(this);
     trayIconMenu->setAsDockMenu();
 #endif
 
