@@ -13,8 +13,8 @@
 #include <atomic>
 #include <future>
 #include <list>
-#include <utility>
 #include <tuple>
+#include <utility>
 
 #include <boost/signals2/signal.hpp>
 
@@ -148,7 +148,9 @@ void RegisterValidationInterface(CValidationInterface *pwalletIn) {
 }
 
 void UnregisterValidationInterface(CValidationInterface *pwalletIn) {
-    g_signals.m_internals->m_connMainSignals.erase(pwalletIn);
+    if (g_signals.m_internals) {
+        g_signals.m_internals->m_connMainSignals.erase(pwalletIn);
+    }
 }
 
 void UnregisterAllValidationInterfaces() {
