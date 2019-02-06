@@ -35,7 +35,8 @@ static const int CONTINUE_EXECUTION = -1;
 const std::function<std::string(const char *)> G_TRANSLATION_FUN = nullptr;
 
 static void SetupBitcoinTxArgs() {
-    gArgs.AddArg("-?", "This help message", false, OptionsCategory::OPTIONS);
+    SetupHelpOptions(gArgs);
+
     gArgs.AddArg("-create", "Create new, empty TX.", false,
                  OptionsCategory::OPTIONS);
     gArgs.AddArg("-json", "Select JSON output", false,
@@ -91,10 +92,6 @@ static void SetupBitcoinTxArgs() {
     gArgs.AddArg("set=NAME:JSON-STRING",
                  "Set register NAME to given JSON-STRING", false,
                  OptionsCategory::REGISTER_COMMANDS);
-
-    // Hidden
-    gArgs.AddArg("-h", "", false, OptionsCategory::HIDDEN);
-    gArgs.AddArg("-help", "", false, OptionsCategory::HIDDEN);
 }
 
 //

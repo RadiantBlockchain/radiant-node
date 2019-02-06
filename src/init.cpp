@@ -313,21 +313,20 @@ static void OnRPCStopped() {
 }
 
 void SetupServerArgs() {
-    const auto defaultBaseParams =
-        CreateBaseChainParams(CBaseChainParams::MAIN);
-    const auto testnetBaseParams =
-        CreateBaseChainParams(CBaseChainParams::TESTNET);
-    const auto regtestBaseParams =
-        CreateBaseChainParams(CBaseChainParams::REGTEST);
+    SetupHelpOptions(gArgs);
+    gArgs.AddArg("-??", "Print this help message including advanced debugging options and exit", false, OptionsCategory::OPTIONS);
+    gArgs.AddHiddenArgs({"-help-debug"});
+
+    const auto defaultBaseParams = CreateBaseChainParams(CBaseChainParams::MAIN);
+    const auto testnetBaseParams = CreateBaseChainParams(CBaseChainParams::TESTNET);
+    const auto regtestBaseParams = CreateBaseChainParams(CBaseChainParams::REGTEST);
     const auto defaultChainParams = CreateChainParams(CBaseChainParams::MAIN);
-    const auto testnetChainParams =
-        CreateChainParams(CBaseChainParams::TESTNET);
-    const auto regtestChainParams =
-        CreateChainParams(CBaseChainParams::REGTEST);
+    const auto testnetChainParams = CreateChainParams(CBaseChainParams::TESTNET);
+    const auto regtestChainParams = CreateChainParams(CBaseChainParams::REGTEST);
 
     // Hidden Options
     std::vector<std::string> hidden_args = {
-        "-rpcssl", "-benchmark", "-h", "-help", "-help-debug", "-socks", "-tor", "-debugnet",
+        "-rpcssl", "-benchmark", "-socks", "-tor", "-debugnet",
         "-whitelistalwaysrelay", "-blockminsize", "-dbcrashratio",
         "-forcecompactdb", "-replayprotectionactivationtime",
         // GUI args. These will be overwritten by SetupUIArgs for the GUI
@@ -340,8 +339,6 @@ void SetupServerArgs() {
     // Set all of the args and their help
     // When adding new options to the categories, please keep and ensure alphabetical ordering.
     // Do not translate _(...) any options as decided in D4515/PR13341.
-    gArgs.AddArg("-?", "Print this help message and exit", false, OptionsCategory::OPTIONS);
-    gArgs.AddArg("-??", "Print this help message including advanced debugging options and exit", false, OptionsCategory::OPTIONS);
     gArgs.AddArg("-version", "Print version and exit", false,
                  OptionsCategory::OPTIONS);
     gArgs.AddArg("-alertnotify=<cmd>",
