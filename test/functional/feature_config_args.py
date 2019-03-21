@@ -35,6 +35,12 @@ class ConfArgsTest(BitcoinTestFramework):
         self.nodes[0].assert_start_raises_init_error(
             expected_msg='Error: acceptnonstdtxn is not currently supported for main chain')
 
+        if self.is_wallet_compiled():
+            with open(inc_conf_file_path, 'w', encoding='utf8') as conf:
+                conf.write("wallet=foo\n")
+            self.nodes[0].assert_start_raises_init_error(
+                expected_msg='Error: Config setting for -wallet only applied on regtest network when in [regtest] section.')
+
         with open(inc_conf_file_path, 'w', encoding='utf-8') as conf:
             conf.write('nono\n')
         self.nodes[0].assert_start_raises_init_error(
