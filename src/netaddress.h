@@ -70,6 +70,11 @@ protected:
     uint32_t scopeId{0};
 
 public:
+    /**
+     * Construct an unspecified IPv6 network address (::/128).
+     *
+     * @note This address is considered invalid by CNetAddr::IsValid()
+     */
     constexpr CNetAddr() noexcept : ip{0} {}
     explicit CNetAddr(const struct in_addr &ipv4Addr);
     explicit CNetAddr(const struct in6_addr &pipv6Addr, const uint32_t scope = 0);
@@ -92,10 +97,6 @@ private:
     void SetRaw(Network network, const uint8_t *data);
 
 public:
-    /**
-     * Transform an arbitrary string into a non-routable ipv6 address.
-     * Useful for mapping resolved addresses back to their source.
-     */
     bool SetInternal(const std::string &name);
 
     // for Tor addresses
@@ -129,9 +130,9 @@ public:
     bool IsRFC7343() const;
     // IPv6 autoconfig (FE80::/64)
     bool IsRFC4862() const;
-    // IPv6 well-known prefix (64:FF9B::/96)
+    // IPv6 well-known prefix for IPv4-embedded address (64:FF9B::/96)
     bool IsRFC6052() const;
-    // IPv6 IPv4-translated address (::FFFF:0:0:0/96)
+    // IPv6 IPv4-translated address (::FFFF:0:0:0/96) (actually defined in RFC2765)
     bool IsRFC6145() const;
     bool IsTor() const;
     bool IsLocal() const;
