@@ -451,6 +451,7 @@ add_library(server
 	config.cpp
 	consensus/activation.cpp
 	consensus/tx_verify.cpp
+	consensus/tx_check.cpp
 	dbwrapper.cpp
 	flatfile.cpp
 	gbtlight.cpp

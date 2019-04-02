@@ -135,6 +135,7 @@ BITCOIN_CORE_H = \
   config.h \
   consensus/activation.h \
   consensus/consensus.h \
+  consensus/tx_check.h \
   consensus/tx_verify.h \
   core_io.h \
   core_memusage.h \
@@ -398,6 +399,7 @@ libbitcoin_consensus_a_SOURCES = \
   consensus/merkle.cpp \
   consensus/merkle.h \
   consensus/params.h \
+  consensus/tx_check.cpp \
   consensus/validation.h \
   feerate.h \
   hash.cpp \
