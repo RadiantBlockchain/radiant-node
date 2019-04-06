@@ -475,7 +475,7 @@ class BIP68Test(BitcoinTestFramework):
         # the activation point, so we invalidate the tip.
         self.nodes[0].invalidateblock(self.nodes[0].getbestblockhash())
         connect_nodes(self.nodes[0], self.nodes[1])
-        sync_blocks(self.nodes)
+        self.sync_blocks()
 
     # Use self.nodes[1] to test that version 2 transactions are standard.
     def test_version2_relay(self):

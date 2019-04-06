@@ -49,8 +49,8 @@ class MempoolFeeDeltaTest(BitcoinTestFramework):
         # Create 1 block for the first group of nodes to make reorg code kick in
         # below.
         self.nodes[0].generate(1)
-        sync_blocks(self.nodes[0:1])
-        sync_mempools(self.nodes[0:1])
+        self.sync_blocks(self.nodes[0:1])
+        self.sync_mempools(self.nodes[0:1])
 
         # check txid0 is still in mempool
         assert self.nodes[0].getmempoolentry(txid0)
@@ -70,7 +70,7 @@ class MempoolFeeDeltaTest(BitcoinTestFramework):
         # again. Fee deltas for in-memory txs should be preserved across this process.
         self.nodes[3].generate(10)
         connect_nodes(self.nodes[1], self.nodes[2])
-        sync_blocks(self.nodes)
+        self.sync_blocks()
 
         tx1_postreorgfee = self.nodes[0].getmempoolentry(txid1)['fees']['modified']
         tx2_postreorgfee = self.nodes[0].getmempoolentry(txid2)['fees']['modified']

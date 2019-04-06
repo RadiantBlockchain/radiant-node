@@ -32,7 +32,7 @@ class ReceivedByTest(BitcoinTestFramework):
     def run_test(self):
         # Generate block to get out of IBD
         self.nodes[0].generate(1)
-        sync_blocks(self.nodes)
+        self.sync_blocks()
 
         self.log.info("listreceivedbyaddress Test")
 

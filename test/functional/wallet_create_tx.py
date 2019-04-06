@@ -68,7 +68,7 @@ class CreateTxWalletTest(BitcoinTestFramework):
 
         # Fund node0 "unsafe" wallet with unconfirmed coin(s)
         self.nodes[1].sendtoaddress(wunsafe.getnewaddress(), 1)
-        sync_mempools(self.nodes[0:2])
+        self.sync_mempools(self.nodes[0:2])
         assert_raises_rpc_error(-6, "Insufficient funds", wunsafe.sendtoaddress, outaddr, 1,
                                 '', '', True, 0)  # default include_unsafe = False
         # Sending with the include_unsafe option will spend the unconfirmed external coin
@@ -80,7 +80,7 @@ class CreateTxWalletTest(BitcoinTestFramework):
 
         # Try the above with sendmany which also should support include_unsafe
         self.nodes[1].sendtoaddress(wunsafe.getnewaddress(), 1)
-        sync_mempools(self.nodes[0:2])
+        self.sync_mempools(self.nodes[0:2])
         assert_equal(wunsafe.getbalance(), 0)  # 0 available, but this only lists "safe"
         assert_raises_rpc_error(-6, "Insufficient funds", wunsafe.sendmany, '', {outaddr: 1},
                                 0, '', [outaddr], 0)  # default include_unsafe = False

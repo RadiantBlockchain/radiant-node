@@ -58,7 +58,7 @@ class FeeFilterTest(BitcoinTestFramework):
         node0 = self.nodes[0]
         # Get out of IBD
         node1.generate(1)
-        sync_blocks(self.nodes)
+        self.sync_blocks()
 
         self.nodes[0].add_p2p_connection(TestP2PConn())
 
@@ -82,7 +82,7 @@ class FeeFilterTest(BitcoinTestFramework):
         # received
         node1.settxfee(Decimal("0.00010000"))
         [node1.sendtoaddress(node1.getnewaddress(), 1) for x in range(3)]
-        sync_mempools(self.nodes)  # must be sure node 0 has received all txs
+        self.sync_mempools()  # must be sure node 0 has received all txs
 
         # Send one transaction from node0 that should be received, so that we
         # we can sync the test on receipt (if node1's txs were relayed, they'd

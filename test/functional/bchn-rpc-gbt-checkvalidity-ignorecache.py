@@ -83,7 +83,7 @@ class GBTCheckValidityAndIgnoreCacheTest(BitcoinTestFramework):
             t.join()
 
         try:
-            sync_mempools(self.nodes, timeout=5)
+            self.sync_mempools(self.nodes, timeout=5)
         except AssertionError:
             """ We desire to synch the mempools, but it's not required for test success """
 

@@ -39,7 +39,7 @@ class TXBroadcastIntervalTest(BitcoinTestFramework):
         dest_addr = node.getnewaddress() if dest_addr is None else dest_addr
         txid = node.sendtoaddress(dest_addr, Decimal(amount))
         t0 = time.time()
-        sync_mempools(self.nodes, timeout=timeout)
+        self.sync_mempools(self.nodes, timeout=timeout)
         timeout -= time.time() - t0
         wait_until(
             lambda: all(txid in p2p.seen_invs for p2p in p2ps),
