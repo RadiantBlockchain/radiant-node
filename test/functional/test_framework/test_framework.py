@@ -413,9 +413,15 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         connect_nodes_bi(self.nodes[1], self.nodes[2])
         self.sync_all()
 
+    def sync_blocks(self, nodes=None, **kwargs):
+        sync_blocks(nodes or self.nodes, **kwargs)
+
+    def sync_mempools(self, nodes=None, **kwargs):
+        sync_mempools(nodes or self.nodes, **kwargs)
+
     def sync_all(self, nodes=None, **kwargs):
-            sync_blocks(nodes or self.nodes, **kwargs)
-            sync_mempools(nodes or self.nodes, **kwargs)
+        self.sync_blocks(nodes, **kwargs)
+        self.sync_mempools(nodes, **kwargs)
 
     # Private helper methods. These should not be accessed by the subclass
     # test scripts.
@@ -529,7 +535,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
                             1, self.nodes[peer].get_deterministic_priv_key().address)
                         block_time += 10 * 60
                     # Must sync before next peer starts generating blocks
-                    sync_blocks(self.nodes)
+                    self.sync_blocks()
 
             # Shut them down, and clean up cache directories:
             self.stop_nodes()
