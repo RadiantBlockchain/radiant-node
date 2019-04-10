@@ -29,6 +29,7 @@ add_executable(bench_bitcoin
 
 	# TODO: make a test library
 	../test/setup_common.cpp
+	../test/util.cpp
 )
 
 target_link_libraries(bench_bitcoin common bitcoinconsensus server)

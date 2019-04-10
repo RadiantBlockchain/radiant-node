@@ -4,6 +4,7 @@
 
 #include <bench/bench.h>
 
+#include <chain.h>
 #include <chainparams.h>
 #include <validation.h>
 
