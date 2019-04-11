@@ -10,6 +10,7 @@
 #include <sync.h>
 #include <tinyformat.h>
 #include <util/bit_cast.h>
+#include <util/defer.h>
 #include <util/moneystr.h>
 #include <util/strencodings.h>
 
@@ -19,6 +20,9 @@
 
 #include <cmath>
 #include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <system_error>
 #include <utility>
 #ifndef WIN32
 #include <csignal>
@@ -202,6 +206,9 @@ struct TestArgsManager : public ArgsManager {
             AddArg(arg.first, "", arg.second, OptionsCategory::OPTIONS);
         }
     }
+    using ArgsManager::cs_args;
+    using ArgsManager::m_network;
+    using ArgsManager::ReadConfigStream;
 };
 
 BOOST_AUTO_TEST_CASE(util_ParseParameters) {
@@ -775,6 +782,263 @@ BOOST_AUTO_TEST_CASE(util_GetChainName) {
     BOOST_CHECK(test_args.ParseParameters(3, (char **)argv_both, error));
     test_args.ReadConfigString(testnetconf);
     BOOST_CHECK_THROW(test_args.GetChainName(), std::runtime_error);
+}
+
+// Test different ways settings can be merged, and verify results. This test can
+// be used to confirm that updates to settings code don't change behavior
+// unintentionally.
+//
+// The test covers:
+//
+// - Combining different setting actions. Possible actions are: configuring a
+//   setting, negating a setting (adding "-no" prefix), and configuring/negating
+//   settings in a network section (adding "main." or "test." prefixes).
+//
+// - Combining settings from command line arguments and a config file.
+//
+// - Combining SoftSet and ForceSet calls.
+//
+// - Testing "main" and "test" network values to make sure settings from network
+//   sections are applied and to check for mainnet-specific behaviors like
+//   inheriting settings from the default section.
+//
+// - Testing network-specific settings like "-wallet", that may be ignored
+//   outside a network section, and non-network specific settings like "-server"
+//   that aren't sensitive to the network.
+//
+struct SettingsMergeTestingSetup : public BasicTestingSetup {
+    //! Max number of actions to sequence together. Can decrease this when
+    //! debugging to make test results easier to understand.
+    static constexpr int MAX_ACTIONS = 3;
+
+    enum Action { SET = 0, NEGATE, SECTION_SET, SECTION_NEGATE, END };
+    using ActionList = Action[MAX_ACTIONS];
+
+    //! Enumerate all possible test configurations.
+    template <typename Fn> void ForEachMergeSetup(Fn &&fn) {
+        ForEachActionList([&](const ActionList &arg_actions) {
+            ForEachActionList([&](const ActionList &conf_actions) {
+                for (bool soft_set : {false, true}) {
+                    for (bool force_set : {false, true}) {
+                        for (const std::string &section :
+                             {CBaseChainParams::MAIN,
+                              CBaseChainParams::TESTNET,
+                              CBaseChainParams::TESTNET4,
+                              CBaseChainParams::SCALENET}) {
+                            for (const std::string &network :
+                                 {CBaseChainParams::MAIN,
+                                  CBaseChainParams::TESTNET,
+                                  CBaseChainParams::TESTNET4,
+                                  CBaseChainParams::SCALENET}) {
+                                for (bool net_specific : {false, true}) {
+                                    fn(arg_actions, conf_actions, soft_set,
+                                       force_set, section, network,
+                                       net_specific);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    }
+
+    //! Enumerate interesting combinations of actions.
+    template <typename Fn> void ForEachActionList(Fn &&fn) {
+        ActionList actions = {SET};
+        for (bool done = false; !done;) {
+            int prev_action = -1;
+            bool skip_actions = false;
+            for (Action action : actions) {
+                if ((prev_action == END && action != END) ||
+                    (prev_action != END && action == prev_action)) {
+                    // To cut down list of enumerated settings, skip enumerating
+                    // settings with ignored actions after an END, and settings
+                    // that repeat the same action twice in a row.
+                    skip_actions = true;
+                    break;
+                }
+                prev_action = action;
+            }
+            if (!skip_actions) {
+                fn(actions);
+            }
+            done = true;
+            for (Action &action : actions) {
+                action = Action(action < END ? action + 1 : 0);
+                if (action) {
+                    done = false;
+                    break;
+                }
+            }
+        }
+    }
+
+    //! Translate actions into a list of <key>=<value> setting strings.
+    std::vector<std::string> GetValues(const ActionList &actions,
+                                       const std::string &section,
+                                       const std::string &name,
+                                       const std::string &value_prefix) {
+        std::vector<std::string> values;
+        int suffix = 0;
+        for (Action action : actions) {
+            if (action == END) {
+                break;
+            }
+            std::string prefix;
+            if (action == SECTION_SET || action == SECTION_NEGATE) {
+                prefix = section + ".";
+            }
+            if (action == SET || action == SECTION_SET) {
+                for (int i = 0; i < 2; ++i) {
+                    values.push_back(prefix + name + "=" + value_prefix +
+                                     std::to_string(++suffix));
+                }
+            }
+            if (action == NEGATE || action == SECTION_NEGATE) {
+                values.push_back(prefix + "no" + name + "=1");
+            }
+        }
+        return values;
+    }
+};
+
+// Regression test covering different ways config settings can be merged. The
+// test parses and merges settings, representing the results as strings that get
+// compared against an expected hash. To debug, the result strings can be dumped
+// to a file (see below).
+BOOST_FIXTURE_TEST_CASE(util_SettingsMerge, SettingsMergeTestingSetup) {
+    CHash256 out_sha;
+    FILE *out_file = nullptr;
+    if (const char *out_path = std::getenv("SETTINGS_MERGE_TEST_OUT")) {
+        out_file = fsbridge::fopen(out_path, "w");
+        if (!out_file) {
+            throw std::system_error(errno, std::generic_category(),
+                                    "fopen failed");
+        }
+    }
+    Defer fileCloser([&]{
+        if (out_file) {
+            if (std::fclose(out_file)) {
+                throw std::system_error(errno, std::generic_category(),
+                                        "fclose failed");
+            }
+            out_file = nullptr;
+        }
+    });
+
+    ForEachMergeSetup([&](const ActionList &arg_actions,
+                          const ActionList &conf_actions, bool soft_set,
+                          bool force_set, const std::string &section,
+                          const std::string &network, bool net_specific) {
+        TestArgsManager parser;
+        LOCK(parser.cs_args);
+
+        std::string desc = "net=";
+        desc += network;
+        parser.m_network = network;
+
+        const std::string &name = net_specific ? "server" : "wallet";
+        const std::string key = "-" + name;
+        parser.AddArg(key, name, ArgsManager::ALLOW_ANY,
+                      OptionsCategory::OPTIONS);
+        if (net_specific) {
+            parser.SetNetworkOnlyArg(key);
+        }
+
+        auto args = GetValues(arg_actions, section, name, "a");
+        std::vector<const char *> argv = {"ignored"};
+        for (auto &arg : args) {
+            arg.insert(0, "-");
+            desc += " ";
+            desc += arg;
+            argv.push_back(arg.c_str());
+        }
+        std::string error;
+        BOOST_CHECK(parser.ParseParameters(argv.size(), argv.data(), error));
+        BOOST_CHECK_EQUAL(error, "");
+
+        std::string conf;
+        for (auto &conf_val : GetValues(conf_actions, section, name, "c")) {
+            desc += " ";
+            desc += conf_val;
+            conf += conf_val;
+            conf += "\n";
+        }
+        std::istringstream conf_stream(conf);
+        BOOST_CHECK(parser.ReadConfigStream(conf_stream, "filepath", error));
+        BOOST_CHECK_EQUAL(error, "");
+
+        if (soft_set) {
+            desc += " soft";
+            parser.SoftSetArg(key, "soft1");
+            parser.SoftSetArg(key, "soft2");
+        }
+
+        if (force_set) {
+            desc += " force";
+            parser.ForceSetArg(key, "force1");
+            parser.ForceSetArg(key, "force2");
+        }
+
+        desc += " || ";
+
+        if (!parser.IsArgSet(key)) {
+            desc += "unset";
+            BOOST_CHECK(!parser.IsArgNegated(key));
+            BOOST_CHECK_EQUAL(parser.GetArg(key, "default"), "default");
+            BOOST_CHECK(parser.GetArgs(key).empty());
+        } else if (parser.IsArgNegated(key)) {
+            desc += "negated";
+            BOOST_CHECK_EQUAL(parser.GetArg(key, "default"), "0");
+            BOOST_CHECK(parser.GetArgs(key).empty());
+        } else {
+            desc += parser.GetArg(key, "default");
+            desc += " |";
+            for (const auto &arg : parser.GetArgs(key)) {
+                desc += " ";
+                desc += arg;
+            }
+        }
+
+        std::set<std::string> ignored = parser.GetUnsuitableSectionOnlyArgs();
+        if (!ignored.empty()) {
+            desc += " | ignored";
+            for (const auto &arg : ignored) {
+                desc += " ";
+                desc += arg;
+            }
+        }
+
+        desc += "\n";
+
+        out_sha.Write((const uint8_t *)desc.data(), desc.size());
+        if (out_file) {
+            BOOST_REQUIRE(std::fwrite(desc.data(), 1, desc.size(), out_file) ==
+                          desc.size());
+        }
+    });
+
+    uint8_t out_sha_bytes[CSHA256::OUTPUT_SIZE];
+    out_sha.Finalize(out_sha_bytes);
+    std::string out_sha_hex =
+        HexStr(std::begin(out_sha_bytes), std::end(out_sha_bytes));
+
+    // If check below fails, should manually dump the results with:
+    //
+    //   SETTINGS_MERGE_TEST_OUT=results.txt src/test/test_bitcoin
+    //   --run_test=util_tests/util_SettingsMerge
+    //
+    // And verify diff against previous results to make sure the changes are
+    // expected.
+    //
+    // Results file is formatted like:
+    //
+    //   <input> || <IsArgSet/IsArgNegated/GetArg output> | <GetArgs output> |
+    //   <GetUnsuitable output>
+    BOOST_CHECK_EQUAL(
+        out_sha_hex,
+        "a94b89ebf89dd6bf3dedd53b34de559abf57ae2486e1182944be45547ad200b4");
 }
 
 BOOST_AUTO_TEST_CASE(util_FormatMoney) {
