@@ -25,6 +25,12 @@ add_executable(bench_bitcoin
 	rpc_blockchain.cpp
 	rpc_mempool.cpp
 	util_time.cpp
+
+	# TODO: make a test library
+	../test/setup_common.cpp
+
+	# Add the generated headers to trigger the conversion command
+	${BENCH_DATA_GENERATED_HEADERS}
 )
 
 target_link_libraries(bench_bitcoin common bitcoinconsensus server)
