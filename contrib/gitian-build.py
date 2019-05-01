@@ -148,8 +148,6 @@ def sign():
                                '--destination', '../gitian.sigs/', '../bitcoin-cash-node/contrib/gitian-descriptors/gitian-win-signer.yml'])
         subprocess.check_call(
             'mv build/out/bitcoin-*win64-setup.exe ../bitcoin-binaries/' + args.version, shell=True)
-        subprocess.check_call(
-            'mv build/out/bitcoin-*win32-setup.exe ../bitcoin-binaries/' + args.version, shell=True)
 
     if args.macos:
         print('\nSigning ' + args.version + ' MacOS')

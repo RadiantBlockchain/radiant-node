@@ -237,7 +237,11 @@ Changes since Bitcoin Cash Node 0.21.2
 
 #### Build / MacOSX
 
-...
+- [> 0.21.3:] The 32 bits Windows target is no longer supported and has
+  been removed from the release shipment.
+  Users that wish to build for 32 bits Windows should be aware that
+  this will not be tested by the Bitcoin Cash Node team and be prepared to
+  resolve issues on their own.
 
 
 #### Tests / test framework
