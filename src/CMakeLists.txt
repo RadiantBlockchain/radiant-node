@@ -329,6 +329,7 @@ endif()
 # Target specific configs
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	set(Boost_USE_STATIC_LIBS ON)
+	set(Boost_USE_STATIC_RUNTIME ON)
 	set(Boost_THREADAPI win32)
 
 	find_package(SHLWAPI REQUIRED)

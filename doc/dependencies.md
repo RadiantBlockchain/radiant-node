@@ -8,7 +8,7 @@ These dependencies are required:
 | Dependency | Version used | Minimum required | CVEs | Shared | [Bundled Qt library](https://doc.qt.io/qt-5/configure-options.html) | Purpose | Description |
 | --- | --- | --- | --- | --- | --- |--- | --- |
 | Berkeley DB | [5.3.28](http://www.oracle.com/technetwork/database/database-technologies/berkeleydb/downloads/index.html) | 5.3 | No |  |  | Wallet storage | Only needed when wallet enabled  |
-| Boost | [1.64.0](http://www.boost.org/users/download/) | 1.58.0 | No |  |  |  Utility          | Library for threading, data structures, etc
+| Boost | [1.70.0](http://www.boost.org/users/download/) | 1.58.0 | No |  |  |  Utility          | Library for threading, data structures, etc
 | Clang |  | [3.4](http://llvm.org/releases/download.html) (C++14 support) |  |  |  |  |  |
 | CMake |  | [3.13](https://cmake.org/download/) |  |  |  |  |  |
 | D-Bus | [1.10.18](https://cgit.freedesktop.org/dbus/dbus/tree/NEWS?h=dbus-1.10) |  | No | Yes |  |  |  |
