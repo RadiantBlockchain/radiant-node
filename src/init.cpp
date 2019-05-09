@@ -431,11 +431,11 @@ void SetupServerArgs() {
                            "block reconstructions (default: %u)",
                            DEFAULT_BLOCK_RECONSTRUCTION_EXTRA_TXN),
                  ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
-    gArgs.AddArg(
-        "-blocksonly",
-        strprintf("Whether to operate in a blocks only mode (default: %d)",
-                  DEFAULT_BLOCKSONLY),
-        ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::OPTIONS);
+    gArgs.AddArg("-blocksonly",
+                 strprintf("Whether to reject transactions from network peers. Transactions from the wallet or RPC are "
+                           "not affected. (default: %d)",
+                           DEFAULT_BLOCKSONLY),
+                 ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     gArgs.AddArg("-conf=<file>",
                  strprintf("Specify configuration file. Relative paths will be "
                            "prefixed by datadir location. (default: %s)",
