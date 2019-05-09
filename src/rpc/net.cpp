@@ -554,7 +554,7 @@ static UniValue getnetworkinfo(const Config &config,
     if (g_connman) {
         obj.emplace_back("localservices", strprintf("%016x", g_connman->GetLocalServices()));
     }
-    obj.emplace_back("localrelay", fRelayTxes);
+    obj.emplace_back("localrelay", g_relay_txes);
     obj.emplace_back("timeoffset", GetTimeOffset());
     if (g_connman) {
         obj.emplace_back("networkactive", g_connman->GetNetworkActive());
