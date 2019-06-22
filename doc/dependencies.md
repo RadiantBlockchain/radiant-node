@@ -13,7 +13,7 @@ These dependencies are required:
 | Clang |  | [5](http://llvm.org/releases/download.html) (C++17 support) |  |  |  |  |  |
 | CMake |  | [3.13](https://cmake.org/download/) |  |  |  |  |  |
 | D-Bus | [1.10.18](https://cgit.freedesktop.org/dbus/dbus/tree/NEWS?h=dbus-1.10) |  | No | Yes |  |  |  |
-| Expat | [2.2.6](https://libexpat.github.io/) |  | No | Yes |  |  |  |
+| Expat | [2.2.7](https://libexpat.github.io/) |  | No | Yes |  |  |  |
 | fontconfig | [2.12.6](https://www.freedesktop.org/software/fontconfig/release/) |  | No | Yes |  |  |  |
 | FreeType | [2.7.1](http://download.savannah.gnu.org/releases/freetype) |  | No |  |  |  |  |
 | GCC |  | [7.0](https://gcc.gnu.org/) (C++17 support) |  |  |  |  |  |
