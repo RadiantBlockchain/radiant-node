@@ -5,7 +5,6 @@ Bitcoin Cash Node version 0.21.3 is now available from:
 
   <https://bitcoincashnode.org>
 
-
 Overview
 --------
 
@@ -33,7 +32,6 @@ Some users have encountered unit tests failures when running in WSL
 environments (e.g. WSL/Ubuntu).  At this time, WSL is not considered a
 supported environment for the software. This may change in future.
 
-
 Note regarding BIP9 and `getblockchaininfo`
 -------------------------------------------
 
@@ -57,6 +55,17 @@ look at the documentation for the build instructions. To continue using the
 autotools build system, pass the --enable-deprecated-build-system flag to
 `configure`.
 
+Regtest network now requires standard transactions by default
+-------------------------------------------------------------
+
+The regression test chain, that can be enabled by the `-regtest` command line
+flag, now requires transactions to not violate standard policy by default.
+Making the default the same as for mainnet, makes it easier to test mainnet
+behavior on regtest. Be reminded that the testnet still allows non-standard
+txs by default and that the policy can be locally adjusted with the
+`-acceptnonstdtxn` command line flag for both test chains.
+
+
 New RPC methods
 ---------------
 
@@ -77,6 +86,8 @@ to 0.21.2.
 
 
 Known Issues
+
+Configuration
 ------------
 
 Some issues could not be closed in time for release, but we are tracking
