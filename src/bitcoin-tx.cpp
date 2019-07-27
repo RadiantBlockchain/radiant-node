@@ -39,51 +39,51 @@ const std::function<std::string(const char *)> G_TRANSLATION_FUN = nullptr;
 static void SetupBitcoinTxArgs() {
     SetupHelpOptions(gArgs);
 
-    gArgs.AddArg("-create", "Create new, empty TX.", false,
+    gArgs.AddArg("-create", "Create new, empty TX.", ArgsManager::ALLOW_ANY,
                  OptionsCategory::OPTIONS);
-    gArgs.AddArg("-json", "Select JSON output", false,
+    gArgs.AddArg("-json", "Select JSON output", ArgsManager::ALLOW_ANY,
                  OptionsCategory::OPTIONS);
     gArgs.AddArg("-txid",
                  "Output only the hex-encoded transaction id of the resultant "
                  "transaction.",
-                 false, OptionsCategory::OPTIONS);
+                 ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     gArgs.AddArg(
         "-usecashaddr",
         strprintf("In JSON output, use CashAddr address format for destination encoding instead of the legacy base58 format "
                   "(default: %d)", DEFAULT_USE_CASHADDR),
-        false, OptionsCategory::OPTIONS);
+        ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     SetupChainParamsBaseOptions();
 
-    gArgs.AddArg("delin=N", "Delete input N from TX", false,
+    gArgs.AddArg("delin=N", "Delete input N from TX", ArgsManager::ALLOW_ANY,
                  OptionsCategory::COMMANDS);
-    gArgs.AddArg("delout=N", "Delete output N from TX", false,
+    gArgs.AddArg("delout=N", "Delete output N from TX", ArgsManager::ALLOW_ANY,
                  OptionsCategory::COMMANDS);
-    gArgs.AddArg("in=TXID:VOUT(:SEQUENCE_NUMBER)", "Add input to TX", false,
+    gArgs.AddArg("in=TXID:VOUT(:SEQUENCE_NUMBER)", "Add input to TX", ArgsManager::ALLOW_ANY,
                  OptionsCategory::COMMANDS);
-    gArgs.AddArg("locktime=N", "Set TX lock time to N", false,
+    gArgs.AddArg("locktime=N", "Set TX lock time to N", ArgsManager::ALLOW_ANY,
                  OptionsCategory::COMMANDS);
-    gArgs.AddArg("nversion=N", "Set TX version to N", false,
+    gArgs.AddArg("nversion=N", "Set TX version to N", ArgsManager::ALLOW_ANY,
                  OptionsCategory::COMMANDS);
     gArgs.AddArg("outaddr=VALUE:ADDRESS", "Add address-based output to TX",
-                 false, OptionsCategory::COMMANDS);
+                 ArgsManager::ALLOW_ANY, OptionsCategory::COMMANDS);
     gArgs.AddArg("outpubkey=VALUE:PUBKEY[:FLAGS]",
                  "Add pay-to-pubkey output to TX. "
                  "Optionally add the \"S\" flag to wrap the output in a "
                  "pay-to-script-hash.",
-                 false, OptionsCategory::COMMANDS);
-    gArgs.AddArg("outdata=[VALUE:]DATA", "Add data-based output to TX", false,
+                 ArgsManager::ALLOW_ANY, OptionsCategory::COMMANDS);
+    gArgs.AddArg("outdata=[VALUE:]DATA", "Add data-based output to TX", ArgsManager::ALLOW_ANY,
                  OptionsCategory::COMMANDS);
     gArgs.AddArg("outscript=VALUE:SCRIPT[:FLAGS]",
                  "Add raw script output to TX. "
                  "Optionally add the \"S\" flag to wrap the output in a "
                  "pay-to-script-hash.",
-                 false, OptionsCategory::COMMANDS);
+                 ArgsManager::ALLOW_ANY, OptionsCategory::COMMANDS);
     gArgs.AddArg(
         "outmultisig=VALUE:REQUIRED:PUBKEYS:PUBKEY1:PUBKEY2:....[:FLAGS]",
         "Add Pay To n-of-m Multi-sig output to TX. n = REQUIRED, m = PUBKEYS. "
         "Optionally add the \"S\" flag to wrap the output in a "
         "pay-to-script-hash.",
-        false, OptionsCategory::COMMANDS);
+        ArgsManager::ALLOW_ANY, OptionsCategory::COMMANDS);
     gArgs.AddArg("sign=SIGHASH-FLAGS",
                  "Add zero or more signatures to transaction. "
                  "This command requires JSON registers:"
@@ -91,13 +91,13 @@ static void SetupBitcoinTxArgs() {
                  "privatekeys=JSON object. "
                  "See signrawtransactionwithkey docs for format of sighash "
                  "flags, JSON objects.",
-                 false, OptionsCategory::COMMANDS);
+                 ArgsManager::ALLOW_ANY, OptionsCategory::COMMANDS);
 
     gArgs.AddArg("load=NAME:FILENAME",
-                 "Load JSON file FILENAME into register NAME", false,
+                 "Load JSON file FILENAME into register NAME", ArgsManager::ALLOW_ANY,
                  OptionsCategory::REGISTER_COMMANDS);
     gArgs.AddArg("set=NAME:JSON-STRING",
-                 "Set register NAME to given JSON-STRING", false,
+                 "Set register NAME to given JSON-STRING", ArgsManager::ALLOW_ANY,
                  OptionsCategory::REGISTER_COMMANDS);
 }
 

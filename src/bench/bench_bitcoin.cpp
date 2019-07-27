@@ -29,56 +29,56 @@ static void SetupBenchArgs() {
     gArgs.AddArg("-list",
                  "List benchmarks without executing them. Can be combined "
                  "with -scaling and -filter",
-                 false, OptionsCategory::OPTIONS);
+                 ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     gArgs.AddArg(
         "-evals=<n>",
         strprintf("Number of measurement evaluations to perform. (default: %u)",
                   DEFAULT_BENCH_EVALUATIONS),
-        false, OptionsCategory::OPTIONS);
+        ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     gArgs.AddArg("-filter=<regex>",
                  strprintf("Regular expression filter to select benchmark by "
                            "name (default: %s)",
                            DEFAULT_BENCH_FILTER),
-                 false, OptionsCategory::OPTIONS);
+                 ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     gArgs.AddArg(
         "-scaling=<n>",
         strprintf("Scaling factor for benchmark's runtime (default: %u)",
                   DEFAULT_BENCH_SCALING),
-        false, OptionsCategory::OPTIONS);
+        ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     gArgs.AddArg(
         "-printer=(console|plot)",
         strprintf("Choose printer format. console: print data to console. "
                   "plot: Print results as HTML graph (default: %s)",
                   DEFAULT_BENCH_PRINTER),
-        false, OptionsCategory::OPTIONS);
+        ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     gArgs.AddArg("-plot-plotlyurl=<uri>",
                  strprintf("URL to use for plotly.js (default: %s)",
                            DEFAULT_PLOT_PLOTLYURL),
-                 false, OptionsCategory::OPTIONS);
+                 ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     gArgs.AddArg(
         "-plot-width=<x>",
         strprintf("Plot width in pixel (default: %u)", DEFAULT_PLOT_WIDTH),
-        false, OptionsCategory::OPTIONS);
+        ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     gArgs.AddArg(
         "-plot-height=<x>",
         strprintf("Plot height in pixel (default: %u)", DEFAULT_PLOT_HEIGHT),
-        false, OptionsCategory::OPTIONS);
+        ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
 
     gArgs.AddArg("-debug=<category>",
                  strprintf("Output debugging information (default: %u, supplying <category> is optional)", 0)
                  + ". If <category> is not supplied or if <category> = 1, output all debugging information. "
-                   "<category> can be: " + ListLogCategories() + ".", false, OptionsCategory::DEBUG_TEST);
+                   "<category> can be: " + ListLogCategories() + ".", ArgsManager::ALLOW_ANY, OptionsCategory::DEBUG_TEST);
     gArgs.AddArg(
         "-maxsigcachesize=<n>",
         strprintf("Limit size of signature cache to <n> MiB (0 to %d, default: %d)",
                   MAX_MAX_SIG_CACHE_SIZE, DEFAULT_MAX_SIG_CACHE_SIZE),
-        false, OptionsCategory::DEBUG_TEST);
+        ArgsManager::ALLOW_ANY, OptionsCategory::DEBUG_TEST);
     gArgs.AddArg(
         "-par=<n>",
         strprintf("Set the number of script verification threads (0 = auto, <0 = leave that many cores free, "
                   "default: %d). Currently only affects the CCheckQueue_RealBlock_32MB* benches.",
                   DEFAULT_SCRIPTCHECK_THREADS),
-        false, OptionsCategory::DEBUG_TEST);
+        ArgsManager::ALLOW_ANY, OptionsCategory::DEBUG_TEST);
 }
 
 int main(int argc, char **argv) {

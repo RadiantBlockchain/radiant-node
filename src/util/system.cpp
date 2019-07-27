@@ -627,7 +627,7 @@ void ArgsManager::ForceSetMultiArg(const std::string &strArg,
 }
 
 void ArgsManager::AddArg(const std::string &name, const std::string &help,
-                         const bool debug_only, const OptionsCategory &cat) {
+                         unsigned int flags, const OptionsCategory &cat) {
     // Parse the name.
     // Anything behind a comma or equals sign is a usage instruction,
     // that needs to be stripped from the argument name.
@@ -636,8 +636,10 @@ void ArgsManager::AddArg(const std::string &name, const std::string &help,
     {
         LOCK(cs_args);
         std::map<std::string, Arg> &arg_map = m_available_args[cat];
-        auto ret = arg_map.emplace(eq_index == std::string::npos ? name : name.substr(0, eq_index),
-                                   Arg(eq_index == std::string::npos ? "" : name.substr(eq_index), help, debug_only));
+        auto ret = arg_map.emplace(
+            eq_index == std::string::npos ? name : name.substr(0, eq_index),
+            Arg{eq_index == std::string::npos ? "" : name.substr(eq_index),
+                help, flags, false});
         // Make sure an insertion actually happened.
         assert(ret.second);
     }
@@ -645,13 +647,14 @@ void ArgsManager::AddArg(const std::string &name, const std::string &help,
         // name is a comma-separated list.
         // Any parameter behind the comma is an alias of the current parameter.
         // Use recursion to add aliases as hidden arguments.
-        AddArg(name.substr(comma_index + 2), "", debug_only, OptionsCategory::HIDDEN);
+        AddArg(name.substr(comma_index + 2), "", flags,
+               OptionsCategory::HIDDEN);
     }
 }
 
 void ArgsManager::AddHiddenArgs(const std::vector<std::string> &names) {
     for (const std::string &name : names) {
-        AddArg(name, "", false, OptionsCategory::HIDDEN);
+        AddArg(name, "", ArgsManager::ALLOW_ANY, OptionsCategory::HIDDEN);
     }
 }
 
@@ -720,7 +723,7 @@ std::string ArgsManager::GetHelpMessage() const {
         }
 
         for (const auto &arg : arg_map.second) {
-            if (show_debug || !arg.second.m_debug_only) {
+            if (show_debug || !(arg.second.m_flags & ArgsManager::DEBUG_ONLY)) {
                 std::string name;
                 if (arg.second.m_help_param.empty()) {
                     name = arg.first;
@@ -741,7 +744,7 @@ bool HelpRequested(const ArgsManager &args) {
 
 void SetupHelpOptions(ArgsManager& args)
 {
-    args.AddArg("-?, -h, -help", "Print this help message and exit", false, OptionsCategory::OPTIONS);
+    args.AddArg("-?, -h, -help", "Print this help message and exit", ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
 }
 
 static const int screenWidth = 79;

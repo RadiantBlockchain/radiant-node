@@ -22,12 +22,12 @@ void SetupChainParamsBaseOptions() {
                  "Enter regression test mode, which uses a special chain in "
                  "which blocks can be solved instantly. This is intended for "
                  "regression testing tools and app development.",
-                 false, OptionsCategory::CHAINPARAMS);
-    gArgs.AddArg("-testnet", "Use the test chain", false,
+                 ArgsManager::ALLOW_ANY, OptionsCategory::CHAINPARAMS);
+    gArgs.AddArg("-testnet", "Use the test chain", ArgsManager::ALLOW_ANY,
                  OptionsCategory::CHAINPARAMS);
-    gArgs.AddArg("-testnet4", "Use the test4 chain", false,
+    gArgs.AddArg("-testnet4", "Use the test4 chain", ArgsManager::ALLOW_ANY,
                  OptionsCategory::CHAINPARAMS);
-    gArgs.AddArg("-scalenet", "Use the scaling test chain", false,
+    gArgs.AddArg("-scalenet", "Use the scaling test chain", ArgsManager::ALLOW_ANY,
                  OptionsCategory::CHAINPARAMS);
 }
 

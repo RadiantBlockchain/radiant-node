@@ -42,14 +42,14 @@ static void SetupCliArgs() {
     const auto scalenetBaseParams = CreateBaseChainParams(CBaseChainParams::SCALENET);
     const auto regtestBaseParams = CreateBaseChainParams(CBaseChainParams::REGTEST);
 
-    gArgs.AddArg("-version", "Print version and exit", false,
+    gArgs.AddArg("-version", "Print version and exit", ArgsManager::ALLOW_ANY,
                  OptionsCategory::OPTIONS);
     gArgs.AddArg("-conf=<file>",
                  strprintf("Specify configuration file. Relative paths will be "
                            "prefixed by datadir location. (default: %s)",
                            BITCOIN_CONF_FILENAME),
-                 false, OptionsCategory::OPTIONS);
-    gArgs.AddArg("-datadir=<dir>", _("Specify data directory"), false,
+                 ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
+    gArgs.AddArg("-datadir=<dir>", _("Specify data directory"), ArgsManager::ALLOW_ANY,
                  OptionsCategory::OPTIONS);
     gArgs.AddArg(
         "-getinfo",
@@ -58,22 +58,22 @@ static void SetupCliArgs() {
         "multiple non-atomic requests. Some entries in the result may "
         "represent results from different states (e.g. wallet balance may be "
         "as of a different block from the chain state reported)",
-        false, OptionsCategory::OPTIONS);
+        ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     SetupChainParamsBaseOptions();
     gArgs.AddArg(
         "-named",
         strprintf("Pass named instead of positional arguments (default: %s)",
                   DEFAULT_NAMED),
-        false, OptionsCategory::OPTIONS);
+        ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     gArgs.AddArg(
         "-rpcconnect=<ip>",
         strprintf("Send commands to node running on <ip> (default: %s)",
                   DEFAULT_RPCCONNECT),
-        false, OptionsCategory::OPTIONS);
+        ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     gArgs.AddArg("-rpccookiefile=<loc>",
                  "Location of the auth cookie. Relative paths will be prefixed "
                  "by a net-specific datadir location. (default: data dir)",
-                 false, OptionsCategory::OPTIONS);
+                 ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     gArgs.AddArg("-rpcport=<port>",
                  strprintf("Connect to JSON-RPC on <port> (default: %u, "
                            "testnet: %u, testnet4: %u, scalenet: %u, regtest: %u)",
@@ -82,34 +82,34 @@ static void SetupCliArgs() {
                            testnet4BaseParams->RPCPort(),
                            scalenetBaseParams->RPCPort(),
                            regtestBaseParams->RPCPort()),
-                 false, OptionsCategory::OPTIONS);
-    gArgs.AddArg("-rpcwait", "Wait for RPC server to start", false,
+                 ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
+    gArgs.AddArg("-rpcwait", "Wait for RPC server to start", ArgsManager::ALLOW_ANY,
                  OptionsCategory::OPTIONS);
-    gArgs.AddArg("-rpcuser=<user>", "Username for JSON-RPC connections", false,
+    gArgs.AddArg("-rpcuser=<user>", "Username for JSON-RPC connections", ArgsManager::ALLOW_ANY,
                  OptionsCategory::OPTIONS);
     gArgs.AddArg("-rpcpassword=<pw>", "Password for JSON-RPC connections",
-                 false, OptionsCategory::OPTIONS);
+                 ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     gArgs.AddArg("-rpcclienttimeout=<n>",
                  strprintf("Timeout in seconds during HTTP requests, or 0 for "
                            "no timeout. (default: %d)",
                            DEFAULT_HTTP_CLIENT_TIMEOUT),
-                 false, OptionsCategory::OPTIONS);
+                 ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
 
     gArgs.AddArg("-stdinrpcpass",
                  strprintf("Read RPC password from standard input as a single "
                            "line. When combined with -stdin, the first line "
                            "from standard input is used for the RPC password."),
-                 false, OptionsCategory::OPTIONS);
+                 ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     gArgs.AddArg("-stdin",
                  "Read extra arguments from standard input, one per line until "
                  "EOF/Ctrl-D (recommended for sensitive information such as "
                  "passphrases)",
-                 false, OptionsCategory::OPTIONS);
+                 ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     gArgs.AddArg(
         "-rpcwallet=<walletname>",
         "Send RPC for non-default wallet on RPC server (needs to exactly match "
         "corresponding -wallet option passed to bitcoind)",
-        false, OptionsCategory::OPTIONS);
+        ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
 }
 
 /** libevent event log callback */
