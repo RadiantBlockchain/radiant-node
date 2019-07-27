@@ -82,7 +82,7 @@ static void SetupCliArgs() {
                            testnet4BaseParams->RPCPort(),
                            scalenetBaseParams->RPCPort(),
                            regtestBaseParams->RPCPort()),
-                 ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
+                 ArgsManager::ALLOW_ANY | ArgsManager::NETWORK_ONLY, OptionsCategory::OPTIONS);
     gArgs.AddArg("-rpcwait", "Wait for RPC server to start", ArgsManager::ALLOW_ANY,
                  OptionsCategory::OPTIONS);
     gArgs.AddArg("-rpcuser=<user>", "Username for JSON-RPC connections", ArgsManager::ALLOW_ANY,
