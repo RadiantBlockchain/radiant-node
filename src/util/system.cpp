@@ -639,7 +639,7 @@ void ArgsManager::AddArg(const std::string &name, const std::string &help,
         auto ret = arg_map.emplace(
             eq_index == std::string::npos ? name : name.substr(0, eq_index),
             Arg{eq_index == std::string::npos ? "" : name.substr(eq_index),
-                help, flags, false});
+                help, flags});
         // Make sure an insertion actually happened.
         assert(ret.second);
     }
