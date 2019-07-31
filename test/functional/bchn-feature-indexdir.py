@@ -20,7 +20,7 @@ class IndexdirTest(BitcoinTestFramework):
     def run_test(self):
         self.stop_node(0)
         shutil.rmtree(self.nodes[0].datadir)
-        initialize_datadir(self.options.tmpdir, 0)
+        initialize_datadir(self.options.tmpdir, 0, self.chain)
         self.log.info("Starting with invalid indexdir ...")
         protected_path = os.path.join(self.options.tmpdir, "protected")
         open(protected_path, 'a', encoding='utf-8').close()
@@ -34,22 +34,18 @@ class IndexdirTest(BitcoinTestFramework):
         self.log.info("mining blocks..")
         self.generatetoaddress(self.nodes[0],
                                10, self.nodes[0].get_deterministic_priv_key().address)
-        assert os.path.isdir(os.path.join(
-            indexdir_path, "regtest", "index"))
-        assert os.path.isfile(os.path.join(
-            indexdir_path, "regtest", "index", "CURRENT"))
+        assert os.path.isdir(os.path.join(indexdir_path, self.chain, "index"))
+        assert os.path.isfile(os.path.join(indexdir_path, self.chain, "index", "CURRENT"))
         self.stop_node(0)
         shutil.rmtree(self.nodes[0].datadir)
-        initialize_datadir(self.options.tmpdir, 0)
+        initialize_datadir(self.options.tmpdir, 0, self.chain)
         self.log.info("Starting with default indexdir ...")
         self.start_node(0)
         self.log.info("mining blocks..")
         self.generatetoaddress(self.nodes[0],
                                10, self.nodes[0].get_deterministic_priv_key().address)
-        assert os.path.isdir(os.path.join(
-            self.nodes[0].datadir, "regtest", "blocks", "index"))
-        assert os.path.isfile(os.path.join(
-            self.nodes[0].datadir, "regtest", "blocks", "index", "CURRENT"))
+        assert os.path.isdir(os.path.join(self.nodes[0].datadir, self.chain, "blocks", "index"))
+        assert os.path.isfile(os.path.join(self.nodes[0].datadir, self.chain, "blocks", "index", "CURRENT"))
 
 
 if __name__ == '__main__':

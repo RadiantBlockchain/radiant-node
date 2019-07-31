@@ -29,7 +29,7 @@ class ExtVersionNoMisbehavingTest(BitcoinTestFramework):
         ]
         for node in self.nodes:
             assert node.is_node_stopped()
-            debug_log = os.path.join(node.datadir, 'regtest', 'debug.log')
+            debug_log = os.path.join(node.datadir, self.chain, 'debug.log')
             must_exist_found_first_ct = 0
             must_exist_after_ok_ct = 0
             must_not_exist_found_ct = 0

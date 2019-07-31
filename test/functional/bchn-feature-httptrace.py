@@ -23,8 +23,7 @@ class FeatureHttpTraceTest(BitcoinTestFramework):
             return mapped.find(string) != -1
 
     def run_test(self):
-        debug_log_path = os.path.join(
-            self.nodes[0].datadir, "regtest", "debug.log")
+        debug_log_path = os.path.join(self.nodes[0].datadir, self.chain, "debug.log")
 
         log_marker = ', "method": "logging", "params": {},'.encode()
 

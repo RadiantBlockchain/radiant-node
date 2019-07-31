@@ -78,7 +78,7 @@ class WarnOnOutdatedTest(BitcoinTestFramework):
         # Node 3 should show in the debug log that it's out of date.
         # It printed this message once on startup and will print it every hour.
         self.log.info("Checking node3 log file for text '{}'".format(WARNING_TEXT_EXPIRED))
-        debug_log = os.path.join(afterUpgradeNode.datadir, 'regtest', 'debug.log')
+        debug_log = os.path.join(afterUpgradeNode.datadir, self.chain, 'debug.log')
         with open(debug_log, encoding='utf-8') as dl:
             assert WARNING_TEXT_EXPIRED in dl.read()
 

@@ -109,8 +109,7 @@ class RPCInactiveChain(BitcoinTestFramework):
             # for the inactive chains. Check sanity by ensuring
             # their behavior is unchanged and that "shorter" is
             # considered inactive.
-            assert_raises_rpc_error(-8, "Block is not in chain regtest",
-                                    self.nodes[0].getblockstats, bh, None)
+            assert_raises_rpc_error(-8, f"Block is not in chain {self.chain}", self.nodes[0].getblockstats, bh, None)
             assert_raises_rpc_error(-8, "Block is not in main chain",
                                     self.nodes[0].getchaintxstats, start_height // 2, bh)
 
