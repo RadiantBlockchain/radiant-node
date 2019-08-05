@@ -71,7 +71,7 @@ class TXBroadcastIntervalTest(BitcoinTestFramework):
         for i, node in enumerate(self.nodes):
             p2p = MyP2PInterface(self, "P2PNode{}".format(i))
             # we connect to the node so that it applies the full txbroadcastinterval for inbound conns
-            p2p.peer_connect(dstaddr='127.0.0.1', dstport=node.p2p_port)()
+            p2p.peer_connect(dstaddr='127.0.0.1', dstport=node.p2p_port, net=self.chain)()
             wait_until(
                 lambda: p2p.is_connected,
                 timeout=10
