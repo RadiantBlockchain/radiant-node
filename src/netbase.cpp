@@ -37,17 +37,11 @@ bool fNameLookup = DEFAULT_NAME_LOOKUP;
 static const int SOCKS5_RECV_TIMEOUT = 20 * 1000;
 static std::atomic<bool> interruptSocks5Recv(false);
 
-enum Network ParseNetwork(std::string net) {
-    Downcase(net);
-    if (net == "ipv4") {
-        return NET_IPV4;
-    }
-    if (net == "ipv6") {
-        return NET_IPV6;
-    }
-    if (net == "onion") {
-        return NET_ONION;
-    }
+enum Network ParseNetwork(const std::string &net_in) {
+    std::string net = ToLower(net_in);
+    if (net == "ipv4") return NET_IPV4;
+    if (net == "ipv6") return NET_IPV6;
+    if (net == "onion") return NET_ONION;
     if (net == "tor") {
         LogPrintf("Warning: net name 'tor' is deprecated and will be removed "
                   "in the future. You should use 'onion' instead.\n");
