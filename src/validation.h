@@ -63,10 +63,6 @@ struct Params;
 #define MIN_TRANSACTION_SIZE                                                   \
     (::GetSerializeSize(CTransaction::null, PROTOCOL_VERSION))
 
-/** Default for -whitelistrelay. */
-static constexpr bool DEFAULT_WHITELISTRELAY = true;
-/** Default for -whitelistforcerelay. */
-static constexpr bool DEFAULT_WHITELISTFORCERELAY = true;
 /** Default for -minrelaytxfee, minimum relay fee for transactions */
 static constexpr Amount DEFAULT_MIN_RELAY_TX_FEE_PER_KB(1000 * SATOSHI);
 /** Default for -excessutxocharge for transactions transactions */
