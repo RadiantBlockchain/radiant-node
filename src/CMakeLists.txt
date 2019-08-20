@@ -339,6 +339,7 @@ add_library(util
 	util/moneystr.cpp
 	util/saltedhashers.cpp
 	util/strencodings.cpp
+	util/string.cpp
 	util/system.cpp
 	util/threadnames.cpp
 	util/time.cpp
