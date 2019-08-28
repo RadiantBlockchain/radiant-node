@@ -9,6 +9,7 @@
 #include <pubkey.h>
 #include <script/script.h>
 #include <script/standard.h>
+#include <util/vector.h>
 
 #include <cassert>
 #include <string>
@@ -42,7 +43,7 @@ CTxDestination GetDestinationForKey(const CPubKey &key, OutputType type) {
 }
 
 std::vector<CTxDestination> GetAllDestinationsForKey(const CPubKey &key) {
-    return std::vector<CTxDestination>{key.GetID()};
+    return Vector(CTxDestination{key.GetID()});
 }
 
 CTxDestination AddAndGetDestinationForScript(CKeyStore &keystore,
