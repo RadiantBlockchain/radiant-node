@@ -33,6 +33,10 @@ if test -z $with_gui && test -n "@no_qt@"; then
   with_gui=no
 fi
 
+if test -z $enable_bip70 && test -n "@no_bip70@"; then
+  enable_bip70=no
+fi
+
 if test x@host_os@ = xdarwin; then
   BREW=no
   PORT=no
