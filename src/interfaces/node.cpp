@@ -53,7 +53,7 @@ namespace {
 
     class NodeImpl : public Node {
     public:
-        NodeImpl() { m_interfaces.chain = MakeChain(); }
+        NodeImpl() { m_context.chain = MakeChain(); }
         bool parseParameters(int argc, const char *const argv[],
                              std::string &error) override {
             return gArgs.ParseParameters(argc, argv, error);
@@ -91,11 +91,11 @@ namespace {
         appInitMain(Config &config, RPCServer &rpcServer,
                     HTTPRPCRequestProcessor &httpRPCRequestProcessor) override {
             return AppInitMain(config, rpcServer, httpRPCRequestProcessor,
-                               m_interfaces);
+                               m_context);
         }
         void appShutdown() override {
             Interrupt();
-            Shutdown(m_interfaces);
+            Shutdown(m_context);
         }
         void startShutdown() override { StartShutdown(); }
         bool shutdownRequested() override { return ShutdownRequested(); }
@@ -318,7 +318,7 @@ namespace {
                        GuessVerificationProgress(Params().TxData(), block));
                 }));
         }
-        InitInterfaces m_interfaces;
+        NodeContext m_context;
     };
 } // namespace
 

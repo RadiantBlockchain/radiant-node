@@ -29,8 +29,8 @@ public:
     //! Wallets parameter interaction
     bool ParameterInteraction() const override;
 
-    //! Add wallets that should be opened to list of init interfaces.
-    void Construct(InitInterfaces &interfaces) const override;
+    //! Add wallets that should be opened to list of chain clients.
+    void Construct(NodeContext &node) const override;
 };
 
 const WalletInitInterface &g_wallet_init_interface = WalletInit();
@@ -313,14 +313,14 @@ bool VerifyWallets(const CChainParams &chainParams, interfaces::Chain &chain,
     return true;
 }
 
-void WalletInit::Construct(InitInterfaces &interfaces) const {
+void WalletInit::Construct(NodeContext &node) const {
     if (gArgs.GetBoolArg("-disablewallet", DEFAULT_DISABLE_WALLET)) {
         LogPrintf("Wallet disabled!\n");
         return;
     }
     gArgs.SoftSetArg("-wallet", "");
-    interfaces.chain_clients.emplace_back(interfaces::MakeWalletClient(
-        *interfaces.chain, gArgs.GetArgs("-wallet")));
+    node.chain_clients.emplace_back(
+        interfaces::MakeWalletClient(*node.chain, gArgs.GetArgs("-wallet")));
 }
 
 bool LoadWallets(const CChainParams &chainParams, interfaces::Chain &chain,
