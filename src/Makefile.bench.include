@@ -36,6 +36,7 @@ bench_bench_bitcoin_SOURCES = \
   bench/prevector.cpp \
   bench/banman.cpp \
   bench/addrman.cpp \
+  bench/verify_script.cpp \
   test/setup_common.h \
   test/setup_common.cpp \
   test/util.h \

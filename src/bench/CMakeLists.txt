@@ -31,6 +31,7 @@ add_executable(bench_bitcoin
 	rpc_mempool.cpp
 	json.cpp
 	util_time.cpp
+	verify_script.cpp
 
 	# TODO: make a test library
 	../test/setup_common.cpp
