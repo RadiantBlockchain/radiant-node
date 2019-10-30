@@ -41,6 +41,7 @@
 #include <validation.h>
 #include <validationinterface.h>
 
+#include <chrono>
 #include <cmath>
 #include <memory>
 #include <stdexcept>
@@ -4319,6 +4320,7 @@ bool PeerLogicValidation::SendMessages(const Config &config, CNode *pto,
 
     // Address refresh broadcast
     int64_t nNow = GetTimeMicros();
+    auto current_time = GetTime<std::chrono::microseconds>();
     if (!IsInitialBlockDownload() && pto->nNextLocalAddrSend < nNow) {
         AdvertiseLocal(pto);
         pto->nNextLocalAddrSend =
@@ -4612,14 +4614,14 @@ bool PeerLogicValidation::SendMessages(const Config &config, CNode *pto,
 
         // Check whether periodic sends should happen
         bool fSendTrickle = pto->HasPermission(PF_NOBAN);
-        if (!invBroadcastInterval || pto->nNextInvSend < nNow) {
+        if (!invBroadcastInterval || pto->nNextInvSend < current_time) {
             fSendTrickle = true;
             if (pto->fInbound) {
-                pto->nNextInvSend = connman->PoissonNextSendInbound(nNow, invBroadcastInterval);
+                pto->nNextInvSend = std::chrono::microseconds{connman->PoissonNextSendInbound(nNow, invBroadcastInterval)};
             } else {
                 // Use half the delay for outbound peers, as there is less
                 // privacy concern for them.
-                pto->nNextInvSend = PoissonNextSend(nNow, invBroadcastInterval >> 1);
+                pto->nNextInvSend = PoissonNextSend(current_time, std::chrono::milliseconds{invBroadcastInterval >> 1});
             }
         }
 

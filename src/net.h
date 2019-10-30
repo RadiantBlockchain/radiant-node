@@ -765,7 +765,7 @@ public:
     std::vector<BlockHash> vInventoryBlockToSend GUARDED_BY(cs_inventory);
     std::deque<CInv> vInventoryToSend GUARDED_BY(cs_inventory);
     RecursiveMutex cs_inventory;
-    int64_t nNextInvSend{0};
+    std::chrono::microseconds nNextInvSend{0};
     // Used for headers announcements - unfiltered blocks to relay.
     std::vector<BlockHash> vBlockHashesToAnnounce GUARDED_BY(cs_inventory);
     // Used for BIP35 mempool sending.

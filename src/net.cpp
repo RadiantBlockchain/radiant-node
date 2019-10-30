@@ -2103,7 +2103,7 @@ void CConnman::ThreadMessageHandler() {
         }
 
         bool fMoreWork = false;
-        int64_t nSleepUntil = GetTimeMicros() + 100000;
+        auto nSleepUntil = GetTime<std::chrono::microseconds>() + std::chrono::microseconds{100000};
 
         for (CNode *pnode : vNodesCopy) {
             if (pnode->fDisconnect) {
@@ -2139,8 +2139,10 @@ void CConnman::ThreadMessageHandler() {
 
         WAIT_LOCK(mutexMsgProc, lock);
         if (!fMoreWork) {
-            int64_t nSleepFor = std::max((int64_t)0, std::min((int64_t)100000, nSleepUntil - GetTimeMicros()));
-            condMsgProc.wait_for(lock, std::chrono::microseconds(nSleepFor), [this] { return fMsgProcWake; });
+            auto nSleepFor =
+                std::max(std::chrono::microseconds{0}, std::min(std::chrono::microseconds{100000},
+                                                                nSleepUntil - GetTime<std::chrono::microseconds>()));
+            condMsgProc.wait_for(lock, nSleepFor, [this] { return fMsgProcWake; });
         }
         fMsgProcWake = false;
     }
