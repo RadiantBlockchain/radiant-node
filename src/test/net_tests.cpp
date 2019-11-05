@@ -664,6 +664,21 @@ BOOST_AUTO_TEST_CASE(LocalAddress_BasicLifecycle) {
     BOOST_CHECK_EQUAL(IsLocal(addr), false);
 }
 
+BOOST_AUTO_TEST_CASE(PoissonNextSend) {
+    g_mock_deterministic_tests = true;
+
+    int64_t now = 5000;
+    int average_interval_milliseconds = 600000;
+
+    auto poisson = ::PoissonNextSend(now, average_interval_milliseconds);
+    std::chrono::microseconds poisson_chrono =
+        ::PoissonNextSend(std::chrono::microseconds{now}, std::chrono::milliseconds{average_interval_milliseconds});
+
+    BOOST_CHECK_EQUAL(poisson, poisson_chrono.count());
+
+    g_mock_deterministic_tests = false;
+}
+
 // prior to PR #14728, this test triggers an undefined behavior
 BOOST_AUTO_TEST_CASE(ipv4_peer_with_ipv6_addrMe_test) {
     // set up local addresses; all that's necessary to reproduce the bug is
