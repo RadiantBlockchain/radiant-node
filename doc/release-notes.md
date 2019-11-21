@@ -26,12 +26,17 @@ Usage recommendations
 
 ...
 
+MacOS versions earlier than 10.12 are no longer supported.
+Additionally, Bitcoin Cash Node does not yet change appearance when macOS
+"dark mode" is activated.
+
 
 Note regarding BIP9 and `getblockchaininfo`
 -------------------------------------------
 
 BIP9 is inactive due to no available proposals to vote on and it may be
 removed in a future release.
+
 
 
 Low-level RPC changes

@@ -43,11 +43,11 @@ files:
 - "MacOSX10.11.sdk.tar.xz"
 script: |
   WRAP_DIR=$HOME/wrapped
-  HOSTS="x86_64-apple-darwin14"
+  HOSTS="x86_64-apple-darwin16"
 
   # CMake toolchain file name differ from host name
   declare -A CMAKE_TOOLCHAIN_FILE
-  CMAKE_TOOLCHAIN_FILE[x86_64-apple-darwin14]=OSX.cmake
+  CMAKE_TOOLCHAIN_FILE[x86_64-apple-darwin16]=OSX.cmake
 
   INSTALL_COMPONENTS="bitcoind bitcoin-qt bitcoin-seeder"
 
