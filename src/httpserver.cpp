@@ -178,7 +178,7 @@ static bool InitHTTPAllowList() {
     rpc_allow_subnets.push_back(CSubNet(localv6));
     for (const std::string &strAllow : gArgs.GetArgs("-rpcallowip")) {
         CSubNet subnet;
-        LookupSubNet(strAllow.c_str(), subnet);
+        LookupSubNet(strAllow, subnet);
         if (!subnet.IsValid()) {
             uiInterface.ThreadSafeMessageBox(
                 strprintf("Invalid -rpcallowip subnet specification: %s. "

@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE(netbase_splithost) {
 }
 
 static bool TestParse(const std::string &src, const std::string &canon, CService *out = nullptr) {
-    const CService addr = LookupNumeric(src.c_str(), 65535);
+    const CService addr = LookupNumeric(src, 65535);
     if (out) *out = addr;
     return canon == addr.ToString();
 }
