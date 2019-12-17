@@ -3988,43 +3988,17 @@ bool PeerLogicValidation::ProcessMessages(const Config &config, CNode *pfrom,
         if (!pfrom->vRecvGetData.empty()) {
             fMoreWork = true;
         }
-    } catch (const std::ios_base::failure &e) {
+    } catch (const std::exception& e) {
         if (m_enable_bip61) {
-            connman->PushMessage(
-                pfrom,
-                CNetMsgMaker(INIT_PROTO_VERSION)
-                    .Make(NetMsgType::REJECT, msg_type, REJECT_MALFORMED,
-                          std::string("error parsing message")));
+            connman->PushMessage(pfrom, CNetMsgMaker(INIT_PROTO_VERSION)
+                                            .Make(NetMsgType::REJECT, msg_type, REJECT_MALFORMED,
+                                                  std::string("error parsing message")));
         }
-        if (strstr(e.what(), "end of data")) {
-            // Allow exceptions from under-length message on vRecv
-            LogPrint(BCLog::NET,
-                     "%s(%s, %u bytes): Exception '%s' caught, normally caused "
-                     "by a message being shorter than its stated length\n",
-                     __func__, SanitizeString(msg_type), nMessageSize,
-                     e.what());
-        } else if (strstr(e.what(), "size too large")) {
-            // Allow exceptions from over-long size
-            LogPrint(BCLog::NET, "%s(%s, %u bytes): Exception '%s' caught\n",
-                     __func__, SanitizeString(msg_type), nMessageSize,
-                     e.what());
-        } else if (strstr(e.what(), "non-canonical ReadCompactSize()")) {
-            // Allow exceptions from non-canonical encoding
-            LogPrint(BCLog::NET, "%s(%s, %u bytes): Exception '%s' caught\n",
-                     __func__, SanitizeString(msg_type), nMessageSize,
-                     e.what());
-        } else if (strstr(e.what(), "message xmap must not exceed")) {
-            // Allow exceptions from extversion message too large
-            LogPrint(BCLog::NET, "%s(%s, %u bytes): Exception '%s' caught\n",
-                     __func__, SanitizeString(msg_type), nMessageSize,
-                     e.what());
-        } else {
-            PrintExceptionContinue(&e, "ProcessMessages()");
-        }
-    } catch (const std::exception &e) {
-        PrintExceptionContinue(&e, "ProcessMessages()");
+        LogPrint(BCLog::NET, "%s(%s, %u bytes): Exception '%s' (%s) caught\n", __func__, SanitizeString(msg_type),
+                 nMessageSize, e.what(), typeid(e).name());
     } catch (...) {
-        PrintExceptionContinue(nullptr, "ProcessMessages()");
+        LogPrint(BCLog::NET, "%s(%s, %u bytes): Unknown exception caught\n", __func__, SanitizeString(msg_type),
+                 nMessageSize);
     }
 
     if (!fRet) {
