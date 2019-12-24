@@ -90,6 +90,7 @@ static UniValue getpeerinfo(const Config &config,
                 "    \"addr\":\"host:port\",             (string) The IP address and port of the peer\n"
                 "    \"addrbind\":\"ip:port\",           (string) Bind address of the connection to the peer\n"
                 "    \"addrlocal\":\"ip:port\",          (string) Local address as reported by the peer\n"
+                "    \"mapped_as\":\"mapped_as\",        (string) The AS in the BGP route to the peer used for diversifying peer selection\n"
                 "    \"services\":\"xxxxxxxxxxxxxxxx\",  (string) The services offered\n"
                 "    \"relaytxes\":true|false,         (boolean) Whether peer has asked us to relay transactions to it\n"
                 "    \"lastsend\": ttt,                (numeric) "
@@ -163,6 +164,9 @@ static UniValue getpeerinfo(const Config &config,
         }
         if (addrbind) {
             obj.emplace_back("addrbind", stats.addrBind.ToString());
+        }
+        if (stats.m_mapped_as != 0) {
+            obj.emplace_back("mapped_as", uint64_t(stats.m_mapped_as));
         }
         obj.emplace_back("services", strprintf("%016x", stats.nServices));
         obj.emplace_back("relaytxes", stats.fRelayTxes);

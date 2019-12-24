@@ -149,6 +149,13 @@ public:
     unsigned int GetByte(int n) const;
     uint64_t GetHash() const;
     bool GetInAddr(struct in_addr *pipv4Addr) const;
+    uint8_t GetNetClass() const;
+
+    // The AS on the BGP path to the node we use to diversify
+    // peers in AddrMan bucketing based on the AS infrastructure.
+    // The ip->AS mapping depends on how asmap is constructed.
+    uint32_t GetMappedAS(const std::vector<bool> &asmap) const;
+
     std::vector<uint8_t> GetGroup(const std::vector<bool> &asmap) const;
     int GetReachabilityFrom(const CNetAddr *paddrPartner = nullptr) const;
 
