@@ -72,6 +72,32 @@ if(ENABLE_PROPERTY_BASED_TESTS)
 	)
 endif()
 
+function(gen_asmap_headers HEADERS_VAR)
+	foreach(INPUT_FILE ${ARGN})
+		set(OUTPUT_FILE "${CMAKE_CURRENT_BINARY_DIR}/${INPUT_FILE}.h")
+
+		add_custom_command(
+			OUTPUT "${OUTPUT_FILE}"
+			COMMENT "Generate ASMAP header from ${INPUT_FILE}"
+			COMMAND
+				"${Python_EXECUTABLE}"
+				"${CMAKE_CURRENT_SOURCE_DIR}/data/generate_asmap.py"
+				"${CMAKE_CURRENT_SOURCE_DIR}/${INPUT_FILE}"
+				"${OUTPUT_FILE}"
+			MAIN_DEPENDENCY "${INPUT_FILE}"
+			DEPENDS
+				"data/generate_header.py"
+			VERBATIM
+		)
+		list(APPEND ${HEADERS_VAR} "${OUTPUT_FILE}")
+	endforeach()
+	set(${HEADERS_VAR} ${${HEADERS_VAR}} PARENT_SCOPE)
+endfunction()
+
+gen_asmap_headers(ASMAP_HEADERS
+	data/asmap.raw
+)
+
 add_boost_unit_tests_to_suite(bitcoin test_bitcoin
 	check_assert.cpp
 	jsonutil.cpp
@@ -80,6 +106,8 @@ add_boost_unit_tests_to_suite(bitcoin test_bitcoin
 	scriptflags.cpp
 	sigutil.cpp
 	setup_common.cpp
+
+	${ASMAP_HEADERS}
 
 	# Tests generated from JSON
 	${JSON_HEADERS}
