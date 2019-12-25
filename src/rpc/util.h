@@ -35,6 +35,16 @@ CScript CreateMultisigRedeemscript(const int required,
  */
 void DescribeAddress(const CTxDestination &dest, UniValue::Object& obj);
 
+/**
+ * Serializing JSON objects depends on the outer type. Only arrays and
+ * dictionaries can be nested in json. The top-level outer type is "NONE".
+ */
+enum class OuterType {
+    ARR,
+    OBJ,
+    NONE, // Only set on first recursion
+};
+
 struct RPCArg {
     enum class Type {
         OBJ,
@@ -64,41 +74,41 @@ struct RPCArg {
     const std::vector<std::string> m_type_str; //!< Should be empty unless it is supposed to override the auto-generated type strings. Vector length is either 0 or 2, m_type_str.at(0) will override the type of the value in a key-value pair, m_type_str.at(1) will override the type in the argument description.
 
     RPCArg(
-        const std::string& name,
-        const Type& type,
-        const bool opt,
-        const std::string& default_val,
-        const std::string& description,
-        const std::string& oneline_description = "",
-        const std::vector<std::string>& type_str = {})
-        : m_name{name},
+        std::string&& name,
+        Type type,
+        bool opt,
+        std::string&& default_val,
+        std::string&& description,
+        std::string&& oneline_description = "",
+        std::vector<std::string>&& type_str = {})
+        : m_name{std::move(name)},
           m_type{type},
           m_optional{opt},
-          m_default_value{default_val},
-          m_description{description},
-          m_oneline_description{oneline_description},
-          m_type_str{type_str}
+          m_default_value{std::move(default_val)},
+          m_description{std::move(description)},
+          m_oneline_description{std::move(oneline_description)},
+          m_type_str{std::move(type_str)}
     {
         assert(type != Type::ARR && type != Type::OBJ);
     }
 
     RPCArg(
-        const std::string& name,
-        const Type& type,
-        const bool opt,
-        const std::string& default_val,
-        const std::string& description,
-        const std::vector<RPCArg>& inner,
-        const std::string& oneline_description = "",
-        const std::vector<std::string>& type_str = {})
-        : m_name{name},
+        std::string&& name,
+        Type type,
+        bool opt,
+        std::string&& default_val,
+        std::string&& description,
+        std::vector<RPCArg>&& inner,
+        std::string&& oneline_description = "",
+        std::vector<std::string>&& type_str = {})
+        : m_name{std::move(name)},
           m_type{type},
-          m_inner{inner},
+          m_inner{std::move(inner)},
           m_optional{opt},
-          m_default_value{default_val},
-          m_description{description},
-          m_oneline_description{oneline_description},
-          m_type_str{type_str}
+          m_default_value{std::move(default_val)},
+          m_description{std::move(description)},
+          m_oneline_description{std::move(oneline_description)},
+          m_type_str{std::move(type_str)}
     {
         assert(type == Type::ARR || type == Type::OBJ);
     }
