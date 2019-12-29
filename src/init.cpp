@@ -618,15 +618,14 @@ void SetupServerArgs() {
                  "open (see the `addnode` RPC command help for more info)",
                  ArgsManager::ALLOW_ANY | ArgsManager::NETWORK_ONLY, OptionsCategory::CONNECTION);
     gArgs.AddArg("-asmap=<file>",
-                 strprintf("Specify asn mapping used for bucketing of the peers (default: %s). Path should be relative "
-                           "to the -datadir path.",
+                 strprintf("Specify asn mapping used for bucketing of the peers (default: %s). Relative paths will be "
+                           "prefixed by the net-specific datadir location.",
                            DEFAULT_ASMAP_FILENAME),
                  ArgsManager::ALLOW_ANY, OptionsCategory::CONNECTION);
-    gArgs.AddArg(
-        "-banscore=<n>",
-        strprintf("Threshold for disconnecting and discouraging misbehaving peers (default: %u)",
-                  DEFAULT_BANSCORE_THRESHOLD),
-        ArgsManager::ALLOW_ANY, OptionsCategory::CONNECTION);
+    gArgs.AddArg("-banscore=<n>",
+                 strprintf("Threshold for disconnecting and discouraging misbehaving peers (default: %u)",
+                           DEFAULT_BANSCORE_THRESHOLD),
+                 ArgsManager::ALLOW_ANY, OptionsCategory::CONNECTION);
     gArgs.AddArg("-bantime=<n>",
                  strprintf("Default bantime (in seconds) for manually configured bans (default: %u)",
                            DEFAULT_MANUAL_BANTIME),
@@ -2830,11 +2829,13 @@ bool AppInitMain(Config &config, RPCServer &rpcServer,
 
     // Read asmap file if configured
     if (gArgs.IsArgSet("-asmap")) {
-        std::string asmap_file = gArgs.GetArg("-asmap", "");
-        if (asmap_file.empty()) {
-            asmap_file = DEFAULT_ASMAP_FILENAME;
+        fs::path asmap_path = fs::path(gArgs.GetArg("-asmap", ""));
+        if (asmap_path.empty()) {
+            asmap_path = DEFAULT_ASMAP_FILENAME;
         }
-        const fs::path asmap_path = GetDataDir() / asmap_file;
+        if (!asmap_path.is_absolute()) {
+            asmap_path = GetDataDir() / asmap_path;
+        }
         std::vector<bool> asmap = CAddrMan::DecodeAsmap(asmap_path);
         if (asmap.size() == 0) {
             InitError(strprintf(_("Could not find or parse specified asmap: '%s'"), asmap_path));
