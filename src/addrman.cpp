@@ -22,7 +22,7 @@ int CAddrInfo::GetTriedBucket(const uint256 &nKey, const std::vector<bool> &asma
             .GetCheapHash();
     int tried_bucket = hash2 % ADDRMAN_TRIED_BUCKET_COUNT;
     uint32_t mapped_as = GetMappedAS(asmap);
-    LogPrint(BCLog::NET, "IP %s mapped to AS%i belongs to tried bucket %i.\n", ToStringIP(), mapped_as, tried_bucket);
+    LogPrint(BCLog::NET, "IP %s mapped to AS%i belongs to tried bucket %i\n", ToStringIP(), mapped_as, tried_bucket);
     return tried_bucket;
 }
 
@@ -35,7 +35,7 @@ int CAddrInfo::GetNewBucket(const uint256 &nKey, const CNetAddr &src, const std:
                          .GetCheapHash();
     int new_bucket = hash2 % ADDRMAN_NEW_BUCKET_COUNT;
     uint32_t mapped_as = GetMappedAS(asmap);
-    LogPrint(BCLog::NET, "IP %s mapped to AS%i belongs to new bucket %i.\n", ToStringIP(), mapped_as, new_bucket);
+    LogPrint(BCLog::NET, "IP %s mapped to AS%i belongs to new bucket %i\n", ToStringIP(), mapped_as, new_bucket);
     return new_bucket;
 }
 
@@ -749,7 +749,7 @@ std::vector<bool> CAddrMan::DecodeAsmap(fs::path path) {
         LogPrintf("Cannot determine size of asmap file %s: %s\n", path, std::strerror(errno));
         return bits;
     }
-    LogPrintf("Opened asmap file %s (%d bytes) from disk.\n", path, length);
+    LogPrintf("Opened asmap file %s (%d bytes) from disk\n", path, length);
     std::fseek(filestr, 0, SEEK_SET);
     uint8_t cur_byte;
     bits.reserve(length * 8);

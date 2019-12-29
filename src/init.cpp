@@ -2837,19 +2837,19 @@ bool AppInitMain(Config &config, RPCServer &rpcServer,
             asmap_path = GetDataDir() / asmap_path;
         }
         if (!fs::exists(asmap_path)) {
-            InitError(strprintf(_("Could not find asmap file %s").translated, asmap_path));
+            InitError(strprintf(_("Could not find asmap file %s"), asmap_path));
             return false;
         }
         std::vector<bool> asmap = CAddrMan::DecodeAsmap(asmap_path);
         if (asmap.size() == 0) {
-            InitError(strprintf(_("Could not parse asmap file '%s'"), asmap_path));
+            InitError(strprintf(_("Could not parse asmap file %s"), asmap_path));
             return false;
         }
         const uint256 asmap_version = SerializeHash(asmap);
         g_connman->SetAsmap(std::move(asmap));
-        LogPrintf("Using asmap version %s for IP bucketing.\n", asmap_version.ToString());
+        LogPrintf("Using asmap version %s for IP bucketing\n", asmap_version.ToString());
     } else {
-        LogPrintf("Using /16 prefix for IP bucketing.\n");
+        LogPrintf("Using /16 prefix for IP bucketing\n");
     }
 
     // Step 13: finished
