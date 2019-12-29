@@ -617,6 +617,11 @@ void SetupServerArgs() {
                  "Add a node to connect to and attempt to keep the connection "
                  "open (see the `addnode` RPC command help for more info)",
                  ArgsManager::ALLOW_ANY | ArgsManager::NETWORK_ONLY, OptionsCategory::CONNECTION);
+    gArgs.AddArg("-asmap=<file>",
+                 strprintf("Specify asn mapping used for bucketing of the peers (default: %s). Path should be relative "
+                           "to the -datadir path.",
+                           DEFAULT_ASMAP_FILENAME),
+                 ArgsManager::ALLOW_ANY, OptionsCategory::CONNECTION);
     gArgs.AddArg(
         "-banscore=<n>",
         strprintf("Threshold for disconnecting and discouraging misbehaving peers (default: %u)",
@@ -746,9 +751,6 @@ void SetupServerArgs() {
     gArgs.AddArg("-torpassword=<pass>",
                  "Tor control port password (default: empty)", ArgsManager::ALLOW_ANY,
                  OptionsCategory::CONNECTION);
-    gArgs.AddArg("-asmap=<file>",
-                 "Specify asn mapping used for bucketing of the peers. Path should be relative to the -datadir path.",
-                 ArgsManager::ALLOW_ANY, OptionsCategory::CONNECTION);
 #ifdef USE_UPNP
 #if USE_UPNP
     gArgs.AddArg("-upnp",
