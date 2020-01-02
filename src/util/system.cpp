@@ -21,6 +21,7 @@
 #include <cstdarg>
 #include <memory>
 #include <thread>
+#include <typeinfo>
 
 #if (defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__DragonFly__))
 #include <pthread.h>

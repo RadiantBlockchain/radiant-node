@@ -46,6 +46,7 @@
 #include <memory>
 #include <stdexcept>
 #include <type_traits>
+#include <typeinfo>
 
 #if defined(NDEBUG)
 #error "Bitcoin cannot be compiled without assertions."
