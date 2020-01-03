@@ -22,11 +22,13 @@ Some notes on how to build Bitcoin Cash Node in Unix.
 ## To Build
 
 To build Bitcoin Cash Node you first need to install all the needed dependencies.
-See [dependencies.md](dependencies.md) or you OS specific guide in build-*.md.
+See [dependencies.md](dependencies.md) or your OS specific guide in build-*.md.
+If you wish to compile the dependencies from source yourself, please see
+instructions in [depends](/depends/README.md).
 
 Please make sure that your compiler supports C++14.
 
-Assuming you have all the neceserry dependencies installted the commands below will
+Assuming you have all the necessary dependencies installed the commands below will
 build the node, with the `bitcoin-qt` GUI-client as well.
 
 ```bash
