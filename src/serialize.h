@@ -21,6 +21,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -540,6 +541,42 @@ I ReadVarInt(Stream &is) {
         }
         n++;
     }
+}
+
+/** Simple wrapper class to serialize objects using a formatter; used by
+ * Using(). */
+template <typename Formatter, typename T> class Wrapper {
+    static_assert(std::is_lvalue_reference<T>::value,
+                  "Wrapper needs an lvalue reference type T");
+
+protected:
+    T m_object;
+
+public:
+    explicit Wrapper(T obj) : m_object(obj) {}
+    template <typename Stream> void Serialize(Stream &s) const {
+        Formatter().Ser(s, m_object);
+    }
+    template <typename Stream> void Unserialize(Stream &s) {
+        Formatter().Unser(s, m_object);
+    }
+};
+
+/** Cause serialization/deserialization of an object to be done using a
+ * specified formatter class.
+ *
+ * To use this, you need a class Formatter that has public functions Ser(stream,
+ * const object&) for serialization, and Unser(stream, object&) for
+ * deserialization. Serialization routines (inside READWRITE, or directly with
+ * << and >> operators), can then use Using<Formatter>(object).
+ *
+ * This works by constructing a Wrapper<Formatter, T>-wrapped version of object,
+ * where T is const during serialization, and non-const during deserialization,
+ * which maintains const correctness.
+ */
+template <typename Formatter, typename T>
+static inline Wrapper<Formatter, T &> Using(T &&t) {
+    return Wrapper<Formatter, T &>(t);
 }
 
 #define VARINT(obj, ...) WrapVarInt<__VA_ARGS__>(REF(obj))
