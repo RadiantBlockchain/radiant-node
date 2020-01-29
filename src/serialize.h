@@ -844,6 +844,22 @@ inline void Unserialize(Stream &is, T &&a) {
     a.Unserialize(is);
 }
 
+/** Default formatter. Serializes objects as themselves.
+ *
+ * The vector/prevector serialization code passes this to VectorFormatter
+ * to enable reusing that logic. It shouldn't be needed elsewhere.
+ */
+struct DefaultFormatter {
+    template <typename Stream, typename T>
+    static void Ser(Stream &s, const T &t) {
+        Serialize(s, t);
+    }
+
+    template <typename Stream, typename T> static void Unser(Stream &s, T &t) {
+        Unserialize(s, t);
+    }
+};
+
 /**
  * string
  */
@@ -877,10 +893,7 @@ void Serialize_impl(Stream &os, const prevector<N, T> &v, const uint8_t &) {
 
 template <typename Stream, unsigned int N, typename T, typename V>
 void Serialize_impl(Stream &os, const prevector<N, T> &v, const V &) {
-    WriteCompactSize(os, v.size());
-    for (const T &i : v) {
-        ::Serialize(os, i);
-    }
+    Serialize(os, Using<VectorFormatter<DefaultFormatter>>(v));
 }
 
 template <typename Stream, unsigned int N, typename T>
@@ -904,20 +917,7 @@ void Unserialize_impl(Stream &is, prevector<N, T> &v, const uint8_t &) {
 
 template <typename Stream, unsigned int N, typename T, typename V>
 void Unserialize_impl(Stream &is, prevector<N, T> &v, const V &) {
-    v.clear();
-    size_t nSize = ReadCompactSize(is);
-    size_t i = 0;
-    size_t nMid = 0;
-    while (nMid < nSize) {
-        nMid += MAX_VECTOR_ALLOCATE / sizeof(T);
-        if (nMid > nSize) {
-            nMid = nSize;
-        }
-        v.resize_uninitialized(nMid);
-        for (; i < nMid; ++i) {
-            Unserialize(is, v[i]);
-        }
-    }
+    Unserialize(is, Using<VectorFormatter<DefaultFormatter>>(v));
 }
 
 template <typename Stream, unsigned int N, typename T>
@@ -938,10 +938,7 @@ void Serialize_impl(Stream &os, const std::vector<T, A> &v, const uint8_t &) {
 
 template <typename Stream, typename T, typename A, typename V>
 void Serialize_impl(Stream &os, const std::vector<T, A> &v, const V &) {
-    WriteCompactSize(os, v.size());
-    for (const T &i : v) {
-        ::Serialize(os, i);
-    }
+    Serialize(os, Using<VectorFormatter<DefaultFormatter>>(v));
 }
 
 template <typename Stream, typename T, typename A>
@@ -965,20 +962,7 @@ void Unserialize_impl(Stream &is, std::vector<T, A> &v, const uint8_t &) {
 
 template <typename Stream, typename T, typename A, typename V>
 void Unserialize_impl(Stream &is, std::vector<T, A> &v, const V &) {
-    v.clear();
-    size_t nSize = ReadCompactSize(is);
-    size_t i = 0;
-    size_t nMid = 0;
-    while (nMid < nSize) {
-        nMid += MAX_VECTOR_ALLOCATE / sizeof(T);
-        if (nMid > nSize) {
-            nMid = nSize;
-        }
-        v.resize(nMid);
-        for (; i < nMid; i++) {
-            Unserialize(is, v[i]);
-        }
-    }
+    Unserialize(is, Using<VectorFormatter<DefaultFormatter>>(v));
 }
 
 template <typename Stream, typename T, typename A>
