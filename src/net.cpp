@@ -498,7 +498,7 @@ void CNode::SetAddrLocal(const CService &addrLocalIn) {
     }
 }
 
-void CNode::copyStats(CNodeStats &stats, std::vector<bool> &m_asmap) {
+void CNode::copyStats(CNodeStats &stats, const std::vector<bool> &m_asmap) {
     stats.nodeid = this->GetId();
     stats.nServices = nServices;
     stats.addr = addr;
