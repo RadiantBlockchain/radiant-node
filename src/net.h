@@ -331,7 +331,7 @@ public:
      */
     int64_t PoissonNextSendInbound(int64_t now, int average_interval_ms);
 
-    void SetAsmap(std::vector<bool> asmap) { addrman.m_asmap = asmap; }
+    void SetAsmap(std::vector<bool> asmap) { addrman.m_asmap = std::move(asmap); }
 
 private:
     struct ListenSocket {
