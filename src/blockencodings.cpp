@@ -31,7 +31,7 @@ CBlockHeaderAndShortTxIDs::CBlockHeaderAndShortTxIDs(const CBlock &block)
     }
 }
 
-void CBlockHeaderAndShortTxIDs::FillShortTxIDSelector() const {
+void CBlockHeaderAndShortTxIDs::FillShortTxIDSelector() {
     CDataStream stream(SER_NETWORK, PROTOCOL_VERSION);
     stream << header << nonce;
     CSHA256 hasher;
