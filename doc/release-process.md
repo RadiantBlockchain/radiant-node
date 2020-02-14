@@ -50,7 +50,7 @@ Bitcoin Cash Node Release Process
 9. Upload Gitian Builds to [bitcoincashnode.org](https://bitcoincashnode.org/)
 
 10. Create a [release](https://github.com/bitcoin-cash-node/bitcoin-cash-node) on our GitHub mirror:
-    `contrib/devtools/github-release.sh -a <path to release binaries> -t <release tag> -o <file containing your Github OAuth token>`
+    `contrib/release/github-release.sh -a <path to release binaries> -t <release tag> -o <file containing your Github OAuth token>`
 
 11. Notify maintainers of Ubuntu PPA, AUR, and Docker images to build their packages.
     They should be given 1-day advance notice if possible.
