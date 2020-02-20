@@ -457,7 +457,6 @@ add_library(server
 	interfaces/node.cpp
 	merkleblock.cpp
 	miner.cpp
-	minerfund.cpp
 	net.cpp
 	net_processing.cpp
 	noui.cpp
