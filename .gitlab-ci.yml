@@ -1,0 +1,55 @@
+image: debian:stable
+build:
+    stage: build
+    before_script:
+        # Prepare apt cache
+        - "mkdir -p apt-cache && mkdir /var/cache/apt/archives && mount --bind apt-cache /var/cache/apt/archives/"
+
+        # Install dependencies
+        - "apt-get update && apt-get -y install ccache bsdmainutils build-essential libssl-dev libevent-dev ninja-build python3 cmake libboost-system-dev libboost-filesystem-dev libboost-chrono-dev libboost-test-dev libboost-thread-dev libdb-dev libdb++-dev libminiupnpc-dev libzmq3-dev libqt5gui5 libqt5core5a libqt5dbus5 qttools5-dev qttools5-dev-tools libprotobuf-dev protobuf-compiler libqrencode-dev > /dev/null"
+        - "echo Build: Using `nproc` jobs"
+
+        # UTF-8 for python tests
+        - "apt-get install -y locales >/dev/null"
+        - "echo \"en_US UTF-8\" > /etc/locale.gen"
+        - "locale-gen en_US.UTF-8"
+        - "export LANG=en_US.UTF-8"
+        - "export LANGUAGE=en_US:en"
+        - "export LC_ALL=en_US.UTF-8"
+
+        # Store ccache between builds
+        - "mkdir -p ccache"
+        - "export CCACHE_BASEDIR=${PWD}"
+        - "export CCACHE_DIR=${PWD}/ccache"
+
+        # Don't allow tests to hang
+        - "export TRAVIS=1"
+
+    script:
+        - "mkdir build"
+        - "cd build"
+        - "cmake -GNinja .."
+        - "ninja"
+        - "ninja test_bitcoin"
+        - "./src/test/test_bitcoin"
+        - "./src/test/test_bitcoin -- -phononactivationtime=1575158400"
+        - "ninja check-bitcoin-qt \
+              check-bitcoin-seeder \
+              check-bitcoin-util \
+              check-devtools \
+              check-leveldb \
+              check-rpcauth \
+              check-secp256k1 \
+              check-univalue"
+        - "ninja check-functional"
+        - "ninja check-functional-upgrade-activated"
+
+cache:
+    paths:
+        - "ccache/"
+        - "apt-cache/"
+test:
+    stage: test
+    script:
+        - "true"
+
