@@ -22,7 +22,6 @@
 #include <fs.h>
 #include <hash.h>
 #include <index/txindex.h>
-#include <minerfund.h>
 #include <policy/fees.h>
 #include <policy/mempool.h>
 #include <policy/policy.h>
@@ -55,9 +54,6 @@
 #include <future>
 #include <sstream>
 #include <thread>
-
-#include <core_io.h> // For debugging
-#include <key_io.h>  // For debugging
 
 #define MICRO 0.000001
 #define MILLI 0.001
@@ -2045,35 +2041,6 @@ bool CChainState::ConnectBlock(const CBlock &block, CValidationState &state,
                                block.vtx[0]->GetValueOut(), blockReward),
                          REJECT_INVALID, "bad-cb-amount");
     }
-
-    const std::vector<CTxDestination> whitelist =
-        GetMinerFundWhitelist(consensusParams, pindex->pprev);
-    if (!whitelist.empty()) {
-        const Amount required = blockReward / MINER_FUND_RATIO;
-
-        for (auto &o : block.vtx[0]->vout) {
-            if (o.nValue < required) {
-                // This output doesn't qualify because its amount is too low.
-                continue;
-            }
-
-            CTxDestination address;
-            if (!ExtractDestination(o.scriptPubKey, address)) {
-                // Cannot decode address.
-                continue;
-            }
-
-            if (std::find(whitelist.begin(), whitelist.end(), address) !=
-                whitelist.end()) {
-                goto MinerFundSuccess;
-            }
-        }
-
-        // We did not find an output that match the miner fund requirements.
-        return state.DoS(100, false, REJECT_INVALID, "bad-cb-minerfund");
-    }
-
-MinerFundSuccess:
 
     if (!control.Wait()) {
         return state.DoS(100, false, REJECT_INVALID, "blk-bad-inputs", false,
@@ -5683,24 +5650,10 @@ CBlockFileInfo *GetBlockFileInfo(size_t n) {
     return &vinfoBlockFile.at(n);
 }
 
-static ThresholdState VersionBitsStateImpl(const Consensus::Params &params,
-                                           Consensus::DeploymentPos pos,
-                                           const CBlockIndex *pindex)
-    EXCLUSIVE_LOCKS_REQUIRED(cs_main) {
-    return VersionBitsState(pindex, params, pos, versionbitscache);
-}
-
 ThresholdState VersionBitsTipState(const Consensus::Params &params,
                                    Consensus::DeploymentPos pos) {
     LOCK(cs_main);
-    return VersionBitsStateImpl(params, pos, chainActive.Tip());
-}
-
-ThresholdState VersionBitsBlockState(const Consensus::Params &params,
-                                     Consensus::DeploymentPos pos,
-                                     const CBlockIndex *pindex) {
-    LOCK(cs_main);
-    return VersionBitsStateImpl(params, pos, pindex);
+    return VersionBitsState(chainActive.Tip(), params, pos, versionbitscache);
 }
 
 BIP9Stats VersionBitsTipStatistics(const Consensus::Params &params,

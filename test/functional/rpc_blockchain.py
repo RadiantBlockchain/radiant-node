@@ -113,48 +113,7 @@ class BlockchainTest(BitcoinTestFramework):
                         'possible': True,
                     },
                 },
-                'active': False,
-            },
-            'minerfund': {
-                'type': 'bip9',
-                'bip9': {
-                    'status': 'defined',
-                    'start_time': 1573819200,
-                    'timeout': 1589544000,
-                    'since': 0,
-                },
-                'active': False,
-            },
-            'minerfundabc': {
-                'type': 'bip9',
-                'bip9': {
-                    'status': 'defined',
-                    'start_time': 1573819200,
-                    'timeout': 1589544000,
-                    'since': 0,
-                },
-                'active': False,
-            },
-            'minerfundbchd': {
-                'type': 'bip9',
-                'bip9': {
-                    'status': 'defined',
-                    'start_time': 1573819200,
-                    'timeout': 1589544000,
-                    'since': 0,
-                },
-                'active': False,
-            },
-            'minerfundelectroncash': {
-                'type': 'bip9',
-                'bip9': {
-                    'status': 'defined',
-                    'start_time': 1573819200,
-                    'timeout': 1589544000,
-                    'since': 0,
-                },
-                'active': False,
-            },
+                'active': False}
         })
 
         # pruneheight should be greater or equal to 0
