@@ -1,55 +1,91 @@
-image: debian:stable
-build:
-    stage: build
+image: bitcoincashnode/buildenv:debian
+
+stages:
+    - build
+    - build_tests
+    - test
+
+variables:
+    # Don't allow tests to hang
+    TRAVIS: 1
+
+default:
     before_script:
-        # Prepare apt cache
-        - "mkdir -p apt-cache && mkdir /var/cache/apt/archives && mount --bind apt-cache /var/cache/apt/archives/"
-
-        # Install dependencies
-        - "apt-get update && apt-get -y install ccache bsdmainutils build-essential libssl-dev libevent-dev ninja-build python3 cmake libboost-system-dev libboost-filesystem-dev libboost-chrono-dev libboost-test-dev libboost-thread-dev libdb-dev libdb++-dev libminiupnpc-dev libzmq3-dev libqt5gui5 libqt5core5a libqt5dbus5 qttools5-dev qttools5-dev-tools libprotobuf-dev protobuf-compiler libqrencode-dev > /dev/null"
-        - "echo Build: Using `nproc` jobs"
-
-        # UTF-8 for python tests
-        - "apt-get install -y locales >/dev/null"
-        - "echo \"en_US UTF-8\" > /etc/locale.gen"
-        - "locale-gen en_US.UTF-8"
-        - "export LANG=en_US.UTF-8"
-        - "export LANGUAGE=en_US:en"
-        - "export LC_ALL=en_US.UTF-8"
-
-        # Store ccache between builds
         - "mkdir -p ccache"
         - "export CCACHE_BASEDIR=${PWD}"
         - "export CCACHE_DIR=${PWD}/ccache"
 
-        # Don't allow tests to hang
-        - "export TRAVIS=1"
 
+cache:
+    paths:
+        - "ccache/"
+
+build-debian-stable:
+    stage: build
     script:
         - "mkdir build"
         - "cd build"
         - "cmake -GNinja .."
+
         - "ninja"
-        - "ninja test_bitcoin"
-        - "./src/test/test_bitcoin"
-        - "./src/test/test_bitcoin -- -phononactivationtime=1575158400"
-        - "ninja check-bitcoin-qt \
+
+        # Show ccache stats
+        - "ccache -s"
+    artifacts:
+        paths:
+            - build
+            - test
+
+build-tests-debian-stable:
+    stage: build_tests
+    script:
+        - "(cd build; ninja test_bitcoin)"
+        - "(cd build; ninja check-bitcoin-qt \
               check-bitcoin-seeder \
               check-bitcoin-util \
               check-devtools \
               check-leveldb \
               check-rpcauth \
               check-secp256k1 \
-              check-univalue"
-        - "ninja check-functional"
-        - "ninja check-functional-upgrade-activated"
+              check-univalue)"
 
-cache:
-    paths:
-        - "ccache/"
-        - "apt-cache/"
-test:
+        # Show ccache stats
+        - "ccache -s"
+    artifacts:
+        paths:
+            - build
+            - test
+    dependencies:
+        - build-debian-stable
+
+test_bitcoin:
+    stage: test
+    cache: {}
+    script:
+        - "./build/src/test/test_bitcoin"
+    dependencies:
+        - build-tests-debian-stable
+
+test_bitcoin_post_phonon:
+    stage: test
+    cache: {}
+    script:
+        - "./build/src/test/test_bitcoin -- -phononactivationtime=1575158400"
+    dependencies:
+        - build-tests-debian-stable
+
+test_functional:
+    stage: test
+
+    script:
+        - "(cd build; ninja check-functional)"
+    dependencies:
+        - build-tests-debian-stable
+
+test_functional_post_phonon:
     stage: test
     script:
-        - "true"
+        - "(cd build; ninja check-functional-upgrade-activated)"
+    dependencies:
+        - build-tests-debian-stable
 
