@@ -5,6 +5,7 @@
 
 # Test derived from the corresponding abc-miner-fund test in Bitcoin ABC 0.21.
 # Assertions added/modified from the original test in Bitcoin ABC:
+# * -enableminerfund is not a valid configuration option
 # * By default we do not enable the lowest four version bits prior to phonon activation.
 # * We do not track BIP9 voting on the IFP.
 # * We still mine without miner fund contributions after the IFP activated in ABC.
@@ -73,6 +74,11 @@ class MinerFundTest(BitcoinTestFramework):
         run_test_for(1, 'minerfundabc', MINER_FUND_ABC_ADDR)
         run_test_for(2, 'minerfundbchd', MINER_FUND_BCHD_ADDR)
         run_test_for(3, 'minerfundelectroncash', MINER_FUND_ELECTRON_CASH_ADDR)
+
+        # MAKE SURE THE MINER FUND CANNOT BE ENABLED.
+        self.stop_node(0)
+        node.assert_start_raises_init_error(
+            ['-enableminerfund', "-phononactivationtime={}".format(PHONON_ACTIVATION_TIME)], 'Error parsing command line arguments: Invalid parameter -enableminerfund')
 
     def run_no_miner_fund_test(self):
         node = self.nodes[0]
