@@ -4,10 +4,11 @@
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 # Test derived from the corresponding abc-miner-fund test in Bitcoin ABC 0.21.
-# Assertions modified from the original test in Bitcoin ABC:
+# Assertions added/modified from the original test in Bitcoin ABC:
+# * By default we do not enable the lowest four version bits prior to phonon activation.
 # * We do not track BIP9 voting on the IFP.
-# * We still mine without miner fund contributions after the IFP activated.
-# * We still accept non-contributing blocks after the IFP activated.
+# * We still mine without miner fund contributions after the IFP activated in ABC.
+# * We still accept non-contributing blocks after the IFP activated in ABC.
 
 from test_framework.blocktools import (create_block, create_coinbase)
 from test_framework.messages import ToHex
@@ -77,9 +78,14 @@ class MinerFundTest(BitcoinTestFramework):
         node = self.nodes[0]
         address = node.get_deterministic_priv_key().address
 
-        # Move MTP forward to phonon activation
+        def get_best_vote():
+            return node.getblockheader(node.getbestblockhash())['version'] & 0xF
+
+        # Move MTP forward to phonon activation WITHOUT VOTING FOR IFP.
         node.setmocktime(PHONON_ACTIVATION_TIME)
-        node.generatetoaddress(6, address)
+        for i in range(6):
+            node.generatetoaddress(1, address)
+            assert_equal(get_best_vote(), 0)
         assert_equal(
             node.getblockchaininfo()['mediantime'],
             PHONON_ACTIVATION_TIME)
@@ -106,8 +112,12 @@ class MinerFundTest(BitcoinTestFramework):
         node = self.nodes[0]
         address = node.get_deterministic_priv_key().address
 
+        def get_best_vote():
+            return node.getblockheader(node.getbestblockhash())['version'] & 0xF
+
         for i in range(144):
             node.generatetoaddress(1, address)
+            assert_equal(get_best_vote(), 1 << bit)
             self.check_bip9_state(name, {
                 'status': 'started',
                 'bit': bit,
@@ -125,6 +135,7 @@ class MinerFundTest(BitcoinTestFramework):
 
         for i in range(144):
             node.generatetoaddress(1, address)
+            assert_equal(get_best_vote(), 1 << bit)
             self.check_bip9_state(name, {
                 'status': 'locked_in',
                 'start_time': 1573819200,
@@ -134,6 +145,7 @@ class MinerFundTest(BitcoinTestFramework):
 
         # Now this should be active.
         node.generatetoaddress(1, address)
+        assert_equal(get_best_vote(), 1 << bit)
         self.check_bip9_state(name, {
             'status': 'active',
             'start_time': 1573819200,
@@ -141,9 +153,11 @@ class MinerFundTest(BitcoinTestFramework):
             'since': 576,
         })
 
-        # Move MTP forward to phonon activation
+        # Move MTP forward to phonon activation.
         node.setmocktime(PHONON_ACTIVATION_TIME)
-        node.generatetoaddress(6, address)
+        for i in range(6):
+            node.generatetoaddress(1, address)
+            assert_equal(get_best_vote(), 1 << bit)
         assert_equal(
             node.getblockchaininfo()['mediantime'],
             PHONON_ACTIVATION_TIME)
