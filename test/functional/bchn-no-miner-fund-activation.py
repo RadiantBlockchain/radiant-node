@@ -3,13 +3,15 @@
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-# Test derived from the corresponding abc-miner-fund test in Bitcoin ABC 0.21.
-# Assertions added/modified from the original test in Bitcoin ABC:
-# * -enableminerfund is not a valid configuration option.
-# * By default we do not enable the lowest four version bits prior to phonon activation.
-# * We do not track BIP9 voting on the IFP.
-# * We still mine without miner fund contributions after the IFP activated in ABC.
-# * We still accept non-contributing blocks after the IFP activated in ABC.
+"""
+Test derived from the corresponding abc-miner-fund test in Bitcoin ABC 0.21.
+Assertions added/modified from the original test in Bitcoin ABC:
+* -enableminerfund is not a valid configuration option.
+* By default we do not enable the lowest four version bits prior to phonon activation.
+* We do not track BIP9 voting on the IFP.
+* We still mine without miner fund contributions after the IFP activated in ABC.
+* We still accept non-contributing blocks after the IFP activated in ABC.
+"""
 
 from test_framework.blocktools import (create_block, create_coinbase)
 from test_framework.messages import ToHex
