@@ -572,14 +572,14 @@
     <name>WalletView</name>
     </context>
 <context>
-    <name>bitcoin-abc</name>
+    <name>bitcoin-cash-node</name>
     <message>
         <source>Options:</source>
         <translation>Опции:</translation>
     </message>
     <message>
-        <source>Bitcoin ABC</source>
-        <translation>Биткоин ABC</translation>
+        <source>Bitcoin Cash Node</source>
+        <translation>Биткоин Cash Node</translation>
     </message>
     <message>
         <source>Warning</source>

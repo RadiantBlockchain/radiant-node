@@ -3959,7 +3959,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of &quot;100 satos
     </message>
 </context>
 <context>
-    <name>bitcoin-abc</name>
+    <name>bitcoin-cash-node</name>
     <message>
         <location filename="../bitcoinstrings.cpp" line="+507"/>
         <source>Options:</source>
@@ -4047,8 +4047,8 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of &quot;100 satos
     </message>
     <message>
         <location line="-594"/>
-        <source>Bitcoin ABC</source>
-        <translation type="unfinished">Bitcoin ABC</translation>
+        <source>Bitcoin Cash Node</source>
+        <translation type="unfinished">Bitcoin Cash Node</translation>
     </message>
     <message>
         <location line="+1"/>
