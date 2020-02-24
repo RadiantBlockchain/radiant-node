@@ -22,12 +22,12 @@ find_library(BDB_LIBRARY
 find_path(BDBXX_INCLUDE_DIR
 	NAMES db_cxx.h
 	HINTS ${BREW_HINT}
-	PATH_SUFFIXES db5
+	PATH_SUFFIXES db5 db5.3
 )
 find_library(BDBXX_LIBRARY
 	NAMES db_cxx libdb_cxx db5_cxx
 	HINTS ${BREW_HINT}
-	PATH_SUFFIXES db5
+	PATH_SUFFIXES db5 db5.3
 )
 
 MESSAGE(STATUS "BerkeleyDB libs: " ${BDB_LIBRARY} " " ${BDBXX_LIBRARY})
