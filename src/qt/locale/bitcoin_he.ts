@@ -1630,7 +1630,7 @@
     <name>WalletView</name>
     </context>
 <context>
-    <name>bitcoin-abc</name>
+    <name>bitcoin-cash-node</name>
     <message>
         <source>Options:</source>
         <translation>אפשרויות:</translation>
@@ -1660,7 +1660,7 @@
         <translation>ריצה כסוכן ברקע וקבלת פקודות</translation>
     </message>
     <message>
-        <source>Bitcoin ABC</source>
+        <source>Bitcoin Cash Node</source>
         <translation>ליבת ביטקוין</translation>
     </message>
     <message>

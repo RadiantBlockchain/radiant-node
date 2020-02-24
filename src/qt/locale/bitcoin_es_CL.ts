@@ -750,7 +750,7 @@
     <name>WalletView</name>
     </context>
 <context>
-    <name>bitcoin-abc</name>
+    <name>bitcoin-cash-node</name>
     <message>
         <source>Options:</source>
         <translation>Opciones:
@@ -772,8 +772,8 @@
 </translation>
     </message>
     <message>
-        <source>Bitcoin ABC</source>
-        <translation>bitcoin abc</translation>
+        <source>Bitcoin Cash Node</source>
+        <translation>bitcoin cash node</translation>
     </message>
     <message>
         <source>Error loading block database</source>
