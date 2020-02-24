@@ -6,14 +6,14 @@ set(CMAKE_USER_MAKE_RULES_OVERRIDE
 	"${CMAKE_SOURCE_DIR}/cmake/modules/OverrideInitFlags.cmake"
 )
 
-project(bitcoin-abc
+project(bitcoin-cash-node
 	VERSION 0.21.0
-	DESCRIPTION "Bitcoin ABC is a full node implementation of the Bitcoin Cash protocol."
+    DESCRIPTION "Bitcoin Cash Node is a full node implementation of the Bitcoin Cash protocol."
 	HOMEPAGE_URL "https://www.bitcoinabc.org"
 )
 
 # Package information
-set(PACKAGE_NAME "Bitcoin ABC")
+set(PACKAGE_NAME "Bitcoin Cash Node")
 
 # Copyright
 set(COPYRIGHT_YEAR 2019)
