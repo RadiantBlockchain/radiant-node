@@ -8,9 +8,9 @@ include(CheckSymbolExists)
 include(CheckCXXSourceCompiles)
 
 # Version
-set(CLIENT_VERSION_MAJOR ${bitcoin-abc_VERSION_MAJOR})
-set(CLIENT_VERSION_MINOR ${bitcoin-abc_VERSION_MINOR})
-set(CLIENT_VERSION_REVISION ${bitcoin-abc_VERSION_PATCH})
+set(CLIENT_VERSION_MAJOR ${bitcoin-cash-node_VERSION_MAJOR})
+set(CLIENT_VERSION_MINOR ${bitcoin-cash-node_VERSION_MINOR})
+set(CLIENT_VERSION_REVISION ${bitcoin-cash-node_VERSION_PATCH})
 
 option(CLIENT_VERSION_IS_RELEASE "Build a release version" OFF)
 
