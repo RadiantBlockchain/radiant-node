@@ -231,7 +231,7 @@ if(ENABLE_BIP70)
 	# Do protobuf codegen
 	find_package(Protobuf REQUIRED)
 	protobuf_generate_cpp(PROTOBUF_SOURCES PROTOBUF_HEADERS paymentrequest.proto)
-	
+
 	add_library(bitcoin-qt-protobuf OBJECT
 		# Protobuf codegen
 			${PROTOBUF_HEADERS}
@@ -353,12 +353,12 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 		OUTPUT_NAME "${BITCOIN_QT_OSX_BUNDLE_NAME}"
 		MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/share/qt/Info.plist.cmake.in"
 		MACOSX_BUNDLE_BUNDLE_NAME "${BITCOIN_QT_OSX_BUNDLE_NAME}"
-		MACOSX_BUNDLE_BUNDLE_VERSION "${bitcoin-abc_VERSION}"
+		MACOSX_BUNDLE_BUNDLE_VERSION "${bitcoin-cash-node_VERSION}"
 		MACOSX_BUNDLE_GUI_IDENTIFIER "org.bitcoinabc.${BITCOIN_QT_OSX_BUNDLE_NAME}"
 		MACOSX_BUNDLE_ICON_FILE "${BITCOINQT_BUNDLE_ICON_NAME}"
-		MACOSX_BUNDLE_INFO_STRING "${bitcoin-abc_VERSION}, Copyright © 2009-${COPYRIGHT_YEAR} ${COPYRIGHT_HOLDERS_FINAL}"
-		MACOSX_BUNDLE_LONG_VERSION_STRING "${bitcoin-abc_VERSION}"
-		MACOSX_BUNDLE_SHORT_VERSION_STRING "${bitcoin-abc_VERSION}"
+		MACOSX_BUNDLE_INFO_STRING "${bitcoin-cash-node_VERSION}, Copyright © 2009-${COPYRIGHT_YEAR} ${COPYRIGHT_HOLDERS_FINAL}"
+		MACOSX_BUNDLE_LONG_VERSION_STRING "${bitcoin-cash-node_VERSION}"
+		MACOSX_BUNDLE_SHORT_VERSION_STRING "${bitcoin-cash-node_VERSION}"
 		RESOURCE "${BITCOINQT_BUNDLE_RESOURCES}"
 	)
 	# The InfoPlist.strings files should be located in a resource subdirectory.
@@ -412,7 +412,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 	get_target_property(QMAKE_EXECUTABLE Qt5::qmake IMPORTED_LOCATION)
 	execute_process(
-		COMMAND 
+		COMMAND
 			"${QMAKE_EXECUTABLE}"
 			-query QT_INSTALL_TRANSLATIONS
 		OUTPUT_VARIABLE
