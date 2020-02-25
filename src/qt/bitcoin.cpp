@@ -496,12 +496,10 @@ static void MigrateSettings() {
     abc.setFallbacksEnabled(false);
     bchn.setFallbacksEnabled(false);
 #endif
-    const QStringList abcKeys(abc.allKeys());
-
-    // We only migrate settings if we have ABC settings but no BitcoinCashNode
-    // settings
-    if (!abcKeys.isEmpty() && bchn.allKeys().isEmpty()) {
-        for (const QString &key : abcKeys) {
+    // We only migrate settings if we have ABC settings but no bchn
+    // settings (first run).
+    if (bchn.allKeys().isEmpty()) {
+        for (const QString &key : abc.allKeys()) {
             // now, copy settings over
             bchn.setValue(key, abc.value(key));
         }
@@ -579,7 +577,7 @@ int GuiMain(int argc, char *argv[]) {
     QApplication::setOrganizationName(QAPP_ORG_NAME);
     QApplication::setOrganizationDomain(QAPP_ORG_DOMAIN);
     QApplication::setApplicationName(QAPP_APP_NAME_DEFAULT);
-    // Migrate settings from Bitcoin ABC to our Bitcoin Cash Node
+    // Migrate GUI settings from Bitcoin ABC to our Bitcoin Cash Node
     // only if ABC's exists but ours doesn't.
     // NOTE -- this function needs to be called *after* the above 3 lines
     // that set the app orgname and app name! If you move the above 3 lines

@@ -32,7 +32,7 @@ class Node;
 } // namespace interfaces
 
 /**
- * Class encapsulating BitcoinCashNode startup and shutdown.
+ * Class encapsulating Bitcoin Cash Node startup and shutdown.
  * Allows running startup and shutdown in a different thread from the UI thread.
  */
 class BitcoinCashNode : public QObject {
