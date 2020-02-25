@@ -1,5 +1,5 @@
 ---
-name: "bitcoin-abc-win"
+name: "bitcoin-cash-node-win"
 enable_cache: true
 distro: "debian"
 suites:
@@ -26,12 +26,12 @@ packages:
 - "zip"
 # FIXME: these dependencies are only required to make CMake happy when building
 # native tools. They can be removed when the `NativeExecutable.cmake` gets
-# improved to avoid requiring all the bitcoin-abc dependencies.
+# improved to avoid requiring all the bitcoin-cash-node dependencies.
 - "libboost-all-dev"
 - "libevent-dev"
 - "libssl-dev"
 remotes:
-- "url": "https://github.com/Bitcoin-ABC/bitcoin-abc.git"
+- "url": "https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node.git"
   "dir": "bitcoin"
 files: []
 script: |
@@ -148,7 +148,7 @@ script: |
     -DENABLE_UPNP=OFF
 
   ninja package_source
-  SOURCEDIST=`echo bitcoin-abc-*.tar.gz`
+  SOURCEDIST=`echo bitcoin-cash-node-*.tar.gz`
   mv ${SOURCEDIST} ..
   popd
   DISTNAME=`echo ${SOURCEDIST} | sed 's/.tar.*//'`
@@ -157,7 +157,7 @@ script: |
   mkdir -p temp
   pushd temp
   tar xf ../$SOURCEDIST
-  find bitcoin-abc-* | sort | tar --no-recursion --mode='u+rw,go+r-w,a+X' --owner=0 --group=0 -c -T - | gzip -9n > ../$SOURCEDIST
+  find bitcoin-cash-node-* | sort | tar --no-recursion --mode='u+rw,go+r-w,a+X' --owner=0 --group=0 -c -T - | gzip -9n > ../$SOURCEDIST
   mkdir -p $OUTDIR/src
   cp ../$SOURCEDIST $OUTDIR/src
   popd
@@ -197,7 +197,7 @@ script: |
 
     ninja package
 
-    cp -f bitcoin-abc-*-setup-unsigned.exe ${OUTDIR}/
+    cp -f bitcoin-cash-node-*-setup-unsigned.exe ${OUTDIR}/
     cd installed
     mkdir -p ${DISTNAME}/lib
     mv ${DISTNAME}/bin/*.dll ${DISTNAME}/lib/
