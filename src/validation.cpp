@@ -229,6 +229,10 @@ private:
         EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 } g_chainstate;
 
+CChain &ChainActive() {
+    return g_chainstate.m_chain;
+}
+
 /**
  * Global state
  *
