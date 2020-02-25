@@ -1,91 +1,262 @@
 image: bitcoincashnode/buildenv:debian
 
 stages:
+    - build_depends
     - build
     - build_tests
     - test
+    - deployment
 
 variables:
     # Don't allow tests to hang
     TRAVIS: 1
 
-default:
-    before_script:
-        - "mkdir -p ccache"
-        - "export CCACHE_BASEDIR=${PWD}"
-        - "export CCACHE_DIR=${PWD}/ccache"
-
-
-cache:
+cache: &global_cache_settings
     paths:
-        - "ccache/"
+        - ccache/
 
-build-debian-stable:
+.ccache_scripts:
+    before_script:
+        - mkdir -p ccache
+        - export CCACHE_BASEDIR=${PWD}
+        - export CCACHE_DIR=${PWD}/ccache
+        - export CCACHE_COMPILERCHECK=content
+        - ccache --zero-stats || true
+
+.cache-debian:
+    extends: .ccache_scripts
+    cache:
+        <<: *global_cache_settings
+        key: debian_cache
+
+.cache-win:
+    extends: .ccache_scripts
+    cache:
+        <<: *global_cache_settings
+        key: win_cache
+        paths:
+            - ccache/
+            - depends/sources
+            - depends/built
+            - depends/x86_64-w64-mingw32
+
+.cache-arm:
+    extends: .ccache_scripts
+    cache:
+        <<: *global_cache_settings
+        key: arm_cache
+        paths:
+            - ccache/
+            - depends/sources
+            - depends/built
+            - depends/arm-linux-gnueabihf
+
+.cache-osx:
+    extends: .ccache_scripts
+    cache:
+        <<: *global_cache_settings
+        key: osx_cache
+        paths:
+            - ccache/
+            - depends/sources
+            - depends/built
+            - depends/x86_64-apple-darwin14
+
+## Debian native build
+
+build-debian:
     stage: build
+    extends: .cache-debian
+    needs: []
     script:
-        - "mkdir build"
-        - "cd build"
-        - "cmake -GNinja .."
+        - mkdir build
+        - cd build
+        - cmake -GNinja ..
+        - ninja
+        - ccache --show-stats
 
-        - "ninja"
-
-        # Show ccache stats
-        - "ccache -s"
     artifacts:
         paths:
             - build
             - test
 
-build-tests-debian-stable:
+build-debian-tests:
     stage: build_tests
+    extends: .cache-debian
+    needs: ["build-debian"]
     script:
-        - "(cd build; ninja test_bitcoin)"
-        - "(cd build; ninja check-bitcoin-qt \
-              check-bitcoin-seeder \
-              check-bitcoin-util \
-              check-devtools \
-              check-leveldb \
-              check-rpcauth \
-              check-secp256k1 \
-              check-univalue)"
+        - (cd build; ninja -t restat)
+        - (cd build; ninja test_bitcoin)
 
-        # Show ccache stats
-        - "ccache -s"
+    artifacts:
+        paths:
+            - ./build/src/test/test_bitcoin
+            - ./build/src/lib*
+    dependencies:
+        - build-debian
+
+test-debian-unittests:
+    stage: test
+    cache: {}
+    needs: ["build-debian-tests"]
+    script:
+        - ./build/src/test/test_bitcoin
+    dependencies:
+        - build-debian-tests
+
+test-debian-unittests_post_phonon:
+    stage: test
+    extends: .cache-debian
+    needs: ["build-debian-tests"]
+    script:
+        - ./build/src/test/test_bitcoin -- -phononactivationtime=1575158400
+    dependencies:
+        - build-debian-tests
+
+test-debian-utils:
+    stage: test
+    extends: .cache-debian
+    needs: ["build-debian"]
+    script:
+        - (cd build; ninja -t restat)
+        - (cd build; ninja check-bitcoin-qt
+              check-bitcoin-seeder
+              check-bitcoin-util
+              check-devtools
+              check-leveldb
+              check-rpcauth
+              check-secp256k1
+              check-univalue)
+        - ccache --show-stats
+    dependencies:
+        - build-debian
+
+test-debian-functional:
+    stage: test
+    extends: .cache-debian
+    needs: ["build-debian"]
+    script:
+        - (cd build; ninja -t restat)
+        - (cd build; ninja check-functional)
+        - ccache --show-stats
+    dependencies:
+        - build-debian
+
+test-debian-functional_post_phonon:
+    stage: test
+    cache: {}
+    needs: ["build-debian"]
+    script:
+        - (cd build; ninja -t restat)
+        - (cd build; ninja check-functional-upgrade-activated)
+        - ccache --show-stats
+    dependencies:
+        - build-debian
+
+deploy-debian:
+    stage: deployment
+    extends: .cache-debian
+    needs: ["build-debian"]
+    script:
+        - (cd build; ninja -t restat)
+        - (cd build; ninja package)
+        - ccache --show-stats
+    dependencies:
+        - build-debian
+
+## Debian native build without wallet
+
+build-debian-nowallet:
+    stage: build
+    extends: .cache-debian
+    needs: []
+    script:
+        - mkdir build
+        - cd build
+        - cmake -GNinja .. -DBUILD_BITCOIN_WALLET=OFF
+        - ninja
+        - ccache --show-stats
+
     artifacts:
         paths:
             - build
-            - test
-    dependencies:
-        - build-debian-stable
 
-test_bitcoin:
+build-debian-nowallet-tests:
+    stage: build_tests
+    extends: .cache-debian
+    needs: ["build-debian-nowallet"]
+    script:
+        - (cd build; ninja -t restat)
+        - (cd build; ninja test_bitcoin)
+
+    artifacts:
+        paths:
+            - ./build/src/test/test_bitcoin
+            - ./build/src/lib*
+    dependencies:
+        - build-debian-nowallet
+
+test-debian-nowallet-unittests:
     stage: test
     cache: {}
+    needs: ["build-debian-nowallet-tests"]
     script:
-        - "./build/src/test/test_bitcoin"
+        - ./build/src/test/test_bitcoin
     dependencies:
-        - build-tests-debian-stable
+        - build-debian-nowallet-tests
 
-test_bitcoin_post_phonon:
-    stage: test
-    cache: {}
+
+## Windows build
+
+build-win-64-depends:
+    stage: build_depends
+    extends: .cache-win
     script:
-        - "./build/src/test/test_bitcoin -- -phononactivationtime=1575158400"
-    dependencies:
-        - build-tests-debian-stable
+        - (cd depends; make build-win64 HOST=x86_64-w64-mingw32 NO_QT=1 JOBS=`nproc`)
+    artifacts:
+        paths:
+            - depends/x86_64-w64-mingw32
 
-test_functional:
-    stage: test
-
+build-win-64:
+    stage: build
+    extends: .cache-win
+    needs: ["build-win-64-depends"]
     script:
-        - "(cd build; ninja check-functional)"
+        - mkdir build_win
+        - cd build_win
+        - cmake -GNinja .. -DBUILD_BITCOIN_QT=OFF
+                           -DBUILD_BITCOIN_SEEDER=OFF
+                           -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/Win64.cmake
+        - ninja
+        - ccache --show-stats
     dependencies:
-        - build-tests-debian-stable
+        - build-win-64-depends
 
-test_functional_post_phonon:
-    stage: test
+## ARM build
+
+build-arm-depends:
+    stage: build_depends
+    extends: .cache-arm
     script:
-        - "(cd build; ninja check-functional-upgrade-activated)"
-    dependencies:
-        - build-tests-debian-stable
+        - (cd depends; make build-linux-arm
+            HOST=aarch64-linux-gnu NO_QT=1 JOBS=`nproc`)
+    artifacts:
+        paths:
+            - depends/arm-linux-gnueabihf
 
+build-arm:
+    stage: build
+    extends: .cache-arm
+    needs: ["build-arm-depends"]
+    script:
+        - mkdir build_arm
+        - cd build_arm
+        - cmake -GNinja .. -DBUILD_BITCOIN_QT=OFF
+                           -DBUILD_BITCOIN_SEEDER=OFF
+                           -DENABLE_GLIBC_BACK_COMPAT=ON
+                           -DENABLE_STATIC_LIBSTDCXX=ON
+                           -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/LinuxARM.cmake
+        - ninja
+        - ccache --show-stats
+    dependencies:
+        - build-arm-depends
