@@ -12,7 +12,7 @@
 /** Translate string to current locale using Qt. */
 extern const std::function<std::string(const char *)> G_TRANSLATION_FUN =
     [](const char *psz) {
-        return QCoreApplication::translate("bitcoin-abc", psz).toStdString();
+        return QCoreApplication::translate("bitcoin-cash-node", psz).toStdString();
     };
 
 int main(int argc, char *argv[]) {

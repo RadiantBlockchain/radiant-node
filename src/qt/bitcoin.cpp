@@ -153,14 +153,14 @@ void DebugMessageHandler(QtMsgType type, const QMessageLogContext &context,
     }
 }
 
-BitcoinABC::BitcoinABC(interfaces::Node &node) : QObject(), m_node(node) {}
+BitcoinCashNode::BitcoinCashNode(interfaces::Node &node) : QObject(), m_node(node) {}
 
-void BitcoinABC::handleRunawayException(const std::exception *e) {
+void BitcoinCashNode::handleRunawayException(const std::exception *e) {
     PrintExceptionContinue(e, "Runaway exception");
     Q_EMIT runawayException(QString::fromStdString(m_node.getWarnings("gui")));
 }
 
-void BitcoinABC::initialize(Config *config, RPCServer *rpcServer,
+void BitcoinCashNode::initialize(Config *config, RPCServer *rpcServer,
                             HTTPRPCRequestProcessor *httpRPCRequestProcessor) {
     try {
         qDebug() << __func__ << ": Running initialization in thread";
@@ -174,7 +174,7 @@ void BitcoinABC::initialize(Config *config, RPCServer *rpcServer,
     }
 }
 
-void BitcoinABC::shutdown() {
+void BitcoinCashNode::shutdown() {
     try {
         qDebug() << __func__ << ": Running Shutdown in thread";
         m_node.appShutdown();
@@ -270,15 +270,15 @@ void BitcoinApplication::startThread() {
         return;
     }
     coreThread = new QThread(this);
-    BitcoinABC *executor = new BitcoinABC(m_node);
+    BitcoinCashNode *executor = new BitcoinCashNode(m_node);
     executor->moveToThread(coreThread);
 
     /*  communication to and from thread */
-    connect(executor, &BitcoinABC::initializeResult, this,
+    connect(executor, &BitcoinCashNode::initializeResult, this,
             &BitcoinApplication::initializeResult);
-    connect(executor, &BitcoinABC::shutdownResult, this,
+    connect(executor, &BitcoinCashNode::shutdownResult, this,
             &BitcoinApplication::shutdownResult);
-    connect(executor, &BitcoinABC::runawayException, this,
+    connect(executor, &BitcoinCashNode::runawayException, this,
             &BitcoinApplication::handleRunawayException);
 
     // Note on how Qt works: it tries to directly invoke methods if the signal
@@ -295,10 +295,10 @@ void BitcoinApplication::startThread() {
     // crash because initialize() gets executed in another thread at some
     // unspecified time (after) requestedInitialize() is emitted!
     connect(this, &BitcoinApplication::requestedInitialize, executor,
-            &BitcoinABC::initialize);
+            &BitcoinCashNode::initialize);
 
     connect(this, &BitcoinApplication::requestedShutdown, executor,
-            &BitcoinABC::shutdown);
+            &BitcoinCashNode::shutdown);
     /*  make sure executor object is deleted in its own thread */
     connect(this, &BitcoinApplication::stopThread, executor,
             &QObject::deleteLater);
@@ -474,36 +474,34 @@ static void SetupUIArgs() {
 static void MigrateSettings() {
     assert(!QApplication::applicationName().isEmpty());
 
-    static const QString legacyAppName("Bitcoin-Qt"),
+    static const QString abcAppName("BitcoinABC-Qt"),
 #ifdef Q_OS_DARWIN
         // Macs and/or iOS et al use a domain-style name for Settings
         // files. All other platforms use a simple orgname. This
         // difference is documented in the QSettings class documentation.
-        legacyOrg("bitcoin.org");
+        abcOrg("bitcoinabc.org");
 #else
-        legacyOrg("Bitcoin");
+        abcOrg("BitcoinABC");
 #endif
     QSettings
         // below picks up settings file location based on orgname,appname
-        legacy(legacyOrg, legacyAppName),
+        abc(abcOrg, abcAppName),
         // default c'tor below picks up settings file location based on
         // QApplication::applicationName(), et al -- which was already set
         // in main()
-        abc;
+        bchn;
 #ifdef Q_OS_DARWIN
     // Disable bogus OSX keys from MacOS system-wide prefs that may cloud our
     // judgement ;) (this behavior is also documented in QSettings docs)
-    legacy.setFallbacksEnabled(false);
     abc.setFallbacksEnabled(false);
+    bchn.setFallbacksEnabled(false);
 #endif
-    const QStringList legacyKeys(legacy.allKeys());
-
-    // We only migrate settings if we have Core settings but no Bitcoin-ABC
-    // settings
-    if (!legacyKeys.isEmpty() && abc.allKeys().isEmpty()) {
-        for (const QString &key : legacyKeys) {
+    // We only migrate settings if we have ABC settings but no bchn
+    // settings (first run).
+    if (bchn.allKeys().isEmpty()) {
+        for (const QString &key : abc.allKeys()) {
             // now, copy settings over
-            abc.setValue(key, legacy.value(key));
+            bchn.setValue(key, abc.value(key));
         }
     }
 }
@@ -579,8 +577,8 @@ int GuiMain(int argc, char *argv[]) {
     QApplication::setOrganizationName(QAPP_ORG_NAME);
     QApplication::setOrganizationDomain(QAPP_ORG_DOMAIN);
     QApplication::setApplicationName(QAPP_APP_NAME_DEFAULT);
-    // Migrate settings from core's/our old GUI settings to Bitcoin ABC
-    // only if core's exist but Bitcoin ABC's doesn't.
+    // Migrate GUI settings from Bitcoin ABC to our Bitcoin Cash Node
+    // only if ABC's exists but ours doesn't.
     // NOTE -- this function needs to be called *after* the above 3 lines
     // that set the app orgname and app name! If you move the above 3 lines
     // to elsewhere, take this call with you!

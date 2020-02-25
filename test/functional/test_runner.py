@@ -181,7 +181,7 @@ def main():
                         default=os.path.join(build_dir, 'test', 'tmp'), help="Root directory for datadirs")
     parser.add_argument('--junitoutput', '-J', default='junit_results.xml',
                         help="File that will store JUnit formatted test results. If no absolute path is given it is treated as relative to the temporary directory.")
-    parser.add_argument('--testsuitename', '-n', default='Bitcoin ABC functional tests',
+    parser.add_argument('--testsuitename', '-n', default='Bitcoin Cash Node functional tests',
                         help="Name of the test suite, as it will appear in the logs and in the JUnit report.")
 
     args, unknown_args = parser.parse_known_args()
