@@ -86,6 +86,7 @@ TEST_PARAMS = {
 # we only run a test if its execution time in seconds does not exceed
 # EXTENDED_CUTOFF
 DEFAULT_EXTENDED_CUTOFF = 40
+DEFAULT_STARTFROM = 0
 DEFAULT_JOBS = (multiprocessing.cpu_count() // 3) + 1
 
 
@@ -167,6 +168,8 @@ def main():
                         help='run the extended test suite in addition to the basic tests')
     parser.add_argument('--cutoff', type=int, default=DEFAULT_EXTENDED_CUTOFF,
                         help='set the cutoff runtime for what tests get run')
+    parser.add_argument('--startfrom', type=int, default=DEFAULT_STARTFROM,
+                        help='inverse of cutoff, only execute tests with at least this runtime')
     parser.add_argument('--force', '-f', action='store_true',
                         help='run tests even on platforms where they are disabled by default (e.g. windows).')
     parser.add_argument('--help', '-h', '-?',
@@ -254,13 +257,24 @@ def main():
 
         # do not cut off explicitly specified tests
         cutoff = sys.maxsize
+        startfrom = 0
     else:
         # No individual tests have been specified.
         # Run all tests that do not exceed
         test_list = all_scripts
-        cutoff = args.cutoff
+
+        if args.startfrom != DEFAULT_STARTFROM and args.cutoff == DEFAULT_EXTENDED_CUTOFF:
+            cutoff = sys.maxsize
+        else:
+            cutoff = args.cutoff
+        startfrom = args.startfrom
+
         if args.extended:
             cutoff = sys.maxsize
+            startfrom = 0
+
+        if startfrom > cutoff:
+            raise Exception("--startfrom > --cutoff")
 
     # Remove the test cases that the user has explicitly asked to exclude.
     if args.exclude:
@@ -285,7 +299,7 @@ def main():
 
     # Add test parameters and remove long running tests if needed
     test_list = get_tests_to_run(
-        test_list, TEST_PARAMS, cutoff, src_timings)
+        test_list, TEST_PARAMS, cutoff, startfrom, src_timings)
 
     if not test_list:
         print("No valid test scripts specified. Check that your test is in one "
@@ -592,9 +606,10 @@ def get_all_scripts_from_disk(test_dir, non_scripts):
     return list(python_files - set(non_scripts))
 
 
-def get_tests_to_run(test_list, test_params, cutoff, src_timings):
+def get_tests_to_run(test_list, test_params, cutoff, startfrom, src_timings):
     """
     Returns only test that will not run longer that cutoff.
+    Returns only tests that will run at least startfrom.
     Long running tests are returned first to favor running tests in parallel
     Timings from build directory override those from src directory
     """
@@ -615,7 +630,12 @@ def get_tests_to_run(test_list, test_params, cutoff, src_timings):
             tests_with_params.extend(
                 [test_name + " " + " ".join(p) for p in params])
 
-    result = [t for t in tests_with_params if get_test_time(t) <= cutoff]
+    result = [ ]
+    for t in tests_with_params:
+        runtime = get_test_time(t)
+        if runtime <= cutoff and runtime > startfrom:
+            result.append(t)
+
     result.sort(key=lambda x: (-get_test_time(x), x))
     return result
 
