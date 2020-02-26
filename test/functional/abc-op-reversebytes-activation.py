@@ -61,7 +61,8 @@ class OpReversebytesActivationTest(BitcoinTestFramework):
         Helper to connect and wait for version handshake."""
         for _ in range(num_connections):
             self.nodes[0].add_p2p_connection(P2PDataStore())
-        self.nodes[0].p2p.wait_for_verack()
+        for p2p in self.nodes[0].p2ps:
+            p2p.wait_for_getheaders()
 
     def reconnect_p2p(self, **kwargs):
         """Tear down and bootstrap the P2P connection to the node.
