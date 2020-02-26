@@ -96,7 +96,7 @@ fi
 
 # Fetch remote tags and make sure the tag exists
 cd "${SCRIPT_PATH}"
-GIT_REPO="https://${OAUTH_TOKEN}@github.com/bitcoin-abc/bitcoin-abc.git"
+GIT_REPO="https://${OAUTH_TOKEN}@github.com/bitcoin-cash-node/bitcoin-cash-node.git"
 git fetch "${GIT_REPO}" tag "${TAG}" || (echo "Error: Remote does not have tag '${TAG}'." && exit 20)
 cd "${ORIGINAL_PWD}"
 
@@ -110,17 +110,17 @@ fi
 ASSET_LIST=()
 if [ -d "${ASSET_DIR}" ]; then
   # Linux binaries
-  ASSET_LIST+=("${ASSET_DIR}/linux/bitcoin-abc-${VERSION}-aarch64-linux-gnu.tar.gz")
-  ASSET_LIST+=("${ASSET_DIR}/linux/bitcoin-abc-${VERSION}-arm-linux-gnueabihf.tar.gz")
-  ASSET_LIST+=("${ASSET_DIR}/linux/bitcoin-abc-${VERSION}-i686-pc-linux-gnu.tar.gz")
-  ASSET_LIST+=("${ASSET_DIR}/linux/bitcoin-abc-${VERSION}-x86_64-linux-gnu.tar.gz")
+  ASSET_LIST+=("${ASSET_DIR}/linux/bitcoin-cash-node-${VERSION}-aarch64-linux-gnu.tar.gz")
+  ASSET_LIST+=("${ASSET_DIR}/linux/bitcoin-cash-node-${VERSION}-arm-linux-gnueabihf.tar.gz")
+  ASSET_LIST+=("${ASSET_DIR}/linux/bitcoin-cash-node-${VERSION}-i686-pc-linux-gnu.tar.gz")
+  ASSET_LIST+=("${ASSET_DIR}/linux/bitcoin-cash-node-${VERSION}-x86_64-linux-gnu.tar.gz")
 
   # OSX binaries
-  ASSET_LIST+=("${ASSET_DIR}/osx/bitcoin-abc-${VERSION}-osx-unsigned.dmg")
+  ASSET_LIST+=("${ASSET_DIR}/osx/bitcoin-cash-node-${VERSION}-osx-unsigned.dmg")
 
   # Windows binaries
-  ASSET_LIST+=("${ASSET_DIR}/win/bitcoin-abc-${VERSION}-win32-setup-unsigned.exe")
-  ASSET_LIST+=("${ASSET_DIR}/win/bitcoin-abc-${VERSION}-win64-setup-unsigned.exe")
+  ASSET_LIST+=("${ASSET_DIR}/win/bitcoin-cash-node-${VERSION}-win32-setup-unsigned.exe")
+  ASSET_LIST+=("${ASSET_DIR}/win/bitcoin-cash-node-${VERSION}-win64-setup-unsigned.exe")
 
   for FILENAME in "${ASSET_LIST[@]}"; do
     if [ ! -f "${FILENAME}" ]; then
@@ -150,7 +150,7 @@ fi
 
 # Format request data
 POST_DATA="{\"tag_name\": \"${TAG}\", \"name\": \"${VERSION}\", \"body\": ${RELEASE_NOTES}, \"draft\": true}"
-URL="https://api.github.com/repos/bitcoin-abc/bitcoin-abc/releases"
+URL="https://api.github.com/repos/bitcoin-cash-node/bitcoin-cash-node/releases"
 
 if [ "${DRY_RUN}" == "true" ]; then
   echo "POST request data that would be sent to '${URL}':"
@@ -164,7 +164,7 @@ else
   echo "Requesting '${URL}'..."
   RESPONSE=$(curl -X POST -H "Content-Type: application/json" -H "Authorization: token ${OAUTH_TOKEN}" -d "${POST_DATA}" "${URL}")
   RELEASE_ID=$(echo "${RESPONSE}" | jq '.id')
-  UPLOAD_URL="https://uploads.github.com/repos/bitcoin-abc/bitcoin-abc/releases/${RELEASE_ID}/assets"
+  UPLOAD_URL="https://uploads.github.com/repos/bitcoin-cash-node/bitcoin-cash-node/releases/${RELEASE_ID}/assets"
 
   echo "Uploading assets..."
   if [ ${#ASSET_LIST[@]} -gt 0 ]; then
@@ -179,4 +179,4 @@ else
 fi
 
 echo "Done."
-echo "https://github.com/Bitcoin-ABC/bitcoin-abc/releases/tag/${TAG}"
+echo "https://github.com/bitcoin-cash-node/bitcoin-cash-node/releases/tag/${TAG}"
