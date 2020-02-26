@@ -1,3 +1,6 @@
+Release Notes for Bitcoin Cash Node version 0.21.0
+==================================================
+
 Bitcoin Cash Node version 0.21.0 is now available from:
 
   <https://bitcoincashnode.org>
@@ -35,3 +38,19 @@ At the MTP time of 1589544000 (May 15, 2020 12:00:00 UTC) the following behavior
   - The default for max number of in-pool descendants (`-limitdescendantcount`) is changed from 25 to 50.
   - OP_REVERSEBYTES support in script.
   - New SigOps counting method (SigChecks) as standardness and consensus rules.
+
+Usage recommendations
+---------------------
+
+We recommend Bitcoin Cash Node 0.21.0 as a drop-in replacement for ABC 0.21.0.
+
+The files in this release contain some resource links such as email addresses
+(e.g. info@bitcoincashnode.org) which are still being brought into operation and
+may be unavailable for some time after the initial release. We ask for your
+patience and will advise when ready via the project's communication channels
+(website, Slack, Telegram, Twitter, Reddit).
+
+Regressions
+-----------
+
+Bitcoin Cash Node 0.21.0 does not introduce any known regressions compared to ABC 0.21.0.
