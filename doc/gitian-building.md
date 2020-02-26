@@ -1,17 +1,17 @@
 Gitian building
 ===============
 
-*Setup instructions for a Gitian build of Bitcoin ABC using a VM or physical system.*
+*Setup instructions for a Gitian build of Bitcoin Cash Node using a VM or physical system.*
 
 Gitian is the deterministic build process that is used to build the Bitcoin
-ABC executables. It provides a way to be reasonably sure that the
+Cash Node executables. It provides a way to be reasonably sure that the
 executables are really built from the source on GitHub. It also makes sure that
 the same, tested dependencies are used and statically built into the executable.
 
 Multiple developers build the source code by following a specific descriptor
 ("recipe"), cryptographically sign the result, and upload the resulting signature.
 These results are compared and only if they match, the build is accepted and
-uploaded to bitcoinabc.org.
+uploaded to bitcoincashnode.org.
 
 More independent Gitian builders are needed, which is why this guide exists.
 It is preferred you follow these steps yourself instead of using someone else's
@@ -57,7 +57,7 @@ You can check the version with `lxc-execute --version`.
 
 Non-Debian / Ubuntu, Manual and Offline Building
 ------------------------------------------------
-The instructions below use the automated script [gitian-build.py](https://github.com/Bitcoin-ABC/bitcoin-abc/blob/master/contrib/gitian-build.py) which only works in Debian/Ubuntu. For manual steps and instructions for fully offline signing, see [this guide](./gitian-building/gitian-building-manual.md).
+The instructions below use the automated script [gitian-build.py](https://github.com/bitcoin-cash-node/bitcoin-cash-node/blob/master/contrib/gitian-build.py) which only works in Debian/Ubuntu. For manual steps and instructions for fully offline signing, see [this guide](./gitian-building/gitian-building-manual.md).
 
 MacOS code signing
 ------------------
@@ -80,16 +80,16 @@ Initial Gitian Setup
 The `gitian-build.py` script will checkout different release tags, so it's best to copy it:
 
 ```bash
-cp bitcoin-abc/contrib/gitian-build.py .
+cp bitcoin-cash-node/contrib/gitian-build.py .
 ```
 
 You only need to do this once:
 
 ```bash
-./gitian-build.py --setup satoshi 0.18.5
+./gitian-build.py --setup satoshi 0.21.0
 ```
 
-Where `satoshi` is your Github name and `0.18.5` is the most recent tag (without `v`). 
+Where `satoshi` is your Gitlab name and `0.21.0` is the most recent tag (without `v`). 
 
 Build binaries
 --------------
@@ -98,7 +98,7 @@ Windows and macOS have code signed binaries, but those won't be available until 
 To build the most recent tag:
 
 ```bash
-./gitian-build.py --detach-sign --no-commit -b satoshi 0.18.5
+./gitian-build.py --detach-sign --no-commit -b satoshi 0.21.0
 ```
 
 To speed up the build, use `-j 5 -m 5000` as the first arguments, where `5` is the number of CPU's you allocated to the VM plus one, and 5000 is a little bit less than then the MB's of RAM you allocated.
@@ -109,7 +109,7 @@ You need to copy these uncommited changes to your host machine, where you can si
 
 ```bash
 export NAME=satoshi
-gpg --output $VERSION-linux/$NAME/bitcoin-abc-linux-0.18.5-build.assert.sig --detach-sign 0.18.5-linux/$NAME/bitcoin-abc-linux-0.18.5-build.assert 
-gpg --output $VERSION-osx-unsigned/$NAME/bitcoin-abc-osx-0.18.5-build.assert.sig --detach-sign 0.18.5-osx-unsigned/$NAME/bitcoin-abc-osx-0.18.5-build.assert 
-gpg --output $VERSION-win-unsigned/$NAME/bitcoin-abc-win-0.18.5-build.assert.sig --detach-sign 0.18.5-win-unsigned/$NAME/bitcoin-abc-win-0.18.5-build.assert 
+gpg --output $VERSION-linux/$NAME/bitcoin-cash-node-linux-0.21.0-build.assert.sig --detach-sign 0.21.0-linux/$NAME/bitcoin-cash-node-linux-0.21.0-build.assert 
+gpg --output $VERSION-osx-unsigned/$NAME/bitcoin-cash-node-osx-0.21.0-build.assert.sig --detach-sign 0.21.0-osx-unsigned/$NAME/bitcoin-cash-node-osx-0.21.0-build.assert 
+gpg --output $VERSION-win-unsigned/$NAME/bitcoin-cash-node-win-0.21.0-build.assert.sig --detach-sign 0.21.0-win-unsigned/$NAME/bitcoin-cash-node-win-0.21.0-build.assert 
 ```

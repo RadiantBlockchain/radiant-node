@@ -260,7 +260,7 @@ that run in `-regtest` mode.
 
 ### DEBUG_LOCKORDER
 
-Bitcoin ABC is a multi-threaded application, and deadlocks or other
+Bitcoin Cash Node is a multi-threaded application, and deadlocks or other
 multi-threading bugs can be very difficult to track down. The `--enable-debug`
 configure option adds `-DDEBUG_LOCKORDER` to the compiler flags. This inserts
 run-time checks to keep track of which locks are held, and adds warnings to the
@@ -299,7 +299,7 @@ make cov
 
 ### Sanitizers
 
-Bitcoin ABC can be compiled with various "sanitizers" enabled, which add
+Bitcoin Cash Node can be compiled with various "sanitizers" enabled, which add
 instrumentation for issues regarding things like memory safety, thread race
 conditions, or undefined behavior. This is controlled with the
 `--with-sanitizers` configure flag, which should be a comma separated list of

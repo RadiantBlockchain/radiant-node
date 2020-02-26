@@ -1,6 +1,6 @@
 UNIX BUILD NOTES
 ====================
-Some notes on how to build Bitcoin ABC in Unix.
+Some notes on how to build Bitcoin Cash Node in Unix.
 
 (For FreeBSD specific instructions, see `build-freebsd.md` in this directory.)
 
@@ -50,7 +50,7 @@ Memory Requirements
 --------------------
 
 C++ compilers are memory-hungry. It is recommended to have at least 1.5 GB of
-memory available when compiling Bitcoin ABC. On systems with less, gcc can be
+memory available when compiling Bitcoin Cash Node. On systems with less, gcc can be
 tuned to conserve memory with additional CXXFLAGS:
 
     cmake -GNinja .. -DCXXFLAGS="--param ggc-min-expand=1 --param ggc-min-heapsize=32768"
@@ -95,7 +95,7 @@ BerkeleyDB 5.3 or later is required for the wallet. This can be installed with:
 
         sudo apt-get install libdb-dev libdb++-dev
 
-See the section "Disable-wallet mode" to build Bitcoin ABC without wallet.
+See the section "Disable-wallet mode" to build Bitcoin Cash Node without wallet.
 
 Minipupnc dependencies (can be disabled by passing `-DENABLE_UPNP=OFF` on the cmake command line):
 
@@ -164,7 +164,7 @@ For documentation on building Boost look at their official documentation: http:/
 
 Security
 --------
-To help make your Bitcoin ABC installation more secure by making certain attacks impossible to
+To help make your Bitcoin Cash Node installation more secure by making certain attacks impossible to
 exploit even if a vulnerability is found, binaries are hardened by default.
 This can be disabled by passing `-DENABLE_HARDENING=OFF`.
 
@@ -188,7 +188,7 @@ Hardening enables the following features:
       ET_DYN
 
 * _Non-executable Stack_: If the stack is executable then trivial stack-based buffer overflow exploits are possible if
-    vulnerable buffers are found. By default, Bitcoin ABC should be built with a non-executable stack,
+    vulnerable buffers are found. By default, Bitcoin Cash Node should be built with a non-executable stack,
     but if one of the libraries it uses asks for an executable stack or someone makes a mistake
     and uses a compiler extension which requires an executable stack, it will silently build an
     executable without the non-executable stack protection.
@@ -206,7 +206,7 @@ Hardening enables the following features:
 
 Disable-wallet mode
 --------------------
-When the intention is to run only a P2P node without a wallet, Bitcoin ABC may be compiled in
+When the intention is to run only a P2P node without a wallet, Bitcoin Cash Node may be compiled in
 disable-wallet mode by passing `-DBUILD_BITCOIN_WALLET=OFF` on the cmake command line.
 
 Mining is also possible in disable-wallet mode using the `getblocktemplate` RPC call.
@@ -221,8 +221,8 @@ Setup and Build Example: Arch Linux
 This example lists the steps necessary to setup and build a command line only, non-wallet distribution of the latest changes on Arch Linux:
 
     pacman -S boost cmake git libevent ninja python
-    git clone https://github.com/Bitcoin-ABC/bitcoin-abc.git
-    cd bitcoin-abc/
+    git clone https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node.git
+    cd bitcoin-cash-node/
     mkdir build
     cd build
     cmake -GNinja .. -DBUILD_BITCOIN_WALLET=OFF -DBUILD_BITCOIN_QT=OFF -DENABLE_UPNP=OFF -DBUILD_BITCOIN_ZMQ=OFF

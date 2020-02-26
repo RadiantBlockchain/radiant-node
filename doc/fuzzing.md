@@ -1,5 +1,5 @@
-Fuzz-testing Bitcoin ABC
-==========================
+Fuzz-testing Bitcoin Cash Node
+==============================
 
 A special test harness in `src/test/fuzz/` is provided for each fuzz target to
 provide an easy entry point for fuzzers and the like. In this document we'll
@@ -20,7 +20,7 @@ export AFLPATH=$PWD
 
 ### Instrumentation
 
-To build Bitcoin ABC using AFL instrumentation (this assumes that the
+To build Bitcoin Cash Node using AFL instrumentation (this assumes that the
 `AFLPATH` was set as above):
 ```
 mkdir -p buildFuzzer
