@@ -78,7 +78,6 @@ build-debian:
     artifacts:
         paths:
             - build
-            - test
 
 build-debian-tests:
     stage: build_tests
@@ -141,6 +140,10 @@ test-debian-functional:
         - ccache --show-stats
     dependencies:
         - build-debian
+    artifacts:
+        paths:
+            - build/test/tmp
+        expire_in: 30 days
 
 test-debian-functional_post_phonon:
     stage: test
@@ -152,6 +155,10 @@ test-debian-functional_post_phonon:
         - ccache --show-stats
     dependencies:
         - build-debian
+    artifacts:
+        paths:
+            - build/test/tmp
+        expire_in: 30 days
 
 deploy-debian:
     stage: deployment
