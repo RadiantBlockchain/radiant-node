@@ -713,9 +713,9 @@ def save_results_as_junit(test_results, file_name, time, test_suite_name):
                                      }
                                     )
         if test_result.status == "Skipped":
-            ET.SubElement(e_test_case, "skipped")
+            ET.SubElement(e_test_case, "skipped", {"message": "skipped"}).text = "skipped"
         elif test_result.status == "Failed":
-            ET.SubElement(e_test_case, "failure")
+            ET.SubElement(e_test_case, "failure", {"message": "failure"}).text = test_result.stderr or test_result.stdout or "<no output>"
         # no special element for passed tests
 
         ET.SubElement(e_test_case, "system-out").text = test_result.stdout
