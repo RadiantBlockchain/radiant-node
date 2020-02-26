@@ -23,9 +23,9 @@ Build-Depends: debhelper,
  libprotobuf-dev, protobuf-compiler,
  python
 Standards-Version: 3.9.2
-Homepage: https://bitcoinabc.org/
-Vcs-Git: ssh://vcs@reviews.bitcoinabc.org:2221/source/bitcoin-abc.git
-Vcs-Browser: https://reviews.bitcoinabc.org/source/bitcoin-abc/
+Homepage: https://bitcoincashnode.org/
+Vcs-Git: https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node.git
+Vcs-Browser: https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node
 
 Package: bitcoind
 Architecture: any
