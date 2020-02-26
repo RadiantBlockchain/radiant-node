@@ -121,3 +121,7 @@ contrib/devtools/split-debug.sh
 
 # vagrant
 .vagrant
+
+
+#dev environment
+nbproject/
