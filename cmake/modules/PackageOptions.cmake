@@ -1,9 +1,9 @@
 # Package options
 set(CPACK_PACKAGE_VENDOR "${COPYRIGHT_HOLDERS_FINAL}")
-set(CPACK_PACKAGE_DESCRIPTION "Bitcoin ABC is a Bitcoin Cash full node implementation.")
+set(CPACK_PACKAGE_DESCRIPTION "Bitcoin Cash Node is a Bitcoin Cash full node implementation.")
 set(CPACK_PACKAGE_HOMEPAGE_URL "${PROJECT_HOMEPAGE_URL}")
 
-set(CPACK_PACKAGE_INSTALL_DIRECTORY "Bitcoin-abc")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "Bitcoin-Cash-Node")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/COPYING")
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_SOURCE_DIR}/doc/README_windows.txt")
 
@@ -16,7 +16,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	set(CPACK_GENERATOR "NSIS;ZIP")
 	set(CPACK_INSTALLED_DIRECTORIES "${CMAKE_SOURCE_DIR}/doc" doc)
 else()
-	set(CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}/share/pixmaps/bitcoin-abc128.png")
+	set(CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}/share/pixmaps/bitcoin128.png")
 	set(CPACK_GENERATOR "TGZ")
 endif()
 
@@ -33,10 +33,10 @@ Include(InstallationHelper)
 set(CPACK_NSIS_EXECUTABLES_DIRECTORY "${CMAKE_INSTALL_BINDIR}")
 set(_nsis_bitcoin_qt "bitcoin-qt.exe")
 
-set(CPACK_NSIS_URL_INFO_ABOUT "${BITCOINABC_HOMEPAGE_URL}")
-set(CPACK_NSIS_CONTACT "info@bitcoinabc.org")
+set(CPACK_NSIS_URL_INFO_ABOUT "https://bitcoincashnode.org")
+set(CPACK_NSIS_CONTACT "info@bitcoincashnode.org")
 
-set(CPACK_NSIS_MUI_ICON "${CMAKE_SOURCE_DIR}/share/pixmaps/bitcoin-abc.ico")
+set(CPACK_NSIS_MUI_ICON "${CMAKE_SOURCE_DIR}/share/pixmaps/bitcoin.ico")
 set(CPACK_NSIS_MUI_UNIICON "${CPACK_NSIS_MUI_ICON}")
 set(CPACK_NSIS_MUI_WELCOMEFINISHPAGE_BITMAP "${CMAKE_SOURCE_DIR}/share/pixmaps/nsis-wizard.bmp")
 set(CPACK_NSIS_MUI_UNWELCOMEFINISHPAGE_BITMAP "${CPACK_NSIS_MUI_WELCOMEFINISHPAGE_BITMAP}")
@@ -56,7 +56,7 @@ macro(add_start_menu_link LINK_NAME EXE PARAMETERS ICON_EXE ICON_INDEX)
 	)
 endmacro()
 
-set(CPACK_NSIS_MENU_LINKS "${CMAKE_INSTALL_BINDIR}/${_nsis_bitcoin_qt}" "Bitcoin ABC")
+set(CPACK_NSIS_MENU_LINKS "${CMAKE_INSTALL_BINDIR}/${_nsis_bitcoin_qt}" "Bitcoin Cash Node")
 add_start_menu_link("${PACKAGE_NAME} (testnet)"
 	"${_nsis_bitcoin_qt}"
 	"-testnet"
