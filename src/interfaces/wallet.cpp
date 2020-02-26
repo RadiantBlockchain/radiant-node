@@ -315,8 +315,8 @@ namespace {
             if (mi == m_wallet.mapWallet.end()) {
                 return false;
             }
-            num_blocks = ::chainActive.Height();
-            block_time = ::chainActive.Tip()->GetBlockTime();
+            num_blocks = ::ChainActive().Height();
+            block_time = ::ChainActive().Tip()->GetBlockTime();
             tx_status = MakeWalletTxStatus(*locked_chain, mi->second);
             return true;
         }
@@ -328,7 +328,7 @@ namespace {
             LOCK(m_wallet.cs_wallet);
             auto mi = m_wallet.mapWallet.find(txid);
             if (mi != m_wallet.mapWallet.end()) {
-                num_blocks = ::chainActive.Height();
+                num_blocks = ::ChainActive().Height();
                 in_mempool = mi->second.InMempool();
                 order_form = mi->second.vOrderForm;
                 tx_status = MakeWalletTxStatus(*locked_chain, mi->second);
@@ -363,7 +363,7 @@ namespace {
                 return false;
             }
             balances = getBalances();
-            num_blocks = ::chainActive.Height();
+            num_blocks = ::ChainActive().Height();
             return true;
         }
         Amount getBalance() override { return m_wallet.GetBalance(); }
