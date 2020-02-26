@@ -91,6 +91,7 @@ def check_for_ban_on_rejected_tx(node, tx, reject_reason=None):
         [tx], node, success=False, expect_disconnect=True, reject_reason=reject_reason)
     node.disconnect_p2ps()
     node.add_p2p_connection(P2PDataStore())
+    node.p2p.wait_for_getheaders()
 
 
 def check_for_ban_on_rejected_block(node, block, reject_reason=None):
@@ -102,6 +103,7 @@ def check_for_ban_on_rejected_block(node, block, reject_reason=None):
         [block], node, success=False, reject_reason=reject_reason, expect_disconnect=True)
     node.disconnect_p2ps()
     node.add_p2p_connection(P2PDataStore())
+    node.p2p.wait_for_getheaders()
 
 
 def check_for_no_ban_on_rejected_tx(node, tx, reject_reason=None):
