@@ -1,20 +1,32 @@
-Bitcoin ABC version 0.21.0 is now available from:
+Bitcoin Cash Node version 0.21.0 is now available from:
 
-  <https://download.bitcoinabc.org/0.21.0/>
+  <https://bitcoincashnode.org>
+
+This is the first release of Bitcoin Cash Node as a drop-in replacement for Bitcoin ABC 0.21.0. It is based on Bitcoin ABC 0.21.0, with minimal changes necessary to disable the Infrastructure Funding Proposal (IFP) soft forks. For exchanges and users, this client will follow the longest chain whether it includes IFP soft forks or not. For miners, running this client ensures the `getblocktemplate` RPC call will return a block with version bits that vote "NO" for the IFP soft forks. Additionally, unlike Bitcoin ABC, `getblocktemplate` will *not* automatically insert IFP white-list addresses into the coinbase transaction.
+
+Minimal changes from Bitcoin ABC 0.21.0 to Bitcoin Cash Node 0.21.0:
+- All IFP soft fork logic, signaling logic and the hard-coded whitelist have been removed.
+- Rebranding from Bitcoin ABC to Bitcoin Cash Node.
+- Qt GUI settings are automatically copied from Bitcoin ABC on first use of Bitcoin Cash Node.
+
+_Note regarding BIP9 and `getblockchaininfo` below: BIP9 is inactive due to no available proposals to vote on and it may be removed in a future release._
+
+All other upgrade changes from ABC 0.21.0 are untouched and included below for reference.
+
+----
 
 This release includes the following features and fixes:
-  - The RPC `getrpcinfo` returns runtime details of the RPC server. At the moment
-    it returns the active commands and the corresponding execution time.
-  - `ischange` field of boolean type that shows if an address was used for change
-    output was added to `getaddressinfo` method response.
-  - Bump automatic replay protection to Nov 2020 upgrade.
-  - Re-introduction of BIP9, info available from the `getblockchaininfo` RPC.
-  - Miner infrastructure funding plan available via BIP9.
-  - Various bug fixes and stability improvements.
+- The RPC `getrpcinfo` returns runtime details of the RPC server.
+At the moment it returns the active commands and the corresponding execution time.
+- `ischange` field of boolean type that shows if an address was used for change output was added to `getaddressinfo` method response.
+- Bump automatic replay protection to Nov 2020 upgrade.
+- Re-introduction of BIP9, info available from the `getblockchaininfo` RPC.
+- Various bug fixes and stability improvements.
 
 New RPC methods
 ---------------
-  - `getnodeaddresses` returns peer addresses known to this node. It may be used to connect to nodes over TCP without using the DNS seeds.
+  - `getnodeaddresses` returns peer addresses known to this node.
+  It may be used to connect to nodes over TCP without using the DNS seeds.
 
 Network upgrade
 ---------------
