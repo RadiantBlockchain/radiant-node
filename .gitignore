@@ -121,3 +121,12 @@ contrib/devtools/split-debug.sh
 
 # vagrant
 .vagrant
+
+
+#Local Development Environment - NetBeans
+nbproject/
+
+#Local Development Environment - Eclipse
+.cproject
+.project
+
