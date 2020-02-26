@@ -29,19 +29,19 @@ If you want to build the disk image with `ninja osx-dmg` (.dmg / optional), you 
 
     brew install librsvg
 
-Build Bitcoin ABC
------------------
+Build Bitcoin Cash Node
+------------------------
 
 Before you start building, please make sure that your compiler supports C++14.
 
-1. Clone the Bitcoin ABC source code and cd into `bitcoin-abc`
+1. Clone the Bitcoin Cash Node source code and cd into `bitcoin-cash-node`
 
-        git clone https://github.com/Bitcoin-ABC/bitcoin-abc.git
-        cd bitcoin-abc
+        git clone https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node.git
+        cd bitcoin-cash-node
 
-2.  Build Bitcoin ABC:
+2.  Build Bitcoin Cash Node:
 
-    Configure and build the headless Bitcoin ABC binaries as well as the GUI.
+    Configure and build the headless Bitcoin Cash Node binaries as well as the GUI.
 
     You can disable the GUI build by passing `-DBUILD_BITCOIN_QT=OFF` to cmake.
 
@@ -62,7 +62,7 @@ Before you start building, please make sure that your compiler supports C++14.
 
 Disable-wallet mode
 --------------------
-When the intention is to run only a P2P node without a wallet, Bitcoin ABC may be compiled in
+When the intention is to run only a P2P node without a wallet, Bitcoin Cash Node may be compiled in
 disable-wallet mode with:
 
     cmake -GNinja .. -DBUILD_BITCOIN_WALLET=OFF
@@ -72,7 +72,7 @@ Mining is also possible in disable-wallet mode using the `getblocktemplate` RPC 
 Running
 -------
 
-Bitcoin ABC is now available at `./src/bitcoind`
+Bitcoin Cash Node is now available at `./src/bitcoind`
 
 Before running, it's recommended that you create an RPC configuration file:
 

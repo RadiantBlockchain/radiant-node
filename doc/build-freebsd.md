@@ -46,9 +46,9 @@ pkg install db5
 ```
 
 Download the source code:
-refer to [CONTRIBUTING](../CONTRIBUTING.md) for instructions on how to clone the Bitcoin ABC repository
+refer to [CONTRIBUTING](../CONTRIBUTING.md) for instructions on how to clone the Bitcoin Cash Node repository
 
-## Building Bitcoin ABC
+## Building Bitcoin Cash Node
 
 With wallet:
 
