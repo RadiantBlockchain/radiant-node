@@ -560,19 +560,21 @@ TableViewLastColumnResizingFixer::TableViewLastColumnResizingFixer(
     setViewHeaderResizeMode(secondToLastColumnIndex, QHeaderView::Interactive);
     setViewHeaderResizeMode(lastColumnIndex, QHeaderView::Interactive);
 }
-
 #ifdef WIN32
 static fs::path StartupShortcutPath() {
+    /* Note that in order for the uninstaller to remove these on Windows,
+       the *.lnk files mentioned here need to match exactly the filenames
+       in the uninstaller NSIS script (see: cmake/modules/NSIS.template.in) */
     std::string chain = gArgs.GetChainName();
     if (chain == CBaseChainParams::MAIN) {
-        return GetSpecialFolderPath(CSIDL_STARTUP) / "Bitcoin.lnk";
+        return GetSpecialFolderPath(CSIDL_STARTUP) / "Bitcoin Cash Node.lnk";
     }
     // Remove this special case when CBaseChainParams::TESTNET = "testnet4"
     if (chain == CBaseChainParams::TESTNET) {
-        return GetSpecialFolderPath(CSIDL_STARTUP) / "Bitcoin (testnet).lnk";
+        return GetSpecialFolderPath(CSIDL_STARTUP) / "Bitcoin Cash Node (testnet).lnk";
     }
     return GetSpecialFolderPath(CSIDL_STARTUP) /
-           strprintf("Bitcoin (%s).lnk", chain);
+           strprintf("Bitcoin Cash Node (%s).lnk", chain); // If we get here: "regtest"
 }
 
 bool GetStartOnSystemStartup() {
