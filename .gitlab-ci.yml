@@ -99,18 +99,24 @@ test-debian-unittests:
     cache: {}
     needs: ["build-debian-tests"]
     script:
-        - ./build/src/test/test_bitcoin
+        - ./build/src/test/test_bitcoin --logger=HRF:JUNIT,message,junit_unit_tests.xml
     dependencies:
         - build-debian-tests
+    artifacts:
+        reports:
+            junit: junit_unit_tests.xml
 
 test-debian-unittests_post_phonon:
     stage: test
     extends: .cache-debian
     needs: ["build-debian-tests"]
     script:
-        - ./build/src/test/test_bitcoin -- -phononactivationtime=1575158400
+        - ./build/src/test/test_bitcoin --logger=HRF:JUNIT,message,junit_unit_tests.xml -- -phononactivationtime=1575158400
     dependencies:
         - build-debian-tests
+    artifacts:
+        reports:
+            junit: junit_unit_tests.xml
 
 test-debian-utils:
     stage: test
@@ -141,9 +147,12 @@ test-debian-functional:
     dependencies:
         - build-debian
     artifacts:
+        when: on_failure
         paths:
             - build/test/tmp
         expire_in: 30 days
+        reports:
+            junit: build/test/tmp/*/junit_results.xml
 
 test-debian-functional_post_phonon:
     stage: test
@@ -156,9 +165,12 @@ test-debian-functional_post_phonon:
     dependencies:
         - build-debian
     artifacts:
+        when: on_failure
         paths:
             - build/test/tmp
         expire_in: 30 days
+        reports:
+            junit: build/test/tmp/*/junit_results.xml
 
 deploy-debian:
     stage: deployment
@@ -208,9 +220,12 @@ test-debian-nowallet-unittests:
     cache: {}
     needs: ["build-debian-nowallet-tests"]
     script:
-        - ./build/src/test/test_bitcoin
+        - ./build/src/test/test_bitcoin --logger=HRF:JUNIT,message,junit_unit_tests.xml
     dependencies:
         - build-debian-nowallet-tests
+    artifacts:
+        reports:
+            junit: junit_unit_tests.xml
 
 
 ## Windows build
