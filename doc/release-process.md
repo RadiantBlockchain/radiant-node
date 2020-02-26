@@ -1,5 +1,5 @@
-Bitcoin ABC Release Process
-===========================
+Bitcoin Cash Node Release Process
+=================================
 
 
 ## Before Release
@@ -15,7 +15,7 @@ Bitcoin ABC Release Process
     - Run `arc lint --everything` and check there is no linter error
     - Ensure that bitcoind and bitcoin-qt run with no issue on all supported platforms.
       Manually test bitcoin-qt by sending some transactions and navigating through the menus.
- 
+
 3. Update the documents / code which needs to be updated every release
     - Check that [release-notes.md](doc/release-notes.md) is complete, and fill in any missing items.
     - Update [bips.md](/doc/bips.md) to account for changes since the last release.
@@ -27,10 +27,10 @@ Bitcoin ABC Release Process
 
 4. Add git tag for release
     a. Create the tag: `git tag vM.m.r` (M = major version, m = minor version, r = revision)
-    b. Push the tag to Github:
+    b. Push the tag to Gitlab:
         ```
-        git push <github remote> master
-        git push <github remote> vM.m.r
+        git push <gitlab remote> master
+        git push <gitlab remote> vM.m.r
         ```
 
 5. Increment version number for the next release in:
@@ -47,9 +47,9 @@ Bitcoin ABC Release Process
 
 8. Verify IBD bith with and without `-checkpoints=0 -assumevalid=0`
 
-9. Upload Gitian Builds to [bitcoinabc.org](https://download.bitcoinabc.org/)
+9. Upload Gitian Builds to [bitcoincashnode.org](https://bitcoincashnode.org/)
 
-10. Create a [GitHub release](https://github.com/Bitcoin-ABC/bitcoin-abc/releases):
+10. Create a [release](https://github.com/bitcoin-cash-node/bitcoin-cash-node) on our GitHub mirror:
     `contrib/devtools/github-release.sh -a <path to release binaries> -t <release tag> -o <file containing your Github OAuth token>`
 
 11. Notify maintainers of Ubuntu PPA, AUR, and Docker images to build their packages.
@@ -57,13 +57,12 @@ Bitcoin ABC Release Process
 
 ## After Release
 
-12. Update version number on www.bitcoinabc.org
+12. Update version number on www.bitcoincashnode.org
 
-13. Publish signed checksums (various places, e.g. blog, reddit/r/BitcoinABC)
+13. Publish signed checksums (various places, e.g. blog, reddit, etc. etc.)
 
 14. Announce Release:
-    - [Reddit](https://www.reddit.com/r/BitcoinABC/)
-    - Twitter @Bitcoin_ABC
-    - Public slack channels friendly to Bitcoin ABC announcements 
-      (eg. #abc-announce on BTCforks,  #hardfork on BTCchat)
+    - [Reddit](https://www.reddit.com/r/bitcoincashnode/)
+    - Twitter @bitcoincashnode
+    - Public slack channels friendly to Bitcoin Cash Node announcements
 
