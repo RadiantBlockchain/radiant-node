@@ -147,7 +147,7 @@ test-debian-functional:
 
 test-debian-functional_post_phonon:
     stage: test
-    cache: {}
+    extends: .cache-debian
     needs: ["build-debian"]
     script:
         - (cd build; ninja -t restat)
