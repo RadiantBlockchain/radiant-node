@@ -28,49 +28,51 @@ NetworkStyle::NetworkStyle(const QString &_appName, const int iconColorHueShift,
     : appName(_appName),
       titleAddText(qApp->translate("SplashScreen", _titleAddText)) {
     // load pixmap
-    QPixmap pixmap(":/icons/bitcoin");
+    QPixmap pixmaps[] = { {":/icons/bitcoin"}, {":icons/bitcoin_noletters"} };
 
-    if (iconColorHueShift != 0 && iconColorSaturationReduction != 0) {
-        // generate QImage from QPixmap
-        QImage img = pixmap.toImage();
+    for (auto & pixmap : pixmaps) {
+        if (iconColorHueShift != 0 && iconColorSaturationReduction != 0) {
+            // generate QImage from QPixmap
+            QImage img = pixmap.toImage();
 
-        int h, s, l, a;
+            int h, s, l, a;
 
-        // traverse though lines
-        for (int y = 0; y < img.height(); y++) {
-            QRgb *scL = reinterpret_cast<QRgb *>(img.scanLine(y));
+            // traverse though lines
+            for (int y = 0; y < img.height(); y++) {
+                QRgb *scL = reinterpret_cast<QRgb *>(img.scanLine(y));
 
-            // loop through pixels
-            for (int x = 0; x < img.width(); x++) {
-                // preserve alpha because QColor::getHsl doesn't return the
-                // alpha value
-                a = qAlpha(scL[x]);
-                QColor col(scL[x]);
+                // loop through pixels
+                for (int x = 0; x < img.width(); x++) {
+                    // preserve alpha because QColor::getHsl doesn't return the
+                    // alpha value
+                    a = qAlpha(scL[x]);
+                    QColor col(scL[x]);
 
-                // get hue value
-                col.getHsl(&h, &s, &l);
+                    // get hue value
+                    col.getHsl(&h, &s, &l);
 
-                // rotate color on RGB color circle
-                // 70° should end up with the typical "testnet" green
-                h += iconColorHueShift;
+                    // rotate color on RGB color circle
+                    // 70° should end up with the typical "testnet" green
+                    h += iconColorHueShift;
 
-                // change saturation value
-                if (s > iconColorSaturationReduction) {
-                    s -= iconColorSaturationReduction;
+                    // change saturation value
+                    if (s > iconColorSaturationReduction) {
+                        s -= iconColorSaturationReduction;
+                    }
+                    col.setHsl(h, s, l, a);
+
+                    // set the pixel
+                    scL[x] = col.rgba();
                 }
-                col.setHsl(h, s, l, a);
-
-                // set the pixel
-                scL[x] = col.rgba();
             }
-        }
 
-        // convert back to QPixmap
-        pixmap.convertFromImage(img);
+            // convert back to QPixmap
+            pixmap.convertFromImage(img);
+        }
     }
 
-    appIcon = QIcon(pixmap);
-    trayAndWindowIcon = QIcon(pixmap.scaled(QSize(256, 256)));
+    appIcon = QIcon(pixmaps[0]);
+    trayAndWindowIcon = QIcon(pixmaps[1].scaled(QSize(256, 256)));
 }
 
 const NetworkStyle *NetworkStyle::instantiate(const QString &networkId) {
