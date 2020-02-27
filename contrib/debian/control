@@ -1,26 +1,28 @@
-Source: bitcoin
+Source: bitcoin-cash-node
 Section: utils
 Priority: optional
-Maintainer: Jonas Smedegaard <dr@jones.dk>
-Uploaders: Micah Anderson <micah@debian.org>
+Maintainer: Andrea Suisani <sickpig@gmail.com>
+Uploaders: Andrea Suisani <sickpig@gmail.com>
 Build-Depends: debhelper,
  devscripts,
  automake,
  libtool,
  bash-completion,
- libboost-system-dev (>> 1.35) | libboost-system1.35-dev,
- libdb4.8++-dev,
+ libboost-system-dev (>> 1.58) | libboost-system1.58-dev,
+ libdb5.3++-dev,
  libssl-dev,
+ libevent-dev,
  pkg-config,
  libminiupnpc8-dev | libminiupnpc-dev (>> 1.6),
- libboost-filesystem-dev (>> 1.35) | libboost-filesystem1.35-dev,
- libboost-program-options-dev (>> 1.35) | libboost-program-options1.35-dev,
- libboost-thread-dev (>> 1.35) | libboost-thread1.35-dev,
- libboost-test-dev (>> 1.35) | libboost-test1.35-dev,
- qt4-qmake,
- libqt4-dev,
+ libboost-filesystem-dev (>> 1.58) | libboost-filesystem1.58-dev,
+ libboost-program-options-dev (>> 1.58) | libboost-program-options1.58-dev,
+ libboost-thread-dev (>> 1.58) | libboost-thread1.58-dev,
+ libboost-test-dev (>> 1.58) | libboost-test1.58-dev,
+ qt4-qmake, libqt4-dev,
+ qttools5-dev-tools, qttools5-dev,
  libqrencode-dev,
  libprotobuf-dev, protobuf-compiler,
+ libzmq3-dev,
  python
 Standards-Version: 3.9.2
 Homepage: https://bitcoincashnode.org/
@@ -31,7 +33,7 @@ Package: bitcoind
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: peer-to-peer network based digital currency - daemon
- Bitcoin is an experimental new digital currency that enables instant
+ Bitcoin Cash is a new digital currency that enables instant
  payments to anyone, anywhere in the world. Bitcoin uses peer-to-peer
  technology to operate with no central authority: managing transactions
  and issuing money are carried out collectively by the network. Bitcoin Cash Node
@@ -44,7 +46,7 @@ Package: bitcoin-qt
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: peer-to-peer network based digital currency - Qt GUI
- Bitcoin is an experimental new digital currency that enables instant
+ Bitcoin Cash is a new digital currency that enables instant
  payments to anyone, anywhere in the world. Bitcoin uses peer-to-peer
  technology to operate with no central authority: managing transactions
  and issuing money are carried out collectively by the network. Bitcoin Cash Node
@@ -56,7 +58,7 @@ Package: bitcoin-tx
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: peer-to-peer digital currency - standalone transaction tool
- Bitcoin is an experimental new digital currency that enables instant
+ Bitcoin Cash is a new digital currency that enables instant
  payments to anyone, anywhere in the world. Bitcoin uses peer-to-peer
  technology to operate with no central authority: managing transactions
  and issuing money are carried out collectively by the network. Bitcoin Cash Node
