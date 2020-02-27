@@ -90,18 +90,6 @@ void CSeederNode::PushVersion() {
     EndMessage();
 }
 
-void CSeederNode::GotVersion() {
-    // fprintf(stdout, "\n%s: version %i\n", ToString(you).c_str(),
-    // nVersion);
-    if (vAddr) {
-        BeginMessage("getaddr");
-        EndMessage();
-        doneAfter = time(nullptr) + GetTimeout();
-    } else {
-        doneAfter = time(nullptr) + 1;
-    }
-}
-
 PeerMessagingState CSeederNode::ProcessMessage(std::string strCommand,
                                                CDataStream &recv) {
     // fprintf(stdout, "%s: RECV %s\n", ToString(you).c_str(),
@@ -126,7 +114,15 @@ PeerMessagingState CSeederNode::ProcessMessage(std::string strCommand,
 
     if (strCommand == "verack") {
         vRecv.SetVersion(std::min(nVersion, PROTOCOL_VERSION));
-        GotVersion();
+        // fprintf(stdout, "\n%s: version %i\n", ToString(you).c_str(),
+        // nVersion);
+        if (vAddr) {
+            BeginMessage("getaddr");
+            EndMessage();
+            doneAfter = time(nullptr) + GetTimeout();
+        } else {
+            doneAfter = time(nullptr) + 1;
+        }
         return PeerMessagingState::AwaitingMessages;
     }
 
