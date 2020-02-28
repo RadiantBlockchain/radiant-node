@@ -26,10 +26,11 @@ add_executable(bench_bitcoin
 	rpc_mempool.cpp
 )
 
-target_link_libraries(bench_bitcoin common bitcoinconsensus wallet server)
+target_link_libraries(bench_bitcoin common bitcoinconsensus server)
 
 if(BUILD_BITCOIN_WALLET)
 	target_sources(bench_bitcoin PRIVATE coin_selection.cpp)
+	target_link_libraries(bench_bitcoin wallet)
 endif()
 
 add_custom_target(bench-bitcoin COMMAND bench_bitcoin USES_TERMINAL)
