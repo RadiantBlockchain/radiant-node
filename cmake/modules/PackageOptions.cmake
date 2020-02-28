@@ -2,6 +2,7 @@
 set(CPACK_PACKAGE_VENDOR "${COPYRIGHT_HOLDERS_FINAL}")
 set(CPACK_PACKAGE_DESCRIPTION "Bitcoin Cash Node is a Bitcoin Cash full node implementation.")
 set(CPACK_PACKAGE_HOMEPAGE_URL "${PROJECT_HOMEPAGE_URL}")
+set(CPACK_PACKAGE_CONTACT "info@bitcoincashnode.org")
 
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "Bitcoin-Cash-Node")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/COPYING")
@@ -33,8 +34,8 @@ Include(InstallationHelper)
 set(CPACK_NSIS_EXECUTABLES_DIRECTORY "${CMAKE_INSTALL_BINDIR}")
 set(_nsis_bitcoin_qt "bitcoin-qt.exe")
 
-set(CPACK_NSIS_URL_INFO_ABOUT "https://bitcoincashnode.org")
-set(CPACK_NSIS_CONTACT "info@bitcoincashnode.org")
+set(CPACK_NSIS_URL_INFO_ABOUT "${CPACK_PACKAGE_HOMEPAGE_URL}")
+set(CPACK_NSIS_CONTACT "${CPACK_PACKAGE_CONTACT}")
 
 set(CPACK_NSIS_MUI_ICON "${CMAKE_SOURCE_DIR}/share/pixmaps/bitcoin.ico")
 set(CPACK_NSIS_MUI_UNIICON "${CPACK_NSIS_MUI_ICON}")
