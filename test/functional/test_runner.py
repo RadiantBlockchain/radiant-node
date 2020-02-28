@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # Copyright (c) 2014-2019 The Bitcoin Core developers
 # Copyright (c) 2017 The Bitcoin developers
+# Copyright (c) 2020 Bitcoin Cash Node Developers 
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Run regression test suite.
@@ -516,8 +517,8 @@ def execute_test_processes(num_jobs, test_list, tests_dir, tmpdir, flags):
 
 def print_results(test_results, tests_dir, max_len_name,
                   runtime, combined_logs_len):
-    results = "\n" + BOLD[1] + "{} | {} | {}\n\n".format(
-        "TEST".ljust(max_len_name), "STATUS   ", "DURATION") + BOLD[0]
+    results = "\n" + BOLD[1] + "{} | {} | {} | {}\n\n".format(
+        "TEST".ljust(max_len_name), "STATUS   ", "DURATION", "ORIG. ORDER") + BOLD[0]
 
     test_results.sort(key=TestResult.sort_key)
     all_passed = True
@@ -548,7 +549,7 @@ def print_results(test_results, tests_dir, max_len_name,
     status = TICK + "Passed" if all_passed else CROSS + "Failed"
     if not all_passed:
         results += RED[1]
-    results += BOLD[1] + "\n{} | {} | {} s (accumulated) \n".format(
+    results += BOLD[1] + "\n{} | {} | {} s (accumulated)\n".format(
         "ALL".ljust(max_len_name), status.ljust(9), time_sum) + BOLD[0]
     if not all_passed:
         results += RED[0]
@@ -570,6 +571,7 @@ class TestResult():
         self.padding = 0
         self.stdout = stdout
         self.stderr = stderr
+        
 
     def sort_key(self):
         if self.status == "Passed":
@@ -578,6 +580,7 @@ class TestResult():
             return 2, self.name.lower()
         elif self.status == "Skipped":
             return 1, self.name.lower()
+
 
     def __repr__(self):
         if self.status == "Passed":
@@ -590,8 +593,8 @@ class TestResult():
             color = GREY
             glyph = CIRCLE
 
-        return color[1] + "{} | {}{} | {} s\n".format(
-            self.name.ljust(self.padding), glyph, self.status.ljust(7), self.time) + color[0]
+        return color[1] + "{} | {}{} | {} | {}\n".format(
+            self.name.ljust(self.padding), glyph, self.status.ljust(7), (str(self.time) + " s").ljust(8), self.num+1) + color[0]
 
     @property
     def was_successful(self):
