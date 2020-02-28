@@ -172,6 +172,48 @@ test-debian-functional_post_phonon:
         reports:
             junit: build/test/tmp/*/junit_results.xml
 
+test-debian-functional-longeronly:
+    stage: test
+    extends: .cache-debian
+    needs: ["build-debian"]
+    only:
+        refs:
+            - master
+    script:
+        - (cd build; ninja -t restat)
+        - (cd build; ninja check-functional-longeronly)
+        - ccache --show-stats
+    dependencies:
+        - build-debian
+    artifacts:
+        when: on_failure
+        paths:
+            - build/test/tmp
+        expire_in: 30 days
+        reports:
+            junit: build/test/tmp/*/junit_results.xml
+
+test-debian-functional-longeronly-post-phonon:
+    stage: test
+    extends: .cache-debian
+    needs: ["build-debian"]
+    only:
+        refs:
+            - master
+    script:
+        - (cd build; ninja -t restat)
+        - (cd build; ninja check-functional-upgrade-activated-longeronly)
+        - ccache --show-stats
+    dependencies:
+        - build-debian
+    artifacts:
+        when: on_failure
+        paths:
+            - build/test/tmp
+        expire_in: 30 days
+        reports:
+            junit: build/test/tmp/*/junit_results.xml
+
 deploy-debian:
     stage: deployment
     extends: .cache-debian
