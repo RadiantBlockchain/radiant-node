@@ -447,9 +447,9 @@ void SetupServerArgs() {
         true, OptionsCategory::OPTIONS);
     gArgs.AddArg(
         "-par=<n>",
-        strprintf("Set the number of script verification threads (%u to %d, 0 "
+        strprintf("Set the number of script verification threads (up to %d, 0 "
                   "= auto, <0 = leave that many cores free, default: %d)",
-                  -GetNumCores(), MAX_SCRIPTCHECK_THREADS,
+                  MAX_SCRIPTCHECK_THREADS,
                   DEFAULT_SCRIPTCHECK_THREADS),
         false, OptionsCategory::OPTIONS);
     gArgs.AddArg("-persistmempool",
