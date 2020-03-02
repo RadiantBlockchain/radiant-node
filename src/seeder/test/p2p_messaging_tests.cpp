@@ -58,7 +58,7 @@ struct SeederTestingSetup {
     std::unique_ptr<TestCSeederNode> testNode;
 };
 
-BOOST_FIXTURE_TEST_SUITE(seeder_tests, SeederTestingSetup)
+BOOST_FIXTURE_TEST_SUITE(p2p_messaging_tests, SeederTestingSetup)
 
 static CDataStream
 CreateVersionMessage(int64_t now, CAddress addrTo, CAddress addrFrom,
