@@ -381,7 +381,7 @@ static UniValue getblocktemplate(const Config &config,
             "         \"txid\" : \"xxxx\",             (string) transaction id "
             "encoded in little-endian hexadecimal\n"
             "         \"hash\" : \"xxxx\",             (string) hash encoded "
-            "in little-endian hexadecimal (including witness data)\n"
+            "in little-endian hexadecimal\n"
             "         \"depends\" : [                (array) array of numbers "
             "\n"
             "             n                          (numeric) transactions "
