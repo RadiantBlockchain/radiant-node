@@ -13,7 +13,6 @@ exclude_from_source_package(
 	"gitian-descriptors/"
 	"qos/"
 	"seeds/"
-	"teamcity/"
 	"testgen/"
 	# FIXME Can be packaged once it gets updated to work with Bitcoin ABC
 	"verifybinaries/"
