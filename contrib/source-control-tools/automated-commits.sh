@@ -73,7 +73,6 @@ BOT_PREFIX="[Automated]"
 TOPLEVEL=$(git rev-parse --show-toplevel)
 
 CHAINPARAMS_SCRIPTS_DIR="${TOPLEVEL}"/contrib/devtools/chainparams
-TEAMCITY_SCRIPTS_DIR="${TOPLEVEL}"/contrib/teamcity
 
 # Make sure tree is clean
 git checkout master
@@ -95,9 +94,6 @@ case "${COMMIT_TYPE}" in
     ./generate_chainparams_constants.py . > "${CHAINPARAMS_CONSTANTS}"
     git add "${CHAINPARAMS_CONSTANTS}"
     popd
-
-    # Sanity check that the new chainparams build
-    ABC_BUILD_NAME=build-werror "${TEAMCITY_SCRIPTS_DIR}"/build-configurations.sh
 
     git commit -m "${BOT_PREFIX} Update chainparams"
     ;;
