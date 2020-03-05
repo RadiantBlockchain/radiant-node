@@ -31,5 +31,5 @@ These dependencies are required:
 | univalue |||||   | Utility          | JSON parsing and encoding (bundled version will be used unless --with-system-univalue passed to configure)
 | XCB |  |  |  |  | Yes (Linux only) |  |  |
 | xkbcommon |  |  |  |  | Yes (Linux only) |  |  |
-| ZeroMQ | [4.1.5](https://github.com/zeromq/libzmq/releases) |  | No |  |  | ZMQ notification | Optional, allows generating ZMQ notifications (requires ZMQ version >= 4.x)
+| ZeroMQ | [4.1.5](https://github.com/zeromq/libzmq/releases) | 4.1.5 | No |  |  | ZMQ notification | Optional, allows generating ZMQ notifications (requires ZMQ version >= 4.1.5)
 | zlib | [1.2.11](http://zlib.net/) |  |  |  | No |  |  |
