@@ -9,17 +9,24 @@ To Build
 
 Before you start building, please make sure that your compiler supports C++14.
 
-It is recommended to create a build directory to build out-of-tree.
+It is recommended to create a build directory to build out-of-tree. This will build bitcoin-qt as well.
 
 ```bash
 mkdir build
 cd build
 cmake -GNinja ..
 ninja
-ninja install # optional
+ninja check # recommended
 ```
 
-This will build bitcoin-qt as well.
+After a succesful test you can install the newly built binaries to your bin directory.
+Note that this will probably overwrite any previous version installed, including binaries from different sources.
+It might be necessary to run with `sudo`, depending on your system configuration:
+
+```bash
+ninja install #optional
+```
+
 
 Dependencies
 ---------------------
@@ -227,7 +234,7 @@ This example lists the steps necessary to setup and build a command line only, n
     cd build
     cmake -GNinja .. -DBUILD_BITCOIN_WALLET=OFF -DBUILD_BITCOIN_QT=OFF -DENABLE_UPNP=OFF -DBUILD_BITCOIN_ZMQ=OFF
     ninja
-
+    ninja check # recommended
 
 ARM Cross-compilation
 -------------------
@@ -249,6 +256,6 @@ To build executables for ARM:
     cd build
     cmake -GNinja .. -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/LinuxARM.cmake -DENABLE_GLIBC_BACK_COMPAT=ON -DENABLE_STATIC_LIBSTDCXX=ON
     ninja
-
+    ninja check # recommended
 
 For further documentation on the depends system see [README.md](../depends/README.md) in the depends directory.
