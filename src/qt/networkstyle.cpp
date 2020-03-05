@@ -1,3 +1,4 @@
+// Copyright (c) 2020 The Bitcoin developers
 // Copyright (c) 2014-2016 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -11,31 +12,26 @@
 static const struct {
     const char *networkId;
     const char *appName;
-    const int iconColorHueShift;
-    const int iconColorSaturationReduction;
+    const int iconColorHue;
     const char *titleAddText;
-} network_styles[] = {{"main", QAPP_APP_NAME_DEFAULT, 0, 0, ""},
-                      {"test", QAPP_APP_NAME_TESTNET, 70, 30,
-                       QT_TRANSLATE_NOOP("SplashScreen", "[testnet]")},
-                      {"regtest", QAPP_APP_NAME_TESTNET, 160, 30, "[regtest]"}};
+} network_styles[] = {{"main",    QAPP_APP_NAME_DEFAULT,   0, ""                                            },
+                      {"test",    QAPP_APP_NAME_TESTNET, 120, QT_TRANSLATE_NOOP("SplashScreen", "[testnet]")},
+                      {"regtest", QAPP_APP_NAME_TESTNET, 180, "[regtest]"                                   }};
 static const unsigned network_styles_count =
     sizeof(network_styles) / sizeof(*network_styles);
 
 // titleAddText needs to be const char* for tr()
-NetworkStyle::NetworkStyle(const QString &_appName, const int iconColorHueShift,
-                           const int iconColorSaturationReduction,
-                           const char *_titleAddText)
-    : appName(_appName),
-      titleAddText(qApp->translate("SplashScreen", _titleAddText)) {
+NetworkStyle::NetworkStyle(const QString &_appName, int iconColorHue, const char *_titleAddText)
+    : appName(_appName), titleAddText(qApp->translate("SplashScreen", _titleAddText)) {
+
     // load pixmap
     QPixmap pixmaps[] = { {":/icons/bitcoin"}, {":icons/bitcoin_noletters"} };
 
-    for (auto & pixmap : pixmaps) {
-        if (iconColorHueShift != 0 && iconColorSaturationReduction != 0) {
+    if (iconColorHue) {
+        for (auto & pixmap : pixmaps) {
+
             // generate QImage from QPixmap
             QImage img = pixmap.toImage();
-
-            int h, s, l, a;
 
             // traverse though lines
             for (int y = 0; y < img.height(); y++) {
@@ -43,25 +39,14 @@ NetworkStyle::NetworkStyle(const QString &_appName, const int iconColorHueShift,
 
                 // loop through pixels
                 for (int x = 0; x < img.width(); x++) {
-                    // preserve alpha because QColor::getHsl doesn't return the
-                    // alpha value
+
+                    int r, g, b, a;
                     a = qAlpha(scL[x]);
                     QColor col(scL[x]);
-
-                    // get hue value
-                    col.getHsl(&h, &s, &l);
-
-                    // rotate color on RGB color circle
-                    // 70° should end up with the typical "testnet" green
-                    h += iconColorHueShift;
-
-                    // change saturation value
-                    if (s > iconColorSaturationReduction) {
-                        s -= iconColorSaturationReduction;
-                    }
-                    col.setHsl(h, s, l, a);
+                    col.getRgb(&r, &g, &b);
 
                     // set the pixel
+                    col.setHsl(iconColorHue, 128, qGray(r, g, b), a);
                     scL[x] = col.rgba();
                 }
             }
@@ -78,10 +63,7 @@ NetworkStyle::NetworkStyle(const QString &_appName, const int iconColorHueShift,
 const NetworkStyle *NetworkStyle::instantiate(const QString &networkId) {
     for (unsigned x = 0; x < network_styles_count; ++x) {
         if (networkId == network_styles[x].networkId) {
-            return new NetworkStyle(
-                network_styles[x].appName, network_styles[x].iconColorHueShift,
-                network_styles[x].iconColorSaturationReduction,
-                network_styles[x].titleAddText);
+            return new NetworkStyle(network_styles[x].appName, network_styles[x].iconColorHue, network_styles[x].titleAddText);
         }
     }
     return 0;

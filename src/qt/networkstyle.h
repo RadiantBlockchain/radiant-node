@@ -1,3 +1,4 @@
+// Copyright (c) 2020 The Bitcoin developers
 // Copyright (c) 2014 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -22,9 +23,7 @@ public:
     const QString &getTitleAddText() const { return titleAddText; }
 
 private:
-    NetworkStyle(const QString &appName, const int iconColorHueShift,
-                 const int iconColorSaturationReduction,
-                 const char *titleAddText);
+    NetworkStyle(const QString &appName, int iconColorHue, const char *titleAddText);
 
     QString appName;
     QIcon appIcon;
