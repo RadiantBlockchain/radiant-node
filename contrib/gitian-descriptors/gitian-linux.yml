@@ -166,8 +166,8 @@ script: |
       -DCCACHE=OFF
 
     ninja
-    ninja security-check
-    ninja check-symbols
+    ninja check-security
+    ninja symbol-check
 
     for _component in ${INSTALL_COMPONENTS}; do
        cmake -DCOMPONENT=${_component} -P cmake_install.cmake
