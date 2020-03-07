@@ -3385,6 +3385,7 @@ void ResetBlockFailureFlags(CBlockIndex *pindex) {
 void CChainState::UnparkBlockImpl(CBlockIndex *pindex, bool fClearChildren) {
     AssertLockHeld(cs_main);
 
+    // The parked block marker, pindexBestParked, is set to null if it is about to be cleared.
     UpdateFlags(
         pindex, pindexBestParked,
         [](const BlockStatus status) {
