@@ -69,7 +69,12 @@ inline void __attribute__((always_inline)) Unshuffle(__m128i &s0, __m128i &s1) {
     s0 = _mm_blend_epi16(t1, t2, 0xF0);
     s1 = _mm_alignr_epi8(t2, t1, 0x08);
 }
-
+#ifdef __clang__
+// The below few functions cast various smaller types to 128-bit integer pointers,
+// which produces warnings on clang, and so we suppress these warnings here.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wcast-align"
+#endif
 __m128i inline __attribute__((always_inline)) Load(const uint8_t *in) {
     return _mm_shuffle_epi8(_mm_loadu_si128((const __m128i *)in), MASK);
 }
@@ -141,6 +146,9 @@ void Transform(uint32_t *s, const uint8_t *chunk, size_t blocks) {
     _mm_storeu_si128((__m128i *)s, s0);
     _mm_storeu_si128((__m128i *)(s + 4), s1);
 }
+#ifdef __clang__
+#pragma clang diagnostic pop // end clang warning suppression for -Wcast-align
+#endif
 } // namespace sha256_shani
 
 namespace sha256d64_shani {
