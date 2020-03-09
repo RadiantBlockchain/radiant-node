@@ -82,11 +82,9 @@ TEST_PARAMS = {
 }
 
 # Used to limit the number of tests, when list of tests is not provided on command line
-# When --extended is specified, we run all tests, otherwise
-# we only run a test if its execution time in seconds does not exceed
-# EXTENDED_CUTOFF
-DEFAULT_EXTENDED_CUTOFF = 40
-DEFAULT_STARTFROM = 0
+# When --extended is specified, we run all tests,
+# otherwise we select tests based on execution time.
+DEFAULT_CUTOFF = 40
 DEFAULT_JOBS = (multiprocessing.cpu_count() // 3) + 1
 
 
@@ -159,27 +157,27 @@ def main():
     Help text and arguments for individual test script:''',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--combinedlogslen', '-c', type=int, default=0,
-                        help='print a combined log (of length n lines) from all test nodes and test framework to the console on failure.')
+                        help='Print a combined log (of length n lines) from all test nodes and test framework to the console on failure.')
     parser.add_argument('--coverage', action='store_true',
-                        help='generate a basic coverage report for the RPC interface')
+                        help='Generate a basic coverage report for the RPC interface.')
     parser.add_argument(
-        '--exclude', '-x', help='specify a comma-separated-list of scripts to exclude.')
+        '--exclude', '-x', help='Specify a comma-separated-list of tests to exclude.')
     parser.add_argument('--extended', action='store_true',
-                        help='run the extended test suite in addition to the basic tests')
-    parser.add_argument('--cutoff', type=int, default=DEFAULT_EXTENDED_CUTOFF,
-                        help='set the cutoff runtime for what tests get run')
-    parser.add_argument('--startfrom', type=int, default=DEFAULT_STARTFROM,
-                        help='inverse of cutoff, only execute tests with at least this runtime')
+                        help='Run all tests in the test suite regardless of runtime. Ignores --cutoff and --startfrom.')
+    parser.add_argument('--cutoff', type=int, default=DEFAULT_CUTOFF,
+                        help='Skip tests with at least this runtime. Does not affect any new (i.e. untimed) tests.')
+    parser.add_argument('--startfrom', type=int, default=argparse.SUPPRESS,
+                        help='Only run tests with at least this runtime. Skips any new (i.e. untimed) tests. Ignores --cutoff.')
     parser.add_argument('--force', '-f', action='store_true',
-                        help='run tests even on platforms where they are disabled by default (e.g. windows).')
+                        help='Run tests even on platforms where they are disabled by default (e.g. Windows).')
     parser.add_argument('--help', '-h', '-?',
-                        action='store_true', help='print help text and exit')
+                        action='store_true', help='Show this help text and exit.')
     parser.add_argument('--jobs', '-j', type=int, default=DEFAULT_JOBS,
-                        help='how many test scripts to run in parallel.')
+                        help='How many test scripts to run in parallel.')
     parser.add_argument('--keepcache', '-k', action='store_true',
-                        help='the default behavior is to flush the cache directory on startup. --keepcache retains the cache from the previous testrun.')
+                        help='The default behavior is to flush the cache directory on startup. --keepcache retains the cache from the previous testrun.')
     parser.add_argument('--quiet', '-q', action='store_true',
-                        help='only print results summary and failure logs')
+                        help='Only print results summary and failure logs.')
     parser.add_argument('--tmpdirprefix', '-t',
                         default=os.path.join(build_dir, 'test', 'tmp'), help="Root directory for datadirs")
     parser.add_argument('--junitoutput', '-J', default='junit_results.xml',
@@ -263,18 +261,15 @@ def main():
         # Run all tests that do not exceed
         test_list = all_scripts
 
-        if args.startfrom != DEFAULT_STARTFROM and args.cutoff == DEFAULT_EXTENDED_CUTOFF:
-            cutoff = sys.maxsize
-        else:
-            cutoff = args.cutoff
-        startfrom = args.startfrom
-
         if args.extended:
             cutoff = sys.maxsize
             startfrom = 0
-
-        if startfrom > cutoff:
-            raise Exception("--startfrom > --cutoff")
+        elif 'startfrom' in args:
+            cutoff = sys.maxsize
+            startfrom = args.startfrom
+        else:
+            cutoff = args.cutoff
+            startfrom = 0
 
     # Remove the test cases that the user has explicitly asked to exclude.
     if args.exclude:
@@ -635,7 +630,7 @@ def get_tests_to_run(test_list, test_params, cutoff, startfrom, src_timings):
     result = [ ]
     for t in tests_with_params:
         runtime = get_test_time(t)
-        if runtime <= cutoff and runtime > startfrom:
+        if runtime < cutoff and runtime >= startfrom:
             result.append(t)
 
     result.sort(key=lambda x: (-get_test_time(x), x))
