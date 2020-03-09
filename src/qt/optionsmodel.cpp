@@ -72,10 +72,18 @@ void OptionsModel::Init(bool resetSettings) {
     fMinimizeOnClose = settings.value("fMinimizeOnClose").toBool();
 
     // Display
-    if (!settings.contains("nDisplayUnit")) {
-        settings.setValue("nDisplayUnit", BitcoinUnits::BCH);
+    constexpr auto defaultDisplayUnit = BitcoinUnits::BCH;
+    if (!settings.contains("nDisplayUnit_v2")) {
+        settings.setValue("nDisplayUnit_v2", defaultDisplayUnit);
     }
-    nDisplayUnit = settings.value("nDisplayUnit").toInt();
+    nDisplayUnit = settings.value("nDisplayUnit_v2").toInt();
+    if (!BitcoinUnits::valid(nDisplayUnit)) {
+        // User might be running us after having run a new version that saved
+        // a unit we don't know about, so just default back to BCH.
+        qWarning() << "Unrecognized display unit (" << nDisplayUnit << ") read from settings, setting display unit back to"
+                   <<  BitcoinUnits::shortName(defaultDisplayUnit);
+        nDisplayUnit = defaultDisplayUnit;
+    }
 
     if (!settings.contains("strThirdPartyTxUrls")) {
         settings.setValue("strThirdPartyTxUrls", "");
@@ -508,7 +516,7 @@ void OptionsModel::setDisplayUnit(const QVariant &value) {
     if (!value.isNull()) {
         QSettings settings;
         nDisplayUnit = value.toInt();
-        settings.setValue("nDisplayUnit", nDisplayUnit);
+        settings.setValue("nDisplayUnit_v2", nDisplayUnit);
         Q_EMIT displayUnitChanged(nDisplayUnit);
     }
 }
@@ -573,5 +581,15 @@ void OptionsModel::checkAndMigrate() {
     if (settings.contains("addrSeparateProxyTor") &&
         settings.value("addrSeparateProxyTor").toString().endsWith("%2")) {
         settings.setValue("addrSeparateProxyTor", GetDefaultProxyAddress());
+    }
+
+    // Previous to version 0.21.1, we called this config key "nDisplayUnit",
+    // but then we subsequently renamed it to "nDiplayUnit_v2" after adding the
+    // Satoshi (sats) unit type. See issue #47.
+    if (settings.contains("nDisplayUnit") && !settings.contains("nDisplayUnit_v2")) {
+        const int oldVal = settings.value("nDisplayUnit").toInt();
+        if (BitcoinUnits::valid(oldVal))
+            // legacy value is valid, use it.
+            settings.setValue("nDisplayUnit_v2", oldVal);
     }
 }
