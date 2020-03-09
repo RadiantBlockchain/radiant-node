@@ -277,6 +277,15 @@ Q_SIGNALS:
 private:
     bool eventFilter(QObject *object, QEvent *event);
 };
+
+/**
+ * Returns the distance in pixels appropriate for drawing a subsequent character
+ * after text.
+ *
+ * Before Qt 5.11, QFontMetrics::width() is used (but it is deprecated
+ * since Qt 5.13.0). In Qt >= 5.11 QFontMetrics::horizontalAdvance() is used. 
+ */
+int TextWidth(const QFontMetrics &fm, const QString &text);
 } // namespace GUIUtil
 
 #endif // BITCOIN_QT_GUIUTIL_H
