@@ -27,11 +27,6 @@ static const int SEEDER_INIT_VERSION = 0;
 // message.
 static const int ADDR_SOFT_CAP = 1000;
 
-enum PeerMessagingState : bool {
-    Finished = true,
-    AwaitingMessages = false,
-};
-
 static CDataStream
 CreateVersionMessage(int64_t now, CAddress addrTo, CAddress addrFrom,
                      int32_t start_height, uint32_t nVersion,
@@ -61,9 +56,10 @@ public:
     }
 
     void TestProcessMessage(const std::string &strCommand, CDataStream &message,
-                            PeerMessagingState state) {
-        bool ret = CSeederNode::ProcessMessage(strCommand, message);
-        BOOST_CHECK_EQUAL(ret, bool(state));
+                            PeerMessagingState expectedState) {
+        PeerMessagingState ret =
+            CSeederNode::ProcessMessage(strCommand, message);
+        BOOST_CHECK_EQUAL(ret, expectedState);
     }
 };
 
