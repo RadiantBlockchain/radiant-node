@@ -66,5 +66,5 @@ const NetworkStyle *NetworkStyle::instantiate(const QString &networkId) {
             return new NetworkStyle(network_styles[x].appName, network_styles[x].iconColorHue, network_styles[x].titleAddText);
         }
     }
-    return 0;
+    return nullptr;
 }
