@@ -20,6 +20,7 @@ public:
     const QString &getAppName() const { return appName; }
     const QIcon &getAppIcon() const { return appIcon; }
     const QIcon &getTrayAndWindowIcon() const { return trayAndWindowIcon; }
+    const QIcon &getSplashIcon() const { return splashIcon; }
     const QString &getTitleAddText() const { return titleAddText; }
 
 private:
@@ -28,6 +29,7 @@ private:
     QString appName;
     QIcon appIcon;
     QIcon trayAndWindowIcon;
+    QIcon splashIcon;
     QString titleAddText;
 };
 
