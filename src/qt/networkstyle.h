@@ -18,18 +18,16 @@ public:
     static const NetworkStyle *instantiate(const QString &networkId);
 
     const QString &getAppName() const { return appName; }
-    const QIcon &getAppIcon() const { return appIcon; }
-    const QIcon &getTrayAndWindowIcon() const { return trayAndWindowIcon; }
     const QIcon &getSplashIcon() const { return splashIcon; }
+    const QIcon &getTrayAndWindowIcon() const { return trayAndWindowIcon; }
     const QString &getTitleAddText() const { return titleAddText; }
 
 private:
     NetworkStyle(const QString &appName, int iconColorHue, const char *titleAddText);
 
     QString appName;
-    QIcon appIcon;
-    QIcon trayAndWindowIcon;
     QIcon splashIcon;
+    QIcon trayAndWindowIcon;
     QString titleAddText;
 };
 
