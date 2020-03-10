@@ -3019,13 +3019,12 @@ bool CChainState::ActivateBestChain(const Config &config,
                 }
 
                 bool fInvalidFound = false;
-                std::shared_ptr<const CBlock> nullBlockPtr;
                 if (!ActivateBestChainStep(
                         config, state, pindexMostWork,
                         pblock && pblock->GetHash() ==
                                       pindexMostWork->GetBlockHash()
                             ? pblock
-                            : nullBlockPtr,
+                            : nullptr,
                         fInvalidFound, connectTrace)) {
                     return false;
                 }
@@ -3517,8 +3516,7 @@ void CChainState::ReceivedBlockTransactions(const CBlock &block,
                 mapBlocksUnlinked.erase(it);
             }
         }
-    } else if (pindexNew->pprev &&
-               pindexNew->pprev->IsValid(BlockValidity::TREE)) {
+    } else if (pindexNew->pprev->IsValid(BlockValidity::TREE)) {
         mapBlocksUnlinked.insert(std::make_pair(pindexNew->pprev, pindexNew));
     }
 }

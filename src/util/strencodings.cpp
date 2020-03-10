@@ -470,7 +470,7 @@ NODISCARD static bool ParsePrechecks(const std::string &str) {
         return false;
     }
     // No padding allowed
-    if (str.size() >= 1 && (IsSpace(str[0]) || IsSpace(str[str.size() - 1]))) {
+    if (IsSpace(str[0]) || IsSpace(str[str.size() - 1])) {
         return false;
     }
     // No embedded NUL characters allowed

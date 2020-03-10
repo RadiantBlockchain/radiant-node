@@ -21,16 +21,16 @@ class CTxOut;
  * Default for -blockmaxsize, which controls the maximum size of block the
  * mining code will create.
  */
-static const uint64_t DEFAULT_MAX_GENERATED_BLOCK_SIZE = 2 * ONE_MEGABYTE;
+static constexpr uint64_t DEFAULT_MAX_GENERATED_BLOCK_SIZE = 2 * ONE_MEGABYTE;
 /**
  * Default for -blockmintxfee, which sets the minimum feerate for a transaction
  * in blocks created by mining code.
  */
-static const Amount DEFAULT_BLOCK_MIN_TX_FEE_PER_KB(1000 * SATOSHI);
+static constexpr Amount DEFAULT_BLOCK_MIN_TX_FEE_PER_KB(1000 * SATOSHI);
 /**
  * The maximum size for transactions we're willing to relay/mine.
  */
-static const unsigned int MAX_STANDARD_TX_SIZE = 100000;
+static constexpr unsigned int MAX_STANDARD_TX_SIZE = 100000;
 
 /**
  * Biggest 'standard' txin is a 15-of-15 P2SH multisig with compressed
@@ -40,29 +40,29 @@ static const unsigned int MAX_STANDARD_TX_SIZE = 100000;
  * future-proofing. That's also enough to spend a 20-of-20 CHECKMULTISIG
  * scriptPubKey, though such a scriptPubKey is not considered standard.
  */
-static const unsigned int MAX_TX_IN_SCRIPT_SIG_SIZE = 1650;
+static constexpr unsigned int MAX_TX_IN_SCRIPT_SIG_SIZE = 1650;
 
 /**
  * Maximum number of signature check operations in an IsStandard() P2SH script.
  */
-static const unsigned int MAX_P2SH_SIGOPS = 15;
+static constexpr unsigned int MAX_P2SH_SIGOPS = 15;
 /**
  * The maximum number of sigops we're willing to relay/mine in a single tx.
  */
-static const unsigned int MAX_STANDARD_TX_SIGOPS = MAX_TX_SIGOPS_COUNT / 5;
+static constexpr unsigned int MAX_STANDARD_TX_SIGOPS = MAX_TX_SIGOPS_COUNT / 5;
 /**
  * Default for -maxmempool, maximum megabytes of mempool memory usage.
  */
-static const unsigned int DEFAULT_MAX_MEMPOOL_SIZE = 300;
+static constexpr unsigned int DEFAULT_MAX_MEMPOOL_SIZE = 300;
 /**
  * Default for -incrementalrelayfee, which sets the minimum feerate increase for
  * mempool limiting or BIP 125 replacement.
  */
-static const CFeeRate MEMPOOL_FULL_FEE_INCREMENT(1000 * SATOSHI);
+static constexpr CFeeRate MEMPOOL_FULL_FEE_INCREMENT(1000 * SATOSHI);
 /**
  * Default for -bytespersigop .
  */
-static const unsigned int DEFAULT_BYTES_PER_SIGOP =
+static constexpr unsigned int DEFAULT_BYTES_PER_SIGOP =
     1000000 / MAX_BLOCK_SIGOPS_PER_MB;
 /**
  * Min feerate for defining dust. Historically this has been the same as the
@@ -71,14 +71,14 @@ static const unsigned int DEFAULT_BYTES_PER_SIGOP =
  * only increase the dust limit after prior releases were already not creating
  * outputs below the new threshold.
  */
-static const Amount DUST_RELAY_TX_FEE(1000 * SATOSHI);
+static constexpr Amount DUST_RELAY_TX_FEE(1000 * SATOSHI);
 
 /**
  * When transactions fail script evaluations under standard flags, this flagset
  * influences the decision of whether to drop them or to also ban the originator
  * (see CheckInputs).
  */
-static const uint32_t MANDATORY_SCRIPT_VERIFY_FLAGS =
+static constexpr uint32_t MANDATORY_SCRIPT_VERIFY_FLAGS =
     SCRIPT_VERIFY_P2SH | SCRIPT_VERIFY_STRICTENC |
     SCRIPT_ENABLE_SIGHASH_FORKID | SCRIPT_VERIFY_LOW_S |
     SCRIPT_VERIFY_NULLFAIL | SCRIPT_VERIFY_MINIMALDATA |

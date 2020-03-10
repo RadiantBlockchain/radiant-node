@@ -133,9 +133,6 @@ BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn) {
     resetBlock();
 
     pblocktemplate.reset(new CBlockTemplate());
-    if (!pblocktemplate.get()) {
-        return nullptr;
-    }
 
     // Pointer for convenience.
     pblock = &pblocktemplate->block;

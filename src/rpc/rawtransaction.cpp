@@ -1775,8 +1775,7 @@ static UniValue finalizepsbt(const Config &config,
 
     UniValue result(UniValue::VOBJ);
     CDataStream ssTx(SER_NETWORK, PROTOCOL_VERSION);
-    bool extract = request.params[1].isNull() || (!request.params[1].isNull() &&
-                                                  request.params[1].get_bool());
+    bool extract = request.params[1].isNull() || request.params[1].get_bool();
     if (complete && extract) {
         CMutableTransaction mtx(*psbtx.tx);
         for (size_t i = 0; i < mtx.vin.size(); ++i) {
@@ -1952,8 +1951,7 @@ static UniValue converttopsbt(const Config &config,
     // Remove all scriptSigs from inputs
     for (CTxIn &input : tx.vin) {
         if (!input.scriptSig.empty() &&
-            (request.params[1].isNull() ||
-             (!request.params[1].isNull() && request.params[1].get_bool()))) {
+            (request.params[1].isNull() || request.params[1].get_bool())) {
             throw JSONRPCError(RPC_DESERIALIZATION_ERROR,
                                "Inputs must not have scriptSigs");
         }

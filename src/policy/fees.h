@@ -17,7 +17,7 @@ class CFeeRate;
 
 // Minimum and Maximum values for tracking feerates
 static constexpr Amount MIN_FEERATE(10 * SATOSHI);
-static const Amount MAX_FEERATE(int64_t(1e7) * SATOSHI);
+static constexpr Amount MAX_FEERATE(int64_t(1e7) * SATOSHI);
 
 // We have to lump transactions into buckets based on feerate, but we want to be
 // able to give accurate estimates over a large range of potential feerates.
