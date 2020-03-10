@@ -77,14 +77,14 @@ SplashScreen::SplashScreen(interfaces::Node &node, Qt::WindowFlags f, const Netw
     pixPaint.drawPixmap(rectIcon, icon);
 
     // check font size and drawing with
-    pixPaint.setFont(QFont(font, 33 * fontFactor));
+    pixPaint.setFont(QFont(font, 30 * fontFactor));
     QFontMetrics fm = pixPaint.fontMetrics();
     int titleTextWidth = GUIUtil::TextWidth(fm, titleText);
     if (titleTextWidth > 220) {
         fontFactor = fontFactor * 220 / titleTextWidth;
     }
 
-    pixPaint.setFont(QFont(font, 33 * fontFactor));
+    pixPaint.setFont(QFont(font, 30 * fontFactor));
     fm = pixPaint.fontMetrics();
     titleTextWidth = GUIUtil::TextWidth(fm, titleText);
     pixPaint.drawText(pixmap.width() / devicePixelRatio - titleTextWidth - paddingRight, paddingTop, titleText);
