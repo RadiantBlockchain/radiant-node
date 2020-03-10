@@ -159,7 +159,7 @@ public:
     }
 
     //! Index in mempool's vTxHashes
-    mutable size_t vTxHashesIdx;
+    mutable size_t vTxHashesIdx = 0;
 };
 
 // Helpers for modifying CTxMemPool::mapTx, which is a boost multi_index.

@@ -5,7 +5,4 @@
 #ifndef BITCOIN_GLOBALS_H
 #define BITCOIN_GLOBALS_H
 
-#include <cstdint>
-#include <string>
-
 #endif // BITCOIN_GLOBALS_H

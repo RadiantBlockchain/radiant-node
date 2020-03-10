@@ -121,8 +121,8 @@ std::pair<int, int64_t> CalculateSequenceLocks(const CTransaction &tx,
             nMinTime = std::max(
                 nMinTime,
                 nCoinTime +
-                    (int64_t)((txin.nSequence & CTxIn::SEQUENCE_LOCKTIME_MASK)
-                              << CTxIn::SEQUENCE_LOCKTIME_GRANULARITY) -
+                    int64_t((txin.nSequence & CTxIn::SEQUENCE_LOCKTIME_MASK)
+                            << CTxIn::SEQUENCE_LOCKTIME_GRANULARITY) -
                     1);
         } else {
             nMinHeight = std::max(

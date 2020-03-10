@@ -668,13 +668,13 @@ static void MaybeSetPeerAsAnnouncingHeaderAndIDs(NodeId nodeid,
     }
     connman->ForNode(nodeid, [&connman](CNode *pfrom) {
         AssertLockHeld(cs_main);
-        uint64_t nCMPCTBLOCKVersion = 1;
+        static constexpr uint64_t nCMPCTBLOCKVersion = 1;
         if (lNodesAnnouncingHeaderAndIDs.size() >= 3) {
             // As per BIP152, we only get 3 of our peers to announce
             // blocks using compact encodings.
             connman->ForNode(
                 lNodesAnnouncingHeaderAndIDs.front(),
-                [&connman, nCMPCTBLOCKVersion](CNode *pnodeStop) {
+                [&connman](CNode *pnodeStop) {
                     AssertLockHeld(cs_main);
                     connman->PushMessage(
                         pnodeStop, CNetMsgMaker(pnodeStop->GetSendVersion())

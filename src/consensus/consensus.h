@@ -9,36 +9,36 @@
 #include <cstdint>
 
 /** 1MB */
-static const uint64_t ONE_MEGABYTE = 1000000;
+static constexpr uint64_t ONE_MEGABYTE = 1000000;
 /** The maximum allowed size for a transaction, in bytes */
-static const uint64_t MAX_TX_SIZE = ONE_MEGABYTE;
+static constexpr uint64_t MAX_TX_SIZE = ONE_MEGABYTE;
 /** The minimum allowed size for a transaction, in bytes */
-static const uint64_t MIN_TX_SIZE = 100;
+static constexpr uint64_t MIN_TX_SIZE = 100;
 /** The maximum allowed size for a block, before the UAHF */
-static const uint64_t LEGACY_MAX_BLOCK_SIZE = ONE_MEGABYTE;
+static constexpr uint64_t LEGACY_MAX_BLOCK_SIZE = ONE_MEGABYTE;
 /** Default setting for maximum allowed size for a block, in bytes */
-static const uint64_t DEFAULT_MAX_BLOCK_SIZE = 32 * ONE_MEGABYTE;
+static constexpr uint64_t DEFAULT_MAX_BLOCK_SIZE = 32 * ONE_MEGABYTE;
 /**
  * The maximum allowed number of parsed signature check operations (SigOps)
  * per MB in a block (network rule).
  */
-static const int64_t MAX_BLOCK_SIGOPS_PER_MB = 20000;
+static constexpr int64_t MAX_BLOCK_SIGOPS_PER_MB = 20000;
 /** allowed number of signature check operations (sigops) per transaction. */
-static const uint64_t MAX_TX_SIGOPS_COUNT = 20000;
+static constexpr uint64_t MAX_TX_SIGOPS_COUNT = 20000;
 /** Allowed number of signature check operations per transaction. */
-static const uint64_t MAX_TX_SIGCHECKS = 3000;
+static constexpr uint64_t MAX_TX_SIGCHECKS = 3000;
 /**
  * The ratio between the maximum allowable block size and the maximum allowable
  * SigChecks (executed signature check operations) in the block. (network rule).
  */
-static const int BLOCK_MAXBYTES_MAXSIGCHECKS_RATIO = 141;
+static constexpr int BLOCK_MAXBYTES_MAXSIGCHECKS_RATIO = 141;
 /**
  * Coinbase transaction outputs can only be spent after this number of new
  * blocks (network rule).
  */
-static const int COINBASE_MATURITY = 100;
+static constexpr int COINBASE_MATURITY = 100;
 /** Coinbase scripts have their own script size limit. */
-static const int MAX_COINBASE_SCRIPTSIG_SIZE = 100;
+static constexpr int MAX_COINBASE_SCRIPTSIG_SIZE = 100;
 
 /** Flags for nSequence and nLockTime locks */
 /** Interpret sequence numbers as relative lock-time constraints. */
@@ -52,8 +52,8 @@ static constexpr unsigned int LOCKTIME_MEDIAN_TIME_PAST = (1 << 1);
  * MAX_BLOCK_SIGOPS_PER_MB by the size of the block in MB rounded up to the
  * closest integer.
  */
-inline uint64_t GetMaxBlockSigOpsCount(uint64_t blockSize) {
-    auto nMbRoundedUp = 1 + ((blockSize - 1) / ONE_MEGABYTE);
+inline constexpr uint64_t GetMaxBlockSigOpsCount(uint64_t blockSize) {
+    const auto nMbRoundedUp = 1 + ((blockSize - 1) / ONE_MEGABYTE);
     return nMbRoundedUp * MAX_BLOCK_SIGOPS_PER_MB;
 }
 
@@ -64,7 +64,7 @@ inline uint64_t GetMaxBlockSigOpsCount(uint64_t blockSize) {
  * block size. The returned value is rounded down (there are no fractional
  * sigchecks so the fractional part is meaningless).
  */
-inline uint64_t GetMaxBlockSigChecksCount(uint64_t maxBlockSize) {
+inline constexpr uint64_t GetMaxBlockSigChecksCount(uint64_t maxBlockSize) {
     return maxBlockSize / BLOCK_MAXBYTES_MAXSIGCHECKS_RATIO;
 }
 

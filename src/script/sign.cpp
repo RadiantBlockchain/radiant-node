@@ -203,8 +203,7 @@ bool ProduceSignature(const SigningProvider &provider,
         subscript = CScript(result[0].begin(), result[0].end());
         sigdata.redeem_script = subscript;
 
-        solved = solved &&
-                 SignStep(provider, creator, subscript, result, whichType,
+        solved = SignStep(provider, creator, subscript, result, whichType,
                           sigdata) &&
                  whichType != TX_SCRIPTHASH;
         result.push_back(

@@ -597,7 +597,6 @@ int dnsserver(dns_opt_t *opt) {
     if (listenSocket == -1) {
         struct sockaddr_in6 si_me;
         if ((listenSocket = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
-            listenSocket = -1;
             return -1;
         }
         replySocket = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
