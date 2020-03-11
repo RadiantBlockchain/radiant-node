@@ -3,27 +3,27 @@ Section: utils
 Priority: optional
 Maintainer: Andrea Suisani <sickpig@gmail.com>
 Uploaders: Andrea Suisani <sickpig@gmail.com>
-Build-Depends: debhelper,
- devscripts,
- automake,
- libtool,
+Build-Depends: automake,
  bash-completion,
- libboost-system-dev (>> 1.58) | libboost-system1.58-dev,
+ debhelper,
+ devscripts,
+ libtool,
  libdb5.3++-dev,
- libssl-dev,
  libevent-dev,
- pkg-config,
  libminiupnpc8-dev | libminiupnpc-dev (>> 1.6),
  libboost-filesystem-dev (>> 1.58) | libboost-filesystem1.58-dev,
- libboost-program-options-dev (>> 1.58) | libboost-program-options1.58-dev,
+ libboost-chrono-dev (>> 1.58) | libboost-chrono1.58-dev,
+ libboost-system-dev (>> 1.58) | libboost-system1.58-dev,
  libboost-thread-dev (>> 1.58) | libboost-thread1.58-dev,
  libboost-test-dev (>> 1.58) | libboost-test1.58-dev,
- qt4-qmake, libqt4-dev,
- qttools5-dev-tools, qttools5-dev,
- libqrencode-dev,
  libprotobuf-dev, protobuf-compiler,
+ libqrencode-dev,
+ libssl-dev,
  libzmq3-dev,
- python
+ pkg-config,
+ python3,
+ qttools5-dev,
+ qttools5-dev-tools
 Standards-Version: 3.9.2
 Homepage: https://bitcoincashnode.org/
 Vcs-Git: https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node.git
