@@ -30,3 +30,10 @@ $ make
 UniValue provides a single dynamic RAII C++ object class,
 and minimizes template use (contra json_spirit).
 
+## Library usage
+
+This is a fork of univalue used by Bitcoin Core. It is not maintained for usage
+by other projects. Notably, the API may break in non-backward-compatible ways.
+
+Other projects looking for a maintained library should use the upstream
+univalue at https://github.com/jgarzik/univalue.
