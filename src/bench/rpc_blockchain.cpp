@@ -11,6 +11,7 @@
 #include <streams.h>
 #include <consensus/validation.h>
 #include <rpc/blockchain.h>
+#include <rpc/protocol.h>
 
 #include <univalue.h>
 
@@ -30,7 +31,10 @@ static void BlockToJsonVerbose(benchmark::State& state) {
     blockindex.nBits = 403014710;
 
     while (state.KeepRunning()) {
-        (void)blockToJSON(block, &blockindex, &blockindex, /*verbose*/ true);
+        (void)JSONRPCReply(
+            blockToJSON(block, &blockindex, &blockindex, /*verbose*/ true),
+            UniValue(UniValue::VNULL),
+            UniValue("benchmark"));
     }
 }
 
