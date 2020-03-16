@@ -1,12 +1,12 @@
 Benchmarking
 ============
 
-Bitcoin ABC has an internal benchmarking framework, with benchmarks
+Bitcoin Cash Node has an internal benchmarking framework, with benchmarks
 for cryptographic algorithms (e.g. SHA1, SHA256, SHA512, RIPEMD160),
 as well as the rolling bloom filter, address encoding and decoding,
 CCoinsCaching, memory pool eviction, and wallet coin selection.
 
-After compiling bitcoin-abc, the benchmarks can be run with:
+After compiling bitcoin-cash-node, the benchmarks can be run with:
 `src/bench/bench_bitcoin`
 
 The output will look similar to:
