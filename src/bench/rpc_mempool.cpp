@@ -41,4 +41,32 @@ static void RpcMempool(benchmark::State &state) {
     }
 }
 
+static void RpcMempool10k(benchmark::State &state) {
+    CTxMemPool pool;
+    LOCK2(cs_main, pool.cs);
+
+    const size_t nTx = 10000, nIns = 10, nOuts = 10;
+
+    for (size_t i = 0; i < nTx; ++i) {
+        CMutableTransaction tx = CMutableTransaction();
+        tx.vin.resize(nIns);
+        for (size_t j = 0; j < nIns; ++j) {
+            tx.vin[j].scriptSig = CScript() << OP_1;
+        }
+        tx.vout.resize(nOuts);
+        for (size_t j = 0; j < nOuts; ++j) {
+            tx.vin[j].scriptSig = CScript() << OP_1;
+            tx.vout[j].scriptPubKey = CScript() << OP_1 << OP_EQUAL;
+            tx.vout[j].nValue = int64_t(i*j) * CENT;
+        }
+        const CTransactionRef tx_r{MakeTransactionRef(tx)};
+        AddTx(tx_r, /* fee */ int64_t(i) * CENT, pool);
+    }
+
+    while (state.KeepRunning()) {
+        (void)MempoolToJSON(pool, /*verbose*/ true);
+    }
+}
+
 BENCHMARK(RpcMempool, 40);
+BENCHMARK(RpcMempool10k, 10);
