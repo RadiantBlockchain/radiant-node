@@ -2561,6 +2561,7 @@ static UniValue scantxoutset(const Config &config,
 static const ContextFreeRPCCommand commands[] = {
     //  category            name                      actor (function)        argNames
     //  ------------------- ------------------------  ----------------------  ----------
+    { "blockchain",         "finalizeblock",          finalizeblock,          {"blockhash"} },
     { "blockchain",         "getbestblockhash",       getbestblockhash,       {} },
     { "blockchain",         "getblock",               getblock,               {"blockhash","verbosity|verbose"} },
     { "blockchain",         "getblockchaininfo",      getblockchaininfo,      {} },
@@ -2571,6 +2572,7 @@ static const ContextFreeRPCCommand commands[] = {
     { "blockchain",         "getchaintips",           getchaintips,           {} },
     { "blockchain",         "getchaintxstats",        getchaintxstats,        {"nblocks", "blockhash"} },
     { "blockchain",         "getdifficulty",          getdifficulty,          {} },
+    { "blockchain",         "getfinalizedblockhash",  getfinalizedblockhash,  {} },
     { "blockchain",         "getmempoolancestors",    getmempoolancestors,    {"txid","verbose"} },
     { "blockchain",         "getmempooldescendants",  getmempooldescendants,  {"txid","verbose"} },
     { "blockchain",         "getmempoolentry",        getmempoolentry,        {"txid"} },
@@ -2578,23 +2580,21 @@ static const ContextFreeRPCCommand commands[] = {
     { "blockchain",         "getrawmempool",          getrawmempool,          {"verbose"} },
     { "blockchain",         "gettxout",               gettxout,               {"txid","n","include_mempool"} },
     { "blockchain",         "gettxoutsetinfo",        gettxoutsetinfo,        {} },
-    { "blockchain",         "pruneblockchain",        pruneblockchain,        {"height"} },
-    { "blockchain",         "savemempool",            savemempool,            {} },
-    { "blockchain",         "verifychain",            verifychain,            {"checklevel","nblocks"} },
+    { "blockchain",         "invalidateblock",        invalidateblock,        {"blockhash"} },
+    { "blockchain",         "parkblock",              parkblock,              {"blockhash"} },
     { "blockchain",         "preciousblock",          preciousblock,          {"blockhash"} },
+    { "blockchain",         "pruneblockchain",        pruneblockchain,        {"height"} },
+    { "blockchain",         "reconsiderblock",        reconsiderblock,        {"blockhash"} },
+    { "blockchain",         "savemempool",            savemempool,            {} },
     { "blockchain",         "scantxoutset",           scantxoutset,           {"action", "scanobjects"} },
+    { "blockchain",         "unparkblock",            unparkblock,            {"blockhash"} },
+    { "blockchain",         "verifychain",            verifychain,            {"checklevel","nblocks"} },
 
     /* Not shown in help */
-    { "hidden",             "getfinalizedblockhash",            getfinalizedblockhash,            {} },
-    { "hidden",             "finalizeblock",                    finalizeblock,                    {"blockhash"} },
-    { "hidden",             "invalidateblock",                  invalidateblock,                  {"blockhash"} },
-    { "hidden",             "parkblock",                        parkblock,                        {"blockhash"} },
-    { "hidden",             "reconsiderblock",                  reconsiderblock,                  {"blockhash"} },
     { "hidden",             "syncwithvalidationinterfacequeue", syncwithvalidationinterfacequeue, {} },
-    { "hidden",             "unparkblock",                      unparkblock,                      {"blockhash"} },
-    { "hidden",             "waitfornewblock",                  waitfornewblock,                  {"timeout"} },
     { "hidden",             "waitforblock",                     waitforblock,                     {"blockhash","timeout"} },
     { "hidden",             "waitforblockheight",               waitforblockheight,               {"height","timeout"} },
+    { "hidden",             "waitfornewblock",                  waitfornewblock,                  {"timeout"} },
 };
 // clang-format on
 
