@@ -565,7 +565,6 @@ class TestResult():
         self.padding = 0
         self.stdout = stdout
         self.stderr = stderr
-        
 
     def sort_key(self):
         if self.status == "Passed":
@@ -574,7 +573,6 @@ class TestResult():
             return 2, self.name.lower()
         elif self.status == "Skipped":
             return 1, self.name.lower()
-
 
     def __repr__(self):
         if self.status == "Passed":
@@ -588,7 +586,7 @@ class TestResult():
             glyph = CIRCLE
 
         return color[1] + "{} | {}{} | {} | {}\n".format(
-            self.name.ljust(self.padding), glyph, self.status.ljust(7), (str(self.time) + " s").ljust(8), self.num+1) + color[0]
+            self.name.ljust(self.padding), glyph, self.status.ljust(7), (str(self.time) + " s").ljust(8), self.num + 1) + color[0]
 
     @property
     def was_successful(self):
@@ -627,7 +625,7 @@ def get_tests_to_run(test_list, test_params, cutoff, startfrom, src_timings):
             tests_with_params.extend(
                 [test_name + " " + " ".join(p) for p in params])
 
-    result = [ ]
+    result = []
     for t in tests_with_params:
         runtime = get_test_time(t)
         if runtime < cutoff and runtime >= startfrom:
@@ -732,7 +730,8 @@ def save_results_as_junit(test_results, file_name, time, test_suite_name):
         if test_result.status == "Skipped":
             ET.SubElement(e_test_case, "skipped", {"message": "skipped"}).text = "skipped"
         elif test_result.status == "Failed":
-            ET.SubElement(e_test_case, "failure", {"message": "failure"}).text = test_result.stderr or test_result.stdout or "<no output>"
+            fail_result = test_result.stderr or test_result.stdout or "<no output>"
+            ET.SubElement(e_test_case, "failure", {"message": "failure"}).text = fail_result
         # no special element for passed tests
 
         ET.SubElement(e_test_case, "system-out").text = test_result.stdout

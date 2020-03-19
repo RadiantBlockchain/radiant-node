@@ -288,7 +288,7 @@ def main():
     os.chdir('bitcoin-cash-node')
     if args.merge_request:
         subprocess.check_call(
-            ['git', 'fetch', args.url , 'merge-requests/' + args.version + '/head:mr-' + args.version])
+            ['git', 'fetch', args.url, 'merge-requests/' + args.version + '/head:mr-' + args.version])
         # if this is the first time you run gitian_build you never had a chance of initialize
         # the project repo inside gitian-builder directory, in fact this is usually done by
         # gitian-builder/bin/gbuild ruby script
@@ -299,7 +299,7 @@ def main():
             os.chdir('../../bitcoin-cash-node')
         os.chdir('../gitian-builder/inputs/bitcoin')
         subprocess.check_call(
-            ['git', 'fetch', args.url , 'merge-requests/' + args.version + '/head:mr-' + args.version])
+            ['git', 'fetch', args.url, 'merge-requests/' + args.version + '/head:mr-' + args.version])
         args.commit = subprocess.check_output(
             ['git', 'show', '-s', '--format=%H', 'FETCH_HEAD'], universal_newlines=True, encoding='utf8').strip()
         args.version = 'mr-' + args.version
