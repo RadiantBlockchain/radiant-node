@@ -19,7 +19,7 @@ ninja
 ninja check # recommended
 ```
 
-After a succesful test you can install the newly built binaries to your bin directory.
+After a successful test you can install the newly built binaries to your bin directory.
 Note that this will probably overwrite any previous version installed, including binaries from different sources.
 It might be necessary to run with `sudo`, depending on your system configuration:
 
