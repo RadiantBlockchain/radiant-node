@@ -892,6 +892,12 @@ QString formatServicesStr(quint64 mask) {
                 case NODE_BITCOIN_CASH:
                     strList.append("CASH");
                     break;
+                case NODE_GRAPHENE:
+                    strList.append("GRAPHENE");
+                    break;
+                case NODE_CF:
+                    strList.append("CF");
+                    break;
                 case NODE_NETWORK_LIMITED:
                     strList.append("LIMITED");
                     break;
