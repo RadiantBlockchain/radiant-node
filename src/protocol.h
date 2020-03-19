@@ -303,6 +303,13 @@ enum ServiceFlags : uint64_t {
     // TODO: remove (free up) the NODE_BITCOIN_CASH service bit once no longer
     // needed.
     NODE_BITCOIN_CASH = (1 << 5),
+    // NODE_GRAPHENE means the node supports Graphene blocks
+    // If this is turned off then the node will not service graphene requests nor
+    // make graphene requests
+    NODE_GRAPHENE = (1 << 6),
+    // NODE_CF means that the node supports BIP 157/158 style
+    // compact filters on block data
+    NODE_CF = (1 << 8),
     // NODE_NETWORK_LIMITED means the same as NODE_NETWORK with the limitation
     // of only serving the last 288 (2 day) blocks
     // See BIP159 for details on how this is implemented.
