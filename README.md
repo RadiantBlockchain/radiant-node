@@ -47,4 +47,5 @@ or https://t.me/bitcoincashnode
 Disclosure Policy
 -----------------
 
-Disclosure policy is under work, but please contact us at the above channels if you find urgent issues.
+We have a [Disclosure Policy](DISCLOSURE_POLICY.md) for responsible disclosure
+of security issues.
