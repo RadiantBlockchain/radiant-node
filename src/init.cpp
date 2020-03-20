@@ -325,7 +325,7 @@ void SetupServerArgs() {
     std::vector<std::string> hidden_args = {
         "-rpcssl", "-benchmark", "-h", "-help", "-socks", "-tor", "-debugnet",
         "-whitelistalwaysrelay", "-blockminsize", "-dbcrashratio",
-        "-forcecompactdb", "-usehd", "-parkdeepreorg", "-automaticunparking",
+        "-forcecompactdb", "-usehd",
         "-replayprotectionactivationtime",
         // GUI args. These will be overwritten by SetupUIArgs for the GUI
         "-allowselfsignedrootcertificates", "-choosedatadir", "-lang=<lang>",
@@ -356,6 +356,13 @@ void SetupServerArgs() {
             defaultChainParams->GetConsensus().defaultAssumeValid.GetHex(),
             testnetChainParams->GetConsensus().defaultAssumeValid.GetHex()),
         false, OptionsCategory::OPTIONS);
+    gArgs.AddArg("-automaticunparking",
+                 strprintf("If a new block is connected to a parked chain "
+                           "with now much more proof-of-work than the active "
+                           "chain, then unpark the parked chain automatically "
+                           "(default: %d)",
+                           DEFAULT_AUTOMATIC_UNPARKING),
+                 false, OptionsCategory::OPTIONS);
     gArgs.AddArg("-blocksdir=<dir>",
                  "Specify directory to hold blocks subdirectory for *.dat "
                  "files (default: <datadir>)",
@@ -452,6 +459,13 @@ void SetupServerArgs() {
                   MAX_SCRIPTCHECK_THREADS,
                   DEFAULT_SCRIPTCHECK_THREADS),
         false, OptionsCategory::OPTIONS);
+    gArgs.AddArg("-parkdeepreorg",
+                 strprintf("If connecting a new block would require rewinding "
+                           "more than one block from the active chain (i.e., "
+                           "a \"deep reorg\"), then mark the new block as "
+                           "parked (default: %d)",
+                           DEFAULT_PARK_DEEP_REORG),
+                 false, OptionsCategory::OPTIONS);
     gArgs.AddArg("-persistmempool",
                  strprintf("Whether to save the mempool on shutdown and load "
                            "on restart (default: %u)",

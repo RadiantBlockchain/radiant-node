@@ -2693,7 +2693,7 @@ CBlockIndex *CChainState::FindMostWorkChain() {
             // If this is a parked chain, but it has enough PoW, clear the park
             // state.
             bool fParkedChain = pindexTest->nStatus.isOnParkedChain();
-            if (fParkedChain && gArgs.GetBoolArg("-automaticunparking", true)) {
+            if (fParkedChain && gArgs.GetBoolArg("-automaticunparking", DEFAULT_AUTOMATIC_UNPARKING)) {
                 const CBlockIndex *pindexTip = chainActive.Tip();
 
                 // During initialization, pindexTip and/or pindexFork may be
@@ -4223,7 +4223,7 @@ bool CChainState::AcceptBlock(const Config &config,
     // later, during FindMostWorkChain. We mark the block as parked at the very
     // last minute so we can make sure everything is ready to be reorged if
     // needed.
-    if (gArgs.GetBoolArg("-parkdeepreorg", true)) {
+    if (gArgs.GetBoolArg("-parkdeepreorg", DEFAULT_PARK_DEEP_REORG)) {
         const CBlockIndex *pindexFork = chainActive.FindFork(pindex);
         if (pindexFork && pindexFork->nHeight + 1 < chainActive.Height()) {
             LogPrintf("Park block %s as it would cause a deep reorg.\n",
