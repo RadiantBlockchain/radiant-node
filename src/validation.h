@@ -179,6 +179,10 @@ static constexpr int DEFAULT_MAX_REORG_DEPTH = 10;
  * This value should be >> block propagation and validation time
  */
 static constexpr int64_t DEFAULT_MIN_FINALIZATION_DELAY = 2 * 60 * 60;
+/** Default for -parkdeepreorg */
+static constexpr bool DEFAULT_PARK_DEEP_REORG = true;
+/** Default for -automaticunparking */
+static constexpr bool DEFAULT_AUTOMATIC_UNPARKING = true;
 
 extern CScript COINBASE_FLAGS;
 extern CCriticalSection cs_main;
