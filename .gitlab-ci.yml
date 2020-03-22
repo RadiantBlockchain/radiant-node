@@ -113,6 +113,16 @@ test-debian-unittests:
         reports:
             junit: junit_unit_tests.xml
 
+test-debian-benchmarks:
+    stage: test
+    extends: .cache-debian
+    needs: ["build-debian"]
+    script:
+        - (cd build; ninja -t restat)
+        - (cd build; ninja bitcoin-bench; src/bench/bitcoin-bench -evals=1)
+    dependencies:
+        - build-debian
+
 test-debian-unittests_post_phonon:
     stage: test
     extends: .cache-debian
