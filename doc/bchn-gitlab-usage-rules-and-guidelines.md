@@ -135,6 +135,8 @@ NOTE: MR = "Merge Request"
 
 - "in_progress": issue/MR is classified as being in progress
 
+- "needs-testing": issue/MR is finished with implementation but needs someone else to take up testing
+
 - "non-blocking": issue/MR is classified as not blocking for configuration management of an upcoming release
 
 - "release-blocking": this issue or MR relates to something that may block an upcoming release
