@@ -29,7 +29,56 @@ for name_raw in names_raw:
         file_cpp.write("#include <cstdint>\n")
         file_cpp.write("#include <vector>\n")
         file_cpp.write("\n")
-        file_cpp.write("static const unsigned char raw[] = {" + ",".join(map(lambda x: "0x{:02x}".format(x), contents)) + "};\n")
+        code = "static const unsigned char raw[] = \""
+        prevX = -1
+        for i in range(len(contents)):
+            x = contents[i]
+            # We use short escape sequences for control characters that have one.
+            if x == 0x07:
+                code += "\\a"
+            elif x == 0x08:
+                code += "\\b"
+            elif x == 0x09:
+                code += "\\t"
+            elif x == 0x0a:
+                code += "\\n"
+            elif x == 0x0b:
+                code += "\\v"
+            elif x == 0x0c:
+                code += "\\f"
+            elif x == 0x0d:
+                code += "\\r"
+            # To avoid ending the C++ string, we escape quotation marks.
+            elif x == 0x22:
+                code += "\\\""
+            # To avoid formation of unintended escape sequences, we escape backslashes.
+            elif x == 0x5c:
+                code += "\\\\"
+            # To avoid C++ trigraph formation, we escape a question mark if the previous character was also a question mark.
+            elif prevX == 0x3f and x == 0x3f:
+                code += "\\?"
+            # We display a character unescaped if it is ASCII, and not a control character.
+            elif x >= 0x20 and x < 0x7f:
+                code += chr(x)
+            else:
+                # This character can be omitted if it is the last character and it is null,
+                # since we are allowed to read the terminating null added by the C++ compiler.
+                last = i+1 == len(contents)
+                if not last or x > 0x00:
+                    # We use octal escape sequences for the rest, which have a length limit of three octal digits.
+                    # One or two leading zeros in octal sequences can be omitted if the next character is not a digit.
+                    # If the next character is a digit, it is cheaper to use all three octal digits here,
+                    # than to escape the next character as well.
+                    octalAbbr = last or contents[i+1] < 0x30 or contents[i+1] >= 0x3a
+                    if octalAbbr and x < 0x08:
+                        code += "\\" + str(x)
+                    elif octalAbbr and x < 0x20:
+                        code += "\\" + str(x // 8) + str(x % 8)
+                    else:
+                        code += "\\" + str(x // 64) + str(x // 8 % 8) + str(x % 8)
+            prevX = x
+        code += "\";\n"
+        file_cpp.write(code)
         file_cpp.write("\n")
         file_cpp.write("namespace benchmark {\n")
         file_cpp.write("namespace data {\n")
