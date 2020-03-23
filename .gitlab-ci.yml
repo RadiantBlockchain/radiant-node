@@ -36,6 +36,12 @@ cache: &global_cache_settings
         <<: *global_cache_settings
         key: debian_cache
 
+.cache-debian-clang:
+    extends: .ccache_scripts
+    cache:
+        <<: *global_cache_settings
+        key: debian_cache_clang
+
 .cache-win:
     extends: .ccache_scripts
     cache:
@@ -68,6 +74,13 @@ cache: &global_cache_settings
             - depends/sources
             - depends/built
             - depends/x86_64-apple-darwin14
+
+
+.debian-clang-env:
+    extends: .cache-debian-clang
+    variables:
+        CC: clang-8
+        CXX: clang++-8
 
 ## Debian native build
 
@@ -286,6 +299,77 @@ test-debian-nowallet-unittests:
         reports:
             junit: junit_unit_tests.xml
 
+## Debian native with clang compiler
+build-debian-clang:
+    stage: build
+    extends: .debian-clang-env
+    needs: []
+    script:
+        - mkdir build
+        - cd build
+        - cmake -GNinja ..
+        - ninja -v
+        - ccache --show-stats
+
+    artifacts:
+        paths:
+            - build
+
+build-debian-tests-clang:
+    stage: build_tests
+    extends: .debian-clang-env
+    needs: ["build-debian-clang"]
+    script:
+        - (cd build; ninja -t restat)
+        - (cd build; ninja test_bitcoin)
+
+    artifacts:
+        paths:
+            - ./build/src/test/test_bitcoin
+            - ./build/src/lib*
+    dependencies:
+        - build-debian-clang
+
+test-debian-unittests-clang:
+    stage: test
+    cache: {}
+    needs: ["build-debian-tests-clang"]
+    script:
+        - ./build/src/test/test_bitcoin --logger=HRF:JUNIT,message,junit_unit_tests.xml
+    dependencies:
+        - build-debian-tests-clang
+    artifacts:
+        reports:
+            junit: junit_unit_tests.xml
+
+test-debian-utils-clang:
+    stage: test
+    extends: .debian-clang-env
+    needs: ["build-debian-clang"]
+    script:
+        - (cd build; ninja -t restat)
+        - (cd build; ninja check-bitcoin-qt
+              check-bitcoin-seeder
+              check-bitcoin-util
+              check-devtools
+              check-leveldb
+              check-rpcauth
+              check-secp256k1
+              check-univalue)
+        - ccache --show-stats
+    dependencies:
+        - build-debian-clang
+
+
+test-debian-benchmarks-clang:
+    stage: test
+    extends: .debian-clang-env
+    needs: ["build-debian-clang"]
+    script:
+        - (cd build; ninja -t restat)
+        - (cd build; ninja bitcoin-bench; src/bench/bitcoin-bench -evals=1)
+    dependencies:
+        - build-debian-clang
 
 ## Windows build
 
