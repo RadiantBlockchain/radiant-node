@@ -36,12 +36,12 @@ to `cmake`.
 
 In order to run the test suite (recommended), you will need to have Python 3 installed:
 
-```shell
+```bash
 pkg install python3
 ```
 
 To run the ZeroMQ tests:
-```shell
+```bash
 pkg install py37-pyzmq
 ```
 For the wallet (optional):
@@ -49,6 +49,14 @@ For the wallet (optional):
 ```bash
 pkg install db5
 ```
+If you also want to build the GUI client `bitcoin-qt` Qt 5 is necessary.
+To build with Qt 5 you need the following packages installed:
+
+```bash
+pkg install qt5-qmake qt5-buildtools qt5-linguisttools qt5-widgets protobuf qt5-testlib libqrencode-4.0.0
+```
+
+You can do without the `libqrencode-4.0.0` package, just pass `-DENABLE_QRCODE=OFF` on the `cmake` command line.
 
 ## Building Bitcoin Cash Node
 
@@ -77,6 +85,17 @@ cd build
 cmake -GNinja -DBUILD_BITCOIN_QT=OFF -DBUILD_BITCOIN_WALLET=OFF ..
 ninja
 ninja check # recommended
+```
+
+To build with wallet and GUI:
+
+```bash
+mkdir build
+cd build
+cmake -GNinja ..
+ninja
+ninja check # recommended
+ninja test_bitcoin-qt # recommended
 ```
 
 After a successful test you can install the newly built binaries to your bin directory.
