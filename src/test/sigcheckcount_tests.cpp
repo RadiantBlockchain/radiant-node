@@ -159,6 +159,12 @@ BOOST_AUTO_TEST_CASE(test_evalscript) {
             sigs[0] = {};
             CheckEvalScript(sigs, script, {m ? vfalse : vtrue}, 0);
 
+            // Check the all-null-signatures case with Schnorr multisigflags.
+            // Result should be 0 sigchecks too.
+            sigs.assign(m + 1, {});
+            sigs[0] = {};
+            CheckEvalScript(sigs, script, {m ? vfalse : vtrue}, 0, schnorrmultisigflags);
+
             // The all-ECDSA-signatures case counts as N sigchecks, except when
             // M=0 (so that it counts as 'all-null-signatures" instead).
             sigs.assign(m + 1, txsigecdsa);
