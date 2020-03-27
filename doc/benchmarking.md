@@ -6,8 +6,8 @@ for cryptographic algorithms (e.g. SHA1, SHA256, SHA512, RIPEMD160),
 as well as the rolling bloom filter, address encoding and decoding,
 CCoinsCaching, memory pool eviction, and wallet coin selection.
 
-After compiling bitcoin-cash-node, the benchmarks can be run with:
-`src/bench/bench_bitcoin`
+The benchmarks can be run and built using `ninja bench-bitcoin`.
+This produces and runs the benchmarking executable `src/bench/bench_bitcoin`.
 
 The output will look similar to:
 ```
