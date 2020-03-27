@@ -132,7 +132,7 @@ test-debian-benchmarks:
     needs: ["build-debian"]
     script:
         - (cd build; ninja -t restat)
-        - (cd build; ninja bitcoin-bench; src/bench/bitcoin-bench -evals=1)
+        - (cd build; ninja bitcoin-bench; src/bench/bench_bitcoin -evals=1)
     dependencies:
         - build-debian
 
@@ -367,7 +367,7 @@ test-debian-benchmarks-clang:
     needs: ["build-debian-clang"]
     script:
         - (cd build; ninja -t restat)
-        - (cd build; ninja bitcoin-bench; src/bench/bitcoin-bench -evals=1)
+        - (cd build; ninja bitcoin-bench; src/bench/bench_bitcoin -evals=1)
     dependencies:
         - build-debian-clang
 
