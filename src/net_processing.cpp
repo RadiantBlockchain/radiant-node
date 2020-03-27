@@ -1448,8 +1448,7 @@ static void RelayTransaction(const CTransaction &tx, CConnman *connman) {
     connman->ForEachNode([&inv](CNode *pnode) { pnode->PushInventory(inv); });
 }
 
-static void RelayAddress(const CAddress &addr, bool fReachable,
-                         CConnman *connman) {
+static void RelayAddress(const CAddress &addr, bool fReachable, const CConnman &connman) {
     // Limited relaying of addresses outside our network(s)
     unsigned int nRelayNodes = fReachable ? 2 : 1;
 
@@ -1457,10 +1456,9 @@ static void RelayAddress(const CAddress &addr, bool fReachable,
     // Use deterministic randomness to send to the same nodes for 24 hours at a
     // time so the addrKnowns of the chosen nodes prevent repeats.
     uint64_t hashAddr = addr.GetHash();
-    const CSipHasher hasher =
-        connman->GetDeterministicRandomizer(RANDOMIZER_ID_ADDRESS_RELAY)
-            .Write(hashAddr << 32)
-            .Write((GetTime() + hashAddr) / (24 * 60 * 60));
+    const CSipHasher hasher = connman.GetDeterministicRandomizer(RANDOMIZER_ID_ADDRESS_RELAY)
+                                  .Write(hashAddr << 32)
+                                  .Write((GetTime() + hashAddr) / (24 * 60 * 60));
     FastRandomContext insecure_rand;
 
     std::array<std::pair<uint64_t, CNode *>, 2> best{
@@ -1488,7 +1486,7 @@ static void RelayAddress(const CAddress &addr, bool fReachable,
         }
     };
 
-    connman->ForEachNodeThen(std::move(sortfunc), std::move(pushfunc));
+    connman.ForEachNodeThen(std::move(sortfunc), std::move(pushfunc));
 }
 
 static void ProcessGetBlockData(const Config &config, CNode *pfrom,
@@ -2479,7 +2477,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
             if (addr.nTime > nSince && !pfrom->fGetAddr && vAddr.size() <= 10 &&
                 addr.IsRoutable()) {
                 // Relay to a limited number of other nodes
-                RelayAddress(addr, fReachable, connman);
+                RelayAddress(addr, fReachable, *connman);
             }
             // Do not store addresses outside our network
             if (fReachable) {
