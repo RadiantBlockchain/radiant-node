@@ -138,14 +138,13 @@ MapOrphanTransactionsByPrev mapOrphanTransactionsByPrev GUARDED_BY(g_cs_orphans)
 }
 
 /**
- * Average delay between local address broadcasts in milliseconds.
+ * Average delay between local address broadcasts
  */
-static constexpr unsigned int AVG_LOCAL_ADDRESS_BROADCAST_INTERVAL =
-    24 * 60 * 60 * 1000;
+inline constexpr std::chrono::hours AVG_LOCAL_ADDRESS_BROADCAST_INTERVAL{24};
 /**
- * Average delay between peer address broadcasts in milliseconds.
+ * Average delay between peer address broadcasts
  */
-static const unsigned int AVG_ADDRESS_BROADCAST_INTERVAL = 30 * 1000;
+inline constexpr std::chrono::seconds AVG_ADDRESS_BROADCAST_INTERVAL{30};
 /**
  * Average delay between feefilter broadcasts in milliseconds.
  */
@@ -4321,18 +4320,16 @@ bool PeerLogicValidation::SendMessages(const Config &config, CNode *pto,
     // Address refresh broadcast
     int64_t nNow = GetTimeMicros();
     auto current_time = GetTime<std::chrono::microseconds>();
-    if (!IsInitialBlockDownload() && pto->nNextLocalAddrSend < nNow) {
+    if (!IsInitialBlockDownload() && pto->m_next_local_addr_send < current_time) {
         AdvertiseLocal(pto);
-        pto->nNextLocalAddrSend =
-            PoissonNextSend(nNow, AVG_LOCAL_ADDRESS_BROADCAST_INTERVAL);
+        pto->m_next_local_addr_send = PoissonNextSend(current_time, AVG_LOCAL_ADDRESS_BROADCAST_INTERVAL);
     }
 
     //
     // Message: addr
     //
-    if (pto->nNextAddrSend < nNow) {
-        pto->nNextAddrSend =
-            PoissonNextSend(nNow, AVG_ADDRESS_BROADCAST_INTERVAL);
+    if (pto->m_next_addr_send < current_time) {
+        pto->m_next_addr_send = PoissonNextSend(current_time, AVG_ADDRESS_BROADCAST_INTERVAL);
         std::vector<CAddress> vAddr;
         vAddr.reserve(pto->vAddrToSend.size());
         for (const CAddress &addr : pto->vAddrToSend) {
