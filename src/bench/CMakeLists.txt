@@ -1,8 +1,8 @@
 # Copyright (c) 2018-2020 The Bitcoin developers
 
-project(bitcoin-bench)
+project(bench_bitcoin)
 
-add_executable(bitcoin-bench
+add_executable(bench_bitcoin
 	EXCLUDE_FROM_ALL
 	base58.cpp
 	bench.cpp
@@ -26,10 +26,11 @@ add_executable(bitcoin-bench
 	rpc_mempool.cpp
 )
 
-target_link_libraries(bitcoin-bench common bitcoinconsensus wallet server)
+target_link_libraries(bench_bitcoin common bitcoinconsensus wallet server)
 
 if(BUILD_BITCOIN_WALLET)
-	target_sources(bitcoin-bench PRIVATE coin_selection.cpp)
+	target_sources(bench_bitcoin PRIVATE coin_selection.cpp)
 endif()
 
-add_custom_target(bench-bitcoin COMMAND bitcoin-bench USES_TERMINAL)
+add_custom_target(bench-bitcoin COMMAND bench_bitcoin USES_TERMINAL)
+add_custom_target(bitcoin-bench DEPENDS bench_bitcoin)
