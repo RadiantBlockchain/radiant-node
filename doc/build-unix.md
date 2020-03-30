@@ -1,17 +1,36 @@
-UNIX BUILD NOTES
-====================
+# UNIX BUILD NOTES
+
 Some notes on how to build Bitcoin Cash Node in Unix.
 
-(For FreeBSD specific instructions, see `build-freebsd.md` in this directory.)
+* For Ubuntu & Debian specific instructions, see [build-unix-deb.md](build-unix-deb.md) in this directory.
+* For Fedora & CentOS specific instructions, see [build-unix-rpm.md](build-unix-rpm.md) in this directory.
+* For Arch Linux specific instructions, see [build-unix-arch.md](build-unix-arch.md) in this directory.
+* For FreeBSD specific instructions, see [build-freebsd.md](build-freebsd.md) in this directory.
 
-To Build
----------------------
+**Table of contents**
+* [UNIX BUILD NOTES](build-unix.md#unix-build-notes)
+  * [To Build](build-unix.md#to-build)
+    * [Disable-wallet mode](build-unix.md#disable-wallet-mode)
+    * [ARM Cross-compilation](build-unix.md#arm-cross-compilation)
+    * [Additional cmake options](build-unix.md#additional-cmake-options)
+    * [Memory Requirements](build-unix.md#memory-requirements)
+    * [Strip debug symbols](build-unix.md#strip-debug-symbols)
+  * [miniupnpc](build-unix.md#miniupnpc)
+  * [Security](build-unix.md#security)
 
-Before you start building, please make sure that your compiler supports C++14.
+## To Build
 
-It is recommended to create a build directory to build out-of-tree. This will build bitcoin-qt as well.
+To build Bitcoin Cash Node you first need to install all the needed dependencies.
+See [dependencies.md](dependencies.md) or you OS specific guide in build-*.md.
+
+Please make sure that your compiler supports C++14.
+
+Assuming you have all the neceserry dependencies installted the commands below will
+build the node, with the `bitcoin-qt` GUI-client as well.
 
 ```bash
+git clone https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node.git
+cd bitcoin-cash-node/
 mkdir build
 cd build
 cmake -GNinja ..
@@ -27,155 +46,81 @@ It might be necessary to run with `sudo`, depending on your system configuration
 ninja install #optional
 ```
 
+### Disable-wallet mode
 
-Dependencies
----------------------
+When the intention is to run only a P2P node without a wallet, Bitcoin Cash Node
+may be compiled in disable-wallet mode by passing `-DBUILD_BITCOIN_WALLET=OFF`
+on the `cmake` command line.
 
-These dependencies are required:
+Mining is also possible in disable-wallet mode using the `getblocktemplate` RPC call.
 
- Library     | Purpose          | Description
- ------------|------------------|----------------------
- libssl      | Crypto           | Random Number Generation, Elliptic Curve Cryptography
- libboost    | Utility          | Library for threading, data structures, etc
- libevent    | Networking       | OS independent asynchronous networking
+### ARM Cross-compilation
 
-Optional dependencies:
+These steps can be performed on, for example, a Debian VM. The depends system
+will also work on other Linux distributions, however the commands for
+installing the toolchain will be different.
 
- Library     | Purpose          | Description
- ------------|------------------|----------------------
- miniupnpc   | UPnP Support     | Firewall-jumping support
- libdb       | Berkeley DB      | Wallet storage (only needed when wallet enabled)
- qt          | GUI              | GUI toolkit (only needed when GUI enabled)
- protobuf    | Payments in GUI  | Data interchange format used for payment protocol (only needed when GUI enabled)
- libqrencode | QR codes in GUI  | Optional for generating QR codes (only needed when GUI enabled)
- univalue    | Utility          | JSON parsing and encoding (bundled version will be used unless --with-system-univalue passed to configure)
- libzmq3     | ZMQ notification | Optional, allows generating ZMQ notifications (requires ZMQ version >= 4.x)
+Make sure you install all the build requirements mentioned above.
+Then, install the toolchain and some additional dependencies:
 
-For the versions used, see [dependencies.md](dependencies.md)
+```bash
+    sudo apt-get install autoconf automake curl g++-arm-linux-gnueabihf gcc-arm-linux-gnueabihf gperf pkg-config libtool
+```
 
-Memory Requirements
---------------------
+To build executables for ARM:
+
+```bash
+    cd depends
+    make build-linux-arm
+    cd ..
+    mkdir build
+    cd build
+    cmake -GNinja .. -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/LinuxARM.cmake -DENABLE_GLIBC_BACK_COMPAT=ON -DENABLE_STATIC_LIBSTDCXX=ON
+    ninja
+    ninja check # recommended
+```
+
+For further documentation on the depends system see [README.md](../depends/README.md)
+in the depends directory.
+
+### Additional cmake options
+
+A list of the cmake options and their current value can be displayed.
+From the build subdirectory (see above), run `cmake -LH ..`.
+
+### Memory Requirements
 
 C++ compilers are memory-hungry. It is recommended to have at least 1.5 GB of
-memory available when compiling Bitcoin Cash Node. On systems with less, gcc can be
-tuned to conserve memory with additional CXXFLAGS:
+memory available when compiling Bitcoin Cash Node. On systems with less, gcc can
+be tuned to conserve memory with additional CXXFLAGS:
 
-    cmake -GNinja .. -DCXXFLAGS="--param ggc-min-expand=1 --param ggc-min-heapsize=32768"
+```bash
+    cmake -GNinja -DCXXFLAGS="--param ggc-min-expand=1 --param ggc-min-heapsize=32768" ..
+```
 
-Dependency Build Instructions: Ubuntu & Debian
-----------------------------------------------
-Build requirements:
+### Strip debug symbols
 
-    sudo apt-get install bsdmainutils build-essential libssl-dev libevent-dev ninja-build python3
-
-On Debian Buster (10) or Ubuntu 19.04 and later:
-
-    sudo apt-get install cmake
-
-On previous Ubuntu versions, the `cmake` package is too old and needs to be installed from the Kitware APT repository:
-
-    sudo apt-get install apt-transport-https ca-certificates gnupg software-properties-common wget
-    wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | sudo apt-key add -
-
-Add the repository corresponding to your version (see [instructions from Kitware](https://apt.kitware.com)). For Ubuntu Bionic (18.04):
-
-    sudo apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
-
-Then update the package list and install `cmake`:
-
-    sudo apt update
-    sudo apt install cmake
-
-Options when installing required Boost library files:
-
-1. On at least Ubuntu 16.04+ and Debian 9+ there are generic names for the
-individual boost development packages, so the following can be used to only
-install necessary parts of boost:
-
-        sudo apt-get install libboost-system-dev libboost-filesystem-dev libboost-chrono-dev libboost-test-dev libboost-thread-dev
-
-2. If that doesn't work, you can install all boost development packages with:
-
-        sudo apt-get install libboost-all-dev
-
-BerkeleyDB 5.3 or later is required for the wallet. This can be installed with:
-
-        sudo apt-get install libdb-dev libdb++-dev
-
-See the section "Disable-wallet mode" to build Bitcoin Cash Node without wallet.
-
-Minipupnc dependencies (can be disabled by passing `-DENABLE_UPNP=OFF` on the cmake command line):
-
-    sudo apt-get install libminiupnpc-dev
-
-ZMQ dependencies (provides ZMQ API 4.x, can be disabled by passing `-BUILD_BITCOIN_ZMQ=OFF` on the cmake command line):
-
-    sudo apt-get install libzmq3-dev
-
-Dependencies for the GUI: Ubuntu & Debian
------------------------------------------
-
-If you want to build bitcoin-qt, make sure that the required packages for Qt development
-are installed. Qt 5 is necessary to build the GUI.
-To build without GUI pass `-DBUILD_BITCOIN_QT=OFF` on the cmake command line.
-
-To build with Qt 5 you need the following:
-
-    sudo apt-get install libqt5gui5 libqt5core5a libqt5dbus5 qttools5-dev qttools5-dev-tools libprotobuf-dev protobuf-compiler
-
-libqrencode dependencies (can be disabled by passing `-DENABLE_QRCODE=OFF` on the cmake command line):
-
-    sudo apt-get install libqrencode-dev
-
-Dependency Build Instructions: Fedora
--------------------------------------
-Build requirements:
-
-    sudo dnf install boost-devel cmake gcc-c++ libdb-cxx-devel libdb-devel libevent-devel ninja-build openssl-devel python3
-
-Minipupnc dependencies (can be disabled by passing `-DENABLE_UPNP=OFF` on the cmake command line):
-
-    sudo dnf install miniupnpc-devel
-
-ZMQ dependencies (can be disabled by passing `-BUILD_BITCOIN_ZMQ=OFF` on the cmake command line):
-
-    sudo dnf install zeromq-devel
-
-To build with Qt 5 you need the following:
-
-    sudo dnf install qt5-qttools-devel qt5-qtbase-devel protobuf-devel
-
-libqrencode dependencies (can be disabled by passing `-DENABLE_QRCODE=OFF`):
-
-    sudo dnf install qrencode-devel
-
-Notes
------
-The release is built with GCC and then "strip bitcoind" to strip the debug
+The release is built with GCC and then `strip bitcoind` to strip the debug
 symbols, which reduces the executable size by about 90%.
 
+## miniupnpc
 
-miniupnpc
----------
-
-[miniupnpc](http://miniupnp.free.fr/) may be used for UPnP port mapping.  It can be downloaded from [here](
-http://miniupnp.tuxfamily.org/files/).  UPnP support is compiled in and
-turned off by default.  See the cmake options for upnp behavior desired:
+[miniupnpc](http://miniupnp.free.fr/) may be used for UPnP port mapping.
+It can be downloaded from [here](http://miniupnp.tuxfamily.org/files/).
+UPnP support is compiled in and turned off by default.
+See the cmake options for upnp behavior desired:
 
     ENABLE_UPNP            Enable UPnP support (miniupnp required, default ON)
     START_WITH_UPNP        UPnP support turned on by default at runtime (default OFF)
 
-Boost
------
-For documentation on building Boost look at their official documentation: http://www.boost.org/build/doc/html/bbv2/installation.html
+## Security
 
-Security
---------
-To help make your Bitcoin Cash Node installation more secure by making certain attacks impossible to
-exploit even if a vulnerability is found, binaries are hardened by default.
+To help make your Bitcoin Cash Node installation more secure by making certain
+attacks impossible to exploit even if a vulnerability is found, binaries are hardened by default.
 This can be disabled by passing `-DENABLE_HARDENING=OFF`.
 
 Hardening enables the following features:
+
 * _Position Independent Executable_: Build position independent code to take advantage of Address Space Layout Randomization
     offered by some kernels. Attackers who can cause execution of code at an arbitrary memory
     location are thwarted if they don't know where anything useful is located.
@@ -185,14 +130,18 @@ Hardening enables the following features:
     On an AMD64 processor where a library was not compiled with -fPIC, this will cause an error
     such as: "relocation R_X86_64_32 against `......' can not be used when making a shared object;"
 
-    To test that you have built PIE executable, install scanelf, part of paxutils, and use:
+    To test that you have built PIE executable, install `scanelf`, part of `pax-utils`, and use:
 
+```bash
       scanelf -e ./bitcoin
+```
 
     The output should contain:
 
+```bash
       TYPE
       ET_DYN
+```
 
 * _Non-executable Stack_: If the stack is executable then trivial stack-based buffer overflow exploits are possible if
     vulnerable buffers are found. By default, Bitcoin Cash Node should be built with a non-executable stack,
@@ -202,60 +151,16 @@ Hardening enables the following features:
 
     To verify that the stack is non-executable after compiling use:
 
+```bash
       scanelf -e ./bitcoin
+```
 
     The output should contain:
 
+```
       STK/REL/PTL
       RW- R-- RW-
+```
 
     The `STK RW-` means that the stack is readable and writeable but not executable.
 
-Disable-wallet mode
---------------------
-When the intention is to run only a P2P node without a wallet, Bitcoin Cash Node may be compiled in
-disable-wallet mode by passing `-DBUILD_BITCOIN_WALLET=OFF` on the cmake command line.
-
-Mining is also possible in disable-wallet mode using the `getblocktemplate` RPC call.
-
-Additional cmake options
---------------------------
-A list of the cmake options and their current value can be displayed.
-From the build subdirectory (see above), run `cmake -LH ..`.
-
-Setup and Build Example: Arch Linux
------------------------------------
-This example lists the steps necessary to setup and build a command line only, non-wallet distribution of the latest changes on Arch Linux:
-
-    pacman -S boost cmake git libevent ninja python
-    git clone https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node.git
-    cd bitcoin-cash-node/
-    mkdir build
-    cd build
-    cmake -GNinja .. -DBUILD_BITCOIN_WALLET=OFF -DBUILD_BITCOIN_QT=OFF -DENABLE_UPNP=OFF -DBUILD_BITCOIN_ZMQ=OFF
-    ninja
-    ninja check # recommended
-
-ARM Cross-compilation
--------------------
-These steps can be performed on, for example, a Debian VM. The depends system
-will also work on other Linux distributions, however the commands for
-installing the toolchain will be different.
-
-Make sure you install all the build requirements mentioned above.
-Then, install the toolchain and some additional dependencies:
-
-    sudo apt-get install autoconf automake curl g++-arm-linux-gnueabihf gcc-arm-linux-gnueabihf gperf pkg-config
-
-To build executables for ARM:
-
-    cd depends
-    make build-linux-arm
-    cd ..
-    mkdir build
-    cd build
-    cmake -GNinja .. -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/LinuxARM.cmake -DENABLE_GLIBC_BACK_COMPAT=ON -DENABLE_STATIC_LIBSTDCXX=ON
-    ninja
-    ninja check # recommended
-
-For further documentation on the depends system see [README.md](../depends/README.md) in the depends directory.
