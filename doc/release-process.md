@@ -27,7 +27,7 @@ Bitcoin Cash Node Release Process
 
 4. Add git tag for release
     a. Create the tag: `git tag vM.m.r` (M = major version, m = minor version, r = revision)
-    b. Push the tag to Gitlab:
+    b. Push the tag to GitLab:
         ```
         git push <gitlab remote> master
         git push <gitlab remote> vM.m.r
