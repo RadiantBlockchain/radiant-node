@@ -103,16 +103,14 @@ class FinalizedHeadersTest(BitcoinTestFramework):
             headers_message.headers.append(construct_header_for(self.nodes[0],
                                                                 node_0_blockheight - i,
                                                                 block_time))
-            node_with_finalheaders.send_message(headers_message)
-            node_with_finalheaders.sync_with_ping()
+            node_with_finalheaders.send_and_ping(headers_message)
 
             # Create a header for node 1 and submit it
             headers_message = msg_headers()
             headers_message.headers.append(construct_header_for(self.nodes[1],
                                                                 node_1_blockheight - i,
                                                                 block_time))
-            node_without_finalheaders.send_message(headers_message)
-            node_without_finalheaders.sync_with_ping()
+            node_without_finalheaders.send_and_ping(headers_message)
 
             # Both nodes remain connected in this loop because
             # the new headers do not attempt to replace the finalized block
@@ -130,8 +128,7 @@ class FinalizedHeadersTest(BitcoinTestFramework):
         # Node 0 has not yet been disconnected, but it got a rejection logged and penalized
         expected_header_rejection_msg = ["peer=0 (0 -> 50) reason: bad-header-finalization", ]
         with self.nodes[0].assert_debug_log(expected_msgs=expected_header_rejection_msg, timeout=10):
-            node_with_finalheaders.send_message(headers_message)
-            node_with_finalheaders.sync_with_ping()
+            node_with_finalheaders.send_and_ping(headers_message)
             # The long sleep below is for GitLab CI.
             # On local modern test machines a sleep of 1 second worked
             # very reliably.
