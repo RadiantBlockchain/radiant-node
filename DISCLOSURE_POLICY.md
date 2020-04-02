@@ -96,6 +96,9 @@ Neighboring projects that may be affected by bugs, potential exploits, or other 
   * Security Contact: fpelliccioni at gmail dot com
   * Disclosure Policy: see https://github.com/k-nuth/kth/blob/master/README.md#security-disclosures
 
+* [Bitcoin Verde](https://github.com/SoftwareVerde/bitcoin-verde/)
+  * Security Contact: josh at softwareverde dot com
+
 We have approached several other projects and are waiting for responses from them.
 
 If you feel your projects is closely related and would like to form a disclosure relationship with Bitcoin Cash Node,
