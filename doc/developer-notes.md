@@ -34,7 +34,7 @@ Developer Notes
     - [GUI](#gui)
     - [Unit tests](#unit-tests)
     - [Subtrees](#subtrees)
-    - [Git and GitHub tips](#git-and-github-tips)
+    - [Git and GitLab tips](#git-and-gitlab-tips)
     - [RPC interface guidelines](#rpc-interface-guidelines)
 
 <!-- markdown-toc end -->
@@ -79,7 +79,7 @@ to clean up the patch automatically before submitting a pull request.
     - RIGHT: ChangeDirectory
   - DO NOT use obscure acronyms, DO uppercase any acronyms.
   - FINALLY, do not migrate existing code unless refactoring. It makes
-    forwarding-porting from Bitcoin Core more difficult.
+    forwarding-porting from Bitcoin Core and Bitcoin ABC more difficult.
 
 The naming convention roughly mirrors [Microsoft Naming Conventions](https://docs.microsoft.com/en-us/dotnet/standard/design-guidelines/general-naming-conventions)
 
@@ -398,7 +398,7 @@ Ignoring IDE/editor files
 In closed-source environments in which everyone uses the same IDE it is common
 to add temporary files it produces to the project-wide `.gitignore` file.
 
-However, in open source software such as Bitcoin Core, where everyone uses
+However, in open source software such as Bitcoin Cash Node, where everyone uses
 their own editors/IDE/tools, it is less common. Only you know what files your
 editor produces and this may change from version to version. The canonical way
 to do this is thus to create your local gitignore. Add this to `~/.gitconfig`:
@@ -428,7 +428,7 @@ Development guidelines
 ============================
 
 A few non-style-related recommendations for developers, as well as points to
-pay attention to for reviewers of Bitcoin Core code.
+pay attention to for reviewers of Bitcoin Cash Node code.
 
 Wallet
 -------
@@ -731,7 +731,7 @@ Current subtrees include:
   - Upstream at https://github.com/bitcoin-core/ctaes ; actively maintained by Core contributors.
 
 - src/univalue
-  - Upstream at https://github.com/jgarzik/univalue ; report important PRs to Core to avoid delay.
+  - BCHN no longer has a single upstream for `src/univalue`, but maintains its own univalue code based on fixes from several repositories, namely https://github.com/jgarzik/univalue, Bitcoin Core's fork of univalue and the Bitcoin ABC repository.
 
 Upgrading LevelDB
 ---------------------
@@ -780,14 +780,13 @@ would be to revert the upstream fix before applying the updates to Bitcoin's
 copy of LevelDB. In general you should be wary of any upstream changes affecting
 what data is returned from LevelDB queries.
 
-Git and GitHub tips
+Git and GitLab tips
 ---------------------
 
-- Github is not typically the source of truth for pull requests.  See CONTRIBUTING.md for instructions
-  on setting up your repo correctly.
+- See CONTRIBUTING.md for instructions on setting up your repo correctly.
 
-- Similarly, your git remote origin should be set to: `ssh://vcs@reviews.bitcoinabc.org:2221/source/bitcoin-abc.git`
-  instead of github.com.  See CONTRIBUTING.md for details.
+- Your git remote origin should be set to: `git@gitlab.com:username/bitcoin-cash-node.git`
+  where `username` is your account name on GitLab. See CONTRIBUTING.md for details.
 
 - For resolving merge/rebase conflicts, it can be useful to enable diff3 style using
   `git config merge.conflictstyle diff3`. Instead of
