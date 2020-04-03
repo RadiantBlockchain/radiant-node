@@ -1,11 +1,11 @@
-# BCHN Gitlab development working rules & guidelines
+# BCHN GitLab development working rules & guidelines
 
 This document describes the working rules, workflow, terminology and guidelines that developers and testers should be familiar with while working on the Bitcoin Cash Node repository and issue tracker at
 
 https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/
 
 
-## BCHN Gitlab workflow
+## BCHN GitLab workflow
 
 Below are common workflows users will encounter:
 
@@ -19,7 +19,7 @@ Below are common workflows users will encounter:
 
 * Create a Merge Request (MR)
 
-You will need to create a Gitlab account if you don't have one (it's free to do so).
+You will need to create a GitLab account if you don't have one (it's free to do so).
 
 
 ## General rules for contributors
@@ -28,7 +28,7 @@ The following are rules and should always be followed.
 
 **Rule 0**: If it seems wrong to follow a rule in some instance, query back with the maintainer about whether the process needs adjustment.
 
-**General Rule 1**: Any exceptions to following the rules shall always be documented by a comment on Gitlab. If you see a rule violation, ask the person (ping them on GL) to ask them to comment and explain why they did what they did.
+**General Rule 1**: Any exceptions to following the rules shall always be documented by a comment on GitLab. If you see a rule violation, ask the person (ping them on GL) to ask them to comment and explain why they did what they did.
 
 **General Rule 2**: For developers, when approving a merge request ("Approve" button), a comment must be left on what basis the approval is made. It can be in the terse form (ref. "Code review lingo") or in a more descriptive comment.
 
@@ -58,7 +58,7 @@ The following are guidelines and should be followed if possible.
 
 **Guideline 1**: Assign issues to yourself when starting to work on them, if they are unassigned. You don't need anyone's permission, but if it's an issue with past history, it is polite to query first if there is a chance your action might get in the way of someone.
 
-**Guideline 2**: If an issue is assigned to someone else but you can do some task that you think is helpful, you can do so without assigning it to yourself, or co-assigning it to yourself to indicate that you are also working on something related to that issue. You can also query (via Gitlab or otherwise) with the current Assignee whether they want to hand it over to you, in case they are currently inconvenienced or blocked from progressing it.
+**Guideline 2**: If an issue is assigned to someone else but you can do some task that you think is helpful, you can do so without assigning it to yourself, or co-assigning it to yourself to indicate that you are also working on something related to that issue. You can also query (via GitLab or otherwise) with the current Assignee whether they want to hand it over to you, in case they are currently inconvenienced or blocked from progressing it.
 
 **Guideline 3**: Use appropriate project checklists when reviewing anything. If you don't find a checklist, bug the maintainers to provide you one.
 
@@ -82,24 +82,24 @@ Commonly used lingo when reviewing a MR
 
 **Labels**
 
-Gitlab has a facility for decorating issues and Merge Requests with labels. Please see below for a list of known labels.
+GitLab has a facility for decorating issues and Merge Requests with labels. Please see below for a list of known labels.
 
 All labels should a clearly explained meaning and purpose. It is suggested that if a label is not documented, that an issue is opened to notify the maintainers of update the documentation.
 
 labels on issues may change during lifetime of an issue / MR.
 
-Anyone can set labels (add new, change, remove) at any time, the Gitlab system records all these label changes so it remains traceable who did what, when.
+Anyone can set labels (add new, change, remove) at any time, the GitLab system records all these label changes so it remains traceable who did what, when.
 
 **Tags**
 
 Committers can add prefix tags to their commit messages and MR titles to provide brief visual summary of their committed or proposed changes.
 
-These tags have no special meaning to Gitlab (at least not yet) and are simply for human consumption at this stage.They are not well standardized, but below you will find a section documenting some better known commit tags.
+These tags have no special meaning to GitLab (at least not yet) and are simply for human consumption at this stage.They are not well standardized, but below you will find a section documenting some better known commit tags.
 
 
 **WIP**
 
-When a merge requested is prefixed by "WIP:", Gitlab blocks merging of the MR.
+When a merge requested is prefixed by "WIP:", GitLab blocks merging of the MR.
 
 People who submit or work on a merge request should set the "WIP" prefix as long as they know the MR will still receive extensive revision and is not yet in a state ready for merge review.
 
@@ -109,7 +109,7 @@ The issue/MR will attract intention soon, but you can also invite others for rev
 Occasionally, developers may ask for review of WIP items in the understanding that such review is preliminary and intended to gather input for revision which is believed to be needed still.
 
 
-### List of labels currently used on BCHN Gitlab
+### List of labels currently used on BCHN GitLab
 
 NOTE: MR = "Merge Request"
 

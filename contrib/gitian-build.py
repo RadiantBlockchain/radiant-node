@@ -198,7 +198,7 @@ def main():
     parser.add_argument('-c', '--commit', action='store_true', dest='commit',
                         help='Indicate that the version argument is for a commit or branch')
     parser.add_argument('-R', '--merge-request', action='store_true', dest='merge_request',
-                        help='Indicate that the version argument is the number of a gitlab merge request')
+                        help='Indicate that the version argument is the number of a GitLab merge request')
     parser.add_argument('-u', '--url', dest='url', default='https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node.git',
                         help='Specify the URL of the repository. Default is %(default)s')
     parser.add_argument('-v', '--verify', action='store_true',

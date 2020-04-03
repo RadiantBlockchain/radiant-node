@@ -89,7 +89,7 @@ You only need to do this once:
 ./gitian-build.py --setup satoshi 0.21.0
 ```
 
-Where `satoshi` is your Gitlab name and `0.21.0` is the most recent tag (without `v`). 
+Where `satoshi` is your GitLab name and `0.21.0` is the most recent tag (without `v`).
 
 Build binaries
 --------------
@@ -109,7 +109,7 @@ You need to copy these uncommited changes to your host machine, where you can si
 
 ```bash
 export NAME=satoshi
-gpg --output $VERSION-linux/$NAME/bitcoin-cash-node-linux-0.21.0-build.assert.sig --detach-sign 0.21.0-linux/$NAME/bitcoin-cash-node-linux-0.21.0-build.assert 
-gpg --output $VERSION-osx-unsigned/$NAME/bitcoin-cash-node-osx-0.21.0-build.assert.sig --detach-sign 0.21.0-osx-unsigned/$NAME/bitcoin-cash-node-osx-0.21.0-build.assert 
-gpg --output $VERSION-win-unsigned/$NAME/bitcoin-cash-node-win-0.21.0-build.assert.sig --detach-sign 0.21.0-win-unsigned/$NAME/bitcoin-cash-node-win-0.21.0-build.assert 
+gpg --output $VERSION-linux/$NAME/bitcoin-cash-node-linux-0.21.0-build.assert.sig --detach-sign 0.21.0-linux/$NAME/bitcoin-cash-node-linux-0.21.0-build.assert
+gpg --output $VERSION-osx-unsigned/$NAME/bitcoin-cash-node-osx-0.21.0-build.assert.sig --detach-sign 0.21.0-osx-unsigned/$NAME/bitcoin-cash-node-osx-0.21.0-build.assert
+gpg --output $VERSION-win-unsigned/$NAME/bitcoin-cash-node-win-0.21.0-build.assert.sig --detach-sign 0.21.0-win-unsigned/$NAME/bitcoin-cash-node-win-0.21.0-build.assert
 ```

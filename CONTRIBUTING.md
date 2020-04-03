@@ -22,8 +22,8 @@ project progress and activities, even in detailed form such as individual
 change requests.
 
 Users are free to submit issues or comment on existing ones - all that is
-needed is a Gitlab account which can be freely registered (use the 'Register'
-button on the Gitlab page).
+needed is a GitLab account which can be freely registered (use the 'Register'
+button on the GitLab page).
 
 In addition to the project repository, we have various other channels where
 project contributors can be reached.
@@ -87,7 +87,7 @@ quickly, it should be reverted, and re-applied later when it no longer breaks th
 
 Here are some handy links for development practices aligned with Bitcoin Cash Node:
 
-- [BCHN Gitlab development working rules and guidelines](doc/bchn-gitlab-usage-rules-and-guidelines.md)
+- [BCHN GitLab development working rules and guidelines](doc/bchn-gitlab-usage-rules-and-guidelines.md)
 - [Developer Notes](doc/developer-notes.md)
 - [How to Do Code Reviews Like a Human - Part 1](https://mtlynch.io/human-code-reviews-1/) 
 - [How to Do Code Reviews Like a Human - Part 2](https://mtlynch.io/human-code-reviews-2/)
@@ -119,7 +119,7 @@ Enter a file in which to save the key (/home/*username*/.ssh/id_rsa): [Press ent
 
 *NOTE: the path in the message shown above is specific to UNIX-like systems and may differ if you run on other platforms.*
 
-4. Upload your SSH public key to Gitlab
+4. Upload your SSH public key to GitLab
 
   - Go to: `https://gitlab.com, log in
 
@@ -129,9 +129,9 @@ Paste contents from: `$HOME/.ssh/id_rsa.pub`
 
 5. Create a personal fork of the Bitcoin Cash Node repository for your work
 
-  - Sign into Gitlab under your account, then visit the project at https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node
+  - Sign into GitLab under your account, then visit the project at https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node
 
-  - Click the 'Fork' button on the top right, and choose to fork the project to your personal Gitlab space.
+  - Click the 'Fork' button on the top right, and choose to fork the project to your personal GitLab space.
 
 6. Clone your personal work repository to your local machine:
 
@@ -167,7 +167,7 @@ You can then proceed to test the changes proposed by that merge request.
 
 9. Code formatting tools
 
-During submission of patches, our Gitlab process may refused code that
+During submission of patches, our GitLab process may refused code that
 is not styled according to our coding guidelines.
 
 To enforce Bitcoin Cash Node codeformatting standards, you may need to
@@ -211,17 +211,17 @@ A typical workflow would be:
 
     git commit -a -m 'my-commit'
 
-- Push the topic branch to your Gitlab repository
+- Push the topic branch to your GitLab repository
 
     git push -u origin my-topic-branch
 
-- Then create a Merge Request (the Gitlab equivalent of a Pull Request)
+- Then create a Merge Request (the GitLab equivalent of a Pull Request)
   from that branch in your personal repository. To do this, you need to
-  sign in to Gitlab, go to the branch and click the button which lets you
+  sign in to GitLab, go to the branch and click the button which lets you
   create a Merge Request (you need to fill out at least title and description
   fields).
 
-- Work with us on Gitlab to receive review comments, going back to the
+- Work with us on GitLab to receive review comments, going back to the
   'Make your changes' step above if needed to make further changes on your
   branch, and push them upstream as above. They will automatically appear
   in your Merge Request.
