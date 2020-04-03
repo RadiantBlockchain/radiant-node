@@ -278,3 +278,5 @@ struct SaltedSubNetHasher : SaltedHasherBase {
     SaltedSubNetHasher() noexcept {} // circumvent some libstdc++-11 bugs on Debian unstable
     size_t operator()(const CSubNet  &) const;
 };
+
+bool SanityCheckASMap(const std::vector<bool> &asmap);

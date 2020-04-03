@@ -4,4 +4,8 @@
 
 #pragma once
 
+#include <vector>
+
 uint32_t Interpret(const std::vector<bool> &asmap, const std::vector<bool> &ip);
+
+bool SanityCheckASMap(const std::vector<bool> &asmap, int bits);

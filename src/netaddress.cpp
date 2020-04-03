@@ -897,3 +897,7 @@ size_t SaltedSubNetHasher::operator()(const CSubNet &subnet) const
 {
     return static_cast<size_t>(SerializeSipHash(subnet, k0(), k1()));
 }
+
+bool SanityCheckASMap(const std::vector<bool> &asmap) {
+    return SanityCheckASMap(asmap, 128); // For IP address lookups, the input is 128 bits
+}
