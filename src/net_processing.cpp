@@ -2065,13 +2065,13 @@ static void PushGetAddrOnceIfAfterVerAck(CConnman *connman, CNode *pfrom) {
 }
 
 static bool ProcessMessage(const Config &config, CNode *pfrom,
-                           const std::string &strCommand, CDataStream &vRecv,
+                           const std::string &msg_type, CDataStream &vRecv,
                            int64_t nTimeReceived, CConnman *connman,
                            const std::atomic<bool> &interruptMsgProc,
                            bool enable_bip61) {
     const CChainParams &chainparams = config.GetChainParams();
     LogPrint(BCLog::NET, "received: %s (%u bytes) peer=%d\n",
-             SanitizeString(strCommand), vRecv.size(), pfrom->GetId());
+             SanitizeString(msg_type), vRecv.size(), pfrom->GetId());
     if (gArgs.IsArgSet("-dropmessagestest") &&
         GetRand(gArgs.GetArg("-dropmessagestest", 0)) == 0) {
         LogPrintf("dropmessagestest DROPPING RECV MESSAGE\n");
@@ -2079,8 +2079,8 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
     }
 
     if (!(pfrom->GetLocalServices() & NODE_BLOOM) &&
-        (strCommand == NetMsgType::FILTERLOAD ||
-         strCommand == NetMsgType::FILTERADD)) {
+        (msg_type == NetMsgType::FILTERLOAD ||
+         msg_type == NetMsgType::FILTERADD)) {
         if (pfrom->nVersion >= NO_BLOOM_VERSION) {
             LOCK(cs_main);
             Misbehaving(pfrom, 100, "no-bloom-version");
@@ -2091,7 +2091,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         }
     }
 
-    if (strCommand == NetMsgType::REJECT) {
+    if (msg_type == NetMsgType::REJECT) {
         if (LogAcceptCategory(BCLog::NET)) {
             try {
                 std::string strMsg;
@@ -2119,14 +2119,14 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         return true;
     }
 
-    if (strCommand == NetMsgType::VERSION) {
+    if (msg_type == NetMsgType::VERSION) {
         // Each connection can only send one version message
         if (pfrom->nVersion != 0) {
             if (enable_bip61) {
                 connman->PushMessage(
                     pfrom,
                     CNetMsgMaker(INIT_PROTO_VERSION)
-                        .Make(NetMsgType::REJECT, strCommand, REJECT_DUPLICATE,
+                        .Make(NetMsgType::REJECT, msg_type, REJECT_DUPLICATE,
                               std::string("Duplicate version message")));
             }
             LOCK(cs_main);
@@ -2164,7 +2164,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
                 connman->PushMessage(
                     pfrom,
                     CNetMsgMaker(INIT_PROTO_VERSION)
-                        .Make(NetMsgType::REJECT, strCommand,
+                        .Make(NetMsgType::REJECT, msg_type,
                               REJECT_NONSTANDARD,
                               strprintf("Expected to offer services %08x",
                                         GetDesirableServiceFlags(nServices))));
@@ -2182,7 +2182,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
                 connman->PushMessage(
                     pfrom,
                     CNetMsgMaker(INIT_PROTO_VERSION)
-                        .Make(NetMsgType::REJECT, strCommand, REJECT_OBSOLETE,
+                        .Make(NetMsgType::REJECT, msg_type, REJECT_OBSOLETE,
                               strprintf("Version must be %d or greater",
                                         MIN_PEER_PROTO_VERSION)));
             }
@@ -2348,7 +2348,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         return false;
     }
 
-    if (strCommand == NetMsgType::EXTVERSION) {
+    if (msg_type == NetMsgType::EXTVERSION) {
         // set expected to false, we got the message
         pfrom->extversionExpected = false;
         if (pfrom->fSuccessfullyConnected) {
@@ -2379,7 +2379,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
     // At this point, the outgoing message serialization version can't change.
     const CNetMsgMaker msgMaker(pfrom->GetSendVersion());
 
-    if (strCommand == NetMsgType::VERACK) {
+    if (msg_type == NetMsgType::VERACK) {
         pfrom->SetRecvVersion(
             std::min(pfrom->nVersion.load(), PROTOCOL_VERSION));
 
@@ -2434,7 +2434,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         return false;
     }
 
-    if (strCommand == NetMsgType::ADDR) {
+    if (msg_type == NetMsgType::ADDR) {
         std::vector<CAddress> vAddr;
         vRecv >> vAddr;
 
@@ -2497,13 +2497,13 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         return true;
     }
 
-    if (strCommand == NetMsgType::SENDHEADERS) {
+    if (msg_type == NetMsgType::SENDHEADERS) {
         LOCK(cs_main);
         State(pfrom->GetId())->fPreferHeaders = true;
         return true;
     }
 
-    if (strCommand == NetMsgType::SENDCMPCT) {
+    if (msg_type == NetMsgType::SENDCMPCT) {
         bool fAnnounceUsingCMPCTBLOCK = false;
         uint64_t nCMPCTBLOCKVersion = 0;
         vRecv >> fAnnounceUsingCMPCTBLOCK >> nCMPCTBLOCKVersion;
@@ -2524,7 +2524,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         return true;
     }
 
-    if (strCommand == NetMsgType::INV) {
+    if (msg_type == NetMsgType::INV) {
         std::vector<CInv> vInv;
         vRecv >> vInv;
         if (vInv.size() > MAX_INV_SZ) {
@@ -2605,7 +2605,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         return true;
     }
 
-    if (strCommand == NetMsgType::GETDATA) {
+    if (msg_type == NetMsgType::GETDATA) {
         std::vector<CInv> vInv;
         vRecv >> vInv;
         if (vInv.size() > MAX_INV_SZ) {
@@ -2628,7 +2628,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         return true;
     }
 
-    if (strCommand == NetMsgType::GETBLOCKS) {
+    if (msg_type == NetMsgType::GETBLOCKS) {
         CBlockLocator locator;
         uint256 hashStop;
         vRecv >> locator >> hashStop;
@@ -2711,7 +2711,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         return true;
     }
 
-    if (strCommand == NetMsgType::GETBLOCKTXN) {
+    if (msg_type == NetMsgType::GETBLOCKTXN) {
         BlockTransactionsRequest req;
         vRecv >> req;
 
@@ -2764,7 +2764,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         return true;
     }
 
-    if (strCommand == NetMsgType::GETHEADERS) {
+    if (msg_type == NetMsgType::GETHEADERS) {
         CBlockLocator locator;
         BlockHash hashStop;
         vRecv >> locator >> hashStop;
@@ -2843,7 +2843,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         return true;
     }
 
-    if (strCommand == NetMsgType::TX) {
+    if (msg_type == NetMsgType::TX) {
         // Stop processing the transaction early if
         // We are in blocks only mode and peer is either not whitelisted or
         // whitelistrelay is off
@@ -3072,7 +3072,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
             if (enable_bip61 && state.GetRejectCode() > 0 &&
                 state.GetRejectCode() < REJECT_INTERNAL) {
                 connman->PushMessage(
-                    pfrom, msgMaker.Make(NetMsgType::REJECT, strCommand,
+                    pfrom, msgMaker.Make(NetMsgType::REJECT, msg_type,
                                          uint8_t(state.GetRejectCode()),
                                          state.GetRejectReason().substr(
                                              0, MAX_REJECT_MESSAGE_LENGTH),
@@ -3085,7 +3085,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         return true;
     }
 
-    if (strCommand == NetMsgType::CMPCTBLOCK) {
+    if (msg_type == NetMsgType::CMPCTBLOCK) {
         // Ignore cmpctblock received while importing
         if (fImporting || fReindex) {
             LogPrint(BCLog::NET,
@@ -3367,7 +3367,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         return true;
     }
 
-    if (strCommand == NetMsgType::BLOCKTXN) {
+    if (msg_type == NetMsgType::BLOCKTXN) {
         // Ignore blocktxn received while importing
         if (fImporting || fReindex) {
             LogPrint(BCLog::NET,
@@ -3466,7 +3466,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         return true;
     }
 
-    if (strCommand == NetMsgType::HEADERS) {
+    if (msg_type == NetMsgType::HEADERS) {
         // Ignore headers received while importing
         if (fImporting || fReindex) {
             LogPrint(BCLog::NET,
@@ -3501,7 +3501,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
                                      should_punish);
     }
 
-    if (strCommand == NetMsgType::BLOCK) {
+    if (msg_type == NetMsgType::BLOCK) {
         // Ignore block received while importing
         if (fImporting || fReindex) {
             LogPrint(BCLog::NET,
@@ -3544,7 +3544,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         return true;
     }
 
-    if (strCommand == NetMsgType::GETADDR) {
+    if (msg_type == NetMsgType::GETADDR) {
         // This asymmetric behavior for inbound and outbound connections was
         // introduced to prevent a fingerprinting attack: an attacker can send
         // specific fake addresses to users' AddrMan and later request them by
@@ -3580,7 +3580,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         return true;
     }
 
-    if (strCommand == NetMsgType::MEMPOOL) {
+    if (msg_type == NetMsgType::MEMPOOL) {
         if (!(pfrom->GetLocalServices() & NODE_BLOOM) &&
             !pfrom->HasPermission(PF_MEMPOOL)) {
             if (!pfrom->HasPermission(PF_NOBAN)) {
@@ -3610,7 +3610,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         return true;
     }
 
-    if (strCommand == NetMsgType::PING) {
+    if (msg_type == NetMsgType::PING) {
         if (pfrom->nVersion > BIP0031_VERSION) {
             uint64_t nonce = 0;
             vRecv >> nonce;
@@ -3633,7 +3633,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         return true;
     }
 
-    if (strCommand == NetMsgType::PONG) {
+    if (msg_type == NetMsgType::PONG) {
         int64_t pingUsecEnd = nTimeReceived;
         uint64_t nonce = 0;
         size_t nAvail = vRecv.in_avail();
@@ -3692,7 +3692,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         return true;
     }
 
-    if (strCommand == NetMsgType::FILTERLOAD) {
+    if (msg_type == NetMsgType::FILTERLOAD) {
         CBloomFilter filter;
         vRecv >> filter;
 
@@ -3709,7 +3709,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         return true;
     }
 
-    if (strCommand == NetMsgType::FILTERADD) {
+    if (msg_type == NetMsgType::FILTERADD) {
         std::vector<uint8_t> vData;
         vRecv >> vData;
 
@@ -3736,7 +3736,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         return true;
     }
 
-    if (strCommand == NetMsgType::FILTERCLEAR) {
+    if (msg_type == NetMsgType::FILTERCLEAR) {
         LOCK(pfrom->cs_filter);
         if (pfrom->GetLocalServices() & NODE_BLOOM) {
             pfrom->pfilter.reset(new CBloomFilter());
@@ -3745,7 +3745,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         return true;
     }
 
-    if (strCommand == NetMsgType::FEEFILTER) {
+    if (msg_type == NetMsgType::FEEFILTER) {
         Amount newFeeFilter = Amount::zero();
         vRecv >> newFeeFilter;
         if (MoneyRange(newFeeFilter)) {
@@ -3759,7 +3759,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         return true;
     }
 
-    if (strCommand == NetMsgType::DSPROOF) {
+    if (msg_type == NetMsgType::DSPROOF) {
         LogPrint(BCLog::DSPROOF, "Received a Double Spend Proof from peer %d\n", pfrom->GetId());
         if (!DoubleSpendProof::IsEnabled()) {
             // -doublespendproof=0; dsproof subsystem disabled. Accept the message, but don't act on it.
@@ -3816,7 +3816,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         return true;
     }
 
-    if (strCommand == NetMsgType::NOTFOUND) {
+    if (msg_type == NetMsgType::NOTFOUND) {
         // Remove the NOTFOUND transactions from the peer
         LOCK(cs_main);
         CNodeState *state = State(pfrom->GetId());
@@ -3847,7 +3847,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
 
     // Ignore unknown commands for extensibility
     LogPrint(BCLog::NET, "Unknown command \"%s\" from peer=%d\n",
-             SanitizeString(strCommand), pfrom->GetId());
+             SanitizeString(msg_type), pfrom->GetId());
     return true;
 }
 
@@ -3970,7 +3970,7 @@ bool PeerLogicValidation::ProcessMessages(const Config &config, CNode *pfrom,
                  SanitizeString(hdr.GetCommand()), pfrom->GetId());
         return fMoreWork;
     }
-    std::string strCommand = hdr.GetCommand();
+    std::string msg_type = hdr.GetCommand();
 
     // Message size
     unsigned int nMessageSize = hdr.nMessageSize;
@@ -3980,7 +3980,7 @@ bool PeerLogicValidation::ProcessMessages(const Config &config, CNode *pfrom,
     const uint256 &hash = msg.GetMessageHash();
     if (std::memcmp(hash.data(), hdr.pchChecksum, CMessageHeader::CHECKSUM_SIZE) != 0) {
         LogPrint(BCLog::NET, "%s(%s, %u bytes): CHECKSUM ERROR expected %s was %s from peer=%d\n", __func__,
-                 SanitizeString(strCommand), nMessageSize, HexStr(MakeSpan(hash).first(CMessageHeader::CHECKSUM_SIZE)),
+                 SanitizeString(msg_type), nMessageSize, HexStr(MakeSpan(hash).first(CMessageHeader::CHECKSUM_SIZE)),
                  HexStr(hdr.pchChecksum), pfrom->GetId());
         if (m_banman) {
             m_banman->Discourage(pfrom->addr);
@@ -3992,7 +3992,7 @@ bool PeerLogicValidation::ProcessMessages(const Config &config, CNode *pfrom,
     // Process message
     bool fRet = false;
     try {
-        fRet = ProcessMessage(config, pfrom, strCommand, vRecv, msg.nTime,
+        fRet = ProcessMessage(config, pfrom, msg_type, vRecv, msg.nTime,
                               connman, interruptMsgProc, m_enable_bip61);
         if (interruptMsgProc) {
             return false;
@@ -4006,7 +4006,7 @@ bool PeerLogicValidation::ProcessMessages(const Config &config, CNode *pfrom,
             connman->PushMessage(
                 pfrom,
                 CNetMsgMaker(INIT_PROTO_VERSION)
-                    .Make(NetMsgType::REJECT, strCommand, REJECT_MALFORMED,
+                    .Make(NetMsgType::REJECT, msg_type, REJECT_MALFORMED,
                           std::string("error parsing message")));
         }
         if (strstr(e.what(), "end of data")) {
@@ -4014,22 +4014,22 @@ bool PeerLogicValidation::ProcessMessages(const Config &config, CNode *pfrom,
             LogPrint(BCLog::NET,
                      "%s(%s, %u bytes): Exception '%s' caught, normally caused "
                      "by a message being shorter than its stated length\n",
-                     __func__, SanitizeString(strCommand), nMessageSize,
+                     __func__, SanitizeString(msg_type), nMessageSize,
                      e.what());
         } else if (strstr(e.what(), "size too large")) {
             // Allow exceptions from over-long size
             LogPrint(BCLog::NET, "%s(%s, %u bytes): Exception '%s' caught\n",
-                     __func__, SanitizeString(strCommand), nMessageSize,
+                     __func__, SanitizeString(msg_type), nMessageSize,
                      e.what());
         } else if (strstr(e.what(), "non-canonical ReadCompactSize()")) {
             // Allow exceptions from non-canonical encoding
             LogPrint(BCLog::NET, "%s(%s, %u bytes): Exception '%s' caught\n",
-                     __func__, SanitizeString(strCommand), nMessageSize,
+                     __func__, SanitizeString(msg_type), nMessageSize,
                      e.what());
         } else if (strstr(e.what(), "message xmap must not exceed")) {
             // Allow exceptions from extversion message too large
             LogPrint(BCLog::NET, "%s(%s, %u bytes): Exception '%s' caught\n",
-                     __func__, SanitizeString(strCommand), nMessageSize,
+                     __func__, SanitizeString(msg_type), nMessageSize,
                      e.what());
         } else {
             PrintExceptionContinue(&e, "ProcessMessages()");
@@ -4042,7 +4042,7 @@ bool PeerLogicValidation::ProcessMessages(const Config &config, CNode *pfrom,
 
     if (!fRet) {
         LogPrint(BCLog::NET, "%s(%s, %u bytes) FAILED peer=%d\n", __func__,
-                 SanitizeString(strCommand), nMessageSize, pfrom->GetId());
+                 SanitizeString(msg_type), nMessageSize, pfrom->GetId());
     }
 
     LOCK(cs_main);
