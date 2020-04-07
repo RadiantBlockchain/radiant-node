@@ -61,14 +61,13 @@ The instructions below use the automated script [gitian-build.py](https://github
 
 MacOS code signing
 ------------------
-In order to sign builds for MacOS, you need to download the free SDK and extract a file. The steps are described [here](./gitian-building/gitian-building-mac-os-sdk.md).
-
-It is possible to download the resulting archive directly for users that desire to do so:
+In order to sign builds for MacOS, you need to obtain an archive which has been extracted from the free SDK.
 
 ```bash
 cd ~/gitian-builder
-curl -LO https://storage.googleapis.com/f4936e83b2dcbca742be51fb9692b153/MacOSX10.11.sdk.tar.gz
-echo "4732b52b5ebe300c8c91cbeed6d19d59c1ff9c56c7a1dd6cfa518b9c2c72abde MacOSX10.11.sdk.tar.gz" | sha256sum -c
+curl -LO https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.11.sdk.tar.xz
+echo "ff5f65e4637ef68cd8412a5f451cafe1dd03068bb57d41ca3fc971fb58a67de3 MacOSX10.11.sdk.tar.xz" | sha256sum -c
+
 mkdir -p inputs
 mv MacOSX10.11.sdk.tar.gz inputs
 ```
