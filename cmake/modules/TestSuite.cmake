@@ -1,5 +1,20 @@
 # Allow to easily build test suites
 
+macro(add_test_environment VARIABLE VALUE)
+	set_property(GLOBAL APPEND PROPERTY TEST_ENVIRONMENT "${VARIABLE}=${VALUE}")
+endmacro()
+
+function(add_test_custom_target TARGET)
+	cmake_parse_arguments(ARG "" "" "CUSTOM_TARGET_ARGS;TEST_COMMAND" ${ARGN})
+
+	get_property(TEST_ENVIRONMENT GLOBAL PROPERTY TEST_ENVIRONMENT)
+
+	add_custom_target(${TARGET}
+		${ARG_CUSTOM_TARGET_ARGS}
+		COMMAND ${CMAKE_COMMAND} -E env ${TEST_ENVIRONMENT} ${ARG_TEST_COMMAND}
+	)
+endfunction()
+
 # Define a new target property to hold the list of tests associated with a test
 # suite. This property is named UNIT_TESTS to avoid confusion with the directory
 # level property TESTS.
@@ -70,12 +85,14 @@ function(add_test_runner SUITE NAME EXECUTABLE)
 		INPUT "${BASE_RUNNER}"
 	)
 
-	add_custom_target(${TARGET}
-		COMMAND "${CONFIG_RUNNER}"
-		COMMENT "${SUITE}: testing ${NAME}"
-		DEPENDS
-			${EXECUTABLE}
-			"${CONFIG_RUNNER}"
+	add_test_custom_target(${TARGET}
+		TEST_COMMAND
+			"${CMAKE_SOURCE_DIR}/cmake/utils/test_wrapper.sh"
+			"$<TARGET_FILE:${EXECUTABLE}>" "${NAME}.log" ${ARGN}
+		CUSTOM_TARGET_ARGS
+			COMMENT "${SUITE}: testing ${NAME}"
+			DEPENDS ${EXECUTABLE}
+			VERBATIM
 	)
 	add_dependencies(${SUITE_TARGET} ${TARGET})
 endfunction()
