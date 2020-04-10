@@ -2471,7 +2471,7 @@ UniValue listtransactions(const Config &config, const JSONRPCRequest &request) {
 
     ret.clear();
     ret.setArray();
-    ret.push_backV(arrTmp);
+    ret.push_backV(std::move(arrTmp));
 
     return ret;
 }
@@ -4776,13 +4776,10 @@ public:
         if (ExtractDestination(subscript, embedded)) {
             // Only when the script corresponds to an address.
             UniValue subobj(UniValue::VOBJ);
-            UniValue detail = DescribeAddress(embedded);
-            subobj.pushKVs(detail);
-            UniValue wallet_detail = boost::apply_visitor(*this, embedded);
-            subobj.pushKVs(wallet_detail);
+            subobj.pushKVs( DescribeAddress(embedded) );
+            subobj.pushKVs( boost::apply_visitor(*this, embedded) );
             subobj.pushKV("address", EncodeDestination(embedded, GetConfig()));
-            subobj.pushKV("scriptPubKey",
-                          HexStr(subscript.begin(), subscript.end()));
+            subobj.pushKV("scriptPubKey", HexStr(subscript.begin(), subscript.end()));
             // Always report the pubkey at the top level, so that
             // `getnewaddress()['pubkey']` always works.
             if (subobj.exists("pubkey")) {
@@ -4848,10 +4845,8 @@ public:
 static UniValue DescribeWalletAddress(CWallet *pwallet,
                                       const CTxDestination &dest) {
     UniValue ret(UniValue::VOBJ);
-    UniValue detail = DescribeAddress(dest);
-    ret.pushKVs(detail);
-    ret.pushKVs(
-        boost::apply_visitor(DescribeWalletAddressVisitor(pwallet), dest));
+    ret.pushKVs( DescribeAddress(dest) );
+    ret.pushKVs( boost::apply_visitor(DescribeWalletAddressVisitor(pwallet), dest) );
     return ret;
 }
 
@@ -4979,8 +4974,7 @@ UniValue getaddressinfo(const Config &config, const JSONRPCRequest &request) {
     isminetype mine = IsMine(*pwallet, dest);
     ret.pushKV("ismine", bool(mine & ISMINE_SPENDABLE));
     ret.pushKV("iswatchonly", bool(mine & ISMINE_WATCH_ONLY));
-    UniValue detail = DescribeWalletAddress(pwallet, dest);
-    ret.pushKVs(detail);
+    ret.pushKVs( DescribeWalletAddress(pwallet, dest) );
     if (pwallet->mapAddressBook.count(dest)) {
         ret.pushKV("label", pwallet->mapAddressBook[dest].name);
         if (IsDeprecatedRPCEnabled(gArgs, "accounts")) {

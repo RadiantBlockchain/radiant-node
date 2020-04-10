@@ -732,13 +732,12 @@ static UniValue decodescript(const Config &config,
 static void TxInErrorToJSON(const CTxIn &txin, UniValue &vErrorsRet,
                             const std::string &strMessage) {
     UniValue entry(UniValue::VOBJ);
-    entry.pushKV("txid", txin.prevout.GetTxId().ToString());
-    entry.pushKV("vout", uint64_t(txin.prevout.GetN()));
-    entry.pushKV("scriptSig",
-                 HexStr(txin.scriptSig.begin(), txin.scriptSig.end()));
-    entry.pushKV("sequence", uint64_t(txin.nSequence));
-    entry.pushKV("error", strMessage);
-    vErrorsRet.push_back(entry);
+    entry.pushKV("txid", txin.prevout.GetTxId().ToString(), false);
+    entry.pushKV("vout", uint64_t(txin.prevout.GetN()), false);
+    entry.pushKV("scriptSig", HexStr(txin.scriptSig.begin(), txin.scriptSig.end()), false);
+    entry.pushKV("sequence", uint64_t(txin.nSequence), false);
+    entry.pushKV("error", strMessage, false);
+    vErrorsRet.push_back(std::move(entry));
 }
 
 static UniValue combinerawtransaction(const Config &config,
@@ -1012,10 +1011,10 @@ UniValue SignTransaction(interfaces::Chain &chain, CMutableTransaction &mtx,
     bool fComplete = vErrors.empty();
 
     UniValue result(UniValue::VOBJ);
-    result.pushKV("hex", EncodeHexTx(CTransaction(mtx)));
-    result.pushKV("complete", fComplete);
+    result.pushKV("hex", EncodeHexTx(CTransaction(mtx)), false);
+    result.pushKV("complete", fComplete, false);
     if (!vErrors.empty()) {
-        result.pushKV("errors", vErrors);
+        result.pushKV("errors", std::move(vErrors), false);
     }
 
     return result;
@@ -1321,7 +1320,7 @@ static UniValue testmempoolaccept(const Config &config,
 
     UniValue result(UniValue::VARR);
     UniValue result_0(UniValue::VOBJ);
-    result_0.pushKV("txid", txid.GetHex());
+    result_0.pushKV("txid", txid.GetHex(), false);
 
     CValidationState state;
     bool missing_inputs;
@@ -1332,16 +1331,16 @@ static UniValue testmempoolaccept(const Config &config,
             config, g_mempool, state, std::move(tx), &missing_inputs,
             false /* bypass_limits */, max_raw_tx_fee, true /* test_accept */);
     }
-    result_0.pushKV("allowed", test_accept_res);
+    result_0.pushKV("allowed", test_accept_res, false);
     if (!test_accept_res) {
         if (state.IsInvalid()) {
             result_0.pushKV("reject-reason",
                             strprintf("%i: %s", state.GetRejectCode(),
-                                      state.GetRejectReason()));
+                                      state.GetRejectReason()), false);
         } else if (missing_inputs) {
-            result_0.pushKV("reject-reason", "missing-inputs");
+            result_0.pushKV("reject-reason", "missing-inputs", false);
         } else {
-            result_0.pushKV("reject-reason", state.GetRejectReason());
+            result_0.pushKV("reject-reason", state.GetRejectReason(), false);
         }
     }
 

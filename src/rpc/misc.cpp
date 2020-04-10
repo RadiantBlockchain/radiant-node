@@ -62,25 +62,19 @@ static UniValue validateaddress(const Config &config,
                            "\"1PSSGeFHDnKNxiEyFrD1wcEaHr9hrQDDWc\""));
     }
 
-    CTxDestination dest =
-        DecodeDestination(request.params[0].get_str(), config.GetChainParams());
-    bool isValid = IsValidDestination(dest);
+    CTxDestination dest = DecodeDestination(request.params[0].get_str(), config.GetChainParams());
+    const bool isValid = IsValidDestination(dest);
 
     UniValue ret(UniValue::VOBJ);
-    ret.pushKV("isvalid", isValid);
+    ret.pushKV("isvalid", isValid, false);
 
     if (isValid) {
-        if (ret["address"].isNull()) {
-            std::string currentAddress = EncodeDestination(dest, config);
-            ret.pushKV("address", currentAddress);
+        ret.pushKV("address", EncodeDestination(dest, config), false);
 
-            CScript scriptPubKey = GetScriptForDestination(dest);
-            ret.pushKV("scriptPubKey",
-                       HexStr(scriptPubKey.begin(), scriptPubKey.end()));
+        CScript scriptPubKey = GetScriptForDestination(dest);
+        ret.pushKV("scriptPubKey", HexStr(scriptPubKey.begin(), scriptPubKey.end()), false);
 
-            UniValue detail = DescribeAddress(dest);
-            ret.pushKVs(detail);
-        }
+        ret.pushKVs( DescribeAddress(dest) );
     }
     return ret;
 }

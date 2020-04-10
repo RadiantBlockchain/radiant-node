@@ -3,6 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
+#include <algorithm>
 #include <stdint.h>
 #include <iomanip>
 #include <sstream>
@@ -12,7 +13,9 @@
 
 const UniValue NullUniValue;
 
-void UniValue::clear()
+const std::string UniValue::boolTrueVal{"1"};
+
+void UniValue::clear() noexcept
 {
     typ = VNULL;
     val.clear();
@@ -20,7 +23,7 @@ void UniValue::clear()
     values.clear();
 }
 
-bool UniValue::setNull()
+bool UniValue::setNull() noexcept
 {
     clear();
     return true;
@@ -31,7 +34,7 @@ bool UniValue::setBool(bool val_)
     clear();
     typ = VBOOL;
     if (val_)
-        val = "1";
+        val = boolTrueVal;
     return true;
 }
 
@@ -51,6 +54,16 @@ bool UniValue::setNumStr(const std::string& val_)
     clear();
     typ = VNUM;
     val = val_;
+    return true;
+}
+bool UniValue::setNumStr(std::string&& val_) noexcept
+{
+    if (!validNumStr(val_))
+        return false;
+
+    clear();
+    typ = VNUM;
+    val = std::move(val_);
     return true;
 }
 
@@ -90,15 +103,22 @@ bool UniValue::setStr(const std::string& val_)
     val = val_;
     return true;
 }
+bool UniValue::setStr(std::string&& val_) noexcept
+{
+    clear();
+    typ = VSTR;
+    val = std::move(val_);
+    return true;
+}
 
-bool UniValue::setArray()
+bool UniValue::setArray() noexcept
 {
     clear();
     typ = VARR;
     return true;
 }
 
-bool UniValue::setObject()
+bool UniValue::setObject() noexcept
 {
     clear();
     typ = VOBJ;
@@ -114,6 +134,15 @@ bool UniValue::push_back(const UniValue& val_)
     return true;
 }
 
+bool UniValue::push_back(UniValue&& val_)
+{
+    if (typ != VARR)
+        return false;
+
+    values.emplace_back(std::move(val_));
+    return true;
+}
+
 bool UniValue::push_backV(const std::vector<UniValue>& vec)
 {
     if (typ != VARR)
@@ -123,6 +152,36 @@ bool UniValue::push_backV(const std::vector<UniValue>& vec)
 
     return true;
 }
+bool UniValue::push_backV(std::vector<UniValue>&& vec)
+{
+    if (typ != VARR)
+        return false;
+
+    values.reserve(std::max(values.size() + vec.size(), values.capacity()));
+    for (auto & item : vec)
+        values.emplace_back(std::move(item));
+    vec.clear(); // clear vector now to be tidy with memory
+
+    return true;
+}
+
+void UniValue::__pushKV(const std::string& key, UniValue&& val_)
+{
+    keys.push_back(key);
+    values.emplace_back(std::move(val_));
+}
+
+void UniValue::__pushKV(std::string&& key, UniValue&& val_)
+{
+    keys.emplace_back(std::move(key));
+    values.emplace_back(std::move(val_));
+}
+
+void UniValue::__pushKV(std::string&& key, const UniValue& val_)
+{
+    keys.emplace_back(std::move(key));
+    values.push_back(val_);
+}
 
 void UniValue::__pushKV(const std::string& key, const UniValue& val_)
 {
@@ -130,26 +189,74 @@ void UniValue::__pushKV(const std::string& key, const UniValue& val_)
     values.push_back(val_);
 }
 
-bool UniValue::pushKV(const std::string& key, const UniValue& val_)
+bool UniValue::pushKV(const std::string& key, const UniValue& val_, bool check)
 {
     if (typ != VOBJ)
         return false;
 
     size_t idx;
-    if (findKey(key, idx))
+    if (check && findKey(key, idx))
         values[idx] = val_;
     else
         __pushKV(key, val_);
     return true;
 }
+bool UniValue::pushKV(const std::string& key, UniValue&& val_, bool check)
+{
+    if (typ != VOBJ)
+        return false;
+
+    size_t idx;
+    if (check && findKey(key, idx))
+        values[idx] = std::move(val_);
+    else
+        __pushKV(key, std::move(val_));
+    return true;
+}
+bool UniValue::pushKV(std::string&& key, const UniValue& val_, bool check)
+{
+    if (typ != VOBJ)
+        return false;
+
+    size_t idx;
+    if (check && findKey(key, idx))
+        values[idx] = val_;
+    else
+        __pushKV(std::move(key), val_);
+    return true;
+}
+bool UniValue::pushKV(std::string&& key, UniValue&& val_, bool check)
+{
+    if (typ != VOBJ)
+        return false;
+
+    size_t idx;
+    if (check && findKey(key, idx))
+        values[idx] = std::move(val_);
+    else
+        __pushKV(std::move(key), std::move(val_));
+    return true;
+}
+
 
 bool UniValue::pushKVs(const UniValue& obj)
 {
     if (typ != VOBJ || obj.typ != VOBJ)
         return false;
 
-    for (size_t i = 0; i < obj.keys.size(); i++)
-        __pushKV(obj.keys[i], obj.values.at(i));
+    for (size_t i = 0, nKeys = obj.keys.size(); i < nKeys; i++)
+        __pushKV(obj.keys[i], obj.values[i]);
+
+    return true;
+}
+bool UniValue::pushKVs(UniValue&& obj)
+{
+    if (typ != VOBJ || obj.typ != VOBJ)
+        return false;
+
+    for (size_t i = 0, nKeys = obj.keys.size(); i < nKeys; i++)
+        __pushKV(std::move(obj.keys[i]), std::move(obj.values[i]));
+    obj.setObject(); // reset moved obj now to be tidy with memory.
 
     return true;
 }
@@ -160,13 +267,13 @@ void UniValue::getObjMap(std::map<std::string,UniValue>& kv) const
         return;
 
     kv.clear();
-    for (size_t i = 0; i < keys.size(); i++)
+    for (size_t i = 0, nKeys = keys.size(); i < nKeys; ++i)
         kv[keys[i]] = values[i];
 }
 
-bool UniValue::findKey(const std::string& key, size_t& retIdx) const
+bool UniValue::findKey(const std::string& key, size_t& retIdx) const noexcept
 {
-    for (size_t i = 0; i < keys.size(); i++) {
+    for (size_t i = 0, nKeys = keys.size(); i < nKeys; ++i) {
         if (keys[i] == key) {
             retIdx = i;
             return true;
@@ -176,47 +283,60 @@ bool UniValue::findKey(const std::string& key, size_t& retIdx) const
     return false;
 }
 
-bool UniValue::checkObject(const std::map<std::string,UniValue::VType>& t) const
+bool UniValue::checkObject(const std::map<std::string,UniValue::VType>& t) const noexcept
 {
     if (typ != VOBJ)
         return false;
 
-    for (std::map<std::string,UniValue::VType>::const_iterator it = t.begin();
-         it != t.end(); ++it) {
-        size_t idx = 0;
-        if (!findKey(it->first, idx))
+    size_t idx; // initialized if findKey below returns true
+    for (const auto & kv : t) {
+        if (!findKey(kv.first, idx))
             return false;
 
-        if (values.at(idx).getType() != it->second)
+        if (values[idx].getType() != kv.second)
             return false;
     }
 
     return true;
 }
 
-const UniValue& UniValue::operator[](const std::string& key) const
+const UniValue& UniValue::operator[](const std::string& key) const noexcept
 {
     if (typ != VOBJ)
         return NullUniValue;
 
-    size_t index = 0;
+    size_t index; // initialized below if findKey returns true
     if (!findKey(key, index))
         return NullUniValue;
 
-    return values.at(index);
+    return values[index];
 }
 
-const UniValue& UniValue::operator[](size_t index) const
+const UniValue& UniValue::operator[](size_t index) const noexcept
 {
     if (typ != VOBJ && typ != VARR)
         return NullUniValue;
     if (index >= values.size())
         return NullUniValue;
 
-    return values.at(index);
+    return values[index];
 }
 
-const char *uvTypeName(UniValue::VType t)
+bool UniValue::reserve(size_t n) {
+    bool ret = false;
+    if (isArray() || isObject()) {
+        values.reserve(n);
+        ret = true;
+    }
+    if (isObject()) {
+        keys.reserve(n);
+        ret = true;
+    }
+    return ret;
+}
+
+
+const char *uvTypeName(UniValue::VType t) noexcept
 {
     switch (t) {
     case UniValue::VNULL: return "null";
@@ -231,12 +351,12 @@ const char *uvTypeName(UniValue::VType t)
     return NULL;
 }
 
-const UniValue& find_value(const UniValue& obj, const std::string& name)
+const UniValue& find_value(const UniValue& obj, const std::string& name) noexcept
 {
-    for (unsigned int i = 0; i < obj.keys.size(); i++)
+    // NB: keys is always empty if typ != VOBJ, and keys.size() == values.size() if type == VOBJ
+    for (size_t i = 0, nKeys = obj.keys.size(); i < nKeys; ++i)
         if (obj.keys[i] == name)
-            return obj.values.at(i);
+            return obj.values[i];
 
     return NullUniValue;
 }
-

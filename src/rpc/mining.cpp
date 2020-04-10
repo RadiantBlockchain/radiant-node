@@ -605,6 +605,7 @@ static UniValue getblocktemplate(const Config &config,
     aCaps.push_back("proposal");
 
     UniValue transactions(UniValue::VARR);
+    transactions.reserve(pblock->vtx.size());
     int index_in_template = 0;
     for (const auto &it : pblock->vtx) {
         const CTransaction &tx = *it;
@@ -616,16 +617,14 @@ static UniValue getblocktemplate(const Config &config,
         }
 
         UniValue entry(UniValue::VOBJ);
-        entry.pushKV("data", EncodeHexTx(tx));
-        entry.pushKV("txid", txId.GetHex());
-        entry.pushKV("hash", tx.GetHash().GetHex());
-        entry.pushKV("fee",
-                     pblocktemplate->entries[index_in_template].fees / SATOSHI);
-        int64_t nTxSigOps =
-            pblocktemplate->entries[index_in_template].sigOpCount;
-        entry.pushKV("sigops", nTxSigOps);
+        entry.pushKV("data", EncodeHexTx(tx), false);
+        entry.pushKV("txid", txId.GetHex(), false);
+        entry.pushKV("hash", tx.GetHash().GetHex(), false);
+        entry.pushKV("fee", pblocktemplate->entries[index_in_template].fees / SATOSHI, false);
+        int64_t nTxSigOps = pblocktemplate->entries[index_in_template].sigOpCount;
+        entry.pushKV("sigops", nTxSigOps, false);
 
-        transactions.push_back(entry);
+        transactions.push_back(std::move(entry));
         index_in_template++;
     }
 
@@ -640,27 +639,27 @@ static UniValue getblocktemplate(const Config &config,
     aMutable.push_back("prevblock");
 
     UniValue result(UniValue::VOBJ);
-    result.pushKV("capabilities", aCaps);
+    result.pushKV("capabilities", std::move(aCaps), false);
 
-    result.pushKV("version", pblock->nVersion);
+    result.pushKV("version", pblock->nVersion, false);
 
-    result.pushKV("previousblockhash", pblock->hashPrevBlock.GetHex());
-    result.pushKV("transactions", transactions);
-    result.pushKV("coinbaseaux", aux);
-    result.pushKV("coinbasevalue",
-                  int64_t(pblock->vtx[0]->vout[0].nValue / SATOSHI));
-    result.pushKV("longpollid", chainActive.Tip()->GetBlockHash().GetHex() +
-                                    i64tostr(nTransactionsUpdatedLast));
-    result.pushKV("target", hashTarget.GetHex());
-    result.pushKV("mintime", int64_t(pindexPrev->GetMedianTimePast()) + 1);
-    result.pushKV("mutable", aMutable);
-    result.pushKV("noncerange", "00000000ffffffff");
+    result.pushKV("previousblockhash", pblock->hashPrevBlock.GetHex(), false);
+    result.pushKV("transactions", std::move(transactions), false);
+    result.pushKV("coinbaseaux", std::move(aux), false);
+    result.pushKV("coinbasevalue", int64_t(pblock->vtx[0]->vout[0].nValue / SATOSHI), false);
+    result.pushKV("longpollid",
+                  chainActive.Tip()->GetBlockHash().GetHex() + i64tostr(nTransactionsUpdatedLast),
+                  false);
+    result.pushKV("target", hashTarget.GetHex(), false);
+    result.pushKV("mintime", int64_t(pindexPrev->GetMedianTimePast()) + 1, false);
+    result.pushKV("mutable", std::move(aMutable), false);
+    result.pushKV("noncerange", "00000000ffffffff", false);
     // FIXME: Allow for mining block greater than 1M.
-    result.pushKV("sigoplimit", GetMaxBlockSigOpsCount(DEFAULT_MAX_BLOCK_SIZE));
-    result.pushKV("sizelimit", DEFAULT_MAX_BLOCK_SIZE);
-    result.pushKV("curtime", pblock->GetBlockTime());
-    result.pushKV("bits", strprintf("%08x", pblock->nBits));
-    result.pushKV("height", int64_t(pindexPrev->nHeight) + 1);
+    result.pushKV("sigoplimit", GetMaxBlockSigOpsCount(DEFAULT_MAX_BLOCK_SIZE), false);
+    result.pushKV("sizelimit", DEFAULT_MAX_BLOCK_SIZE, false);
+    result.pushKV("curtime", pblock->GetBlockTime(), false);
+    result.pushKV("bits", strprintf("%08x", pblock->nBits), false);
+    result.pushKV("height", int64_t(pindexPrev->nHeight) + 1, false);
 
     return result;
 }
