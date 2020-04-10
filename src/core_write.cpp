@@ -196,81 +196,82 @@ void ScriptPubKeyToUniv(const CScript &scriptPubKey, UniValue &out,
     std::vector<CTxDestination> addresses;
     int nRequired;
 
-    out.pushKV("asm", ScriptToAsmStr(scriptPubKey));
+    out.pushKV("asm", ScriptToAsmStr(scriptPubKey), false);
     if (fIncludeHex) {
-        out.pushKV("hex", HexStr(scriptPubKey.begin(), scriptPubKey.end()));
+        out.pushKV("hex", HexStr(scriptPubKey.begin(), scriptPubKey.end()), false);
     }
 
     if (!ExtractDestinations(scriptPubKey, type, addresses, nRequired)) {
-        out.pushKV("type", GetTxnOutputType(type));
+        out.pushKV("type", GetTxnOutputType(type), false);
         return;
     }
 
-    out.pushKV("reqSigs", nRequired);
-    out.pushKV("type", GetTxnOutputType(type));
+    out.pushKV("reqSigs", nRequired, false);
+    out.pushKV("type", GetTxnOutputType(type), false);
 
     UniValue a(UniValue::VARR);
+    a.reserve(addresses.size());
     for (const CTxDestination &addr : addresses) {
         a.push_back(EncodeDestination(addr, GetConfig()));
     }
-    out.pushKV("addresses", a);
+    out.pushKV("addresses", std::move(a), false);
 }
 
 void TxToUniv(const CTransaction &tx, const uint256 &hashBlock, UniValue &entry,
               bool include_hex, int serialize_flags) {
-    entry.pushKV("txid", tx.GetId().GetHex());
-    entry.pushKV("hash", tx.GetHash().GetHex());
-    entry.pushKV("version", tx.nVersion);
-    entry.pushKV("size", (int)::GetSerializeSize(tx, PROTOCOL_VERSION));
-    entry.pushKV("locktime", (int64_t)tx.nLockTime);
+    entry.pushKV("txid", tx.GetId().GetHex(), false);
+    entry.pushKV("hash", tx.GetHash().GetHex(), false);
+    entry.pushKV("version", tx.nVersion, false);
+    entry.pushKV("size", (int)::GetSerializeSize(tx, PROTOCOL_VERSION), false);
+    entry.pushKV("locktime", (int64_t)tx.nLockTime, false);
 
     UniValue vin(UniValue::VARR);
+    vin.reserve(tx.vin.size());
     for (unsigned int i = 0; i < tx.vin.size(); i++) {
         const CTxIn &txin = tx.vin[i];
         UniValue in(UniValue::VOBJ);
         if (tx.IsCoinBase()) {
-            in.pushKV("coinbase",
-                      HexStr(txin.scriptSig.begin(), txin.scriptSig.end()));
+            in.pushKV("coinbase", HexStr(txin.scriptSig.begin(), txin.scriptSig.end()), false);
         } else {
-            in.pushKV("txid", txin.prevout.GetTxId().GetHex());
-            in.pushKV("vout", int64_t(txin.prevout.GetN()));
+            in.pushKV("txid", txin.prevout.GetTxId().GetHex(), false);
+            in.pushKV("vout", int64_t(txin.prevout.GetN()), false);
             UniValue o(UniValue::VOBJ);
-            o.pushKV("asm", ScriptToAsmStr(txin.scriptSig, true));
-            o.pushKV("hex",
-                     HexStr(txin.scriptSig.begin(), txin.scriptSig.end()));
-            in.pushKV("scriptSig", o);
+            o.pushKV("asm", ScriptToAsmStr(txin.scriptSig, true), false);
+            o.pushKV("hex", HexStr(txin.scriptSig.begin(), txin.scriptSig.end()), false);
+            in.pushKV("scriptSig", std::move(o), false);
         }
 
-        in.pushKV("sequence", (int64_t)txin.nSequence);
-        vin.push_back(in);
+        in.pushKV("sequence", (int64_t)txin.nSequence, false);
+        vin.push_back(std::move(in));
     }
 
-    entry.pushKV("vin", vin);
+    entry.pushKV("vin", std::move(vin), false);
 
     UniValue vout(UniValue::VARR);
+    vout.reserve(tx.vout.size());
     for (unsigned int i = 0; i < tx.vout.size(); i++) {
         const CTxOut &txout = tx.vout[i];
 
         UniValue out(UniValue::VOBJ);
 
-        out.pushKV("value", ValueFromAmount(txout.nValue));
-        out.pushKV("n", int64_t(i));
+        out.pushKV("value", ValueFromAmount(txout.nValue), false);
+        out.pushKV("n", int64_t(i), false);
 
         UniValue o(UniValue::VOBJ);
         ScriptPubKeyToUniv(txout.scriptPubKey, o, true);
-        out.pushKV("scriptPubKey", o);
-        vout.push_back(out);
+        out.pushKV("scriptPubKey", std::move(o), false);
+        vout.push_back(std::move(out));
     }
 
-    entry.pushKV("vout", vout);
+    entry.pushKV("vout", std::move(vout), false);
 
     if (!hashBlock.IsNull()) {
-        entry.pushKV("blockhash", hashBlock.GetHex());
+        entry.pushKV("blockhash", hashBlock.GetHex(), false);
     }
 
     if (include_hex) {
         // The hex-encoded transaction. Used the name "hex" to be consistent
         // with the verbose output of "getrawtransaction".
-        entry.pushKV("hex", EncodeHexTx(tx, serialize_flags));
+        entry.pushKV("hex", EncodeHexTx(tx, serialize_flags), false);
     }
 }

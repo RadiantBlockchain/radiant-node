@@ -85,28 +85,28 @@ static int ComputeNextBlockAndDepth(const CBlockIndex *tip,
 UniValue blockheaderToJSON(const CBlockIndex *tip,
                            const CBlockIndex *blockindex) {
     UniValue result(UniValue::VOBJ);
-    result.pushKV("hash", blockindex->GetBlockHash().GetHex());
+    result.pushKV("hash", blockindex->GetBlockHash().GetHex(), false);
     const CBlockIndex *pnext;
     int confirmations = ComputeNextBlockAndDepth(tip, blockindex, pnext);
-    result.pushKV("confirmations", confirmations);
-    result.pushKV("height", blockindex->nHeight);
-    result.pushKV("version", blockindex->nVersion);
-    result.pushKV("versionHex", strprintf("%08x", blockindex->nVersion));
-    result.pushKV("merkleroot", blockindex->hashMerkleRoot.GetHex());
-    result.pushKV("time", int64_t(blockindex->nTime));
-    result.pushKV("mediantime", int64_t(blockindex->GetMedianTimePast()));
-    result.pushKV("nonce", uint64_t(blockindex->nNonce));
-    result.pushKV("bits", strprintf("%08x", blockindex->nBits));
-    result.pushKV("difficulty", GetDifficulty(blockindex));
-    result.pushKV("chainwork", blockindex->nChainWork.GetHex());
-    result.pushKV("nTx", uint64_t(blockindex->nTx));
+    result.pushKV("confirmations", confirmations, false);
+    result.pushKV("height", blockindex->nHeight, false);
+    result.pushKV("version", blockindex->nVersion, false);
+    result.pushKV("versionHex", strprintf("%08x", blockindex->nVersion), false);
+    result.pushKV("merkleroot", blockindex->hashMerkleRoot.GetHex(), false);
+    result.pushKV("time", int64_t(blockindex->nTime), false);
+    result.pushKV("mediantime", int64_t(blockindex->GetMedianTimePast()), false);
+    result.pushKV("nonce", uint64_t(blockindex->nNonce), false);
+    result.pushKV("bits", strprintf("%08x", blockindex->nBits), false);
+    result.pushKV("difficulty", GetDifficulty(blockindex), false);
+    result.pushKV("chainwork", blockindex->nChainWork.GetHex(), false);
+    result.pushKV("nTx", uint64_t(blockindex->nTx), false);
 
     if (blockindex->pprev) {
         result.pushKV("previousblockhash",
-                      blockindex->pprev->GetBlockHash().GetHex());
+                      blockindex->pprev->GetBlockHash().GetHex(), false);
     }
     if (pnext) {
-        result.pushKV("nextblockhash", pnext->GetBlockHash().GetHex());
+        result.pushKV("nextblockhash", pnext->GetBlockHash().GetHex(), false);
     }
     return result;
 }
@@ -114,40 +114,41 @@ UniValue blockheaderToJSON(const CBlockIndex *tip,
 UniValue blockToJSON(const CBlock &block, const CBlockIndex *tip,
                      const CBlockIndex *blockindex, bool txDetails) {
     UniValue result(UniValue::VOBJ);
-    result.pushKV("hash", blockindex->GetBlockHash().GetHex());
+    result.pushKV("hash", blockindex->GetBlockHash().GetHex(), false);
     const CBlockIndex *pnext;
     int confirmations = ComputeNextBlockAndDepth(tip, blockindex, pnext);
-    result.pushKV("confirmations", confirmations);
-    result.pushKV("size", (int)::GetSerializeSize(block, PROTOCOL_VERSION));
-    result.pushKV("height", blockindex->nHeight);
-    result.pushKV("version", block.nVersion);
-    result.pushKV("versionHex", strprintf("%08x", block.nVersion));
-    result.pushKV("merkleroot", block.hashMerkleRoot.GetHex());
+    result.pushKV("confirmations", confirmations, false);
+    result.pushKV("size", (int)::GetSerializeSize(block, PROTOCOL_VERSION), false);
+    result.pushKV("height", blockindex->nHeight, false);
+    result.pushKV("version", block.nVersion, false);
+    result.pushKV("versionHex", strprintf("%08x", block.nVersion), false);
+    result.pushKV("merkleroot", block.hashMerkleRoot.GetHex(), false);
     UniValue txs(UniValue::VARR);
+    txs.reserve(block.vtx.size());
     for (const auto &tx : block.vtx) {
         if (txDetails) {
             UniValue objTx(UniValue::VOBJ);
             TxToUniv(*tx, uint256(), objTx, true, RPCSerializationFlags());
-            txs.push_back(objTx);
+            txs.push_back(std::move(objTx));
         } else {
             txs.push_back(tx->GetId().GetHex());
         }
     }
-    result.pushKV("tx", txs);
-    result.pushKV("time", block.GetBlockTime());
-    result.pushKV("mediantime", int64_t(blockindex->GetMedianTimePast()));
-    result.pushKV("nonce", uint64_t(block.nNonce));
-    result.pushKV("bits", strprintf("%08x", block.nBits));
-    result.pushKV("difficulty", GetDifficulty(blockindex));
-    result.pushKV("chainwork", blockindex->nChainWork.GetHex());
-    result.pushKV("nTx", uint64_t(blockindex->nTx));
+    result.pushKV("tx", std::move(txs), false);
+    result.pushKV("time", block.GetBlockTime(), false);
+    result.pushKV("mediantime", int64_t(blockindex->GetMedianTimePast()), false);
+    result.pushKV("nonce", uint64_t(block.nNonce), false);
+    result.pushKV("bits", strprintf("%08x", block.nBits), false);
+    result.pushKV("difficulty", GetDifficulty(blockindex), false);
+    result.pushKV("chainwork", blockindex->nChainWork.GetHex(), false);
+    result.pushKV("nTx", uint64_t(blockindex->nTx), false);
 
     if (blockindex->pprev) {
         result.pushKV("previousblockhash",
-                      blockindex->pprev->GetBlockHash().GetHex());
+                      blockindex->pprev->GetBlockHash().GetHex(), false);
     }
     if (pnext) {
-        result.pushKV("nextblockhash", pnext->GetBlockHash().GetHex());
+        result.pushKV("nextblockhash", pnext->GetBlockHash().GetHex(), false);
     }
     return result;
 }
@@ -260,8 +261,8 @@ static UniValue waitfornewblock(const Config &config,
         block = latestblock;
     }
     UniValue ret(UniValue::VOBJ);
-    ret.pushKV("hash", block.hash.GetHex());
-    ret.pushKV("height", block.height);
+    ret.pushKV("hash", block.hash.GetHex(), false);
+    ret.pushKV("height", block.height, false);
     return ret;
 }
 
@@ -317,8 +318,8 @@ static UniValue waitforblock(const Config &config,
     }
 
     UniValue ret(UniValue::VOBJ);
-    ret.pushKV("hash", block.hash.GetHex());
-    ret.pushKV("height", block.height);
+    ret.pushKV("hash", block.hash.GetHex(), false);
+    ret.pushKV("height", block.height, false);
     return ret;
 }
 
@@ -370,8 +371,8 @@ static UniValue waitforblockheight(const Config &config,
         block = latestblock;
     }
     UniValue ret(UniValue::VOBJ);
-    ret.pushKV("hash", block.hash.GetHex());
-    ret.pushKV("height", block.height);
+    ret.pushKV("hash", block.hash.GetHex(), false);
+    ret.pushKV("height", block.height, false);
     return ret;
 }
 
@@ -466,23 +467,23 @@ static void entryToJSON(const CTxMemPool &pool, UniValue &info,
     AssertLockHeld(pool.cs);
 
     UniValue fees(UniValue::VOBJ);
-    fees.pushKV("base", ValueFromAmount(e.GetFee()));
-    fees.pushKV("modified", ValueFromAmount(e.GetModifiedFee()));
-    fees.pushKV("ancestor", ValueFromAmount(e.GetModFeesWithAncestors()));
-    fees.pushKV("descendant", ValueFromAmount(e.GetModFeesWithDescendants()));
-    info.pushKV("fees", fees);
+    fees.pushKV("base", ValueFromAmount(e.GetFee()), false);
+    fees.pushKV("modified", ValueFromAmount(e.GetModifiedFee()), false);
+    fees.pushKV("ancestor", ValueFromAmount(e.GetModFeesWithAncestors()), false);
+    fees.pushKV("descendant", ValueFromAmount(e.GetModFeesWithDescendants()), false);
+    info.pushKV("fees", std::move(fees), false);
 
-    info.pushKV("size", (int)e.GetTxSize());
-    info.pushKV("fee", ValueFromAmount(e.GetFee()));
-    info.pushKV("modifiedfee", ValueFromAmount(e.GetModifiedFee()));
-    info.pushKV("time", e.GetTime());
-    info.pushKV("height", (int)e.GetHeight());
-    info.pushKV("descendantcount", e.GetCountWithDescendants());
-    info.pushKV("descendantsize", e.GetSizeWithDescendants());
-    info.pushKV("descendantfees", e.GetModFeesWithDescendants() / SATOSHI);
-    info.pushKV("ancestorcount", e.GetCountWithAncestors());
-    info.pushKV("ancestorsize", e.GetSizeWithAncestors());
-    info.pushKV("ancestorfees", e.GetModFeesWithAncestors() / SATOSHI);
+    info.pushKV("size", (int)e.GetTxSize(), false);
+    info.pushKV("fee", ValueFromAmount(e.GetFee()), false);
+    info.pushKV("modifiedfee", ValueFromAmount(e.GetModifiedFee()), false);
+    info.pushKV("time", e.GetTime(), false);
+    info.pushKV("height", (int)e.GetHeight(), false);
+    info.pushKV("descendantcount", e.GetCountWithDescendants(), false);
+    info.pushKV("descendantsize", e.GetSizeWithDescendants(), false);
+    info.pushKV("descendantfees", e.GetModFeesWithDescendants() / SATOSHI, false);
+    info.pushKV("ancestorcount", e.GetCountWithAncestors(), false);
+    info.pushKV("ancestorsize", e.GetSizeWithAncestors(), false);
+    info.pushKV("ancestorfees", e.GetModFeesWithAncestors() / SATOSHI, false);
     const CTransaction &tx = e.GetTx();
     std::set<std::string> setDepends;
     for (const CTxIn &txin : tx.vin) {
@@ -492,44 +493,47 @@ static void entryToJSON(const CTxMemPool &pool, UniValue &info,
     }
 
     UniValue depends(UniValue::VARR);
+    depends.reserve(setDepends.size());
     for (const std::string &dep : setDepends) {
         depends.push_back(dep);
     }
 
-    info.pushKV("depends", depends);
+    info.pushKV("depends", std::move(depends), false);
 
     UniValue spent(UniValue::VARR);
     const CTxMemPool::txiter &it = pool.mapTx.find(tx.GetId());
     const CTxMemPool::setEntries &setChildren = pool.GetMemPoolChildren(it);
+    spent.reserve(setChildren.size());
     for (CTxMemPool::txiter childiter : setChildren) {
         spent.push_back(childiter->GetTx().GetId().ToString());
     }
 
-    info.pushKV("spentby", spent);
+    info.pushKV("spentby", std::move(spent), false);
 }
 
 UniValue MempoolToJSON(const CTxMemPool &pool, bool verbose) {
+    UniValue ret;
     if (verbose) {
         LOCK(pool.cs);
-        UniValue o(UniValue::VOBJ);
+        ret.setObject();
+        ret.reserve(pool.mapTx.size());
         for (const CTxMemPoolEntry &e : pool.mapTx) {
             const uint256 &txid = e.GetTx().GetId();
             UniValue info(UniValue::VOBJ);
             entryToJSON(pool, info, e);
-            o.pushKV(txid.ToString(), info);
+            ret.pushKV(txid.ToString(), std::move(info), false);
         }
-        return o;
     } else {
         std::vector<uint256> vtxids;
         pool.queryHashes(vtxids);
 
-        UniValue a(UniValue::VARR);
+        ret.setArray();
+        ret.reserve(vtxids.size());
         for (const uint256 &txid : vtxids) {
-            a.push_back(txid.ToString());
+            ret.push_back(txid.ToString());
         }
-
-        return a;
     }
+    return ret;
 }
 
 static UniValue getrawmempool(const Config &config,
@@ -618,24 +622,26 @@ static UniValue getmempoolancestors(const Config &config,
     g_mempool.CalculateMemPoolAncestors(*it, setAncestors, noLimit, noLimit,
                                         noLimit, noLimit, dummy, false);
 
+    UniValue ret;
     if (!fVerbose) {
-        UniValue o(UniValue::VARR);
+        ret.setArray();
+        ret.reserve(setAncestors.size());
         for (CTxMemPool::txiter ancestorIt : setAncestors) {
-            o.push_back(ancestorIt->GetTx().GetId().ToString());
+            ret.push_back(ancestorIt->GetTx().GetId().ToString());
         }
 
-        return o;
     } else {
-        UniValue o(UniValue::VOBJ);
+        ret.setObject();
+        ret.reserve(setAncestors.size());
         for (CTxMemPool::txiter ancestorIt : setAncestors) {
             const CTxMemPoolEntry &e = *ancestorIt;
             const TxId &_txid = e.GetTx().GetId();
             UniValue info(UniValue::VOBJ);
             entryToJSON(::g_mempool, info, e);
-            o.pushKV(_txid.ToString(), info);
+            ret.pushKV(_txid.ToString(), std::move(info), false);
         }
-        return o;
     }
+    return ret;
 }
 
 static UniValue getmempooldescendants(const Config &config,
@@ -687,24 +693,26 @@ static UniValue getmempooldescendants(const Config &config,
     // CTxMemPool::CalculateDescendants will include the given tx
     setDescendants.erase(it);
 
+    UniValue ret;
     if (!fVerbose) {
-        UniValue o(UniValue::VARR);
+        ret.setArray();
+        ret.reserve(setDescendants.size());
         for (CTxMemPool::txiter descendantIt : setDescendants) {
-            o.push_back(descendantIt->GetTx().GetId().ToString());
+            ret.push_back(descendantIt->GetTx().GetId().ToString());
         }
 
-        return o;
     } else {
-        UniValue o(UniValue::VOBJ);
+        ret.setObject();
+        ret.reserve(setDescendants.size());
         for (CTxMemPool::txiter descendantIt : setDescendants) {
             const CTxMemPoolEntry &e = *descendantIt;
             const TxId &_txid = e.GetTx().GetId();
             UniValue info(UniValue::VOBJ);
             entryToJSON(::g_mempool, info, e);
-            o.pushKV(_txid.ToString(), info);
+            ret.pushKV(_txid.ToString(), std::move(info), false);
         }
-        return o;
     }
+    return ret;
 }
 
 static UniValue getmempoolentry(const Config &config,
@@ -1137,14 +1145,14 @@ static UniValue gettxoutsetinfo(const Config &config,
     CCoinsStats stats;
     FlushStateToDisk();
     if (GetUTXOStats(pcoinsdbview.get(), stats)) {
-        ret.pushKV("height", int64_t(stats.nHeight));
-        ret.pushKV("bestblock", stats.hashBlock.GetHex());
-        ret.pushKV("transactions", int64_t(stats.nTransactions));
-        ret.pushKV("txouts", int64_t(stats.nTransactionOutputs));
-        ret.pushKV("bogosize", int64_t(stats.nBogoSize));
-        ret.pushKV("hash_serialized", stats.hashSerialized.GetHex());
-        ret.pushKV("disk_size", stats.nDiskSize);
-        ret.pushKV("total_amount", ValueFromAmount(stats.nTotalAmount));
+        ret.pushKV("height", int64_t(stats.nHeight), false);
+        ret.pushKV("bestblock", stats.hashBlock.GetHex(), false);
+        ret.pushKV("transactions", int64_t(stats.nTransactions), false);
+        ret.pushKV("txouts", int64_t(stats.nTransactionOutputs), false);
+        ret.pushKV("bogosize", int64_t(stats.nBogoSize), false);
+        ret.pushKV("hash_serialized", stats.hashSerialized.GetHex(), false);
+        ret.pushKV("disk_size", stats.nDiskSize, false);
+        ret.pushKV("total_amount", ValueFromAmount(stats.nTotalAmount), false);
     } else {
         throw JSONRPCError(RPC_INTERNAL_ERROR, "Unable to read UTXO set");
     }
@@ -1222,18 +1230,17 @@ UniValue gettxout(const Config &config, const JSONRPCRequest &request) {
     }
 
     const CBlockIndex *pindex = LookupBlockIndex(pcoinsTip->GetBestBlock());
-    ret.pushKV("bestblock", pindex->GetBlockHash().GetHex());
+    ret.pushKV("bestblock", pindex->GetBlockHash().GetHex(), false);
     if (coin.GetHeight() == MEMPOOL_HEIGHT) {
-        ret.pushKV("confirmations", 0);
+        ret.pushKV("confirmations", 0, false);
     } else {
-        ret.pushKV("confirmations",
-                   int64_t(pindex->nHeight - coin.GetHeight() + 1));
+        ret.pushKV("confirmations", int64_t(pindex->nHeight - coin.GetHeight() + 1), false);
     }
-    ret.pushKV("value", ValueFromAmount(coin.GetTxOut().nValue));
+    ret.pushKV("value", ValueFromAmount(coin.GetTxOut().nValue), false);
     UniValue o(UniValue::VOBJ);
     ScriptPubKeyToUniv(coin.GetTxOut().scriptPubKey, o, true);
-    ret.pushKV("scriptPubKey", o);
-    ret.pushKV("coinbase", coin.IsCoinBase());
+    ret.pushKV("scriptPubKey", std::move(o), false);
+    ret.pushKV("coinbase", coin.IsCoinBase(), false);
 
     return ret;
 }
@@ -2440,7 +2447,7 @@ static UniValue scantxoutset(const Config &config,
             // no scan in progress
             return NullUniValue;
         }
-        result.pushKV("progress", g_scan_progress);
+        result.pushKV("progress", g_scan_progress.load());
         return result;
     } else if (request.params[0].get_str() == "abort") {
         CoinsViewScanReserver reserver;
@@ -2469,14 +2476,14 @@ static UniValue scantxoutset(const Config &config,
             if (scanobject.isStr()) {
                 desc_str = scanobject.get_str();
             } else if (scanobject.isObject()) {
-                UniValue desc_uni = find_value(scanobject, "desc");
+                const UniValue & desc_uni = find_value(scanobject, "desc");
                 if (desc_uni.isNull()) {
                     throw JSONRPCError(
                         RPC_INVALID_PARAMETER,
                         "Descriptor needs to be provided in scan object");
                 }
                 desc_str = desc_uni.get_str();
-                UniValue range_uni = find_value(scanobject, "range");
+                const UniValue & range_uni = find_value(scanobject, "range");
                 if (!range_uni.isNull()) {
                     range = range_uni.get_int();
                     if (range < 0 || range > 1000000) {
@@ -2515,7 +2522,6 @@ static UniValue scantxoutset(const Config &config,
 
         // Scan the unspent transaction output set for inputs
         UniValue unspents(UniValue::VARR);
-        std::vector<CTxOut> input_txos;
         std::map<COutPoint, Coin> coins;
         g_should_abort_scan = false;
         g_scan_progress = 0;
@@ -2529,28 +2535,29 @@ static UniValue scantxoutset(const Config &config,
         }
         bool res = FindScriptPubKey(g_scan_progress, g_should_abort_scan, count,
                                     pcursor.get(), needles, coins);
-        result.pushKV("success", res);
-        result.pushKV("searched_items", count);
+        result.pushKV("success", res, false);
+        result.pushKV("searched_items", count, false);
+
+        unspents.reserve(coins.size());
 
         for (const auto &it : coins) {
             const COutPoint &outpoint = it.first;
             const Coin &coin = it.second;
             const CTxOut &txo = coin.GetTxOut();
-            input_txos.push_back(txo);
             total_in += txo.nValue;
 
             UniValue unspent(UniValue::VOBJ);
-            unspent.pushKV("txid", outpoint.GetTxId().GetHex());
-            unspent.pushKV("vout", int32_t(outpoint.GetN()));
-            unspent.pushKV("scriptPubKey", HexStr(txo.scriptPubKey.begin(),
-                                                  txo.scriptPubKey.end()));
-            unspent.pushKV("amount", ValueFromAmount(txo.nValue));
-            unspent.pushKV("height", int32_t(coin.GetHeight()));
+            unspent.pushKV("txid", outpoint.GetTxId().GetHex(), false);
+            unspent.pushKV("vout", int32_t(outpoint.GetN()), false);
+            unspent.pushKV("scriptPubKey", HexStr(txo.scriptPubKey.begin(), txo.scriptPubKey.end()),
+                           false);
+            unspent.pushKV("amount", ValueFromAmount(txo.nValue), false);
+            unspent.pushKV("height", int32_t(coin.GetHeight()), false);
 
-            unspents.push_back(unspent);
+            unspents.push_back(std::move(unspent));
         }
-        result.pushKV("unspents", unspents);
-        result.pushKV("total_amount", ValueFromAmount(total_in));
+        result.pushKV("unspents", std::move(unspents), false);
+        result.pushKV("total_amount", ValueFromAmount(total_in), false);
     } else {
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid command");
     }
