@@ -346,12 +346,7 @@ static inline CTransactionRef MakeTransactionRef(Tx &&txIn) {
 struct PrecomputedTransactionData {
     uint256 hashPrevouts, hashSequence, hashOutputs;
 
-    PrecomputedTransactionData()
-        : hashPrevouts(), hashSequence(), hashOutputs() {}
-
-    PrecomputedTransactionData(const PrecomputedTransactionData &txdata)
-        : hashPrevouts(txdata.hashPrevouts), hashSequence(txdata.hashSequence),
-          hashOutputs(txdata.hashOutputs) {}
+    PrecomputedTransactionData() = default;
 
     template <class T> explicit PrecomputedTransactionData(const T &tx);
 };
