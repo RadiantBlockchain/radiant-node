@@ -81,7 +81,7 @@ Section -Main SEC0000
     File "@CPACK_TEMPORARY_INSTALL_DIRECTORY@/@CPACK_NSIS_EXECUTABLES_DIRECTORY@/bitcoind.exe"
     File "@CPACK_TEMPORARY_INSTALL_DIRECTORY@/@CPACK_NSIS_EXECUTABLES_DIRECTORY@/bitcoin-cli.exe"
     SetOutPath $INSTDIR\doc
-    File /r "@CPACK_TEMPORARY_INSTALL_DIRECTORY@/doc\*.md"
+    File /r /x gitian-building* "@CPACK_TEMPORARY_INSTALL_DIRECTORY@/doc\*.md"
     File /r /x bitcoin_logo_doxygen.png "@CPACK_TEMPORARY_INSTALL_DIRECTORY@/doc\*.png"
     File /r "@CPACK_TEMPORARY_INSTALL_DIRECTORY@/doc\*.1"
     SetOutPath $INSTDIR
