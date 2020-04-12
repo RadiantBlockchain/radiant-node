@@ -1,16 +1,14 @@
-Table of Contents
------------------
+# Setting up Debian for Gitian building
 
-- [Setting up Debian for Gitian building](#setting-up-debian-for-gitian-building)
-- [Installing Gitian](#installing-gitian)
-- [Setting up the Gitian image](#setting-up-the-gitian-image)
+** Table of Contents **
 
-
-Setting up Debian for Gitian building
--------------------------------------
+* [Setting up Debian for Gitian building](gitian-building-setup-gitian-debian.md#setting-up-debian-for-gitian-building)
+  * [Installing Gitian](gitian-building-setup-gitian-debian.md#installing-gitian)
+  * [Setting up the Gitian image](gitian-building-setup-gitian-debian.md#setting-up-the-gitian-image)
+  * [Downloading dependencies](gitian-building-setup-gitian-debian.md#downloading-dependencies)
 
 In this section we will be setting up the Debian installation for Gitian building.
-We assume that a user `gitianuser` was previously added.
+We assume that a user `gitianuser` with sudo privileges was previously added.
 
 First we need to set up dependencies. Type/paste the following in the terminal:
 
@@ -19,11 +17,14 @@ sudo apt-get install git ruby apt-cacher-ng qemu-utils debootstrap lxc python-ch
 ```
 
 Find the device name of your network card. You can list your connections with
+
 ```bash
 ip address
 ```
+
 Examples: `eth0`, `eno1`, ...
 Save it to the NET_DEV variable:
+
 ```bash
 sudo -s
 NET_DEV=<your device name>
@@ -59,8 +60,7 @@ section only need to be performed once.
 
 **Note**: When sudo asks for a password, enter the password for the user `gitianuser` not for `root`.
 
-Installing Gitian
------------------
+## Installing Gitian
 
 Re-login as the user `gitianuser` that was created during installation.
 The rest of the steps in this guide will be performed as that user.
@@ -79,15 +79,14 @@ cd ..
 
 **Note**: When sudo asks for a password, enter the password for the user `gitianuser` not for `root`.
 
-Clone the git repositories for bitcoin and Gitian.
+Clone the git repositories for Bitcoin Cash Node and Gitian.
 
 ```bash
 git clone https://github.com/devrandom/gitian-builder.git
-git clone https://github.com/Bitcoin-ABC/bitcoin-abc.git
+git clone https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node.git
 ```
 
-Setting up the Gitian image
----------------------------
+## Setting up the Gitian image
 
 Gitian needs a virtual image of the operating system to build in.
 Currently this is Debian 10 Buster x86_64.
@@ -106,8 +105,7 @@ There will be a lot of warnings printed during the build of the image. These can
 
 **Note**: When sudo asks for a password, enter the password for the user `gitianuser` not for `root`.
 
-Downloading dependencies
-------------------------
+## Downloading dependencies
 
 Gitian may have problems connecting to the internet, which can make the build
 flacky. In order to avoid this, it is possible to download dependencies ahead
@@ -117,5 +115,5 @@ Execute the following as user `gitianuser`:
 
 ```bash
 cd gitian-builder
-make -C ../bitcoin-abc/depends download SOURCES_PATH=`pwd`/cache/common
+make -C ../bitcoin-cash-node/depends download SOURCES_PATH=`pwd`/cache/common
 ```

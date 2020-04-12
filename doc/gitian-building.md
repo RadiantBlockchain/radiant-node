@@ -1,5 +1,4 @@
-Gitian building
-===============
+# Gitian building
 
 *Setup instructions for a Gitian build of Bitcoin Cash Node using a VM or physical system.*
 
@@ -17,19 +16,18 @@ More independent Gitian builders are needed, which is why this guide exists.
 It is preferred you follow these steps yourself instead of using someone else's
 VM image to avoid 'contaminating' the build.
 
-Table of Contents
------------------
+The instructions below use the automated script [gitian-build.py](https://github.com/bitcoin-cash-node/bitcoin-cash-node/blob/master/contrib/gitian-build.py) which only works in Debian/Ubuntu. For manual steps and instructions for fully offline signing, see [this guide](./gitian-building/gitian-building-manual.md).
 
-- [Preparing the Gitian builder host](#preparing-the-gitian-builder-host)
-- [Getting and building the inputs](#getting-and-building-the-inputs)
-- [Building Bitcoin Core](#building-bitcoin-core)
-- [Building an alternative repository](#building-an-alternative-repository)
-- [Signing externally](#signing-externally)
-- [Uploading signatures](#uploading-signatures)
+## Table of Contents
 
+* [Gitian building](gitian-building.md#gitian-building)
+  * [Table of Contents](gitian-building.md#table-of-contents)
+  * [Preparing the Gitian builder host](gitian-building.md#preparing-the-gitian-builder-host)
+  * [MacOS code signing](gitian-building.md#macos-code-signing)
+  * [Initial Gitian Setup](gitian-building.md#initial-gitian-setup)
+  * [Build binaries](gitian-building.md#build-binaries)
 
-Preparing the Gitian builder host
----------------------------------
+## Preparing the Gitian builder host
 
 The first step is to prepare the host environment that will be used to perform the Gitian builds.
 This guide explains how to set up the environment, and how to start the builds.
@@ -41,9 +39,10 @@ Alternatively, you can install one of the supported operating systems in a virtu
 You can create the virtual machine using [vagrant](./gitian-building/gitian-building-vagrant.md) or chose to setup the VM manually.
 
 Any kind of virtualization can be used, for example:
-- [VirtualBox](https://www.virtualbox.org/) (covered by this guide)
-- [KVM](http://www.linux-kvm.org/page/Main_Page)
-- [LXC](https://linuxcontainers.org/)
+
+* [VirtualBox](https://www.virtualbox.org/) (covered by this guide)
+* [KVM](http://www.linux-kvm.org/page/Main_Page)
+* [LXC](https://linuxcontainers.org/)
 
 Please refer to the following documents to set up the operating systems and Gitian.
 
@@ -55,27 +54,21 @@ Please refer to the following documents to set up the operating systems and Giti
 Note that a version of `lxc-execute` higher or equal to 2.1.1 is required.
 You can check the version with `lxc-execute --version`.
 
-Non-Debian / Ubuntu, Manual and Offline Building
-------------------------------------------------
-The instructions below use the automated script [gitian-build.py](https://github.com/bitcoin-cash-node/bitcoin-cash-node/blob/master/contrib/gitian-build.py) which only works in Debian/Ubuntu. For manual steps and instructions for fully offline signing, see [this guide](./gitian-building/gitian-building-manual.md).
+## MacOS code signing
 
-MacOS code signing
-------------------
 In order to sign builds for MacOS, you need to obtain an archive which has been extracted from the free SDK.
 
 ```bash
 cd ~/gitian-builder
 curl -LO https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.11.sdk.tar.xz
 echo "ff5f65e4637ef68cd8412a5f451cafe1dd03068bb57d41ca3fc971fb58a67de3 MacOSX10.11.sdk.tar.xz" | sha256sum -c
-
+# Should echo "MacOSX10.11.sdk.tar.xz: OK"
 mkdir -p inputs
-mv MacOSX10.11.sdk.tar.gz inputs
+mv MacOSX10.11.sdk.tar.xz inputs
 ```
 
 Alternatively, you can skip the macOS build by adding `--os=lw` below.
 
-Initial Gitian Setup
---------------------
 The `gitian-build.py` script will checkout different release tags, so it's best to copy it:
 
 ```bash
@@ -90,8 +83,8 @@ You only need to do this once:
 
 Where `satoshi` is your GitLab name and `0.21.0` is the most recent tag (without `v`).
 
-Build binaries
---------------
+## Build binaries
+
 Windows and macOS have code signed binaries, but those won't be available until a few developers have gitian signed the non-codesigned binaries.
 
 To build the most recent tag:
