@@ -47,9 +47,7 @@ Clone the git repositories for bitcoin and Gitian.
 
 ```bash
 git clone https://github.com/devrandom/gitian-builder.git
-git clone https://github.com/bitcoin/bitcoin
-git clone https://github.com/bitcoin-core/gitian.sigs.git
-git clone https://github.com/bitcoin-core/bitcoin-detached-sigs.git
+git clone https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node.git
 ```
 
 Setting up the Gitian image
@@ -65,7 +63,7 @@ Execute the following as user `gitianuser`:
 
 ```bash
 cd gitian-builder
-bin/make-base-vm --docker --arch amd64 --suite buster
+bin/make-base-vm --docker --arch amd64 --suite buster --distro debian
 ```
 
 **Note**: When sudo asks for a password, enter the password for the user `gitianuser` not for `root`.
