@@ -497,7 +497,7 @@ static void MigrateSettings() {
     abc.setFallbacksEnabled(false);
     bchn.setFallbacksEnabled(false);
 #endif
-    // We only migrate settings if we have ABC settings but no bchn
+    // We only migrate settings if we have ABC settings but no BCHN
     // settings (first run).
     if (bchn.allKeys().isEmpty()) {
         for (const QString &key : abc.allKeys()) {

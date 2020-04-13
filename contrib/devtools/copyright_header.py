@@ -544,7 +544,7 @@ def get_git_change_year_range(filename):
     return min(years), max(years)
 
 ##########################################################################
-# check for existing ABC copyright
+# check for existing Bitcoin copyright
 ##########################################################################
 
 

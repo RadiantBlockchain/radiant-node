@@ -56,7 +56,7 @@ Generate Seed Lists
 -------------------
 
 Bitcoin-seeder is also be used to generate the seed lists that are compiled
-into every Bitcoin ABC release. It produces the `dnsseed.dump` files that are
+into every Bitcoin Cash Node release. It produces the `dnsseed.dump` files that are
 used as inputs to the scripts in [contrib/seeds](/contrib/seeds) to generate
 the seed lists. To generate seed lists, the seeder should be run continuously
 for 30 days or more.
