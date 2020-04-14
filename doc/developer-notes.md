@@ -811,7 +811,7 @@ Git and GitLab tips
   at what changed between *original* and *theirs*, and mechanically apply that to *yours* (or the other way around).
 
 - When reviewing patches which change indentation in C++ files, use `git diff -w` and `git show -w`. This makes
-  the diff algorithm ignore whitespace changes. This feature is also available on github.com, by adding `?w=1`
+  the diff algorithm ignore whitespace changes. This feature is also available on gitlab.com, by adding `?w=1`
   at the end of any URL which shows a diff.
 
 - When reviewing patches that change symbol names in many places, use `git diff --word-diff`. This will instead
@@ -825,13 +825,13 @@ Git and GitLab tips
 - When looking at other's pull requests, it may make sense to add the following section to your `.git/config`
   file:
 
-        [remote "upstream-pull"]
-                fetch = +refs/pull/*:refs/remotes/upstream-pull/*
-                url = git@github.com:bitcoin/bitcoin.git
+        [remote "upstream-merges"]
+                url = git@gitlab.com:bitcoin-cash-node/bitcoin-cash-node.git
+                fetch = +refs/merge-requests/*/head:refs/remotes/upstream-merges/merge-requests/*
 
-  This will add an `upstream-pull` remote to your git repository, which can be fetched using `git fetch --all`
-  or `git fetch upstream-pull`. Afterwards, you can use `upstream-pull/NUMBER/head` in arguments to `git show`,
-  `git checkout` and anywhere a commit id would be acceptable to see the changes from pull request NUMBER.
+  This will add an `upstream-merges` remote to your git repository, which can be fetched using `git fetch --all`
+  or `git fetch upstream-merges`. Afterwards, you can use `upstream-merges/merge-requests/NUMBER` in arguments to `git show`,
+  `git checkout` and anywhere a commit id would be acceptable to see the changes from merge request NUMBER.
 
 RPC interface guidelines
 --------------------------

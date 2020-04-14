@@ -1,6 +1,19 @@
 Translations
 ============
 
+Bitcoin Cash Node does not have an automated process set up to assist
+with translation.
+
+The description retained below is for the Bitcoin Core project.
+
+Bitcoin Cash Node developers may use translation data made available by
+Bitcoin Core or other projects that publish translations under compatible
+licenses until a specific process is established.
+
+
+Translations in Bitcoin Core
+============================
+
 The Bitcoin-Core project has been designed to support multiple localisations. This makes adding new phrases, and completely new languages easily achievable. For managing all application translations, Bitcoin-Core makes use of the Transifex online translation management tool.
 
 ### Helping to translate (using Transifex)
