@@ -3,7 +3,7 @@ Shared Libraries
 
 ## bitcoinconsensus
 
-The purpose of this library is to make the verification functionality that is critical to Bitcoin's consensus available to other applications, e.g. to language bindings.
+The purpose of this library is to make the verification functionality that is critical to Bitcoin Cash's consensus available to other applications, e.g. to language bindings.
 
 ### API
 
@@ -33,6 +33,8 @@ The interface is defined in the C header `bitcoinconsensus.h` located in  `src/s
 - `bitcoinconsensus_SCRIPT_FLAGS_VERIFY_CHECKLOCKTIMEVERIFY` - Enable CHECKLOCKTIMEVERIFY ([BIP65](https://github.com/bitcoin/bips/blob/master/bip-0065.mediawiki))
 - `bitcoinconsensus_SCRIPT_FLAGS_VERIFY_CHECKSEQUENCEVERIFY` - Enable CHECKSEQUENCEVERIFY ([BIP112](https://github.com/bitcoin/bips/blob/master/bip-0112.mediawiki))
 - `bitcoinconsensus_SCRIPT_FLAGS_VERIFY_WITNESS` - Enable WITNESS ([BIP141](https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki))
+- `bitcoinconsensus_SCRIPT_ENABLE_SIGHASH_FORKID` - Enable SIGHASH_FORKID replay protection ([UAHF](https://gitlab.com/bitcoin-cash-node/bchn-sw/bitcoincash-upgrade-specifications/-/blob/master/spec/uahf-technical-spec.md#req-6-2-mandatory-signature-shift-via-hash-type))
+
 
 ##### Errors
 - `bitcoinconsensus_ERR_OK` - No errors with input parameters *(see the return value of `bitcoinconsensus_verify_script` for the verification status)*
@@ -42,6 +44,11 @@ The interface is defined in the C header `bitcoinconsensus.h` located in  `src/s
 - `bitcoinconsensus_ERR_AMOUNT_REQUIRED` - Input amount is required if WITNESS is used
 
 ### Example Implementations
+- [Bitcoin Cash Node (BCHN)](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/blob/master/src/script/bitcoinconsensus.h)
+- [Bitcoin Unlimited (BUCash)](https://github.com/BitcoinUnlimited/BitcoinUnlimited/blob/release/src/script/bitcoinconsensus.h)
+
+### Historic Example Implementations in Bitcoin (pre-dating Bitcoin Cash)
+- [Bitcoin Core](https://github.com/bitcoin/bitcoin/blob/master/src/script/bitcoinconsensus.h)
 - [NBitcoin](https://github.com/NicolasDorier/NBitcoin/blob/master/NBitcoin/Script.cs#L814) (.NET Bindings)
 - [node-libbitcoinconsensus](https://github.com/bitpay/node-libbitcoinconsensus) (Node.js Bindings)
 - [java-libbitcoinconsensus](https://github.com/dexX7/java-libbitcoinconsensus) (Java Bindings)
