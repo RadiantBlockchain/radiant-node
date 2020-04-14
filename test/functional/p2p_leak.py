@@ -17,6 +17,7 @@ from test_framework.messages import (
     msg_getaddr,
     msg_ping,
     msg_verack,
+    msg_version,
 )
 from test_framework.mininode import (
     mininode_lock,
@@ -170,6 +171,15 @@ class P2PLeakTest(BitcoinTestFramework):
         assert not no_version_bannode.unexpected_msg
         assert not no_version_idlenode.unexpected_msg
         assert not no_verack_idlenode.unexpected_msg
+
+        self.log.info('Check that old nodes are disconnected')
+        p2p_old_node = self.nodes[0].add_p2p_connection(P2PInterface(), send_version=False, wait_for_verack=False)
+        old_version_msg = msg_version()
+        old_version_msg.nVersion = 31799
+        wait_until(lambda: p2p_old_node.is_connected)
+        with self.nodes[0].assert_debug_log(['peer=3 using obsolete version 31799; disconnecting']):
+            p2p_old_node.send_message(old_version_msg)
+            p2p_old_node.wait_for_disconnect()
 
 
 if __name__ == '__main__':
