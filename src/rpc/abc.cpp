@@ -5,6 +5,7 @@
 #include <config.h>
 #include <consensus/consensus.h>
 #include <rpc/server.h>
+#include <rpc/util.h>
 #include <util/strencodings.h>
 #include <validation.h>
 
@@ -13,14 +14,14 @@
 static UniValue getexcessiveblock(const Config &config,
                                   const JSONRPCRequest &request) {
     if (request.fHelp || request.params.size() != 0) {
-        throw std::runtime_error(
-            "getexcessiveblock\n"
-            "\nReturn the excessive block size."
-            "\nResult\n"
-            "  excessiveBlockSize (integer) block size in bytes\n"
-            "\nExamples:\n" +
-            HelpExampleCli("getexcessiveblock", "") +
-            HelpExampleRpc("getexcessiveblock", ""));
+        throw std::runtime_error(RPCHelpMan{
+            "getexcessiveblock",
+            "\nReturn the excessive block size.",
+            {},
+            RPCResult{"  excessiveBlockSize (integer) block size in bytes\n"},
+            RPCExamples{HelpExampleCli("getexcessiveblock", "") +
+                        HelpExampleRpc("getexcessiveblock", "")},
+        }.ToStringWithResultsAndExamples());
     }
 
     UniValue::Object ret;
@@ -32,21 +33,21 @@ static UniValue getexcessiveblock(const Config &config,
 static UniValue setexcessiveblock(Config &config,
                                   const JSONRPCRequest &request) {
     if (request.fHelp || request.params.size() != 1) {
-        throw std::runtime_error(
-            "setexcessiveblock maxBlockSize\n"
+        throw std::runtime_error(RPCHelpMan{
+            "setexcessiveblock",
             "\nSet the excessive block size. Excessive blocks will not be used "
             "in the active chain or relayed. This discourages the propagation "
-            "of blocks that you consider excessively large."
-            "\nArguments\n"
-            "1. maxBlockSize  (integer, required) Excessive block size in bytes.  "
-            "Must be greater than " +
-            std::to_string(LEGACY_MAX_BLOCK_SIZE) +
-            ".\n"
-            "\nResult\n"
-            "  maxBlockSize (integer) excessive block size in bytes\n"
-            "\nExamples:\n" +
-            HelpExampleCli("setexcessiveblock", "128000000") +
-            HelpExampleRpc("setexcessiveblock", "128000000"));
+            "of blocks that you consider excessively large.",
+            {
+                {"maxBlockSize", RPCArg::Type::NUM, /* opt */ false,
+                 /* default_value */ "",
+                 "Excessive block size in bytes. Must be greater than " +
+                     std::to_string(LEGACY_MAX_BLOCK_SIZE) + "."},
+            },
+            RPCResult{"\"Status info.\" (string) human-readable result\n"},
+            RPCExamples{HelpExampleCli("setexcessiveblock", "128000000") +
+                        HelpExampleRpc("setexcessiveblock", "128000000")},
+        }.ToStringWithResultsAndExamples());
     }
 
     if (!request.params[0].isNum()) {
