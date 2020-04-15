@@ -37,7 +37,7 @@ on the cmake command line.
 Once you have installed the required dependencies (see sections above), you can
 build Bitcoin Cash Node as such:
 
-First fetch the code (if you havent done so already).
+First fetch the code (if you haven't done so already).
 
 ```bash
 git clone https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node.git
@@ -86,7 +86,7 @@ Optionally, run the tests
 ninja check # recommended
 ```
 
-After a succesful test you can install the newly built binaries to your `bin` directory.
+After a successful test you can install the newly built binaries to your `bin` directory.
 Note that this will probably overwrite any previous version installed, including
 binaries from different sources.
 
