@@ -226,7 +226,6 @@ BITCOIN_CORE_H = \
   wallet/coinselection.h \
   wallet/crypter.h \
   wallet/db.h \
-  wallet/finaltx.h \
   wallet/rpcdump.h \
   wallet/fees.h \
   wallet/rpcwallet.h \
@@ -332,7 +331,6 @@ libbitcoin_wallet_a_SOURCES = \
   wallet/crypter.cpp \
   wallet/coinselection.cpp \
   wallet/db.cpp \
-  wallet/finaltx.cpp \
   wallet/fees.cpp \
   wallet/init.cpp \
   wallet/rpcdump.cpp \
