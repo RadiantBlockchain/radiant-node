@@ -2575,7 +2575,7 @@ bool CChainState::ConnectTip(const Config &config, CValidationState &state,
                 InvalidBlockFound(pindexNew, state);
             }
 
-            return error("ConnectTip(): ConnectBlock %s failed (%s)",
+            return error("%s: ConnectBlock %s failed, %s", __func__,
                          pindexNew->GetBlockHash().ToString(),
                          FormatStateMessage(state));
         }
