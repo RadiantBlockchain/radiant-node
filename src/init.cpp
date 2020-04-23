@@ -317,9 +317,13 @@ void SetupServerArgs() {
         CreateBaseChainParams(CBaseChainParams::MAIN);
     const auto testnetBaseParams =
         CreateBaseChainParams(CBaseChainParams::TESTNET);
+    const auto regtestBaseParams =
+        CreateBaseChainParams(CBaseChainParams::REGTEST);
     const auto defaultChainParams = CreateChainParams(CBaseChainParams::MAIN);
     const auto testnetChainParams =
         CreateChainParams(CBaseChainParams::TESTNET);
+    const auto regtestChainParams =
+        CreateChainParams(CBaseChainParams::REGTEST);
 
     // Hidden Options
     std::vector<std::string> hidden_args = {
@@ -618,13 +622,13 @@ void SetupServerArgs() {
                  strprintf("Relay non-P2SH multisig (default: %d)",
                            DEFAULT_PERMIT_BAREMULTISIG),
                  false, OptionsCategory::CONNECTION);
-    gArgs.AddArg(
-        "-port=<port>",
-        strprintf(
-            "Listen for connections on <port> (default: %u or testnet: %u)",
-            defaultChainParams->GetDefaultPort(),
-            testnetChainParams->GetDefaultPort()),
-        false, OptionsCategory::CONNECTION);
+    gArgs.AddArg("-port=<port>",
+                 strprintf("Listen for connections on <port> (default: %u, "
+                           "testnet: %u, regtest: %u)",
+                           defaultChainParams->GetDefaultPort(),
+                           testnetChainParams->GetDefaultPort(),
+                           regtestChainParams->GetDefaultPort()),
+                 false, OptionsCategory::CONNECTION);
     gArgs.AddArg("-proxy=<ip:port>", _("Connect through SOCKS5 proxy"), false,
                  OptionsCategory::CONNECTION);
     gArgs.AddArg("-proxyrandomize",
@@ -723,16 +727,21 @@ void SetupServerArgs() {
                   "(0-4, default: %u)",
                   DEFAULT_CHECKLEVEL),
         true, OptionsCategory::DEBUG_TEST);
-    gArgs.AddArg("-checkblockindex",
-                 strprintf("Do a full consistency check for mapBlockIndex, "
-                           "setBlockIndexCandidates, chainActive and "
-                           "mapBlocksUnlinked occasionally. (default: %u)",
-                           defaultChainParams->DefaultConsistencyChecks()),
-                 true, OptionsCategory::DEBUG_TEST);
-    gArgs.AddArg("-checkmempool=<n>",
-                 strprintf("Run checks every <n> transactions (default: %u)",
-                           defaultChainParams->DefaultConsistencyChecks()),
-                 true, OptionsCategory::DEBUG_TEST);
+    gArgs.AddArg(
+        "-checkblockindex",
+        strprintf("Do a full consistency check for mapBlockIndex, "
+                  "setBlockIndexCandidates, ::ChainActive() and "
+                  "mapBlocksUnlinked occasionally. (default: %u, regtest: %u)",
+                  defaultChainParams->DefaultConsistencyChecks(),
+                  regtestChainParams->DefaultConsistencyChecks()),
+        true, OptionsCategory::DEBUG_TEST);
+    gArgs.AddArg(
+        "-checkmempool=<n>",
+        strprintf(
+            "Run checks every <n> transactions (default: %u, regtest: %u)",
+            defaultChainParams->DefaultConsistencyChecks(),
+            regtestChainParams->DefaultConsistencyChecks()),
+        true, OptionsCategory::DEBUG_TEST);
     gArgs.AddArg("-checkpoints",
                  strprintf("Only accept block chain matching built-in "
                            "checkpoints (default: %d)",
@@ -965,9 +974,10 @@ void SetupServerArgs() {
         false, OptionsCategory::RPC);
     gArgs.AddArg("-rpcport=<port>",
                  strprintf("Listen for JSON-RPC connections on <port> "
-                           "(default: %u or testnet: %u)",
+                           "(default: %u, testnet: %u, regtest: %u)",
                            defaultBaseParams->RPCPort(),
-                           testnetBaseParams->RPCPort()),
+                           testnetBaseParams->RPCPort(),
+                           regtestBaseParams->RPCPort()),
                  false, OptionsCategory::RPC);
     gArgs.AddArg("-rpcallowip=<ip>",
                  "Allow JSON-RPC connections from specified source. Valid for "
