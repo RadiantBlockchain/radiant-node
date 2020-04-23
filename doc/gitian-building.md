@@ -32,7 +32,7 @@ The instructions below use the automated script [gitian-build.py](https://github
 The first step is to prepare the host environment that will be used to perform the Gitian builds.
 This guide explains how to set up the environment, and how to start the builds.
 
-Gitian builds are known to be working on recent versions of Debian, Ubuntu and Fedora.
+Gitian builds are known to be working on recent versions of Debian and Ubuntu.
 If your machine is already running one of those operating systems, you can perform Gitian builds on the actual hardware.
 Alternatively, you can install one of the supported operating systems in a virtual machine.
 
@@ -46,10 +46,8 @@ Any kind of virtualization can be used, for example:
 
 Please refer to the following documents to set up the operating systems and Gitian.
 
-|                                   | Debian                                                                             | Fedora                                                                             |
-|-----------------------------------|------------------------------------------------------------------------------------|------------------------------------------------------------------------------------|
-| Setup virtual machine (optional)  | [Create Debian VirtualBox](./gitian-building/gitian-building-create-vm-debian.md) | [Create Fedora VirtualBox](./gitian-building/gitian-building-create-vm-fedora.md) |
-| Setup Gitian                      | [Setup Gitian on Debian](./gitian-building/gitian-building-setup-gitian-debian.md) | [Setup Gitian on Fedora](./gitian-building/gitian-building-setup-gitian-fedora.md) |
+* (optional) To setup a Debian virtual machine see [Create Debian VirtualBox](./gitian-building/gitian-building-create-vm-debian.md)
+* To setup Gitian on your new Debian VM see [Setup Gitian on Debian](./gitian-building/gitian-building-setup-gitian-debian.md)
 
 Note that a version of `lxc-execute` higher or equal to 2.1.1 is required.
 You can check the version with `lxc-execute --version`.
