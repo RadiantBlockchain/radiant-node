@@ -25,6 +25,13 @@ BIP9 is inactive due to no available proposals to vote on and it may be
 removed in a future release.
 
 
+Low-level RPC changes
+----------------------
+The `-usehd` option has been finally removed. It was disabled in version ABC 0.16.
+From that version onwards, all new wallets created are hierarchical
+deterministic wallets. Version 0.18 made specifying `-usehd` invalid config.
+
+
 Regressions
 -----------
 
