@@ -19,6 +19,11 @@ static inline unsigned short GetDefaultPort() {
 // The network magic to use.
 extern CMessageHeader::MessageMagic netMagic;
 
+enum class PeerMessagingState {
+    AwaitingMessages,
+    Finished,
+};
+
 class CSeederNode {
 private:
     SOCKET sock;
@@ -51,7 +56,8 @@ private:
     bool ProcessMessages();
 
 protected:
-    bool ProcessMessage(std::string strCommand, CDataStream &recv);
+    PeerMessagingState ProcessMessage(std::string strCommand,
+                                      CDataStream &recv);
 
 public:
     CSeederNode(const CService &ip, std::vector<CAddress> *vAddrIn);

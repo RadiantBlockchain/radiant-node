@@ -8,12 +8,14 @@
 #include <protocol.h>
 #include <seeder/bitcoin.h>
 #include <seeder/db.h>
+#include <seeder/test/util.h>
 #include <serialize.h>
 #include <streams.h>
 #include <util/system.h>
 #include <version.h>
 
 #include <memory>
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -26,11 +28,6 @@ static const int SEEDER_INIT_VERSION = 0;
 // After the 1000th addr, the seeder will only add one more address per addr
 // message.
 static const int ADDR_SOFT_CAP = 1000;
-
-enum PeerMessagingState : bool {
-    Finished = true,
-    AwaitingMessages = false,
-};
 
 static CDataStream
 CreateVersionMessage(int64_t now, CAddress addrTo, CAddress addrFrom,
@@ -53,6 +50,11 @@ static CDataStream CreateAddrMessage(std::vector<CAddress> sendAddrs,
     return payload;
 }
 
+std::ostream &operator<<(std::ostream &os, const PeerMessagingState &state) {
+    os << to_integral(state);
+    return os;
+}
+
 class TestCSeederNode : public CSeederNode {
 public:
     TestCSeederNode(const CService &service, std::vector<CAddress> *vAddrIn)
@@ -61,9 +63,10 @@ public:
     }
 
     void TestProcessMessage(const std::string &strCommand, CDataStream &message,
-                            PeerMessagingState state) {
-        bool ret = CSeederNode::ProcessMessage(strCommand, message);
-        BOOST_CHECK_EQUAL(ret, bool(state));
+                            PeerMessagingState expectedState) {
+        PeerMessagingState ret =
+            CSeederNode::ProcessMessage(strCommand, message);
+        BOOST_CHECK_EQUAL(ret, expectedState);
     }
 };
 

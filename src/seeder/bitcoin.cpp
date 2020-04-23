@@ -102,7 +102,8 @@ void CSeederNode::GotVersion() {
     }
 }
 
-bool CSeederNode::ProcessMessage(std::string strCommand, CDataStream &recv) {
+PeerMessagingState CSeederNode::ProcessMessage(std::string strCommand,
+                                               CDataStream &recv) {
     // fprintf(stdout, "%s: RECV %s\n", ToString(you).c_str(),
     // strCommand.c_str());
     if (strCommand == "version") {
@@ -120,13 +121,13 @@ bool CSeederNode::ProcessMessage(std::string strCommand, CDataStream &recv) {
         BeginMessage("verack");
         EndMessage();
         vSend.SetVersion(std::min(nVersion, PROTOCOL_VERSION));
-        return false;
+        return PeerMessagingState::AwaitingMessages;
     }
 
     if (strCommand == "verack") {
         vRecv.SetVersion(std::min(nVersion, PROTOCOL_VERSION));
         GotVersion();
-        return false;
+        return PeerMessagingState::AwaitingMessages;
     }
 
     if (strCommand == "addr" && vAddr) {
@@ -158,13 +159,13 @@ bool CSeederNode::ProcessMessage(std::string strCommand, CDataStream &recv) {
             //        addr.ToString().c_str(), (int)(vAddr->size()));
             if (vAddr->size() > 1000) {
                 doneAfter = 1;
-                return true;
+                return PeerMessagingState::Finished;
             }
         }
-        return false;
+        return PeerMessagingState::AwaitingMessages;
     }
 
-    return false;
+    return PeerMessagingState::AwaitingMessages;
 }
 
 bool CSeederNode::ProcessMessages() {
@@ -216,7 +217,7 @@ bool CSeederNode::ProcessMessages() {
         CDataStream vMsg(vRecv.begin(), vRecv.begin() + nMessageSize,
                          vRecv.GetType(), vRecv.GetVersion());
         vRecv.ignore(nMessageSize);
-        if (ProcessMessage(strCommand, vMsg)) {
+        if (ProcessMessage(strCommand, vMsg) == PeerMessagingState::Finished) {
             return true;
         }
         // fprintf(stdout, "%s: done processing %s\n",
