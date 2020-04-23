@@ -338,10 +338,8 @@ void SetupServerArgs() {
         "-phononactivationtime"};
 
     // Set all of the args and their help
-    // When adding new options to the categories, please keep and ensure
-    // alphabetical ordering. Do not translate _(...) -help-debug options, Many
-    // technical terms, and only a very small audience, so is unnecessary stress
-    // to translators.
+    // When adding new options to the categories, please keep and ensure alphabetical ordering.
+    // Do not translate _(...) any options as decided in D4515/PR13341.
     gArgs.AddArg("-?", "Print this help message and exit", false,
                  OptionsCategory::OPTIONS);
     gArgs.AddArg("-version", "Print version and exit", false,
@@ -629,7 +627,7 @@ void SetupServerArgs() {
                            testnetChainParams->GetDefaultPort(),
                            regtestChainParams->GetDefaultPort()),
                  false, OptionsCategory::CONNECTION);
-    gArgs.AddArg("-proxy=<ip:port>", _("Connect through SOCKS5 proxy"), false,
+    gArgs.AddArg("-proxy=<ip:port>", "Connect through SOCKS5 proxy", false,
                  OptionsCategory::CONNECTION);
     gArgs.AddArg("-proxyrandomize",
                  strprintf("Randomize credentials for every proxy connection. "
@@ -907,8 +905,8 @@ void SetupServerArgs() {
         false, OptionsCategory::NODE_RELAY);
     gArgs.AddArg(
         "-whitelistrelay",
-        strprintf(_("Accept relayed transactions received from whitelisted "
-                    "peers even when not relaying transactions (default: %d)"),
+        strprintf("Accept relayed transactions received from whitelisted "
+                  "peers even when not relaying transactions (default: %d)",
                   DEFAULT_WHITELISTRELAY),
         false, OptionsCategory::NODE_RELAY);
     gArgs.AddArg(
@@ -960,9 +958,9 @@ void SetupServerArgs() {
                  "Location of the auth cookie. Relative paths will be prefixed "
                  "by a net-specific datadir location. (default: data dir)",
                  false, OptionsCategory::RPC);
-    gArgs.AddArg("-rpcuser=<user>", _("Username for JSON-RPC connections"),
+    gArgs.AddArg("-rpcuser=<user>", "Username for JSON-RPC connections",
                  false, OptionsCategory::RPC);
-    gArgs.AddArg("-rpcpassword=<pw>", _("Password for JSON-RPC connections"),
+    gArgs.AddArg("-rpcpassword=<pw>", "Password for JSON-RPC connections",
                  false, OptionsCategory::RPC);
     gArgs.AddArg(
         "-rpcauth=<userpw>",
@@ -1008,7 +1006,7 @@ void SetupServerArgs() {
 
 #if HAVE_DECL_DAEMON
     gArgs.AddArg("-daemon",
-                 _("Run in the background as a daemon and accept commands"),
+                 "Run in the background as a daemon and accept commands",
                  false, OptionsCategory::OPTIONS);
 #else
     hidden_args.emplace_back("-daemon");
