@@ -298,15 +298,15 @@ std::string CRPCTable::help(Config &config, const std::string &strCommand,
 
 static UniValue help(Config &config, const JSONRPCRequest &jsonRequest) {
     if (jsonRequest.fHelp || jsonRequest.params.size() > 1) {
-        throw std::runtime_error(
-            RPCHelpMan{"help",
-                "\nList all commands, or get help for a specified command.\n",
-                {
-                    {"command", RPCArg::Type::STR, /* opt */ true, /* default_val */ "", "The command to get help on"},
-                }}
-                .ToString() +
-            "\nResult:\n"
-            "\"text\"     (string) The help text\n");
+        throw std::runtime_error(RPCHelpMan{
+            "help",
+            "\nList all commands, or get help for a specified command.\n",
+            {
+                {"command", RPCArg::Type::STR, /* opt */ true, /* default_val */ "", "The command to get help on"},
+            },
+            RPCResult{"\"text\"     (string) The help text\n"},
+            RPCExamples{""},
+        }.ToStringWithResultsAndExamples());
     }
 
     std::string strCommand;
@@ -323,10 +323,13 @@ static UniValue stop(const Config &config, const JSONRPCRequest &jsonRequest) {
     // For instance, 'stop 1000' makes the call wait 1 second before returning
     // to the client (intended for testing)
     if (jsonRequest.fHelp || jsonRequest.params.size() > 1) {
-        throw std::runtime_error(
-            RPCHelpMan{"stop",
-                "\nStop Bitcoin server.", {}}
-                .ToString());
+        throw std::runtime_error(RPCHelpMan{
+            "stop",
+            "\nStop Bitcoin server.",
+            {},
+            RPCResults{},
+            RPCExamples{""},
+        }.ToStringWithResultsAndExamples());
     }
 
     // Event loop will exit after current HTTP requests have been handled, so
@@ -341,16 +344,14 @@ static UniValue stop(const Config &config, const JSONRPCRequest &jsonRequest) {
 static UniValue uptime(const Config &config,
                        const JSONRPCRequest &jsonRequest) {
     if (jsonRequest.fHelp || jsonRequest.params.size() > 0) {
-        throw std::runtime_error(
-            RPCHelpMan{"uptime",
-                "\nReturns the total uptime of the server.\n", {}}
-                .ToString() +
-                        "\nResult:\n"
-                        "ttt        (numeric) The number of seconds that the server has been running\n"
-                        "\nExamples:\n"
-                + HelpExampleCli("uptime", "")
-                + HelpExampleRpc("uptime", "")
-        );
+        throw std::runtime_error(RPCHelpMan{
+            "uptime",
+            "\nReturns the total uptime of the server.\n",
+            {},
+            RPCResult{"ttt        (numeric) The number of seconds that the server has been running\n"},
+            RPCExamples{HelpExampleCli("uptime", "") +
+                        HelpExampleRpc("uptime", "")},
+        }.ToStringWithResultsAndExamples());
     }
 
     return GetTime() - GetStartupTime();
@@ -359,9 +360,13 @@ static UniValue uptime(const Config &config,
 static UniValue getrpcinfo(const Config &config,
                            const JSONRPCRequest &request) {
     if (request.fHelp || request.params.size() > 0) {
-        throw std::runtime_error(
-                RPCHelpMan{"getrpcinfo",
-                    "\nReturns details of the RPC server.\n", {}}.ToString());
+        throw std::runtime_error(RPCHelpMan{
+            "getrpcinfo",
+            "\nReturns details of the RPC server.\n",
+            {},
+            RPCResults{},
+            RPCExamples{""},
+        }.ToStringWithResultsAndExamples());
     }
 
     LOCK(g_rpc_server_info.mutex);
