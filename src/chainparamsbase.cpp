@@ -20,7 +20,7 @@ void SetupChainParamsBaseOptions() {
                  "Enter regression test mode, which uses a special chain in "
                  "which blocks can be solved instantly. This is intended for "
                  "regression testing tools and app development.",
-                 true, OptionsCategory::CHAINPARAMS);
+                 false, OptionsCategory::CHAINPARAMS);
     gArgs.AddArg("-testnet", "Use the test chain", false,
                  OptionsCategory::CHAINPARAMS);
 }
