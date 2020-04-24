@@ -110,6 +110,12 @@ static-checks-branch:
         <<: *global_cache_settings
         key: debian_cache_clang
 
+.cache-debian-makefiles:
+    extends: .ccache_scripts
+    cache:
+        <<: *global_cache_settings
+        key: debian_cache_makefiles
+
 .cache-win:
     extends: .ccache_scripts
     cache:
@@ -382,6 +388,18 @@ build-debian-clang:
     artifacts:
         paths:
             - build
+
+## Debian native with unix makefiles.
+build-debian-makefiles:
+    stage: build
+    extends: .cache-debian-makefiles
+    needs: []
+    script:
+        - mkdir build
+        - cd build
+        - cmake -G"Unix Makefiles" ..
+        - make -j`nproc`
+        - ccache --show-stats
 
 build-debian-tests-clang:
     stage: build_tests
