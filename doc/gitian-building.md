@@ -58,11 +58,11 @@ In order to sign builds for MacOS, you need to obtain an archive which has been 
 
 ```bash
 cd ~/gitian-builder
-curl -LO https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.11.sdk.tar.xz
-echo "ff5f65e4637ef68cd8412a5f451cafe1dd03068bb57d41ca3fc971fb58a67de3 MacOSX10.11.sdk.tar.xz" | sha256sum -c
-# Should echo "MacOSX10.11.sdk.tar.xz: OK"
+curl -LO https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.14.sdk.tar.xz
+echo "0f03869f72df8705b832910517b47dd5b79eb4e160512602f593ed243b28715f MacOSX10.14.sdk.tar.xz" | sha256sum -c
+# Should echo "MacOSX10.14.sdk.tar.xz: OK"
 mkdir -p inputs
-mv MacOSX10.11.sdk.tar.xz inputs
+mv MacOSX10.14.sdk.tar.xz inputs
 ```
 
 Alternatively, you can skip the macOS build by adding `--os=lw` below.
