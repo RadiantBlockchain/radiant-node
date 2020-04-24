@@ -642,7 +642,7 @@ void ArgsManager::ClearArg(const std::string &strArg) {
 }
 
 std::string ArgsManager::GetHelpMessage() const {
-    const bool show_debug = gArgs.GetBoolArg("-help-debug", false);
+    const bool show_debug = gArgs.GetBoolArg("-??", false) || gArgs.GetBoolArg("-help-debug", false);
 
     std::string usage = "";
     LOCK(cs_args);
@@ -715,7 +715,7 @@ std::string ArgsManager::GetHelpMessage() const {
 }
 
 bool HelpRequested(const ArgsManager &args) {
-    return args.IsArgSet("-?") || args.IsArgSet("-h") || args.IsArgSet("-help");
+    return args.IsArgSet("-?") || args.IsArgSet("-??") || args.IsArgSet("-h") || args.IsArgSet("-help") || args.IsArgSet("-help-debug");
 }
 
 static const int screenWidth = 79;
