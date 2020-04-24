@@ -709,7 +709,6 @@ void CWallet::SyncMetaData(
         // on purpose.
         copyTo->nTimeSmart = copyFrom->nTimeSmart;
         copyTo->fFromMe = copyFrom->fFromMe;
-        copyTo->strFromAccount = copyFrom->strFromAccount;
         // nOrderPos not copied on purpose cached members not copied on purpose.
     }
 }
@@ -875,40 +874,26 @@ DBErrors CWallet::ReorderTransactions() {
     // Old wallets didn't have any defined order for transactions. Probably a
     // bad idea to change the output of this.
 
-    // First: get all CWalletTx and CAccountingEntry into a sorted-by-time
+    // First: get all CWalletTx into a sorted-by-time
     // multimap.
     TxItems txByTime;
 
     for (auto &entry : mapWallet) {
         CWalletTx *wtx = &entry.second;
-        txByTime.insert(
-            std::make_pair(wtx->nTimeReceived, TxPair(wtx, nullptr)));
-    }
-
-    std::list<CAccountingEntry> acentries;
-    batch.ListAccountCreditDebit("", acentries);
-    for (CAccountingEntry &entry : acentries) {
-        txByTime.insert(std::make_pair(entry.nTime, TxPair(nullptr, &entry)));
+        txByTime.insert(std::make_pair(wtx->nTimeReceived, wtx));
     }
 
     nOrderPosNext = 0;
     std::vector<int64_t> nOrderPosOffsets;
     for (TxItems::iterator it = txByTime.begin(); it != txByTime.end(); ++it) {
-        CWalletTx *const pwtx = (*it).second.first;
-        CAccountingEntry *const pacentry = (*it).second.second;
-        int64_t &nOrderPos =
-            (pwtx != nullptr) ? pwtx->nOrderPos : pacentry->nOrderPos;
+        CWalletTx *const pwtx = (*it).second;
+        int64_t &nOrderPos = pwtx->nOrderPos;
 
         if (nOrderPos == -1) {
             nOrderPos = nOrderPosNext++;
             nOrderPosOffsets.push_back(nOrderPos);
 
-            if (pwtx) {
-                if (!batch.WriteTx(*pwtx)) {
-                    return DBErrors::LOAD_FAIL;
-                }
-            } else if (!batch.WriteAccountingEntry(pacentry->nEntryNo,
-                                                   *pacentry)) {
+            if (!batch.WriteTx(*pwtx)) {
                 return DBErrors::LOAD_FAIL;
             }
         } else {
@@ -927,12 +912,7 @@ DBErrors CWallet::ReorderTransactions() {
             }
 
             // Since we're changing the order, write it back.
-            if (pwtx) {
-                if (!batch.WriteTx(*pwtx)) {
-                    return DBErrors::LOAD_FAIL;
-                }
-            } else if (!batch.WriteAccountingEntry(pacentry->nEntryNo,
-                                                   *pacentry)) {
+            if (!batch.WriteTx(*pwtx)) {
                 return DBErrors::LOAD_FAIL;
             }
         }
@@ -954,50 +934,6 @@ int64_t CWallet::IncOrderPosNext(WalletBatch *batch) {
     }
 
     return nRet;
-}
-
-bool CWallet::GetLabelDestination(CTxDestination &dest,
-                                  const std::string &label, bool bForceNew) {
-    WalletBatch batch(*database);
-
-    CAccount account;
-    batch.ReadAccount(label, account);
-
-    if (!bForceNew) {
-        if (!account.vchPubKey.IsValid()) {
-            bForceNew = true;
-        } else {
-            // Check if the current key has been used (TODO: check other
-            // addresses with the same key)
-            CScript scriptPubKey = GetScriptForDestination(GetDestinationForKey(
-                account.vchPubKey, m_default_address_type));
-            for (std::map<TxId, CWalletTx>::iterator it = mapWallet.begin();
-                 it != mapWallet.end() && account.vchPubKey.IsValid(); ++it) {
-                for (const CTxOut &txout : (*it).second.tx->vout) {
-                    if (txout.scriptPubKey == scriptPubKey) {
-                        bForceNew = true;
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    // Generate a new key
-    if (bForceNew) {
-        if (!GetKeyFromPool(account.vchPubKey, false)) {
-            return false;
-        }
-
-        LearnRelatedScripts(account.vchPubKey, m_default_address_type);
-        dest = GetDestinationForKey(account.vchPubKey, m_default_address_type);
-        SetAddressBook(dest, label, "receive");
-        batch.WriteAccount(label, account);
-    } else {
-        dest = GetDestinationForKey(account.vchPubKey, m_default_address_type);
-    }
-
-    return true;
 }
 
 void CWallet::MarkDirty() {
@@ -1023,8 +959,8 @@ bool CWallet::AddToWallet(const CWalletTx &wtxIn, bool fFlushOnClose) {
     if (fInsertedNew) {
         wtx.nTimeReceived = GetAdjustedTime();
         wtx.nOrderPos = IncOrderPosNext(&batch);
-        wtx.m_it_wtxOrdered = wtxOrdered.insert(
-            std::make_pair(wtx.nOrderPos, TxPair(&wtx, nullptr)));
+        wtx.m_it_wtxOrdered =
+            wtxOrdered.insert(std::make_pair(wtx.nOrderPos, &wtx));
         wtx.nTimeSmart = ComputeTimeSmart(wtx);
         AddToSpends(txid);
     }
@@ -1089,8 +1025,8 @@ void CWallet::LoadToWallet(const CWalletTx &wtxIn) {
     CWalletTx &wtx = ins.first->second;
     wtx.BindWallet(this);
     if (/* insertion took place */ ins.second) {
-        wtx.m_it_wtxOrdered = wtxOrdered.insert(
-            std::make_pair(wtx.nOrderPos, TxPair(&wtx, nullptr)));
+        wtx.m_it_wtxOrdered =
+            wtxOrdered.insert(std::make_pair(wtx.nOrderPos, &wtx));
     }
     AddToSpends(txid);
     for (const CTxIn &txin : wtx.tx->vin) {
@@ -1785,12 +1721,10 @@ int CalculateMaximumSignedInputSize(const CTxOut &txout, const CWallet *wallet,
 
 void CWalletTx::GetAmounts(std::list<COutputEntry> &listReceived,
                            std::list<COutputEntry> &listSent, Amount &nFee,
-                           std::string &strSentAccount,
                            const isminefilter &filter) const {
     nFee = Amount::zero();
     listReceived.clear();
     listSent.clear();
-    strSentAccount = strFromAccount;
 
     // Compute fee:
     Amount nDebit = GetDebit(filter);
@@ -3432,15 +3366,13 @@ bool CWallet::CreateTransaction(interfaces::Chain::Lock &locked_chainIn,
 bool CWallet::CommitTransaction(
     CTransactionRef tx, mapValue_t mapValue,
     std::vector<std::pair<std::string, std::string>> orderForm,
-    std::string fromAccount, CReserveKey &reservekey, CConnman *connman,
-    CValidationState &state) {
+    CReserveKey &reservekey, CConnman *connman, CValidationState &state) {
     auto locked_chain = chain().lock();
     LOCK(cs_wallet);
 
     CWalletTx wtxNew(this, std::move(tx));
     wtxNew.mapValue = std::move(mapValue);
     wtxNew.vOrderForm = std::move(orderForm);
-    wtxNew.strFromAccount = std::move(fromAccount);
     wtxNew.fTimeReceivedIsTxTime = true;
     wtxNew.fFromMe = true;
 
@@ -3477,25 +3409,6 @@ bool CWallet::CommitTransaction(
             wtx.RelayWalletTransaction(*locked_chain, connman);
         }
     }
-
-    return true;
-}
-
-bool CWallet::AddAccountingEntry(const CAccountingEntry &acentry) {
-    WalletBatch batch(*database);
-
-    return AddAccountingEntry(acentry, &batch);
-}
-
-bool CWallet::AddAccountingEntry(const CAccountingEntry &acentry,
-                                 WalletBatch *batch) {
-    if (!batch->WriteAccountingEntry(++nAccountingEntryNumber, acentry)) {
-        return false;
-    }
-
-    laccentries.push_back(acentry);
-    CAccountingEntry &entry = laccentries.back();
-    wtxOrdered.insert(std::make_pair(entry.nOrderPos, TxPair(nullptr, &entry)));
 
     return true;
 }
@@ -4087,11 +4000,6 @@ CWallet::GetLabelAddresses(const std::string &label) const {
     return result;
 }
 
-void CWallet::DeleteLabel(const std::string &label) {
-    WalletBatch batch(*database);
-    batch.EraseAccount(label);
-}
-
 bool CReserveKey::GetReservedKey(CPubKey &pubkey, bool internal) {
     if (!pwallet->CanGetAddresses(internal)) {
         return false;
@@ -4307,19 +4215,14 @@ unsigned int CWallet::ComputeTimeSmart(const CWalletTx &wtx) const {
             int64_t latestTolerated = latestNow + 300;
             const TxItems &txOrdered = wtxOrdered;
             for (auto it = txOrdered.rbegin(); it != txOrdered.rend(); ++it) {
-                CWalletTx *const pwtx = it->second.first;
+                CWalletTx *const pwtx = it->second;
                 if (pwtx == &wtx) {
                     continue;
                 }
-                CAccountingEntry *const pacentry = it->second.second;
                 int64_t nSmartTime;
-                if (pwtx) {
-                    nSmartTime = pwtx->nTimeSmart;
-                    if (!nSmartTime) {
-                        nSmartTime = pwtx->nTimeReceived;
-                    }
-                } else {
-                    nSmartTime = pacentry->nTime;
+                nSmartTime = pwtx->nTimeSmart;
+                if (!nSmartTime) {
+                    nSmartTime = pwtx->nTimeReceived;
                 }
                 if (nSmartTime <= latestTolerated) {
                     latestEntry = nSmartTime;
@@ -4808,7 +4711,6 @@ std::shared_ptr<CWallet> CWallet::CreateWalletFromFile(
                     copyTo->nTimeReceived = copyFrom->nTimeReceived;
                     copyTo->nTimeSmart = copyFrom->nTimeSmart;
                     copyTo->fFromMe = copyFrom->fFromMe;
-                    copyTo->strFromAccount = copyFrom->strFromAccount;
                     copyTo->nOrderPos = copyFrom->nOrderPos;
                     batch.WriteTx(*copyTo);
                 }

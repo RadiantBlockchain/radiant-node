@@ -337,22 +337,6 @@ static UniValue setlabel(const Config &config, const JSONRPCRequest &request) {
         pwallet->SetAddressBook(dest, label, "send");
     }
 
-    // Detect when there are no addresses using this label.
-    // If so, delete the account record for it. Labels, unlike addresses, can be
-    // deleted, and if we wouldn't do this, the record would stick around
-    // forever.
-    bool found_address = false;
-    for (const std::pair<const CTxDestination, CAddressBookData> &item :
-         pwallet->mapAddressBook) {
-        if (item.second.name == label) {
-            found_address = true;
-            break;
-        }
-    }
-    if (!found_address) {
-        pwallet->DeleteLabel(old_label);
-    }
-
     return NullUniValue;
 }
 
@@ -404,8 +388,7 @@ static CTransactionRef SendMoney(interfaces::Chain::Lock &locked_chain,
     }
     CValidationState state;
     if (!pwallet->CommitTransaction(tx, std::move(mapValue), {} /* orderForm */,
-                                    "" /* account */, reservekey,
-                                    g_connman.get(), state)) {
+                                    reservekey, g_connman.get(), state)) {
         strError =
             strprintf("Error: The transaction was rejected! Reason given: %s",
                       FormatStateMessage(state));
@@ -1091,8 +1074,7 @@ static UniValue sendmany(const Config &config, const JSONRPCRequest &request) {
     }
     CValidationState state;
     if (!pwallet->CommitTransaction(tx, std::move(mapValue), {} /* orderForm */,
-                                    "" /* account */, keyChange,
-                                    g_connman.get(), state)) {
+                                    keyChange, g_connman.get(), state)) {
         strFailReason = strprintf("Transaction commit failed:: %s",
                                   FormatStateMessage(state));
         throw JSONRPCError(RPC_WALLET_ERROR, strFailReason);
@@ -1499,11 +1481,10 @@ static void ListTransactions(interfaces::Chain::Lock &locked_chain,
                              int nMinDepth, bool fLong, UniValue &ret,
                              const isminefilter &filter) {
     Amount nFee;
-    std::string dummy_account;
     std::list<COutputEntry> listReceived;
     std::list<COutputEntry> listSent;
 
-    wtx.GetAmounts(listReceived, listSent, nFee, dummy_account, filter);
+    wtx.GetAmounts(listReceived, listSent, nFee, filter);
 
     bool involvesWatchonly = wtx.IsFromMe(ISMINE_WATCH_ONLY);
 
@@ -1689,12 +1670,8 @@ UniValue listtransactions(const Config &config, const JSONRPCRequest &request) {
     // iterate backwards until we have nCount items to return:
     for (CWallet::TxItems::const_reverse_iterator it = txOrdered.rbegin();
          it != txOrdered.rend(); ++it) {
-        CWalletTx *const pwtx = (*it).second.first;
-        if (pwtx != nullptr) {
-            ListTransactions(*locked_chain, pwallet, *pwtx, 0, true, ret,
-                             filter);
-        }
-
+        CWalletTx *const pwtx = (*it).second;
+        ListTransactions(*locked_chain, pwallet, *pwtx, 0, true, ret, filter);
         if ((int)ret.size() >= (nCount + nFrom)) {
             break;
         }
