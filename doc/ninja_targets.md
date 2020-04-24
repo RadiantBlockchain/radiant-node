@@ -110,7 +110,7 @@ Runs `devtools/chainparams/test_make_chainparams.py`.
 This tests utilities to generate chainparams constants that are compiled into the client.
 See `contrib/devtools/chainparams/README.md` for more information on these tools.
 
-### check-security
+### security-check
 
 Runs a series of security tests for ELF binaries against the following executables:
 
