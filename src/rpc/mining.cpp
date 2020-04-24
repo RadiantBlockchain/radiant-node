@@ -94,21 +94,22 @@ static double GetNetworkHashPS(int lookup, int height) {
 static UniValue getnetworkhashps(const Config &config,
                                  const JSONRPCRequest &request) {
     if (request.fHelp || request.params.size() > 2) {
-        throw std::runtime_error(
-            RPCHelpMan{"getnetworkhashps",
-                "\nReturns the estimated network hashes per second based on the last n blocks.\n"
-                "Pass in [nblocks] to override # of blocks, -1 specifies since last difficulty change.\n"
-                "Pass in [height] to estimate the network speed at the time when a certain block was found.\n",
-                {
-                    {"nblocks", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "120", "The number of blocks, or -1 for blocks since last difficulty change."},
-                    {"height", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "-1", "To estimate at the time of the given height."},
-                }}
-                .ToString() +
-            "\nResult:\n"
-            "x             (numeric) Hashes per second estimated\n"
-            "\nExamples:\n" +
-            HelpExampleCli("getnetworkhashps", "") +
-            HelpExampleRpc("getnetworkhashps", ""));
+        throw std::runtime_error(RPCHelpMan{
+            "getnetworkhashps",
+            "\nReturns the estimated network hashes per second based on the last n blocks.\n"
+            "Pass in [blocks] to override # of blocks, -1 specifies since last difficulty change.\n"
+            "Pass in [height] to estimate the network speed at the time when a certain block was found.\n",
+            {
+                {"nblocks", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "120",
+                 "The number of blocks, or -1 for blocks since last difficulty change."},
+                {"height", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "-1",
+                 "To estimate at the time of the given height."},
+            },
+            RPCResult{
+                "x             (numeric) Hashes per second estimated\n"},
+            RPCExamples{HelpExampleCli("getnetworkhashps", "") +
+                        HelpExampleRpc("getnetworkhashps", "")},
+        }.ToStringWithResultsAndExamples());
     }
 
     LOCK(cs_main);
@@ -195,20 +196,22 @@ static UniValue generatetoaddress(const Config &config,
                                   const JSONRPCRequest &request) {
     if (request.fHelp || request.params.size() < 2 ||
         request.params.size() > 3) {
-        throw std::runtime_error(
-            RPCHelpMan{"generatetoaddress",
-                "\nMine blocks immediately to a specified address (before the RPC call returns)\n",
-                {
-                    {"nblocks", RPCArg::Type::NUM, /* opt */ false, /* default_val */ "", "How many blocks are generated immediately."},
-                    {"address", RPCArg::Type::STR, /* opt */ false, /* default_val */ "", "The address to send the newly generated bitcoin to."},
-                    {"maxtries", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "1000000", "How many iterations to try."},
-                }}
-                .ToString() +
-            "\nResult:\n"
-            "[ blockhashes ]     (array) hashes of blocks generated\n"
-            "\nExamples:\n"
-            "\nGenerate 11 blocks to myaddress\n" +
-            HelpExampleCli("generatetoaddress", "11 \"myaddress\""));
+        throw std::runtime_error(RPCHelpMan{
+            "generatetoaddress",
+            "\nMine blocks immediately to a specified address (before the RPC call returns).\n",
+            {
+                {"nblocks", RPCArg::Type::NUM, /* opt */ false, /* default_val */ "",
+                 "How many blocks are generated immediately."},
+                {"address", RPCArg::Type::STR, /* opt */ false, /* default_val */ "",
+                 "The address to send the newly generated bitcoin to."},
+                {"maxtries", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "1000000", "How many iterations to try."},
+            },
+            RPCResult{
+                "[ blockhashes ]     (array) hashes of blocks generated\n"},
+            RPCExamples{
+                "\nGenerate 11 blocks to myaddress\n" +
+                HelpExampleCli("generatetoaddress", "11 \"myaddress\"")},
+        }.ToStringWithResultsAndExamples());
     }
 
     int nGenerate = request.params[0].get_int();
@@ -234,28 +237,24 @@ static UniValue generatetoaddress(const Config &config,
 static UniValue getmininginfo(const Config &config,
                               const JSONRPCRequest &request) {
     if (request.fHelp || request.params.size() != 0) {
-        throw std::runtime_error(
-            RPCHelpMan{"getmininginfo",
-                "\nReturns a json object containing mining-related information.", {}}
-                .ToString() +
-            "\nResult:\n"
-            "{\n"
-            "  \"blocks\": nnn,             (numeric) The current block\n"
-            "  \"currentblocksize\": nnn,   (numeric) The last block size\n"
-            "  \"currentblocktx\": nnn,     (numeric) The last block "
-            "transaction\n"
-            "  \"difficulty\": xxx.xxxxx    (numeric) The current difficulty\n"
-            "  \"networkhashps\": nnn,      (numeric) The network hashes per "
-            "second\n"
-            "  \"pooledtx\": n              (numeric) The size of the mempool\n"
-            "  \"chain\": \"xxxx\",           (string) current network name as "
-            "defined in BIP70 (main, test, regtest)\n"
-            "  \"warnings\": \"...\"          (string) any network and "
-            "blockchain warnings\n"
-            "}\n"
-            "\nExamples:\n" +
-            HelpExampleCli("getmininginfo", "") +
-            HelpExampleRpc("getmininginfo", ""));
+        throw std::runtime_error(RPCHelpMan{
+            "getmininginfo",
+            "\nReturns a json object containing mining-related information.\n",
+            {},
+            RPCResult{
+                "{\n"
+                "  \"blocks\": nnn,             (numeric) The current block\n"
+                "  \"currentblocksize\": nnn,   (numeric) The last block size\n"
+                "  \"currentblocktx\": nnn,     (numeric) The last block transaction\n"
+                "  \"difficulty\": xxx.xxxxx    (numeric) The current difficulty\n"
+                "  \"networkhashps\": nnn,      (numeric) The network hashes per second\n"
+                "  \"pooledtx\": n              (numeric) The size of the mempool\n"
+                "  \"chain\": \"xxxx\",           (string) current network name as defined in BIP70 (main, test, regtest)\n"
+                "  \"warnings\": \"...\"          (string) any network and blockchain warnings\n"
+                "}\n"},
+            RPCExamples{HelpExampleCli("getmininginfo", "") +
+                        HelpExampleRpc("getmininginfo", "")},
+        }.ToStringWithResultsAndExamples());
     }
 
     LOCK(cs_main);
@@ -279,24 +278,26 @@ static UniValue getmininginfo(const Config &config,
 static UniValue prioritisetransaction(const Config &config,
                                       const JSONRPCRequest &request) {
     if (request.fHelp || request.params.size() != 3) {
-        throw std::runtime_error(
-            RPCHelpMan{"prioritisetransaction",
-                "Accepts the transaction into mined blocks at a higher (or lower) priority\n",
-                {
-                    {"txid", RPCArg::Type::STR_HEX, /* opt */ false, /* default_val */ "", "The transaction id."},
-                    {"dummy", RPCArg::Type::NUM, /* opt */ false, /* default_val */ "", "API-Compatibility for previous API. Must be zero or null.\n"
-            "                  DEPRECATED. For forward compatibility use named arguments and omit this parameter."},
-                    {"fee_delta", RPCArg::Type::NUM, /* opt */ false, /* default_val */ "", "The fee value (in satoshis) to add (or subtract, if negative).\n"
-            "                  Note, that this value is not a fee rate. It is a value to modify absolute fee of the TX.\n"
-            "                  The fee is not actually paid, only the algorithm for selecting transactions into a block\n"
-            "                  considers the transaction as it would have paid a higher (or lower) fee."},
-                }}
-                .ToString() +
-            "\nResult:\n"
-            "true              (boolean) Returns true\n"
-            "\nExamples:\n" +
-            HelpExampleCli("prioritisetransaction", "\"txid\" 0.0 10000") +
-            HelpExampleRpc("prioritisetransaction", "\"txid\", 0.0, 10000"));
+        throw std::runtime_error(RPCHelpMan{
+            "prioritisetransaction",
+            "\nAccepts the transaction into mined blocks at a higher (or lower) priority.\n",
+            {
+                {"txid", RPCArg::Type::STR_HEX, /* opt */ false, /* default_val */ "", "The transaction id."},
+                {"dummy", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "null",
+                 "API-Compatibility for previous API. Must be zero or null.\n"
+                 "                  DEPRECATED. For forward compatibility use named arguments and omit this parameter."},
+                {"fee_delta", RPCArg::Type::NUM, /* opt */ false, /* default_val */ "",
+                 "The fee value (in satoshis) to add (or subtract, if negative).\n"
+                 "                  Note, that this value is not a fee rate. It is a value to modify absolute fee of the TX.\n"
+                 "                  The fee is not actually paid, only the algorithm for selecting transactions into a block\n"
+                 "                  considers the transaction as it would have paid a higher (or lower) fee."},
+            },
+            RPCResult{
+                "true              (boolean) Returns true\n"},
+            RPCExamples{
+                HelpExampleCli("prioritisetransaction", "\"txid\" 0.0 10000") +
+                HelpExampleRpc("prioritisetransaction", "\"txid\", 0.0, 10000")},
+        }.ToStringWithResultsAndExamples());
     }
 
     LOCK(cs_main);
@@ -366,128 +367,6 @@ const std::string kDataFileMagic = "GBT";
 } // namespace gbtl
 
 static UniValue getblocktemplatecommon(bool fLight, const Config &config, const JSONRPCRequest &request) {
-    const bool wrongParamSize = fLight ? request.params.size() > 2 : request.params.size() > 1;
-    if (request.fHelp || wrongParamSize) {
-        const std::string name = fLight ? "getblocktemplatelight" : "getblocktemplate";
-        const auto lightExtraArgs = fLight ? " \"additional_txs\"" : "";
-        const auto lightExtraArgDesc =
-            fLight
-            ? "2. additional_txs           (json array of strings, optional) Hex encoded transactions"
-              " to add to the block (each tx must be unique and valid)\n"
-            : "";
-        const auto resultsKeysMiscDesc =
-            fLight
-            ? "  \"job_id\" : \"xxxx\",                (string) Job identifier as a hexadecimal hash160,"
-              " which is to be used as a parameter in a subsequent call to submitblocklight\n"
-              "  \"merkle\" : [ \"xxxx\", ... ],       (array) Hashes encoded in little-endian hexadecimal\n"
-            : "  \"transactions\" : [                (array) contents of "
-              "non-coinbase transactions that should be included in the next "
-              "block\n"
-              "      {\n"
-              "         \"data\" : \"xxxx\",             (string) transaction "
-              "data encoded in hexadecimal (byte-for-byte)\n"
-              "         \"txid\" : \"xxxx\",             (string) transaction id "
-              "encoded in little-endian hexadecimal\n"
-              "         \"hash\" : \"xxxx\",             (string) hash encoded "
-              "in little-endian hexadecimal\n"
-              "         \"depends\" : [                (array) array of numbers"
-              "\n"
-              "             n                          (numeric) transactions "
-              "before this one (by 1-based index in 'transactions' list) that "
-              "must be present in the final block if this one is\n"
-              "             ,...\n"
-              "         ],\n"
-              "         \"fee\": n,                    (numeric) difference in "
-              "value between transaction inputs and outputs (in satoshis); for "
-              "coinbase transactions, this is a negative number of the total "
-              "collected block fees (i.e., not including the block subsidy); "
-              "if this key is not present, fee is unknown and clients MUST NOT "
-              "assume there isn't one\n"
-              "         \"sigops\" : n,                (numeric) total "
-              "sigcheck count, as counted for purposes of block limits; if "
-              "this key is not present, sigcheck count is unknown and clients "
-              "MUST NOT assume it is zero\n"
-              "         \"required\" : true|false      (boolean) if provided "
-              "and true, this transaction must be in the final block\n"
-              "      }\n"
-              "      ,...\n"
-              "  ],\n";
-
-        throw std::runtime_error(
-            name + " ( \"template_request\"" + lightExtraArgs +" )\n"
-            "\nIf the request parameters include a 'mode' key, that is used to "
-            "explicitly select between the default 'template' request or a "
-            "'proposal'.\n"
-            "It returns data needed to construct a block to work on.\n"
-            "For full specification, see BIP22 and BIP23:\n"
-            "    "
-            "https://github.com/bitcoin/bips/blob/master/bip-0022.mediawiki\n"
-            "    "
-            "https://github.com/bitcoin/bips/blob/master/bip-0023.mediawiki\n"
-
-            "\nArguments:\n"
-            "1. template_request         (json object, optional) A json object "
-            "in the following spec\n"
-            "     {\n"
-            "       \"mode\":\"template\"    (string, optional) This must be "
-            "set to \"template\", \"proposal\" (see BIP23), or omitted\n"
-            "       \"capabilities\":[     (array, optional) A list of "
-            "strings\n"
-            "           \"support\"          (string) client side supported "
-            "feature, 'longpoll', 'coinbasetxn', 'coinbasevalue', 'proposal', "
-            "'serverlist', 'workid'\n"
-            "           ,...\n"
-            "       ]\n"
-            "     }\n"
-            + lightExtraArgDesc +
-            "\n"
-
-            "\nResult:\n"
-            "{\n"
-            "  \"version\" : n,                    (numeric) The preferred "
-            "block version\n"
-            "  \"previousblockhash\" : \"xxxx\",     (string) The hash of "
-            "current highest block\n"
-            + resultsKeysMiscDesc +
-            "  \"coinbaseaux\" : {                 (json object) data that "
-            "should be included in the coinbase's scriptSig content\n"
-            "      \"flags\" : \"xx\"                  (string) key name is to "
-            "be ignored, and value included in scriptSig\n"
-            "  },\n"
-            "  \"coinbasevalue\" : n,              (numeric) maximum allowable "
-            "input to coinbase transaction, including the generation award and "
-            "transaction fees (in satoshis)\n"
-            "  \"coinbasetxn\" : { ... },          (json object) information "
-            "for coinbase transaction\n"
-            "  \"target\" : \"xxxx\",                (string) The hash target\n"
-            "  \"mintime\" : xxx,                  (numeric) The minimum "
-            "timestamp appropriate for next block time in seconds since epoch "
-            "(Jan 1 1970 GMT)\n"
-            "  \"mutable\" : [                     (array of string) list of "
-            "ways the block template may be changed\n"
-            "     \"value\"                          (string) A way the block "
-            "template may be changed, e.g. 'time', 'transactions', "
-            "'prevblock'\n"
-            "     ,...\n"
-            "  ],\n"
-            "  \"noncerange\" : \"00000000ffffffff\",(string) A range of valid "
-            "nonces\n"
-            "  \"sigoplimit\" : n,                 (numeric) limit of sigchecks "
-            "in blocks\n"
-            "  \"sizelimit\" : n,                  (numeric) limit of block "
-            "size\n"
-            "  \"curtime\" : ttt,                  (numeric) current timestamp "
-            "in seconds since epoch (Jan 1 1970 GMT)\n"
-            "  \"bits\" : \"xxxxxxxx\",              (string) compressed "
-            "target of next block\n"
-            "  \"height\" : n                      (numeric) The height of the "
-            "next block\n"
-            "}\n"
-
-            "\nExamples:\n" +
-            HelpExampleCli(name, "") +
-            HelpExampleRpc(name, ""));
-    }
     const auto t0 = GetTimeMicros(); // perf. info, used iff logging BCLog::RPC
     LOCK(cs_main);
 
@@ -848,10 +727,156 @@ static UniValue getblocktemplatecommon(bool fLight, const Config &config, const 
 }
 
 static UniValue getblocktemplate(const Config &config, const JSONRPCRequest &request) {
+    if (request.fHelp || request.params.size() > 1) {
+        // If you change the help text of getblocktemplate below,
+        // consder changing the help text of getblocktemplatelight as well.
+        throw std::runtime_error(RPCHelpMan{
+            "getblocktemplate",
+            "\nIf the request parameters include a 'mode' key, "
+            "that is used to explicitly select between the default 'template' request or a 'proposal'.\n"
+            "It returns data needed to construct a block to work on.\n"
+            "For full specification, see BIP22/BIP23.\n",
+            {
+                {"template_request", RPCArg::Type::OBJ, /* opt */ true, /* default_val */ "",
+                 "A json object in the following spec",
+                 {
+                     {"mode", RPCArg::Type::STR, /* opt */ true, /* default_val */ "",
+                      "This must be set to \"template\", \"proposal\" (see BIP23), or omitted"},
+                     {"capabilities", RPCArg::Type::ARR, /* opt */ true, /* default_val */ "",
+                      "A list of strings",
+                      {
+                          {"support", RPCArg::Type::STR, /* opt */ true, /* default_val */ "",
+                           "client side supported feature, "
+                           "'longpoll', 'coinbasetxn', 'coinbasevalue', 'proposal', 'serverlist', 'workid'"},
+                         },
+                     },
+                 }, "\"template_request\""},
+            },
+            RPCResult{
+                "{\n"
+                "  \"version\" : n,                    (numeric) The preferred block version\n"
+                "  \"previousblockhash\" : \"xxxx\",     (string) The hash of current highest block\n"
+                "  \"transactions\" : [                (array) "
+                "contents of non-coinbase transactions that should be included in the next block\n"
+                "      {\n"
+                "         \"data\" : \"xxxx\",             (string) transaction data encoded in hexadecimal (byte-for-byte)\n"
+                "         \"txid\" : \"xxxx\",             (string) transaction id encoded in little-endian hexadecimal\n"
+                "         \"hash\" : \"xxxx\",             (string) hash encoded in little-endian hexadecimal\n"
+                "         \"depends\" : [                (array) array of numbers\n"
+                "             n                          (numeric) "
+                "transactions before this one (by 1-based index in 'transactions' list) "
+                "that must be present in the final block if this one is\n"
+                "             ,...\n"
+                "         ],\n"
+                "         \"fee\": n,                    (numeric) "
+                "difference in value between transaction inputs and outputs (in satoshis); for coinbase transactions, "
+                "this is a negative number of the total collected block fees (i.e., not including the block subsidy); "
+                "if this key is not present, fee is unknown and clients MUST NOT assume there isn't one\n"
+                "         \"sigops\" : n,                (numeric) "
+                "total sigcheck count, as counted for purposes of block limits; "
+                "if this key is not present, sigcheck count is unknown and clients MUST NOT assume it is zero\n"
+                "         \"required\" : true|false      (boolean) "
+                "if provided and true, this transaction must be in the final block\n"
+                "      }\n"
+                "      ,...\n"
+                "  ],\n"
+                "  \"coinbaseaux\" : {                 (json object) "
+                "data that should be included in the coinbase's scriptSig content\n"
+                "      \"flags\" : \"xx\"                  (string) key name is to be ignored, and value included in scriptSig\n"
+                "  },\n"
+                "  \"coinbasevalue\" : n,              (numeric) "
+                "maximum allowable input to coinbase transaction, including the generation award and transaction fees "
+                "(in satoshis)\n"
+                "  \"coinbasetxn\" : { ... },          (json object) information for coinbase transaction\n"
+                "  \"target\" : \"xxxx\",                (string) The hash target\n"
+                "  \"mintime\" : xxx,                  (numeric) "
+                "The minimum timestamp appropriate for next block time in seconds since epoch (Jan 1 1970 GMT)\n"
+                "  \"mutable\" : [                     (array of string) list of ways the block template may be changed\n"
+                "     \"value\"                          (string) "
+                "A way the block template may be changed, e.g. 'time', 'transactions', 'prevblock'\n"
+                "     ,...\n"
+                "  ],\n"
+                "  \"noncerange\" : \"00000000ffffffff\",(string) A range of valid nonces\n"
+                "  \"sigoplimit\" : n,                 (numeric) limit of sigchecks in blocks\n"
+                "  \"sizelimit\" : n,                  (numeric) limit of block size\n"
+                "  \"curtime\" : ttt,                  (numeric) current timestamp in seconds since epoch (Jan 1 1970 GMT)\n"
+                "  \"bits\" : \"xxxxxxxx\",              (string) compressed target of next block\n"
+                "  \"height\" : n                      (numeric) The height of the next block\n"
+                "}\n"
+            },
+            RPCExamples{HelpExampleCli("getblocktemplate", "") +
+                        HelpExampleRpc("getblocktemplate", "")},
+        }.ToStringWithResultsAndExamples());
+    }
     return getblocktemplatecommon(false, config, request);
 }
 
 static UniValue getblocktemplatelight(const Config &config, const JSONRPCRequest &request) {
+    if (request.fHelp || request.params.size() > 2) {
+        // If you change the help text of getblocktemplatelight below,
+        // consder changing the help text of getblocktemplate as well.
+        throw std::runtime_error(RPCHelpMan{
+            "getblocktemplatelight",
+            "\nIf the request parameters include a 'mode' key, "
+            "that is used to explicitly select between the default 'template' request or a 'proposal'.\n"
+            "It returns data needed to construct a block to work on.\n"
+            "For full specification, see the getblocktemplatelight spec in the doc folder, and BIP22/BIP23.\n",
+            {
+                {"template_request", RPCArg::Type::OBJ, /* opt */ true, /* default_val */ "",
+                 "A json object in the following spec",
+                 {
+                     {"mode", RPCArg::Type::STR, /* opt */ true, /* default_val */ "",
+                      "This must be set to \"template\", \"proposal\" (see BIP23), or omitted"},
+                     {"capabilities", RPCArg::Type::ARR, /* opt */ true, /* default_val */ "",
+                      "A list of strings",
+                      {
+                          {"support", RPCArg::Type::STR, /* opt */ true, /* default_val */ "",
+                           "client side supported feature, "
+                           "'longpoll', 'coinbasetxn', 'coinbasevalue', 'proposal', 'serverlist', 'workid'"},
+                         },
+                     },
+                 }, "\"template_request\""},
+                 {"additional_txs", RPCArg::Type::ARR, /* opt */ true, /* default_val */ "[]",
+                 "Hex encoded transactions to add to the block (each tx must be unique and valid)",
+                 {
+                 }, "\"additional_txs\""},
+            },
+            RPCResult{
+                "{\n"
+                "  \"version\" : n,                    (numeric) The preferred block version\n"
+                "  \"previousblockhash\" : \"xxxx\",     (string) The hash of current highest block\n"
+                "  \"job_id\" : \"xxxx\",                (string) "
+                "Job identifier as a hexadecimal hash160, "
+                "which is to be used as a parameter in a subsequent call to submitblocklight\n"
+                "  \"merkle\" : [ \"xxxx\", ... ],       (array) Hashes encoded in little-endian hexadecimal\n"
+                "  \"coinbaseaux\" : {                 (json object) "
+                "data that should be included in the coinbase's scriptSig content\n"
+                "      \"flags\" : \"xx\"                  (string) key name is to be ignored, and value included in scriptSig\n"
+                "  },\n"
+                "  \"coinbasevalue\" : n,              (numeric) "
+                "maximum allowable input to coinbase transaction, including the generation award and transaction fees "
+                "(in satoshis)\n"
+                "  \"coinbasetxn\" : { ... },          (json object) information for coinbase transaction\n"
+                "  \"target\" : \"xxxx\",                (string) The hash target\n"
+                "  \"mintime\" : xxx,                  (numeric) "
+                "The minimum timestamp appropriate for next block time in seconds since epoch (Jan 1 1970 GMT)\n"
+                "  \"mutable\" : [                     (array of string) list of ways the block template may be changed\n"
+                "     \"value\"                          (string) "
+                "A way the block template may be changed, e.g. 'time', 'transactions', 'prevblock'\n"
+                "     ,...\n"
+                "  ],\n"
+                "  \"noncerange\" : \"00000000ffffffff\",(string) A range of valid nonces\n"
+                "  \"sigoplimit\" : n,                 (numeric) limit of sigchecks in blocks\n"
+                "  \"sizelimit\" : n,                  (numeric) limit of block size\n"
+                "  \"curtime\" : ttt,                  (numeric) current timestamp in seconds since epoch (Jan 1 1970 GMT)\n"
+                "  \"bits\" : \"xxxxxxxx\",              (string) compressed target of next block\n"
+                "  \"height\" : n                      (numeric) The height of the next block\n"
+                "}\n"
+            },
+            RPCExamples{HelpExampleCli("getblocktemplatelight", "") +
+                        HelpExampleRpc("getblocktemplatelight", "")},
+        }.ToStringWithResultsAndExamples());
+    }
     return getblocktemplatecommon(true, config, request);
 }
 
@@ -952,39 +977,41 @@ static UniValue submitblockcommon(const Config &config, const JSONRPCRequest &re
 static UniValue submitblock(const Config &config, const JSONRPCRequest &request) {
     // We allow 2 arguments for compliance with BIP22. Argument 2 is ignored.
     if (request.fHelp || request.params.size() < 1 || request.params.size() > 2) {
-        throw std::runtime_error(
-            "submitblock \"hexdata\"  ( \"dummy\" )\n"
+        throw std::runtime_error(RPCHelpMan{
+            "submitblock",
             "\nAttempts to submit new block to network.\n"
-            "See https://en.bitcoin.it/wiki/BIP_0022 for full specification.\n"
-
-            "\nArguments\n"
-            "1. \"hexdata\"        (string, required) the hex-encoded block "
-            "data to submit\n"
-            "2. \"dummy\"          (optional) dummy value, for compatibility "
-            "with BIP22. This value is ignored.\n"
-            "\nResult:\n"
-            "\nExamples:\n" +
-            HelpExampleCli("submitblock", "\"mydata\"") +
-            HelpExampleRpc("submitblock", "\"mydata\""));
+            "See BIP22 for full specification.\n",
+            {
+                {"hexdata", RPCArg::Type::STR_HEX, /* opt */ false, /* default_val */ "", "the hex-encoded block data to submit"},
+                {"dummy", RPCArg::Type::STR, /* opt */ true, /* default_val */ "",
+                 "dummy value, for compatibility with BIP22. This value is ignored."},
+            },
+            RPCResults{},
+            RPCExamples{HelpExampleCli("submitblock", "\"mydata\"") +
+                        HelpExampleRpc("submitblock", "\"mydata\"")},
+        }.ToStringWithResultsAndExamples());
     }
     return submitblockcommon(config, request);
 }
 
 static UniValue submitblocklight(const Config &config, const JSONRPCRequest &request) {
     if (request.fHelp || request.params.size() != 2) {
-        throw std::runtime_error(
-            "submitblocklight \"hexdata\" \"job_id\"\n"
-            "\nAttempts to submit a new block to the network, based on a previous call to getblocktemplatelight.\n"
-
-            "\nArguments\n"
-            "1. \"hexdata\"        (string, required) The hex-encoded block data to submit. The block must have "
-            "exactly 1 transaction (coinbase). Additional transactions (if any) are appended from the light template.\n"
-            "2. \"job_id\"         (string, required) Identifier of the light template from which to retrieve the "
-            "non-coinbase transactions. This job_id must be obtained from a previous call to getblocktemplatelight.\n"
-            "\nResult:\n"
-            "\nExamples:\n" +
-            HelpExampleCli("submitblocklight", "\"mydata\" \"myjobid\"") +
-            HelpExampleRpc("submitblocklight", "\"mydata\", \"myjobid\""));
+        throw std::runtime_error(RPCHelpMan{
+            "submitblocklight",
+            "\nAttempts to submit a new block to network, based on a previous call to getblocktemplatelight.\n"
+            "See the getblocktemplatelight spec in the doc folder for full specification.\n",
+            {
+                {"hexdata", RPCArg::Type::STR_HEX, /* opt */ false, /* default_val */ "",
+                 "The hex-encoded block data to submit. The block must have exactly 1 transaction (coinbase). "
+                 "Additional transactions (if any) are appended from the light template."},
+                {"job_id", RPCArg::Type::STR_HEX, /* opt */ false, /* default_val */ "",
+                 "Identifier of the light template from which to retrieve the non-coinbase transactions. "
+                 "This job_id must be obtained from a previous call to getblocktemplatelight."},
+            },
+            RPCResults{},
+            RPCExamples{HelpExampleCli("submitblocklight", "\"mydata\" \"myjobid\"") +
+                        HelpExampleRpc("submitblocklight", "\"mydata\", \"myjobid\"")},
+        }.ToStringWithResultsAndExamples());
     }
 
     const auto jobIdStr = request.params[1].get_str();
@@ -998,18 +1025,18 @@ static UniValue submitblocklight(const Config &config, const JSONRPCRequest &req
 static UniValue submitheader(const Config &config,
                              const JSONRPCRequest &request) {
     if (request.fHelp || request.params.size() != 1) {
-        throw std::runtime_error("submitheader \"hexdata\"\n"
-                                 "\nDecode the given hexdata as a header and "
-                                 "submit it as a candidate chain tip if valid."
-                                 "\nThrows when the header is invalid.\n"
-                                 "\nArguments\n"
-                                 "1. \"hexdata\"        (string, required) the "
-                                 "hex-encoded block header data\n"
-                                 "\nResult:\n"
-                                 "None"
-                                 "\nExamples:\n" +
-                                 HelpExampleCli("submitheader", "\"aabbcc\"") +
-                                 HelpExampleRpc("submitheader", "\"aabbcc\""));
+        throw std::runtime_error(RPCHelpMan{
+            "submitheader",
+            "\nDecode the given hexdata as a header and submit it as a candidate chain tip if valid."
+            "\nThrows when the header is invalid.\n",
+            {
+                {"hexdata", RPCArg::Type::STR_HEX, /* opt */ false, /* default_val */ "", "the hex-encoded block header data"},
+            },
+            RPCResult{
+                "None\n"},
+            RPCExamples{HelpExampleCli("submitheader", "\"aabbcc\"") +
+                        HelpExampleRpc("submitheader", "\"aabbcc\"")},
+        }.ToStringWithResultsAndExamples());
     }
 
     CBlockHeader h;
@@ -1041,19 +1068,18 @@ static UniValue submitheader(const Config &config,
 static UniValue validateblocktemplate(const Config &config,
                                       const JSONRPCRequest &request) {
     if (request.fHelp || request.params.size() != 1) {
-        throw std::runtime_error("validateblocktemplate \"hexdata\"\n"
-                                 "\nReturns whether this block template will "
-                                 "be accepted if a hash solution is found.\n"
-                                 "\nReturns a JSON error when the header is invalid.\n"
-                                 "\nArguments\n"
-                                 "1. \"hexdata\"        (string, required) the "
-                                 "hex-encoded block to validate (same format "
-                                 "as submitblock)\n"
-                                 "\nResult:\n"
-                                 "true"
-                                 "\nExamples:\n" +
-                                 HelpExampleCli("validateblocktemplate", "\"mydata\"") +
-                                 HelpExampleRpc("validateblocktemplate", "\"mydata\""));
+        throw std::runtime_error(RPCHelpMan{
+            "validateblocktemplate",
+            "\nReturns whether this block template will be accepted if a hash solution is found."
+            "\nReturns a JSON error when the header is invalid.\n",
+            {
+                {"hexdata", RPCArg::Type::STR_HEX, /* opt */ false, /* default_val */ "", "the hex-encoded block to validate (same format as submitblock)"},
+            },
+            RPCResult{
+                "true\n"},
+            RPCExamples{HelpExampleCli("validateblocktemplate", "\"mydata\"") +
+                        HelpExampleRpc("validateblocktemplate", "\"mydata\"")},
+        }.ToStringWithResultsAndExamples());
     }
 
     CBlock block;
@@ -1088,14 +1114,14 @@ static UniValue validateblocktemplate(const Config &config,
 static UniValue estimatefee(const Config &config,
                             const JSONRPCRequest &request) {
     if (request.fHelp || request.params.size() > 0) {
-        throw std::runtime_error(
-            RPCHelpMan{"estimatefee",
-                "\nEstimates the approximate fee per kilobyte needed for a "
-                "transaction\n", {}}.ToString() +
-            "\nResult:\n"
-            "n              (numeric) estimated fee-per-kilobyte\n"
-            "\nExample:\n" +
-            HelpExampleCli("estimatefee", ""));
+        throw std::runtime_error(RPCHelpMan{
+            "estimatefee",
+            "\nEstimates the approximate fee per kilobyte needed for a transaction\n",
+            {},
+            RPCResult{
+                "n              (numeric) estimated fee-per-kilobyte\n"},
+            RPCExamples{HelpExampleCli("estimatefee", "")},
+        }.ToStringWithResultsAndExamples());
     }
 
     return ValueFromAmount(g_mempool.estimateFee().GetFeePerK());
