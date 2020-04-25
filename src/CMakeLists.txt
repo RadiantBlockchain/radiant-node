@@ -372,7 +372,6 @@ add_library(common
 	coins.cpp
 	compressor.cpp
 	feerate.cpp
-	globals.cpp
 	core_read.cpp
 	core_write.cpp
 	key.cpp
@@ -446,7 +445,6 @@ add_library(server
 	consensus/tx_verify.cpp
 	dbwrapper.cpp
 	flatfile.cpp
-	globals.cpp
 	httprpc.cpp
 	httpserver.cpp
 	index/base.cpp
