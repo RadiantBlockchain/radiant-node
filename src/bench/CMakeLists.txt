@@ -24,6 +24,7 @@ add_executable(bench_bitcoin
 	rollingbloom.cpp
 	rpc_blockchain.cpp
 	rpc_mempool.cpp
+	util_time.cpp
 )
 
 target_link_libraries(bench_bitcoin common bitcoinconsensus server)
