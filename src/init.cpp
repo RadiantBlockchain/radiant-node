@@ -327,7 +327,7 @@ void SetupServerArgs() {
 
     // Hidden Options
     std::vector<std::string> hidden_args = {
-        "-rpcssl", "-benchmark", "-h", "-help", "-socks", "-tor", "-debugnet",
+        "-rpcssl", "-benchmark", "-h", "-help", "-help-debug", "-socks", "-tor", "-debugnet",
         "-whitelistalwaysrelay", "-blockminsize", "-dbcrashratio",
         "-forcecompactdb", "-replayprotectionactivationtime",
         // GUI args. These will be overwritten by SetupUIArgs for the GUI
@@ -340,8 +340,8 @@ void SetupServerArgs() {
     // Set all of the args and their help
     // When adding new options to the categories, please keep and ensure alphabetical ordering.
     // Do not translate _(...) any options as decided in D4515/PR13341.
-    gArgs.AddArg("-?", "Print this help message and exit", false,
-                 OptionsCategory::OPTIONS);
+    gArgs.AddArg("-?", "Print this help message and exit", false, OptionsCategory::OPTIONS);
+    gArgs.AddArg("-??", "Print this help message including advanced debugging options and exit", false, OptionsCategory::OPTIONS);
     gArgs.AddArg("-version", "Print version and exit", false,
                  OptionsCategory::OPTIONS);
     gArgs.AddArg("-alertnotify=<cmd>",
@@ -806,9 +806,6 @@ void SetupServerArgs() {
                   "in conjunction with -debug=1 to output debug logs for all "
                   "categories except one or more specified categories."),
         false, OptionsCategory::DEBUG_TEST);
-    gArgs.AddArg("-help-debug",
-                 "Show all debugging options (usage: -? -help-debug)",
-                 false, OptionsCategory::DEBUG_TEST);
     gArgs.AddArg("-logips",
                  strprintf("Include IP addresses in debug output (default: %d)",
                            DEFAULT_LOGIPS),
