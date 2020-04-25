@@ -251,14 +251,15 @@ static UniValue getmininginfo(const Config &config,
     LOCK(cs_main);
 
     UniValue obj(UniValue::VOBJ);
-    obj.pushKV("blocks", int(::ChainActive().Height()));
-    obj.pushKV("currentblocksize", uint64_t(nLastBlockSize));
-    obj.pushKV("currentblocktx", uint64_t(nLastBlockTx));
-    obj.pushKV("difficulty", double(GetDifficulty(::ChainActive().Tip())));
-    obj.pushKV("networkhashps", getnetworkhashps(config, request));
-    obj.pushKV("pooledtx", uint64_t(g_mempool.size()));
-    obj.pushKV("chain", config.GetChainParams().NetworkIDString());
-    obj.pushKV("warnings", GetWarnings("statusbar"));
+    obj.reserve(8);
+    obj.pushKV("blocks", int(::ChainActive().Height()), false);
+    obj.pushKV("currentblocksize", uint64_t(nLastBlockSize), false);
+    obj.pushKV("currentblocktx", uint64_t(nLastBlockTx), false);
+    obj.pushKV("difficulty", double(GetDifficulty(::ChainActive().Tip())), false);
+    obj.pushKV("networkhashps", getnetworkhashps(config, request), false);
+    obj.pushKV("pooledtx", uint64_t(g_mempool.size()), false);
+    obj.pushKV("chain", config.GetChainParams().NetworkIDString(), false);
+    obj.pushKV("warnings", GetWarnings("statusbar"), false);
 
     return obj;
 }
