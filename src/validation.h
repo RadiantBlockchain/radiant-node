@@ -243,7 +243,7 @@ extern bool fPruneMode;
 extern uint64_t nPruneTarget;
 /**
  * Block files containing a block-height within MIN_BLOCKS_TO_KEEP of
- * chainActive.Tip() will not be pruned.
+ * ::ChainActive().Tip() will not be pruned.
  */
 static constexpr unsigned int MIN_BLOCKS_TO_KEEP = 288;
 /** Minimum blocks required to signal NODE_NETWORK_LIMITED */
@@ -757,8 +757,8 @@ const CBlockIndex *GetFinalizedBlock() EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 bool IsBlockFinalized(const CBlockIndex *pindex)
     EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
-/** The currently-connected chain of blocks (protected by cs_main). */
-extern CChain &chainActive;
+/** @returns the most-work chain. */
+CChain &ChainActive();
 
 /**
  * Global variable that points to the coins database (protected by cs_main)
