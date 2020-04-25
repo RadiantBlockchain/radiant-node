@@ -4697,7 +4697,7 @@ static const ContextFreeRPCCommand commands[] = {
     { "wallet",             "listreceivedbyaddress",        listreceivedbyaddress,        {"minconf","include_empty","include_watchonly","address_filter"} },
     { "wallet",             "listreceivedbylabel",          listreceivedbylabel,          {"minconf","include_empty","include_watchonly"} },
     { "wallet",             "listsinceblock",               listsinceblock,               {"blockhash","target_confirmations","include_watchonly","include_removed"} },
-    { "wallet",             "listtransactions",             listtransactions,             {"label|dummy","count","skip","include_watchonly"} },
+    { "wallet",             "listtransactions",             listtransactions,             {"label","count","skip","include_watchonly"} },
     { "wallet",             "listunspent",                  listunspent,                  {"minconf","maxconf","addresses","include_unsafe","query_options"} },
     { "wallet",             "listwallets",                  listwallets,                  {} },
     { "wallet",             "loadwallet",                   loadwallet,                   {"filename"} },
