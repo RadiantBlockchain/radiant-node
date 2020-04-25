@@ -33,14 +33,12 @@ static const bool DEFAULT_NAMED = false;
 static const int CONTINUE_EXECUTION = -1;
 
 static void SetupCliArgs() {
-    const auto defaultBaseParams =
-        CreateBaseChainParams(CBaseChainParams::MAIN);
-    const auto testnetBaseParams =
-        CreateBaseChainParams(CBaseChainParams::TESTNET);
-    const auto regtestBaseParams =
-        CreateBaseChainParams(CBaseChainParams::REGTEST);
+    SetupHelpOptions(gArgs);
 
-    gArgs.AddArg("-?", "This help message", false, OptionsCategory::OPTIONS);
+    const auto defaultBaseParams = CreateBaseChainParams(CBaseChainParams::MAIN);
+    const auto testnetBaseParams = CreateBaseChainParams(CBaseChainParams::TESTNET);
+    const auto regtestBaseParams = CreateBaseChainParams(CBaseChainParams::REGTEST);
+
     gArgs.AddArg("-version", "Print version and exit", false,
                  OptionsCategory::OPTIONS);
     gArgs.AddArg("-conf=<file>",
@@ -107,10 +105,6 @@ static void SetupCliArgs() {
         "Send RPC for non-default wallet on RPC server (needs to exactly match "
         "corresponding -wallet option passed to bitcoind)",
         false, OptionsCategory::OPTIONS);
-
-    // Hidden
-    gArgs.AddArg("-h", "", false, OptionsCategory::HIDDEN);
-    gArgs.AddArg("-help", "", false, OptionsCategory::HIDDEN);
 }
 
 /** libevent event log callback */

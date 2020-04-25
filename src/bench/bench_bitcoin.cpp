@@ -24,8 +24,8 @@ static const int64_t DEFAULT_PLOT_WIDTH = 1024;
 static const int64_t DEFAULT_PLOT_HEIGHT = 768;
 
 static void SetupBenchArgs() {
-    gArgs.AddArg("-?", "Print this help message and exit", false,
-                 OptionsCategory::OPTIONS);
+    SetupHelpOptions(gArgs);
+
     gArgs.AddArg("-list",
                  "List benchmarks without executing them. Can be combined "
                  "with -scaling and -filter",
@@ -63,10 +63,6 @@ static void SetupBenchArgs() {
         "-plot-height=<x>",
         strprintf("Plot height in pixel (default: %u)", DEFAULT_PLOT_HEIGHT),
         false, OptionsCategory::OPTIONS);
-
-    // Hidden
-    gArgs.AddArg("-h", "", false, OptionsCategory::HIDDEN);
-    gArgs.AddArg("-help", "", false, OptionsCategory::HIDDEN);
 }
 
 static fs::path SetDataDir() {
