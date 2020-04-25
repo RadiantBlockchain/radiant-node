@@ -24,6 +24,7 @@ from test_framework.messages import (
     CTxOut,
     FromHex,
     HeaderAndShortIDs,
+    MSG_BLOCK,
     msg_block,
     msg_blocktxn,
     msg_cmpctblock,
@@ -79,7 +80,7 @@ class TestP2PConn(P2PInterface):
 
     def on_inv(self, message):
         for x in self.last_message["inv"].inv:
-            if x.type == 2:
+            if x.type == MSG_BLOCK:
                 self.block_announced = True
                 self.announced_blockhashes.add(x.hash)
 
@@ -416,7 +417,7 @@ class CompactBlocksTest(BitcoinTestFramework):
                 test_node.last_message.pop("getdata", None)
 
             if announce == "inv":
-                test_node.send_message(msg_inv([CInv(2, block.sha256)]))
+                test_node.send_message(msg_inv([CInv(MSG_BLOCK, block.sha256)]))
                 wait_until(lambda: "getheaders" in test_node.last_message,
                            timeout=30, lock=mininode_lock)
                 test_node.send_header_for_blocks([block])
@@ -623,7 +624,7 @@ class CompactBlocksTest(BitcoinTestFramework):
         wait_until(lambda: "getdata" in test_node.last_message,
                    timeout=10, lock=mininode_lock)
         assert_equal(len(test_node.last_message["getdata"].inv), 1)
-        assert test_node.last_message["getdata"].inv[0].type == 2
+        assert test_node.last_message["getdata"].inv[0].type == MSG_BLOCK
         assert_equal(
             test_node.last_message["getdata"].inv[0].hash, block.sha256)
 
