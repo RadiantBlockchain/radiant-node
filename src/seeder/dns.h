@@ -8,6 +8,11 @@
 #include <cstddef>
 #include <cstdint>
 
+constexpr int MAX_LABEL_LENGTH = 63;
+constexpr int MAX_QUERY_NAME_LENGTH = 255;
+// Max size of the null-terminated buffer parse_name() writes to.
+constexpr int MAX_QUERY_NAME_BUFFER_LENGTH = MAX_QUERY_NAME_LENGTH + 1;
+
 struct addr_t {
     int v;
     union {
@@ -29,12 +34,24 @@ struct dns_opt_t {
     uint64_t nRequests;
 };
 
-//  0: ok
-// -1: premature end of input, forward reference, component > 63 char, invalid
-// character
-// -2: insufficient space in output
-int parse_name(const uint8_t **inpos, const uint8_t *inend,
-               const uint8_t *inbuf, char *buf, size_t bufsize);
+enum class ParseNameStatus {
+    OK,
+    // Premature end of input, forward reference, component > 63 char, invalid
+    // character
+    InputError,
+    // Insufficient space in output
+    OutputBufferError,
+};
+
+ParseNameStatus parse_name(const uint8_t **inpos, const uint8_t *inend,
+                           const uint8_t *inbuf, char *buf, size_t bufsize);
+
+//  0: k
+// -1: component > 63 characters
+// -2: insufficent space in output
+// -3: two subsequent dots
+int write_name(uint8_t **outpos, const uint8_t *outend, const char *name,
+               int offset);
 
 int dnsserver(dns_opt_t *opt);
 
