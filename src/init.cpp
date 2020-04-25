@@ -403,7 +403,7 @@ void SetupServerArgs() {
     gArgs.AddArg("-debuglogfile=<file>",
                  strprintf("Specify location of debug log file. Relative paths "
                            "will be prefixed by a net-specific datadir "
-                           "location. (0 to disable; default: %s)",
+                           "location. (0 to disable, default: %s)",
                            DEFAULT_DEBUGLOGFILE),
                  false, OptionsCategory::OPTIONS);
     gArgs.AddArg("-feefilter",
@@ -863,8 +863,8 @@ void SetupServerArgs() {
     gArgs.AddArg(
         "-acceptnonstdtxn",
         strprintf(
-            "Relay and mine \"non-standard\" transactions (%sdefault: %u)",
-            "testnet/regtest only; ", defaultChainParams->RequireStandard()),
+            "Relay and mine \"non-standard\" transactions (testnet/regtest only, default: %d)",
+            defaultChainParams->RequireStandard()),
         true, OptionsCategory::NODE_RELAY);
     gArgs.AddArg("-excessiveblocksize=<n>",
                  strprintf("Do not accept blocks larger than this limit, in "
