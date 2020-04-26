@@ -147,9 +147,9 @@ private:
         gArgs.AddArg("-filter=<f1,f2,...>",
                      "Allow these flag combinations as filters", false,
                      OptionsCategory::OPTIONS);
-        gArgs.AddArg("-wipeban", "Wipe list of banned nodes", false,
+        gArgs.AddArg("-wipeban", strprintf("Wipe list of banned nodes (default: %d)", DEFAULT_WIPE_BAN), false,
                      OptionsCategory::CONNECTION);
-        gArgs.AddArg("-wipeignore", "Wipe list of ignored nodes", false,
+        gArgs.AddArg("-wipeignore", strprintf("Wipe list of ignored nodes (default: %d)", DEFAULT_WIPE_IGNORE), false,
                      OptionsCategory::CONNECTION);
         SetupChainParamsBaseOptions();
     }
