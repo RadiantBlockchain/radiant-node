@@ -121,35 +121,35 @@ public:
 private:
     void SetupSeederArgs() {
         SetupHelpOptions(gArgs);
-        gArgs.AddArg("-version", _("Print version and exit"), false,
+        gArgs.AddArg("-version", "Print version and exit", false,
                      OptionsCategory::OPTIONS);
-        gArgs.AddArg("-host=<host>", _("Hostname of the DNS seed"), false,
+        gArgs.AddArg("-host=<host>", "Hostname of the DNS seed", false,
                      OptionsCategory::OPTIONS);
-        gArgs.AddArg("-ns=<ns>", _("Hostname of the nameserver"), false,
+        gArgs.AddArg("-ns=<ns>", "Hostname of the nameserver", false,
                      OptionsCategory::OPTIONS);
         gArgs.AddArg("-mbox=<mbox>",
-                     _("E-Mail address reported in SOA records"), false,
+                     "E-Mail address reported in SOA records", false,
                      OptionsCategory::OPTIONS);
         gArgs.AddArg("-threads=<threads>",
-                     _("Number of crawlers to run in parallel (default 96)"),
+                     "Number of crawlers to run in parallel (default 96)",
                      false, OptionsCategory::OPTIONS);
         gArgs.AddArg("-dnsthreads=<threads>",
-                     _("Number of DNS server threads (default 4)"), false,
+                     "Number of DNS server threads (default 4)", false,
                      OptionsCategory::OPTIONS);
-        gArgs.AddArg("-port=<port>", _("UDP port to listen on (default 53)"),
+        gArgs.AddArg("-port=<port>", "UDP port to listen on (default 53)",
                      false, OptionsCategory::CONNECTION);
-        gArgs.AddArg("-onion=<ip:port>", _("Tor proxy IP/Port"), false,
+        gArgs.AddArg("-onion=<ip:port>", "Tor proxy IP/Port", false,
                      OptionsCategory::CONNECTION);
-        gArgs.AddArg("-proxyipv4=<ip:port>", _("IPV4 SOCKS5 proxy IP/Port"),
+        gArgs.AddArg("-proxyipv4=<ip:port>", "IPV4 SOCKS5 proxy IP/Port",
                      false, OptionsCategory::CONNECTION);
-        gArgs.AddArg("-proxyipv6=<ip:port>", _("IPV6 SOCKS5 proxy IP/Port"),
+        gArgs.AddArg("-proxyipv6=<ip:port>", "IPV6 SOCKS5 proxy IP/Port",
                      false, OptionsCategory::CONNECTION);
         gArgs.AddArg("-filter=<f1,f2,...>",
-                     _("Allow these flag combinations as filters"), false,
+                     "Allow these flag combinations as filters", false,
                      OptionsCategory::OPTIONS);
-        gArgs.AddArg("-wipeban", _("Wipe list of banned nodes"), false,
+        gArgs.AddArg("-wipeban", "Wipe list of banned nodes", false,
                      OptionsCategory::CONNECTION);
-        gArgs.AddArg("-wipeignore", _("Wipe list of ignored nodes"), false,
+        gArgs.AddArg("-wipeignore", "Wipe list of ignored nodes", false,
                      OptionsCategory::CONNECTION);
         SetupChainParamsBaseOptions();
     }
