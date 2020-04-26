@@ -25,11 +25,11 @@ const std::function<std::string(const char *)> G_TRANSLATION_FUN = nullptr;
 
 static const int CONTINUE_EXECUTION = -1;
 
-static const int DEFAULT_NUM_THREADS = 96;
-static const int DEFAULT_PORT = 53;
-static const int DEFAULT_NUM_DNS_THREADS = 4;
-static const bool DEFAULT_WIPE_BAN = false;
-static const bool DEFAULT_WIPE_IGNORE = false;
+static constexpr int DEFAULT_NUM_THREADS = 96;
+static constexpr int DEFAULT_PORT = 53;
+static constexpr int DEFAULT_NUM_DNS_THREADS = 4;
+static constexpr bool DEFAULT_WIPE_BAN = false;
+static constexpr bool DEFAULT_WIPE_IGNORE = false;
 static const std::string DEFAULT_EMAIL = "";
 static const std::string DEFAULT_NAMESERVER = "";
 static const std::string DEFAULT_HOST = "";
