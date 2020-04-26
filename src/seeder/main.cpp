@@ -25,11 +25,11 @@ const std::function<std::string(const char *)> G_TRANSLATION_FUN = nullptr;
 
 static const int CONTINUE_EXECUTION = -1;
 
-static const int DEFAULT_NUM_THREADS = 96;
-static const int DEFAULT_PORT = 53;
-static const int DEFAULT_NUM_DNS_THREADS = 4;
-static const bool DEFAULT_WIPE_BAN = false;
-static const bool DEFAULT_WIPE_IGNORE = false;
+static constexpr int DEFAULT_NUM_THREADS = 96;
+static constexpr int DEFAULT_PORT = 53;
+static constexpr int DEFAULT_NUM_DNS_THREADS = 4;
+static constexpr bool DEFAULT_WIPE_BAN = false;
+static constexpr bool DEFAULT_WIPE_IGNORE = false;
 static const std::string DEFAULT_EMAIL = "";
 static const std::string DEFAULT_NAMESERVER = "";
 static const std::string DEFAULT_HOST = "";
@@ -120,46 +120,38 @@ public:
 
 private:
     void SetupSeederArgs() {
-        gArgs.AddArg("-?", _("Print this help message and exit"), false,
+        SetupHelpOptions(gArgs);
+        gArgs.AddArg("-version", "Print version and exit", false,
                      OptionsCategory::OPTIONS);
-        gArgs.AddArg("-version", _("Print version and exit"), false,
+        gArgs.AddArg("-host=<host>", "Hostname of the DNS seed", false,
                      OptionsCategory::OPTIONS);
-        gArgs.AddArg("-host=<host>", _("Hostname of the DNS seed"), false,
-                     OptionsCategory::OPTIONS);
-        gArgs.AddArg("-ns=<ns>", _("Hostname of the nameserver"), false,
+        gArgs.AddArg("-ns=<ns>", "Hostname of the nameserver", false,
                      OptionsCategory::OPTIONS);
         gArgs.AddArg("-mbox=<mbox>",
-                     _("E-Mail address reported in SOA records"), false,
+                     "E-Mail address reported in SOA records", false,
                      OptionsCategory::OPTIONS);
         gArgs.AddArg("-threads=<threads>",
-                     _("Number of crawlers to run in parallel (default 96)"),
+                     strprintf("Number of crawlers to run in parallel (default: %d)", DEFAULT_NUM_THREADS),
                      false, OptionsCategory::OPTIONS);
         gArgs.AddArg("-dnsthreads=<threads>",
-                     _("Number of DNS server threads (default 4)"), false,
+                     strprintf("Number of DNS server threads (default: %d)", DEFAULT_NUM_DNS_THREADS), false,
                      OptionsCategory::OPTIONS);
-        gArgs.AddArg("-port=<port>", _("UDP port to listen on (default 53)"),
+        gArgs.AddArg("-port=<port>", strprintf("UDP port to listen on (default: %d)", DEFAULT_PORT),
                      false, OptionsCategory::CONNECTION);
-        gArgs.AddArg("-onion=<ip:port>", _("Tor proxy IP/Port"), false,
+        gArgs.AddArg("-onion=<ip:port>", "Tor proxy IP/Port", false,
                      OptionsCategory::CONNECTION);
-        gArgs.AddArg("-proxyipv4=<ip:port>", _("IPV4 SOCKS5 proxy IP/Port"),
+        gArgs.AddArg("-proxyipv4=<ip:port>", "IPV4 SOCKS5 proxy IP/Port",
                      false, OptionsCategory::CONNECTION);
-        gArgs.AddArg("-proxyipv6=<ip:port>", _("IPV6 SOCKS5 proxy IP/Port"),
+        gArgs.AddArg("-proxyipv6=<ip:port>", "IPV6 SOCKS5 proxy IP/Port",
                      false, OptionsCategory::CONNECTION);
         gArgs.AddArg("-filter=<f1,f2,...>",
-                     _("Allow these flag combinations as filters"), false,
+                     "Allow these flag combinations as filters", false,
                      OptionsCategory::OPTIONS);
-        gArgs.AddArg("-wipeban", _("Wipe list of banned nodes"), false,
+        gArgs.AddArg("-wipeban", strprintf("Wipe list of banned nodes (default: %d)", DEFAULT_WIPE_BAN), false,
                      OptionsCategory::CONNECTION);
-        gArgs.AddArg("-wipeignore", _("Wipe list of ignored nodes"), false,
+        gArgs.AddArg("-wipeignore", strprintf("Wipe list of ignored nodes (default: %d)", DEFAULT_WIPE_IGNORE), false,
                      OptionsCategory::CONNECTION);
-        gArgs.AddArg(
-            "-help-debug",
-            _("Show all debugging options (usage: --help -help-debug)"), false,
-            OptionsCategory::DEBUG_TEST);
         SetupChainParamsBaseOptions();
-
-        gArgs.AddArg("-help", "", false, OptionsCategory::HIDDEN);
-        gArgs.AddArg("-h", "", false, OptionsCategory::HIDDEN);
     }
 };
 
