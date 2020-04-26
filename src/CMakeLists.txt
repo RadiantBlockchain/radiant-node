@@ -499,8 +499,8 @@ target_link_libraries(server
 )
 
 if(ENABLE_UPNP)
-	target_include_directories(server PUBLIC ${MINIUPNPC_INCLUDE_DIR})
-	target_link_libraries(server ${MINIUPNPC_LIBRARY})
+	find_package(MiniUPnPc 1.5 REQUIRED)
+	target_link_libraries(server MiniUPnPc::miniupnpc)
 
 	if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		find_library(IPHLPAPI_LIBRARY NAMES iphlpapi)

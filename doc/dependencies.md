@@ -20,7 +20,7 @@ These dependencies are required:
 | libevent | [2.1.8-stable](https://github.com/libevent/libevent/releases) | 2.0.22 | No |  |  |  Networking       | OS independent asynchronous networking |
 | libjpeg |  |  |  |  | Yes |  |  |
 | libpng |  |  |  |  | Yes |  |  |
-| MiniUPnPc | [2.0.20170509](http://miniupnp.free.fr/files) |  | No |  |  | UPnP Support     | Firewall-jumping support |
+| MiniUPnPc | [2.0.20170509](http://miniupnp.free.fr/files) | 1.5 | No |  |  | UPnP Support     | Firewall-jumping support |
 | Ninja |  | [1.5.1](https://github.com/ninja-build/ninja/releases) |  |  |  |  |  |
 | OpenSSL | [1.0.1k](https://www.openssl.org/source) |  | Yes |  |  | Crypto | Random Number Generation, Elliptic Curve Cryptography
 | PCRE |  |  |  |  | Yes |  |  |
