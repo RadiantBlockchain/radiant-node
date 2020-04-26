@@ -326,13 +326,11 @@ void SetupServerArgs() {
 
     // Hidden Options
     std::vector<std::string> hidden_args = {
-        "-dbcrashratio", "-forcecompactdb", "-replayprotectionactivationtime",
+        "-dbcrashratio", "-forcecompactdb",
         // GUI args. These will be overwritten by SetupUIArgs for the GUI
         "-allowselfsignedrootcertificates", "-choosedatadir", "-lang=<lang>",
         "-min", "-resetguisettings", "-rootcertificates=<file>", "-splash",
-        "-uiplatform",
-        // TODO remove after the May 2020 upgrade
-        "-phononactivationtime"};
+        "-uiplatform"};
 
     // Set all of the args and their help
     // When adding new options to the categories, please keep and ensure alphabetical ordering.
@@ -836,6 +834,11 @@ void SetupServerArgs() {
                  true, OptionsCategory::DEBUG_TEST);
 
     gArgs.AddArg(
+        "-phononactivationtime=<n>",
+        strprintf("Activation time of the May 2020 Bitcoin Cash Network Upgrade (<n> seconds since epoch, default: %d)",
+                  defaultChainParams->GetConsensus().phononActivationTime),
+        true, OptionsCategory::DEBUG_TEST);
+    gArgs.AddArg(
         "-printtoconsole",
         "Send trace/debug info to console instead of debug.log file (default: "
         "1 when no -daemon. To disable logging to file, set debuglogfile=0)",
@@ -845,6 +848,13 @@ void SetupServerArgs() {
                            "mining blocks (default: %d)",
                            DEFAULT_PRINTPRIORITY),
                  true, OptionsCategory::DEBUG_TEST);
+    gArgs.AddArg(
+        "-replayprotectionactivationtime=<n>",
+        strprintf("Activation time of the automatic replay protection mechanism that will fork this node off the Bitcoin Cash "
+                  "network, intended to coincide with the activation of the first Bitcoin Cash Network Upgrade not yet implemented "
+                  "in this version of the node, which is scheduled for November 2020 (<n> seconds since epoch, default: %d)",
+                  defaultChainParams->GetConsensus().axionActivationTime),
+        true, OptionsCategory::DEBUG_TEST);
     gArgs.AddArg(
         "-shrinkdebugfile",
         "Shrink debug.log file on client startup (default: 1 when no -debug)",
