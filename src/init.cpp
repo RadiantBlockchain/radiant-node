@@ -326,9 +326,7 @@ void SetupServerArgs() {
 
     // Hidden Options
     std::vector<std::string> hidden_args = {
-        "-rpcssl", "-benchmark", "-socks", "-tor", "-debugnet",
-        "-whitelistalwaysrelay", "-blockminsize", "-dbcrashratio",
-        "-forcecompactdb", "-replayprotectionactivationtime",
+        "-dbcrashratio", "-forcecompactdb", "-replayprotectionactivationtime",
         // GUI args. These will be overwritten by SetupUIArgs for the GUI
         "-allowselfsignedrootcertificates", "-choosedatadir", "-lang=<lang>",
         "-min", "-resetguisettings", "-rootcertificates=<file>", "-splash",
@@ -1554,36 +1552,6 @@ bool AppInitParameterInteraction(Config &config) {
             InitWarning(strprintf(_("Unsupported logging category %s=%s."),
                                   "-debugexclude", cat));
         }
-    }
-
-    // Check for -debugnet
-    if (gArgs.GetBoolArg("-debugnet", false)) {
-        InitWarning(
-            _("Unsupported argument -debugnet ignored, use -debug=net."));
-    }
-    // Check for -socks - as this is a privacy risk to continue, exit here
-    if (gArgs.IsArgSet("-socks")) {
-        return InitError(
-            _("Unsupported argument -socks found. Setting SOCKS version isn't "
-              "possible anymore, only SOCKS5 proxies are supported."));
-    }
-    // Check for -tor - as this is a privacy risk to continue, exit here
-    if (gArgs.GetBoolArg("-tor", false)) {
-        return InitError(_("Unsupported argument -tor found, use -onion."));
-    }
-
-    if (gArgs.GetBoolArg("-benchmark", false)) {
-        InitWarning(
-            _("Unsupported argument -benchmark ignored, use -debug=bench."));
-    }
-
-    if (gArgs.GetBoolArg("-whitelistalwaysrelay", false)) {
-        InitWarning(_("Unsupported argument -whitelistalwaysrelay ignored, use "
-                      "-whitelistrelay and/or -whitelistforcerelay."));
-    }
-
-    if (gArgs.IsArgSet("-blockminsize")) {
-        InitWarning("Unsupported argument -blockminsize ignored.");
     }
 
     // Checkmempool and checkblockindex default to true in regtest mode
