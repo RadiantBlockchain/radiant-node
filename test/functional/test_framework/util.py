@@ -185,7 +185,10 @@ def assert_array_result(object_array, to_match, expected,
     for item in object_array:
         all_match = True
         for key, value in to_match.items():
-            if item[key] != value:
+            if key in item.keys():
+                if item[key] != value:
+                    all_match = False
+            else:
                 all_match = False
         if not all_match:
             continue

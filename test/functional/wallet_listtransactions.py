@@ -80,22 +80,135 @@ class ListTransactionsTest(BitcoinTestFramework):
                             {"category": "receive", "amount": Decimal("0.44")},
                             {"txid": txid})
 
-        pubkey = self.nodes[1].getaddressinfo(
+        pubkey_A = self.nodes[1].getaddressinfo(
             self.nodes[1].getnewaddress())['pubkey']
-        multisig = self.nodes[1].createmultisig(1, [pubkey])
+        multisig_A = self.nodes[1].createmultisig(1, [pubkey_A])
         self.nodes[0].importaddress(
-            multisig["redeemScript"], "watchonly", False, True)
-        txid = self.nodes[1].sendtoaddress(multisig["address"], 0.1)
+            multisig_A["redeemScript"], "label_A_watchonly", False, True)
+
+        pubkey_B = self.nodes[1].getaddressinfo(
+            self.nodes[1].getnewaddress())['pubkey']
+        multisig_B = self.nodes[1].createmultisig(1, [pubkey_B])
+        self.nodes[0].importaddress(
+            multisig_B["redeemScript"], "label_B_watchonly", False, True)
+
+        plain_addr_C = self.nodes[1].getnewaddress()
+        pubkey_C = self.nodes[1].getaddressinfo(plain_addr_C)['pubkey']
+        self.nodes[0].importpubkey(pubkey_C, "label_C", False)
+
+        num_wildcard_label_results_before_txs = len(self.nodes[0].listtransactions(label="*",
+                                                                                   count=100,
+                                                                                   include_watchonly=True))
+
+        txid_A = self.nodes[1].sendtoaddress(multisig_A["address"], 0.01)
+        txid_B = self.nodes[1].sendtoaddress(multisig_B["address"], 0.01)
+        txid_C = self.nodes[1].sendtoaddress(plain_addr_C, 0.01)
+
         self.nodes[1].generate(1)
         self.sync_all()
+
+        # check label_A_watchonly results
         assert len(
             self.nodes[0].listtransactions(
-                label="watchonly",
+                label="label_A_watchonly",
                 count=100,
                 include_watchonly=False)) == 0
-        assert_array_result(self.nodes[0].listtransactions(label="watchonly", count=100, include_watchonly=True),
-                            {"category": "receive", "amount": Decimal("0.1")},
-                            {"txid": txid, "label": "watchonly"})
+        assert len(
+            self.nodes[0].listtransactions(
+                label="label_A_watchonly",
+                count=100,
+                include_watchonly=True)) == 1
+
+        # check label_B_watchonly results
+        assert len(
+            self.nodes[0].listtransactions(
+                label="label_B_watchonly",
+                count=100,
+                include_watchonly=False)) == 0
+        assert len(
+            self.nodes[0].listtransactions(
+                label="label_B_watchonly",
+                count=100,
+                include_watchonly=True)) == 1
+
+        # check label_C results
+        assert len(
+            self.nodes[0].listtransactions(
+                label="label_C",
+                count=100,
+                include_watchonly=False)) == 0
+        assert len(
+            self.nodes[0].listtransactions(
+                label="label_C",
+                count=100,
+                include_watchonly=True)) == 1
+
+        # check no results returned for unknown label
+        assert len(
+            self.nodes[0].listtransactions(
+                label="no_such_label",
+                count=100,
+                include_watchonly=True)) == 0
+
+        # wildcard labels : 3 new txs added (A, B & C)
+        assert len(
+            self.nodes[0].listtransactions(
+                label='*',
+                count=100,
+                include_watchonly=True)) - num_wildcard_label_results_before_txs == 3
+
+        # check wildcard returns all labeled txs
+        assert_array_result(self.nodes[0].listtransactions(label="*", count=100, include_watchonly=True),
+                            {"category": "receive", "label": "label_A_watchonly", "amount": Decimal("0.01")},
+                            {"txid": txid_A, "label": "label_A_watchonly"},
+                            should_not_find=False)
+        assert_array_result(self.nodes[0].listtransactions(label="*", count=100, include_watchonly=True),
+                            {"category": "receive", "label": "label_B_watchonly", "amount": Decimal("0.01")},
+                            {"txid": txid_B, "label": "label_B_watchonly"},
+                            should_not_find=False)
+        assert_array_result(self.nodes[0].listtransactions(label="*", count=100, include_watchonly=True),
+                            {"category": "receive", "label": "label_C", "amount": Decimal("0.01")},
+                            {"txid": txid_C, "label": "label_C"},
+                            should_not_find=False)
+
+        # check label A returns only label A, not B or C
+        assert_array_result(self.nodes[0].listtransactions(label="label_A_watchonly", count=100, include_watchonly=True),
+                            {"category": "receive", "label": "label_A_watchonly", "amount": Decimal("0.01")},
+                            {"txid": txid_A, "label": "label_A_watchonly"})
+        assert_array_result(self.nodes[0].listtransactions(label="label_A_watchonly", count=100, include_watchonly=True),
+                            {"category": "receive", "label": "label_B_watchonly", "amount": Decimal("0.01")},
+                            {},
+                            should_not_find=True)
+        assert_array_result(self.nodes[0].listtransactions(label="label_A_watchonly", count=100, include_watchonly=True),
+                            {"category": "receive", "label": "label_C", "amount": Decimal("0.01")},
+                            {},
+                            should_not_find=True)
+
+        # check label B returns only label B, not A or C
+        assert_array_result(self.nodes[0].listtransactions(label="label_B_watchonly", count=100, include_watchonly=True),
+                            {"category": "receive", "label": "label_B_watchonly", "amount": Decimal("0.01")},
+                            {"txid": txid_B, "label": "label_B_watchonly"})
+        assert_array_result(self.nodes[0].listtransactions(label="label_B_watchonly", count=100, include_watchonly=True),
+                            {"category": "receive", "label": "label_A_watchonly", "amount": Decimal("0.01")},
+                            {},
+                            should_not_find=True)
+        assert_array_result(self.nodes[0].listtransactions(label="label_B_watchonly", count=100, include_watchonly=True),
+                            {"category": "receive", "label": "label_C", "amount": Decimal("0.01")},
+                            {},
+                            should_not_find=True)
+
+        # check label C returns only label C, not A or B
+        assert_array_result(self.nodes[0].listtransactions(label="label_C", count=100, include_watchonly=True),
+                            {"category": "receive", "label": "label_C", "amount": Decimal("0.01")},
+                            {"txid": txid_C, "label": "label_C"})
+        assert_array_result(self.nodes[0].listtransactions(label="label_C", count=100, include_watchonly=True),
+                            {"category": "receive", "label": "label_A_watchonly", "amount": Decimal("0.01")},
+                            {},
+                            should_not_find=True)
+        assert_array_result(self.nodes[0].listtransactions(label="label_C", count=100, include_watchonly=True),
+                            {"category": "receive", "label": "label_B_watchonly", "amount": Decimal("0.01")},
+                            {},
+                            should_not_find=True)
 
 
 if __name__ == '__main__':
