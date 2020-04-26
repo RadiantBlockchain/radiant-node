@@ -152,10 +152,6 @@ private:
                      OptionsCategory::CONNECTION);
         gArgs.AddArg("-wipeignore", _("Wipe list of ignored nodes"), false,
                      OptionsCategory::CONNECTION);
-        gArgs.AddArg(
-            "-help-debug",
-            _("Show all debugging options (usage: --help -help-debug)"), false,
-            OptionsCategory::DEBUG_TEST);
         SetupChainParamsBaseOptions();
 
         gArgs.AddArg("-help", "", false, OptionsCategory::HIDDEN);
