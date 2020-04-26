@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2018 The Bitcoin Core developers
+// Copyright (c) 2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -70,9 +71,14 @@
 #include <cstdio>
 #include <memory>
 
-static const bool DEFAULT_PROXYRANDOMIZE = true;
-static const bool DEFAULT_REST_ENABLE = false;
-static const bool DEFAULT_STOPAFTERBLOCKIMPORT = false;
+/** Default for -proxyrandomize */
+static constexpr bool DEFAULT_PROXYRANDOMIZE = true;
+/** Default for -rest */
+static constexpr bool DEFAULT_REST_ENABLE = false;
+/** Default for -stopafterblockimport */
+static constexpr bool DEFAULT_STOPAFTERBLOCKIMPORT = false;
+/** Default for -usecashaddr */
+static constexpr bool DEFAULT_USE_CASHADDR = true;
 
 // Dump addresses to banlist.dat every 15 minutes (900s)
 static constexpr int DUMP_BANS_INTERVAL = 60 * 15;
@@ -510,10 +516,11 @@ void SetupServerArgs() {
                            "getrawtransaction rpc call (default: %d)",
                            DEFAULT_TXINDEX),
                  false, OptionsCategory::OPTIONS);
-    gArgs.AddArg("-usecashaddr",
-                 "Use Cash Address for destination encoding instead of base58 "
-                 "(activate by default on Jan, 14)",
-                 false, OptionsCategory::OPTIONS);
+    gArgs.AddArg(
+        "-usecashaddr",
+        strprintf("Use CashAddr address format for destination encoding instead of the legacy base58 format (default: %d)",
+                  DEFAULT_USE_CASHADDR),
+        false, OptionsCategory::OPTIONS);
 
     gArgs.AddArg("-addnode=<ip>",
                  "Add a node to connect to and attempt to keep the connection "
@@ -2312,7 +2319,7 @@ bool AppInitMain(Config &config, RPCServer &rpcServer,
 
     // Encoded addresses using cashaddr instead of base58.
     // We do this by default to avoid confusion with BTC addresses.
-    config.SetCashAddrEncoding(gArgs.GetBoolArg("-usecashaddr", true));
+    config.SetCashAddrEncoding(gArgs.GetBoolArg("-usecashaddr", DEFAULT_USE_CASHADDR));
 
     // Step 8: load indexers
     if (gArgs.GetBoolArg("-txindex", DEFAULT_TXINDEX)) {
