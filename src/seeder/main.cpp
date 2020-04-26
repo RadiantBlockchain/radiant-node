@@ -120,8 +120,7 @@ public:
 
 private:
     void SetupSeederArgs() {
-        gArgs.AddArg("-?", _("Print this help message and exit"), false,
-                     OptionsCategory::OPTIONS);
+        SetupHelpOptions(gArgs);
         gArgs.AddArg("-version", _("Print version and exit"), false,
                      OptionsCategory::OPTIONS);
         gArgs.AddArg("-host=<host>", _("Hostname of the DNS seed"), false,
@@ -153,9 +152,6 @@ private:
         gArgs.AddArg("-wipeignore", _("Wipe list of ignored nodes"), false,
                      OptionsCategory::CONNECTION);
         SetupChainParamsBaseOptions();
-
-        gArgs.AddArg("-help", "", false, OptionsCategory::HIDDEN);
-        gArgs.AddArg("-h", "", false, OptionsCategory::HIDDEN);
     }
 };
 
