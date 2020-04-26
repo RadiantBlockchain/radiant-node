@@ -32,11 +32,7 @@ SET_FALSE_POSITIVE_UNKNOWNS = set(['-zmqpubhashblock',
 
 # list false positive undocumented arguments
 SET_FALSE_POSITIVE_UNDOCUMENTED = set(['-dbcrashratio',
-                                       '-forcecompactdb',
-                                       # Remove after May 2020 upgrade
-                                       '-phononactivationtime',
-                                       '-replayprotectionactivationtime',
-                                       ])
+                                       '-forcecompactdb'])
 
 
 def main():
