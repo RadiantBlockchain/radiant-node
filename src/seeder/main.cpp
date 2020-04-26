@@ -131,12 +131,12 @@ private:
                      "E-Mail address reported in SOA records", false,
                      OptionsCategory::OPTIONS);
         gArgs.AddArg("-threads=<threads>",
-                     "Number of crawlers to run in parallel (default 96)",
+                     strprintf("Number of crawlers to run in parallel (default: %d)", DEFAULT_NUM_THREADS),
                      false, OptionsCategory::OPTIONS);
         gArgs.AddArg("-dnsthreads=<threads>",
-                     "Number of DNS server threads (default 4)", false,
+                     strprintf("Number of DNS server threads (default: %d)", DEFAULT_NUM_DNS_THREADS), false,
                      OptionsCategory::OPTIONS);
-        gArgs.AddArg("-port=<port>", "UDP port to listen on (default 53)",
+        gArgs.AddArg("-port=<port>", strprintf("UDP port to listen on (default: %d)", DEFAULT_PORT),
                      false, OptionsCategory::CONNECTION);
         gArgs.AddArg("-onion=<ip:port>", "Tor proxy IP/Port", false,
                      OptionsCategory::CONNECTION);
