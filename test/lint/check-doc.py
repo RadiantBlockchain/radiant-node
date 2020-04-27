@@ -15,6 +15,7 @@ from subprocess import check_output
 from pprint import PrettyPrinter
 import glob
 import re
+import itertools
 
 TOP_LEVEL = 'git rev-parse --show-toplevel'
 FOLDER_SRC = '/src/**/'
@@ -22,19 +23,18 @@ FOLDER_TEST = '/src/**/test/'
 
 EXTENSIONS = ["*.c", "*.h", "*.cpp", "*.cc", "*.hpp"]
 REGEX_ARG = r'(?:ForceSet|SoftSet|Get|Is)(?:Bool)?Args?(?:Set)?\(\s*"(-[^"]+)"'
-REGEX_DOC = r'AddArg\(\s*"(-[^"=]+?)(?:=|")'
+REGEX_DOC = r'AddArg\(\s*"(-[^"]+?)"'
+REGEX_DOC_TRIM = r'=.+'
 
 # list false positive unknows arguments
-SET_FALSE_POSITIVE_UNKNOWNS = set(['-zmqpubhashblock',
-                                   '-zmqpubhashtx',
-                                   '-zmqpubrawblock',
-                                   '-zmqpubrawtx'])
+SET_FALSE_POSITIVE_UNKNOWNS = {'-zmqpubhashblock',
+                               '-zmqpubhashtx',
+                               '-zmqpubrawblock',
+                               '-zmqpubrawtx'}
 
 # list false positive undocumented arguments
-SET_FALSE_POSITIVE_UNDOCUMENTED = set(['-h', '-help',
-                                       '-help-debug',
-                                       '-dbcrashratio',
-                                       '-forcecompactdb'])
+SET_FALSE_POSITIVE_UNDOCUMENTED = {'-dbcrashratio',
+                                   '-forcecompactdb'}
 
 
 def main():
@@ -53,11 +53,15 @@ def main():
 
     args_used = set()
     args_docd = set()
+    regex_arg = re.compile(REGEX_ARG)
+    regex_doc = re.compile(REGEX_DOC)
+    regex_doc_trim = re.compile(REGEX_DOC_TRIM)
     for file in files:
         with open(file, 'r', encoding='utf-8') as f:
             content = f.read()
-            args_used |= set(re.findall(re.compile(REGEX_ARG), content))
-            args_docd |= set(re.findall(re.compile(REGEX_DOC), content))
+            args_used |= set(re.findall(regex_arg, content))
+            args_docd |= set(itertools.chain.from_iterable([[re.sub(regex_doc_trim, '', y) for y in x.split(', ')]
+                                                            for x in re.findall(regex_doc, content)]))
 
     args_used |= SET_FALSE_POSITIVE_UNKNOWNS
     args_docd |= SET_FALSE_POSITIVE_UNDOCUMENTED

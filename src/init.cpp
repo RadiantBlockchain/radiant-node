@@ -318,8 +318,8 @@ static void OnRPCStopped() {
 
 void SetupServerArgs() {
     SetupHelpOptions(gArgs);
-    gArgs.AddArg("-??", "Print this help message including advanced debugging options and exit", false, OptionsCategory::OPTIONS);
-    gArgs.AddHiddenArgs({"-help-debug"});
+    gArgs.AddArg("-??, -hh, -help-debug", "Print this help message including advanced debugging options and exit",
+                 false, OptionsCategory::OPTIONS);
 
     const auto defaultBaseParams = CreateBaseChainParams(CBaseChainParams::MAIN);
     const auto testnetBaseParams = CreateBaseChainParams(CBaseChainParams::TESTNET);
