@@ -824,13 +824,13 @@ void SetupServerArgs() {
         OptionsCategory::DEBUG_TEST);
     gArgs.AddArg(
         "-maxsigcachesize=<n>",
-        strprintf("Limit size of signature cache to <n> MiB (default: %u)",
-                  DEFAULT_MAX_SIG_CACHE_SIZE),
+        strprintf("Limit size of signature cache to <n> MiB (0 to %d, default: %d)",
+                  MAX_MAX_SIG_CACHE_SIZE, DEFAULT_MAX_SIG_CACHE_SIZE),
         true, OptionsCategory::DEBUG_TEST);
     gArgs.AddArg(
         "-maxscriptcachesize=<n>",
-        strprintf("Limit size of script cache to <n> MiB (default: %u)",
-                  DEFAULT_MAX_SCRIPT_CACHE_SIZE),
+        strprintf("Limit size of script cache to <n> MiB (0 to %d, default: %d)",
+                  MAX_MAX_SCRIPT_CACHE_SIZE, DEFAULT_MAX_SCRIPT_CACHE_SIZE),
         true, OptionsCategory::DEBUG_TEST);
     gArgs.AddArg("-maxtipage=<n>",
                  strprintf("Maximum tip age in seconds to consider node in "
