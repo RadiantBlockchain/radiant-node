@@ -614,19 +614,25 @@ void ArgsManager::ForceSetMultiArg(const std::string &strArg,
 
 void ArgsManager::AddArg(const std::string &name, const std::string &help,
                          const bool debug_only, const OptionsCategory &cat) {
-    // Split arg name from its help param
-    size_t eq_index = name.find('=');
-    if (eq_index == std::string::npos) {
-        eq_index = name.size();
+    // Parse the name.
+    // Anything behind a comma or equals sign is a usage instruction,
+    // that needs to be stripped from the argument name.
+    auto comma_index = name.find(", ");
+    auto eq_index = std::min(comma_index, name.find('='));
+    {
+        LOCK(cs_args);
+        std::map<std::string, Arg> &arg_map = m_available_args[cat];
+        auto ret = arg_map.emplace(eq_index == std::string::npos ? name : name.substr(0, eq_index),
+                                   Arg(eq_index == std::string::npos ? "" : name.substr(eq_index), help, debug_only));
+        // Make sure an insertion actually happened.
+        assert(ret.second);
     }
-
-    LOCK(cs_args);
-    std::map<std::string, Arg> &arg_map = m_available_args[cat];
-    auto ret = arg_map.emplace(
-        name.substr(0, eq_index),
-        Arg(name.substr(eq_index, name.size() - eq_index), help, debug_only));
-    // Make sure an insertion actually happened.
-    assert(ret.second);
+    if (comma_index != std::string::npos) {
+        // name is a comma-separated list.
+        // Any parameter behind the comma is an alias of the current parameter.
+        // Use recursion to add aliases as hidden arguments.
+        AddArg(name.substr(comma_index + 2), "", debug_only, OptionsCategory::HIDDEN);
+    }
 }
 
 void ArgsManager::AddHiddenArgs(const std::vector<std::string> &names) {
@@ -642,7 +648,7 @@ void ArgsManager::ClearArg(const std::string &strArg) {
 }
 
 std::string ArgsManager::GetHelpMessage() const {
-    const bool show_debug = gArgs.GetBoolArg("-??", false) || gArgs.GetBoolArg("-help-debug", false);
+    const bool show_debug = gArgs.IsArgSet("-??") || gArgs.IsArgSet("-hh") || gArgs.IsArgSet("-help-debug");
 
     std::string usage = "";
     LOCK(cs_args);
@@ -715,13 +721,13 @@ std::string ArgsManager::GetHelpMessage() const {
 }
 
 bool HelpRequested(const ArgsManager &args) {
-    return args.IsArgSet("-?") || args.IsArgSet("-??") || args.IsArgSet("-h") || args.IsArgSet("-help") || args.IsArgSet("-help-debug");
+    return args.IsArgSet("-?") || args.IsArgSet("-h") || args.IsArgSet("-help") ||
+           args.IsArgSet("-??") || args.IsArgSet("-hh") || args.IsArgSet("-help-debug");
 }
 
 void SetupHelpOptions(ArgsManager& args)
 {
-    args.AddArg("-?", "Print this help message and exit", false, OptionsCategory::OPTIONS);
-    args.AddHiddenArgs({"-h", "-help"});
+    args.AddArg("-?, -h, -help", "Print this help message and exit", false, OptionsCategory::OPTIONS);
 }
 
 static const int screenWidth = 79;
