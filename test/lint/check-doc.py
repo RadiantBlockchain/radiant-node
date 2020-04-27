@@ -31,7 +31,9 @@ SET_FALSE_POSITIVE_UNKNOWNS = set(['-zmqpubhashblock',
                                    '-zmqpubrawtx'])
 
 # list false positive undocumented arguments
-SET_FALSE_POSITIVE_UNDOCUMENTED = set(['-dbcrashratio',
+SET_FALSE_POSITIVE_UNDOCUMENTED = set(['-h', '-help',
+                                       '-help-debug',
+                                       '-dbcrashratio',
                                        '-forcecompactdb'])
 
 
