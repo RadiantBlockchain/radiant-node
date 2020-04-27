@@ -287,20 +287,18 @@ static void MutateTxAddInput(CMutableTransaction &tx,
 static void MutateTxAddOutAddr(CMutableTransaction &tx,
                                const std::string &strInput,
                                const CChainParams &chainParams) {
-    // Separate into VALUE:ADDRESS
-    std::vector<std::string> vStrInputParts;
-    boost::split(vStrInputParts, strInput, boost::is_any_of(":"));
+    // Separate into VALUE:ADDRESS, where ADDRESS itself is allowed to contain colons (for CashAddr prefixes)
+    auto colon = strInput.find_first_of(':');
 
-    if (vStrInputParts.size() != 2) {
-        throw std::runtime_error("TX output missing or too many separators");
+    if (colon == std::string::npos) {
+        throw std::runtime_error("TX output missing");
     }
 
     // Extract and validate VALUE
-    Amount value = ExtractAndValidateValue(vStrInputParts[0]);
+    Amount value = ExtractAndValidateValue(strInput.substr(0, colon));
 
     // extract and validate ADDRESS
-    std::string strAddr = vStrInputParts[1];
-    CTxDestination destination = DecodeDestination(strAddr, chainParams);
+    CTxDestination destination = DecodeDestination(strInput.substr(colon + 1), chainParams);
     if (!IsValidDestination(destination)) {
         throw std::runtime_error("invalid TX output address");
     }
