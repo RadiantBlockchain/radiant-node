@@ -29,12 +29,6 @@
 #include <cstdio>
 #include <memory>
 
-/**
- * Default for -usecashaddr in bitcoin-tx
- * TODO: Remove definition and replace with DEFAULT_USE_CASHADDR in next major version
- */
-static constexpr bool DEFAULT_USE_CASHADDR_BITCOINTX = false;
-
 static bool fCreateBlank;
 static std::map<std::string, UniValue> registers;
 static const int CONTINUE_EXECUTION = -1;
@@ -55,7 +49,7 @@ static void SetupBitcoinTxArgs() {
     gArgs.AddArg(
         "-usecashaddr",
         strprintf("In JSON output, use CashAddr address format for destination encoding instead of the legacy base58 format "
-                  "(default: %d, will change to %d in v0.22)", DEFAULT_USE_CASHADDR_BITCOINTX, DEFAULT_USE_CASHADDR),
+                  "(default: %d)", DEFAULT_USE_CASHADDR),
         false, OptionsCategory::OPTIONS);
     SetupChainParamsBaseOptions();
 
@@ -131,7 +125,7 @@ static int AppInitRawTx(int argc, char *argv[]) {
     // after this clause)
     try {
         SelectParams(gArgs.GetChainName());
-        config.SetCashAddrEncoding(gArgs.GetBoolArg("-usecashaddr", DEFAULT_USE_CASHADDR_BITCOINTX));
+        config.SetCashAddrEncoding(gArgs.GetBoolArg("-usecashaddr", DEFAULT_USE_CASHADDR));
     } catch (const std::exception &e) {
         fprintf(stderr, "Error: %s\n", e.what());
         return EXIT_FAILURE;
