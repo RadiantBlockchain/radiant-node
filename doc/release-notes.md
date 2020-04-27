@@ -21,6 +21,11 @@ Account API removed
 'account' API to the 'label' API.
 
 
+CashAddr in bitcoin-tx
+----------------------
+The bitcoin-tx tool now has full CashAddr support. CashAddr in JSON output can be controlled with the new `-usecashaddr` option, which is turned off by default, but relying on this default is deprecated. The default will change to enabled in v0.22. Specify `-usecashaddr=0` to retain the old behavior.
+
+
 Usage recommendations
 ---------------------
 

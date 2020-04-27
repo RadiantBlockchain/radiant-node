@@ -43,7 +43,7 @@
                 "reqSigs": 1,
                 "type": "pubkeyhash",
                 "addresses": [
-                    "bitcoincash:qq0uz8eehctjn0uh8fatdfs4efrjn4j9ws47fnc6va"
+                    "13tuJJDR2RgArmgfv6JScSdreahzgc4T6o"
                 ]
             }
         },
@@ -56,7 +56,7 @@
                 "reqSigs": 1,
                 "type": "pubkeyhash",
                 "addresses": [
-                    "bitcoincash:qredfkegett9qg3xaeyy4cj9qhpgsh93950nk95fta"
+                    "1P8yWvZW8jVihP1bzHeqfE4aoXNX8AVa46"
                 ]
             }
         }
