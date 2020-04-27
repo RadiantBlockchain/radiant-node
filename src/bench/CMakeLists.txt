@@ -25,6 +25,9 @@ add_executable(bench_bitcoin
 	rpc_blockchain.cpp
 	rpc_mempool.cpp
 	util_time.cpp
+
+	# TODO: make a test library
+	../test/setup_common.cpp
 )
 
 target_link_libraries(bench_bitcoin common bitcoinconsensus server)
