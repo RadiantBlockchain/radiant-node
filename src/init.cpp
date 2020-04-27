@@ -77,8 +77,6 @@ static constexpr bool DEFAULT_PROXYRANDOMIZE = true;
 static constexpr bool DEFAULT_REST_ENABLE = false;
 /** Default for -stopafterblockimport */
 static constexpr bool DEFAULT_STOPAFTERBLOCKIMPORT = false;
-/** Default for -usecashaddr */
-static constexpr bool DEFAULT_USE_CASHADDR = true;
 
 // Dump addresses to banlist.dat every 15 minutes (900s)
 static constexpr int DUMP_BANS_INTERVAL = 60 * 15;

@@ -9,6 +9,7 @@
 #include <chainparams.h>
 #include <clientversion.h>
 #include <coins.h>
+#include <config.h> // DEFAULT_USE_CASHADDR
 #include <consensus/consensus.h>
 #include <core_io.h>
 #include <key_io.h>
@@ -28,6 +29,12 @@
 #include <cstdio>
 #include <memory>
 
+/**
+ * Default for -usecashaddr in bitcoin-tx
+ * TODO: Remove definition and replace with DEFAULT_USE_CASHADDR in next major version
+ */
+static constexpr bool DEFAULT_USE_CASHADDR_BITCOINTX = false;
+
 static bool fCreateBlank;
 static std::map<std::string, UniValue> registers;
 static const int CONTINUE_EXECUTION = -1;
@@ -45,6 +52,11 @@ static void SetupBitcoinTxArgs() {
                  "Output only the hex-encoded transaction id of the resultant "
                  "transaction.",
                  false, OptionsCategory::OPTIONS);
+    gArgs.AddArg(
+        "-usecashaddr",
+        strprintf("In JSON output, use CashAddr address format for destination encoding instead of the legacy base58 format "
+                  "(default: %d, will change to %d in v0.22)", DEFAULT_USE_CASHADDR_BITCOINTX, DEFAULT_USE_CASHADDR),
+        false, OptionsCategory::OPTIONS);
     SetupChainParamsBaseOptions();
 
     gArgs.AddArg("delin=N", "Delete input N from TX", false,
@@ -99,6 +111,11 @@ static void SetupBitcoinTxArgs() {
 // the process or CONTINUE_EXECUTION when it's expected to continue further.
 //
 static int AppInitRawTx(int argc, char *argv[]) {
+    // FIXME: Ideally, we'd like to build the config here, but that's currently
+    // not possible as the whole application has too much global state. However,
+    // this is a first step.
+    auto &config = const_cast<Config &>(GetConfig());
+
     //
     // Parameters
     //
@@ -114,6 +131,7 @@ static int AppInitRawTx(int argc, char *argv[]) {
     // after this clause)
     try {
         SelectParams(gArgs.GetChainName());
+        config.SetCashAddrEncoding(gArgs.GetBoolArg("-usecashaddr", DEFAULT_USE_CASHADDR_BITCOINTX));
     } catch (const std::exception &e) {
         fprintf(stderr, "Error: %s\n", e.what());
         return EXIT_FAILURE;

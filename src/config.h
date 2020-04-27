@@ -1,4 +1,5 @@
 // Copyright (c) 2017 Amaury SÉCHET
+// Copyright (c) 2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -13,6 +14,9 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+
+/** Default for -usecashaddr */
+static constexpr bool DEFAULT_USE_CASHADDR = true;
 
 class CChainParams;
 
