@@ -107,7 +107,6 @@ static bool SignStep(const SigningProvider &provider,
                      const CScript &scriptPubKey, std::vector<valtype> &ret,
                      txnouttype &whichTypeRet, SignatureData &sigdata) {
     CScript scriptRet;
-    uint160 h160;
     ret.clear();
     std::vector<uint8_t> sig;
 
