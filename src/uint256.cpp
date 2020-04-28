@@ -11,7 +11,7 @@
 #include <cstring>
 
 template <unsigned int BITS>
-base_blob<BITS>::base_blob(const std::vector<uint8_t> &vch) {
+base_blob<BITS>::base_blob(const std::vector<uint8_t> &vch) noexcept {
     assert(vch.size() == sizeof(data));
     memcpy(data, vch.data(), sizeof(data));
 }

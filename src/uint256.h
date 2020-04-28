@@ -20,9 +20,9 @@ protected:
     uint8_t data[WIDTH];
 
 public:
-    base_blob() { memset(data, 0, sizeof(data)); }
+    constexpr base_blob() noexcept : data{0} {}
 
-    explicit base_blob(const std::vector<uint8_t> &vch);
+    explicit base_blob(const std::vector<uint8_t> &vch) noexcept;
 
     bool IsNull() const {
         for (int i = 0; i < WIDTH; i++) {
@@ -82,7 +82,7 @@ public:
 
     const uint8_t *end() const { return &data[WIDTH]; }
 
-    unsigned int size() const { return sizeof(data); }
+    static constexpr unsigned int size() { return sizeof(data); }
 
     uint64_t GetUint64(int pos) const {
         const uint8_t *ptr = data + pos * 8;
@@ -108,8 +108,7 @@ public:
  */
 class uint160 : public base_blob<160> {
 public:
-    uint160() {}
-    explicit uint160(const std::vector<uint8_t> &vch) : base_blob<160>(vch) {}
+    using base_blob<160>::base_blob; ///< inherit constructors
 };
 
 /**
@@ -120,8 +119,7 @@ public:
  */
 class uint256 : public base_blob<256> {
 public:
-    uint256() {}
-    explicit uint256(const std::vector<uint8_t> &vch) : base_blob<256>(vch) {}
+    using base_blob<256>::base_blob; ///< inherit constructors
 };
 
 /**
