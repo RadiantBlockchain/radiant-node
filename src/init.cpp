@@ -896,12 +896,12 @@ void SetupServerArgs() {
                  false, OptionsCategory::NODE_RELAY);
     gArgs.AddArg(
         "-datacarrier",
-        strprintf("Relay and mine data carrier transactions (default: %d)",
-                  DEFAULT_ACCEPT_DATACARRIER),
+        strprintf("Relay and mine OP_RETURN transactions (deprecated, will be removed in v0.22, "
+                  "use -datacarriersize instead; default: %d)", DEFAULT_ACCEPT_DATACARRIER),
         false, OptionsCategory::NODE_RELAY);
-    gArgs.AddArg("-datacarriersize",
-                 strprintf("Maximum size of data in data carrier transactions "
-                           "we relay and mine (default: %u)",
+    gArgs.AddArg("-datacarriersize=<n>",
+                 strprintf("Maximum size of data script in OP_RETURN transactions "
+                           "we relay and mine (in bytes, 0 to reject all OP_RETURN transactions, default: %u)",
                            MAX_OP_RETURN_RELAY),
                  false, OptionsCategory::NODE_RELAY);
     gArgs.AddArg(
@@ -1751,10 +1751,9 @@ bool AppInitParameterInteraction(Config &config) {
         return false;
     }
 
-    fIsBareMultisigStd =
-        gArgs.GetBoolArg("-permitbaremultisig", DEFAULT_PERMIT_BAREMULTISIG);
-    fAcceptDatacarrier =
-        gArgs.GetBoolArg("-datacarrier", DEFAULT_ACCEPT_DATACARRIER);
+    fIsBareMultisigStd = gArgs.GetBoolArg("-permitbaremultisig", DEFAULT_PERMIT_BAREMULTISIG);
+    nMaxDatacarrierBytes = gArgs.GetBoolArg("-datacarrier", DEFAULT_ACCEPT_DATACARRIER)
+        ? gArgs.GetArg("-datacarriersize", MAX_OP_RETURN_RELAY) : 0;
 
     // Option to startup with mocktime set (used for regression testing):
     SetMockTime(gArgs.GetArg("-mocktime", 0)); // SetMockTime(0) is a no-op

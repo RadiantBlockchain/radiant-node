@@ -13,7 +13,7 @@ Overview
 
 
 Account API removed
-------------------
+-------------------
  - The 'account' API was deprecated in ABC v0.20.6 and has been fully removed in v0.21
  - The 'label' API was introduced in ABC v0.20.6 as a replacement for accounts.
 
@@ -24,6 +24,12 @@ Account API removed
 CashAddr in bitcoin-tx
 ----------------------
 The bitcoin-tx tool now has full CashAddr support. CashAddr in JSON output can be controlled with the new `-usecashaddr` option, which is turned off by default, but relying on this default is deprecated. The default will change to enabled in v0.22. Specify `-usecashaddr=0` to retain the old behavior.
+
+
+`-datacarrier` deprecated
+-------------------------
+
+The bitcoind/bitcoin-qt option `-datacarrier` is deprecated and will be removed in v0.22. Instead, use the existing option `-datacarriersize` to control relay and mining of OP_RETURN transactions, e.g. specify `-datacarriersize=0` to reject them all.
 
 
 Usage recommendations

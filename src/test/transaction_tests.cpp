@@ -708,8 +708,8 @@ BOOST_AUTO_TEST_CASE(test_IsStandard) {
     /**
      * Check when a custom value is used for -datacarriersize .
      */
-    unsigned newMaxSize = 90;
-    gArgs.ForceSetArg("-datacarriersize", std::to_string(newMaxSize));
+    const auto nMaxDatacarrierBytesOrig = nMaxDatacarrierBytes;
+    nMaxDatacarrierBytes = 90;
 
     // Max user provided payload size is standard
     t.vout[0].scriptPubKey =
@@ -718,7 +718,7 @@ BOOST_AUTO_TEST_CASE(test_IsStandard) {
                               "a67962e0ea1f61deb649f6bc3f4cef3804678afdb0fe5548"
                               "271967f1a67130b7105cd6a828e03909a67962e0ea1f61de"
                               "b649f6bc3f4cef3877696e64657878");
-    BOOST_CHECK_EQUAL(t.vout[0].scriptPubKey.size(), newMaxSize);
+    BOOST_CHECK_EQUAL(t.vout[0].scriptPubKey.size(), nMaxDatacarrierBytes);
     BOOST_CHECK(IsStandardTx(CTransaction(t), reason));
 
     // Max user provided payload size + 1 is non-standard
@@ -728,11 +728,17 @@ BOOST_AUTO_TEST_CASE(test_IsStandard) {
                               "a67962e0ea1f61deb649f6bc3f4cef3804678afdb0fe5548"
                               "271967f1a67130b7105cd6a828e03909a67962e0ea1f61de"
                               "b649f6bc3f4cef3877696e6465787800");
-    BOOST_CHECK_EQUAL(t.vout[0].scriptPubKey.size(), newMaxSize + 1);
+    BOOST_CHECK_EQUAL(t.vout[0].scriptPubKey.size(), nMaxDatacarrierBytes + 1);
     BOOST_CHECK(!IsStandardTx(CTransaction(t), reason));
 
-    // Clear custom confirguration.
-    gArgs.ClearArg("-datacarriersize");
+    // Verify -datacarriersize=0 rejects even the smallest possible OP_RETURN payload.
+    nMaxDatacarrierBytes = 0;
+    t.vout[0].scriptPubKey = CScript() << OP_RETURN;
+    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason));
+
+    // Clear custom configuration.
+    nMaxDatacarrierBytes = nMaxDatacarrierBytesOrig;
+    BOOST_CHECK(IsStandardTx(CTransaction(t), reason));
 
     // Data payload can be encoded in any way...
     t.vout[0].scriptPubKey = CScript() << OP_RETURN << ParseHex("");
