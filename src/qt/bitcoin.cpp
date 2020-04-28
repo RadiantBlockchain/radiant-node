@@ -63,6 +63,9 @@ Q_IMPORT_PLUGIN(QCocoaIntegrationPlugin);
 #include <cstdint>
 #include <memory>
 
+/** Default for -min */
+static constexpr bool DEFAULT_START_MINIMIZED = false;
+
 // Declare meta types used for QMetaObject::invokeMethod
 Q_DECLARE_METATYPE(bool *)
 Q_DECLARE_METATYPE(Amount)
@@ -388,7 +391,7 @@ void BitcoinApplication::initializeResult(bool success) {
 #endif
 
     // If -min option passed, start window minimized.
-    if (gArgs.GetBoolArg("-min", false)) {
+    if (gArgs.GetBoolArg("-min", DEFAULT_START_MINIMIZED)) {
         window->showMinimized();
     } else {
         window->show();
@@ -452,7 +455,7 @@ static void SetupUIArgs() {
     gArgs.AddArg("-lang=<lang>",
                  "Set language, for example \"de_DE\" (default: system locale)",
                  false, OptionsCategory::GUI);
-    gArgs.AddArg("-min", "Start minimized", false, OptionsCategory::GUI);
+    gArgs.AddArg("-min", strprintf("Start minimized (default: %d)", DEFAULT_START_MINIMIZED), false, OptionsCategory::GUI);
     gArgs.AddArg(
         "-rootcertificates=<file>",
         "Set SSL root certificates for payment request (default: -system-)",
@@ -702,7 +705,7 @@ int GuiMain(int argc, char *argv[]) {
     Config &config = const_cast<Config &>(GetConfig());
 
     if (gArgs.GetBoolArg("-splash", DEFAULT_SPLASHSCREEN) &&
-        !gArgs.GetBoolArg("-min", false)) {
+        !gArgs.GetBoolArg("-min", DEFAULT_START_MINIMIZED)) {
         app.createSplashScreen(networkStyle.data());
     }
 
