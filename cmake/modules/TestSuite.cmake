@@ -85,7 +85,7 @@ function(add_boost_unit_tests_to_suite SUITE NAME)
 		_add_test_runner(
 			${SUITE}
 			${_test_name}
-			${NAME} -t "${_test_name}"
+			${NAME} -t "${_test_name}" -l test_suite
 		)
 		set_property(
 			TARGET ${SUITE_TARGET}
