@@ -353,14 +353,14 @@ void SetupServerArgs() {
             "verify all, default: %s, testnet: %s)",
             defaultChainParams->GetConsensus().defaultAssumeValid.GetHex(),
             testnetChainParams->GetConsensus().defaultAssumeValid.GetHex()),
-        false, OptionsCategory::OPTIONS);
+        true, OptionsCategory::OPTIONS);
     gArgs.AddArg("-automaticunparking",
                  strprintf("If a new block is connected to a parked chain "
                            "with now much more proof-of-work than the active "
                            "chain, then unpark the parked chain automatically "
                            "(default: %d)",
                            DEFAULT_AUTOMATIC_UNPARKING),
-                 false, OptionsCategory::OPTIONS);
+                 true, OptionsCategory::OPTIONS);
     gArgs.AddArg("-blocksdir=<dir>",
                  "Specify directory to hold blocks subdirectory for *.dat "
                  "files (default: <datadir>)",
@@ -403,6 +403,11 @@ void SetupServerArgs() {
                            "location. (0 to disable, default: %s)",
                            DEFAULT_DEBUGLOGFILE),
                  false, OptionsCategory::OPTIONS);
+    gArgs.AddArg("-excessiveblocksize=<n>",
+                 strprintf("Do not accept blocks larger than this limit, in "
+                           "bytes (default: %d)",
+                           DEFAULT_MAX_BLOCK_SIZE),
+                 false, OptionsCategory::OPTIONS);
     gArgs.AddArg("-feefilter",
                  strprintf("Tell other nodes to filter invs to us by our "
                            "mempool min fee (default: %d)",
@@ -421,7 +426,7 @@ void SetupServerArgs() {
         false, OptionsCategory::OPTIONS);
     gArgs.AddArg("-maxreorgdepth=<n>",
                  strprintf("Configure at what depth blocks are considered "
-                           "final (default: %d). Use -1 to disable.",
+                           "final (-1 to disable, default: %d)",
                            DEFAULT_MAX_REORG_DEPTH),
                  false, OptionsCategory::OPTIONS);
     gArgs.AddArg("-loadblock=<file>",
@@ -614,10 +619,6 @@ void SetupServerArgs() {
                            "bloom filters (default: %d)",
                            DEFAULT_PEERBLOOMFILTERS),
                  false, OptionsCategory::CONNECTION);
-    gArgs.AddArg("-permitbaremultisig",
-                 strprintf("Relay non-P2SH multisig (default: %d)",
-                           DEFAULT_PERMIT_BAREMULTISIG),
-                 false, OptionsCategory::CONNECTION);
     gArgs.AddArg("-port=<port>",
                  strprintf("Listen for connections on <port> (default: %u, "
                            "testnet: %u, regtest: %u)",
@@ -678,8 +679,8 @@ void SetupServerArgs() {
                  false, OptionsCategory::CONNECTION);
     gArgs.AddArg(
         "-maxuploadtarget=<n>",
-        strprintf("Tries to keep outbound traffic under the given target (in "
-                  "MiB per 24h), 0 = no limit (default: %d)",
+        strprintf("Tries to keep outbound traffic under the given target in "
+                  "MiB per 24h (0 for no limit, default: %d)",
                   DEFAULT_MAX_UPLOAD_TARGET),
         false, OptionsCategory::CONNECTION);
 
@@ -876,11 +877,6 @@ void SetupServerArgs() {
             "Relay and mine \"non-standard\" transactions (testnet/regtest only, default: %d)",
             defaultChainParams->RequireStandard()),
         true, OptionsCategory::NODE_RELAY);
-    gArgs.AddArg("-excessiveblocksize=<n>",
-                 strprintf("Do not accept blocks larger than this limit, in "
-                           "bytes (default: %d)",
-                           DEFAULT_MAX_BLOCK_SIZE),
-                 true, OptionsCategory::NODE_RELAY);
     gArgs.AddArg(
         "-dustrelayfee=<amt>",
         strprintf("Fee rate (in %s/kB) used to defined dust, the value of an "
@@ -889,27 +885,31 @@ void SetupServerArgs() {
                   CURRENCY_UNIT, FormatMoney(DUST_RELAY_TX_FEE)),
         true, OptionsCategory::NODE_RELAY);
 
-    gArgs.AddArg("-bytespersigop",
+    gArgs.AddArg("-bytespersigop=<n>",
                  strprintf("Equivalent bytes per sigop in transactions for "
                            "relay and mining (default: %u)",
                            DEFAULT_BYTES_PER_SIGOP),
-                 false, OptionsCategory::NODE_RELAY);
+                 true, OptionsCategory::NODE_RELAY);
     gArgs.AddArg(
         "-datacarrier",
         strprintf("Relay and mine OP_RETURN transactions (deprecated, will be removed in v0.22, "
                   "use -datacarriersize instead; default: %d)", DEFAULT_ACCEPT_DATACARRIER),
-        false, OptionsCategory::NODE_RELAY);
+        true, OptionsCategory::NODE_RELAY);
     gArgs.AddArg("-datacarriersize=<n>",
                  strprintf("Maximum size of data script in OP_RETURN transactions "
                            "we relay and mine (in bytes, 0 to reject all OP_RETURN transactions, default: %u)",
                            MAX_OP_RETURN_RELAY),
-                 false, OptionsCategory::NODE_RELAY);
+                 true, OptionsCategory::NODE_RELAY);
+    gArgs.AddArg("-permitbaremultisig",
+                 strprintf("Relay non-P2SH multisig (default: %d)",
+                           DEFAULT_PERMIT_BAREMULTISIG),
+                 true, OptionsCategory::NODE_RELAY);
     gArgs.AddArg(
         "-minrelaytxfee=<amt>",
         strprintf("Fees (in %s/kB) smaller than this are rejected for "
                   "relaying, mining and transaction creation (default: %s)",
                   CURRENCY_UNIT, FormatMoney(DEFAULT_MIN_RELAY_TX_FEE_PER_KB)),
-        false, OptionsCategory::NODE_RELAY);
+        true, OptionsCategory::NODE_RELAY);
     gArgs.AddArg(
         "-whitelistrelay",
         strprintf("Accept relayed transactions received from whitelisted "
