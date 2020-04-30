@@ -1312,7 +1312,7 @@ static bool AppInitServers(Config &config,
 
     StartRPC();
 
-    if (!StartHTTPRPC(config, httpRPCRequestProcessor)) {
+    if (!StartHTTPRPC(httpRPCRequestProcessor)) {
         return false;
     }
     if (gArgs.GetBoolArg("-rest", DEFAULT_REST_ENABLE)) {
