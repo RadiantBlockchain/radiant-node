@@ -55,12 +55,6 @@ bool IsStandard(const CScript &scriptPubKey, txnouttype &whichType) {
             return false;
         }
     } else if (whichType == TX_NULL_DATA) {
-        if (!fAcceptDatacarrier) {
-            return false;
-        }
-
-        unsigned nMaxDatacarrierBytes =
-            gArgs.GetArg("-datacarriersize", MAX_OP_RETURN_RELAY);
         if (scriptPubKey.size() > nMaxDatacarrierBytes) {
             return false;
         }

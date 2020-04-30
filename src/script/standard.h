@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -15,7 +16,11 @@
 
 #include <cstdint>
 
-static const bool DEFAULT_ACCEPT_DATACARRIER = true;
+/**
+ * Default for -datacarrier.
+ * TODO: In next major version, remove both this definition and the -datacarrier parameter, which is redundant.
+ */
+static constexpr bool DEFAULT_ACCEPT_DATACARRIER = true;
 
 class CKeyID;
 class CScript;
@@ -29,16 +34,14 @@ public:
 };
 
 /**
- * Default setting for nMaxDatacarrierBytes. 220 bytes of data, +1 for
- * OP_RETURN, +2 for the pushdata opcodes.
+ * Default setting for nMaxDatacarrierBytes. 220 bytes of data, +1 for OP_RETURN, +2 for the pushdata opcodes.
  */
-static const unsigned int MAX_OP_RETURN_RELAY = 223;
+static constexpr uint32_t MAX_OP_RETURN_RELAY = 223;
 
 /**
- * A data carrying output is an unspendable output containing data. The script
- * type is designated as TX_NULL_DATA.
+ * A data carrying output is an unspendable output containing data. The script type is designated as TX_NULL_DATA.
  */
-extern bool fAcceptDatacarrier;
+extern uint32_t nMaxDatacarrierBytes;
 
 enum txnouttype {
     TX_NONSTANDARD,

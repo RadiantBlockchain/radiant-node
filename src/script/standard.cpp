@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -12,7 +13,7 @@
 
 typedef std::vector<uint8_t> valtype;
 
-bool fAcceptDatacarrier = DEFAULT_ACCEPT_DATACARRIER;
+uint32_t nMaxDatacarrierBytes = MAX_OP_RETURN_RELAY;
 
 CScriptID::CScriptID(const CScript &in)
     : uint160(Hash160(in.begin(), in.end())) {}
