@@ -1,7 +1,7 @@
 ```
 Title: getblocktemplatelight
 Type: API/RPC
-Version: 1.0.0
+Version: 1.0.1
 Status: Draft
 Created: 2020-04-28
 Authors: freetrader <freetrader@tuta.io>
@@ -169,8 +169,9 @@ Notes:
 (1) Since the value of this field must be 1, its size is effectively fixed at 1 byte.
 
 (2) The coinbase field has an enforced minimum size of 100 bytes.
-    Also, block construction in the software reserves a maximum of 1000 bytes
-    for the coinbase by default - this should be taken into account when
+    Also, block construction typically reserves some space for the coinbase.
+    For example, in the Bitcoin Cash Node software a maximum of 1000 bytes are
+    reserved for the coinbase by default - this should be taken into account when
     a larger coinbase needs to be included.
 
 
@@ -314,4 +315,4 @@ merkle_root = hashes[0]
 
 # Copyright
 
-This BIP is licensed under the Creative Commons CC0 1.0 Universal license.
+This document is licensed under the Creative Commons CC0 1.0 Universal license.
