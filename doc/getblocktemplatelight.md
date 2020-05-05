@@ -1,7 +1,7 @@
 ```
 Title: getblocktemplatelight
 Type: API/RPC
-Version: 1.0.0
+Version: 1.0.1
 Status: Draft
 Created: 2020-04-28
 Authors: freetrader <freetrader@tuta.io>
@@ -273,6 +273,10 @@ This specification is based on an adaptation by Bitcoin Cash Node of a
 concept originally implemented by BTC.com (at least as far as we know).
 The original implementation is available at [3].
 
+Bitcoin Unlimited has previously released a similar feature (in v1.4.0.0
+of its client) consisting of two RPC calls called `getminingcandidate`
+and `submitminingsolution` [9].
+
 There is an ASCII diagram with additional explanations of the Merkle
 branch construction in the Bitcoin Cash Node source code [4].
 
@@ -304,12 +308,13 @@ merkle_root = hashes[0]
 
 - [1] BIP 22: getblocktemplate - Fundamentals
 - [2] BIP 23: getblocktemplate - Pooled Mining
-- [3] https://github.com/btccom/bitcoin-abc-1
+- [3] https://github.com/btccom/bitcoin-abc-1/commit/e87774c8ee724a0e9ecbc289236920ea1aa04a83
 - [4] src/rpc/mining.cpp, see `MakeMerkleBranch` function
 - [5] https://reference.cash/protocol/blockchain/block/block-header
 - [6] https://reference.cash/protocol/p2p/compact__int/
 - [7] https://reference.cash/protocol/blockchain/block/#coinbase-transaction
 - [8] https://reference.cash/protocol/blockchain/transaction/
+- [9] https://github.com/BitcoinUnlimited/BitcoinUnlimited/blob/release/doc/miner.md#getminingcandidate-and-submitminingsolution
 
 
 # Copyright
