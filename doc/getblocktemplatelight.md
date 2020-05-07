@@ -1,7 +1,7 @@
 ```
 Title: getblocktemplatelight
 Type: API/RPC
-Version: 1.0.1
+Version: 1.0.2
 Status: Draft
 Created: 2020-04-28
 Authors: freetrader <freetrader@tuta.io>
@@ -85,7 +85,9 @@ to the transactions proposed by the software.
 
 NOTE! Such additional transactions are not validated by the software.
 It is the responsibility of the miner to ensure such transactions are
-valid. If he fails to do so, an invalid block could be generated.
+valid, do not conflict with each other, and do not conflict with any
+transaction in the mempool. If he fails to do so, an invalid block could be
+generated.
 
 
 **GBTL-INPUT-ADDITIONAL-TXS-2**
