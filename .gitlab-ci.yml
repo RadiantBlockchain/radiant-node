@@ -373,6 +373,45 @@ test-debian-nowallet-unittests:
         reports:
             junit: junit_unit_tests.xml
 
+test-debian-nowallet-functional:
+    stage: test
+    extends: .cache-debian
+    needs: ["build-debian-nowallet"]
+    script:
+        - (cd build; ninja -t restat)
+        - (cd build; ninja check-functional)
+        - ccache --show-stats
+    dependencies:
+        - build-debian-nowallet
+    artifacts:
+        when: on_failure
+        paths:
+            - build/test/tmp
+        expire_in: 30 days
+        reports:
+            junit: build/test/tmp/*/junit_results.xml
+
+test-debian-nowallet-functional-longeronly:
+    stage: test
+    extends: .cache-debian
+    needs: ["build-debian-nowallet"]
+    only:
+        refs:
+            - master
+    script:
+        - (cd build; ninja -t restat)
+        - (cd build; ninja check-functional-longeronly)
+        - ccache --show-stats
+    dependencies:
+        - build-debian-nowallet
+    artifacts:
+        when: on_failure
+        paths:
+            - build/test/tmp
+        expire_in: 30 days
+        reports:
+            junit: build/test/tmp/*/junit_results.xml
+
 ## Debian native with clang compiler
 build-debian-clang:
     stage: build
