@@ -552,3 +552,26 @@ build-arm:
         - ccache --show-stats
     dependencies:
         - build-arm-depends
+
+## Deploy documentation
+pages:
+    stage: deployment
+    needs: []
+    image: python:buster
+    cache:
+        key: docs
+        paths:
+            - .cache/pip
+    before_script:
+        - pip install mkdocs
+        - pip install mkdocs-material
+        - pip install mkdocs-exclude
+    script:
+        - mkdocs build
+        - mv site public
+    artifacts:
+        paths:
+            - public
+    only:
+        refs:
+            - master
