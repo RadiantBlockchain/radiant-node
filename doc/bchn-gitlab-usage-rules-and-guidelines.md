@@ -51,6 +51,8 @@ _"Added unittest. Run `ninja check-all`."_
 
 **Maintainer Rule 5**: MRs with "HODL" label set shall not be merged - maintainers must follow up status
 
+**Maintainer Rule 6**: Any change to consensus code shall be treated as non-trivial and trigger the minimum review period in Guideline 4 before merging (unless it is a noted emergency)
+
 
 ## Guidelines
 
@@ -61,6 +63,10 @@ The following are guidelines and should be followed if possible.
 **Guideline 2**: If an issue is assigned to someone else but you can do some task that you think is helpful, you can do so without assigning it to yourself, or co-assigning it to yourself to indicate that you are also working on something related to that issue. You can also query (via GitLab or otherwise) with the current Assignee whether they want to hand it over to you, in case they are currently inconvenienced or blocked from progressing it.
 
 **Guideline 3**: Use appropriate project checklists when reviewing anything. If you don't find a checklist, bug the maintainers to provide you one.
+
+**Guideline 4**: For non-trivial contributions, merge requests that are not work-in-progress should sit for at least 36 hours to ensure that contributors in other timezones have time to review. Consideration should be given to weekends and other holiday periods to ensure active committers all have reasonable time to become involved in the discussion and review process if they wish.
+
+**Guideline 5**: It is asked that maintainers (active committers) indicate their unavailability when they know they will be absent from the project for longer periods of time. This helps keep momentum going, allowing others to step in quicker to help land merge requests.
 
 
 ### Code review lingo
@@ -156,6 +162,8 @@ NOTE: MR = "Merge Request"
 - "HODL" : issue/MR is on hold until further notice, usually because of a technical problem
  
 - "HODL GANG" : issue/MR needs ecosystem feedback for further decision
+
+- "community" : issue/MR is classified as relating to some changes that touch on the social aspects of the projects, such as expectations of maintainers to contributors and vice versa
 
 
 ### Historical labels considered to be deprecated until further notice
