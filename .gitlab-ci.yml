@@ -462,6 +462,7 @@ test-debian-benchmarks-clang:
 build-win-64-depends:
     stage: build_depends
     extends: .cache-win
+    needs: []
     script:
         - (cd depends; make build-win64 HOST=x86_64-w64-mingw32 NO_QT=1 JOBS=`nproc`)
     artifacts:
@@ -488,6 +489,7 @@ build-win-64:
 build-arm-depends:
     stage: build_depends
     extends: .cache-arm
+    needs: []
     script:
         - (cd depends; make build-linux-arm
             HOST=aarch64-linux-gnu NO_QT=1 JOBS=`nproc`)
