@@ -65,15 +65,53 @@ else()
 	set(USE_SCALAR_INV_BUILTIN 1)
 endif()
 
-# We check if amd64 asm is supported.
-check_c_source_compiles("
-	#include <stdint.h>
-	int main() {
-		uint64_t a = 11, tmp;
-		__asm__ __volatile__(\"movq \$0x100000000,%1; mulq %%rsi\" : \"+a\"(a) : \"S\"(tmp) : \"cc\", \"%rdx\");
-		return 0;
-	}
-" USE_ASM_X86_64)
+# Guess the target architecture, within the ones with supported ASM.
+# First check if the CMAKE_C_COMPILER_TARGET is set (should be when
+# cross compiling), then CMAKE_SYSTEM_PROCESSOR as a fallback if meaningful
+# (this is not the case for ARM as the content is highly non standard).
+if(CMAKE_C_COMPILER_TARGET MATCHES "x86_64" OR CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
+	set(SECP256K1_ASM_BUILD_TARGET "x86_64")
+	set(SECP256K1_DEFAULT_USE_ASM ON)
+elseif(CMAKE_C_COMPILER_TARGET MATCHES "arm-linux-gnueabihf")
+	set(SECP256K1_ASM_BUILD_TARGET "arm-linux-gnueabihf")
+	set(SECP256K1_DEFAULT_USE_ASM ON)
+endif()
+
+# Enable ASM by default only if we are building for a compatible target.
+# The user can still enable/disable it manually if needed.
+option(SECP256K1_USE_ASM "Use assembly" ${SECP256K1_DEFAULT_USE_ASM})
+
+if(SECP256K1_USE_ASM)
+	macro(unsupported_asm_error)
+		message(FATAL_ERROR
+			"Assembly is enabled, but not supported for your target architecture."
+			"Re-run cmake with -DSECP256K1_USE_ASM=OFF to disable ASM support."
+		)
+	endmacro()
+
+	if(SECP256K1_ASM_BUILD_TARGET MATCHES "x86_64")
+		# We check if amd64 asm is supported.
+		check_c_source_compiles("
+			#include <stdint.h>
+			int main() {
+				uint64_t a = 11, tmp;
+				__asm__ __volatile__(\"movq \$0x100000000,%1; mulq %%rsi\" : \"+a\"(a) : \"S\"(tmp) : \"cc\", \"%rdx\");
+				return 0;
+			}
+		" USE_ASM_X86_64)
+
+		if(NOT USE_ASM_X86_64)
+			unsupported_asm_error()
+		endif()
+	elseif(SECP256K1_ASM_BUILD_TARGET MATCHES "arm-linux-gnueabihf")
+		enable_language(ASM)
+		set(USE_EXTERNAL_ASM 1)
+		add_library(secp256k1_common src/asm/field_10x26_arm.s)
+		target_link_libraries(secp256k1 secp256k1_common)
+	else()
+		unsupported_asm_error()
+	endif()
+endif()
 
 # We make sure __int128 is defined
 include(CheckTypeSize)
@@ -223,6 +261,7 @@ if(SECP256K1_ECMULT_STATIC_PRECOMPUTATION)
 	native_add_cmake_flags(
 		"-DSECP256K1_ECMULT_WINDOW_SIZE=${SECP256K1_ECMULT_WINDOW_SIZE}"
 		"-DSECP256K1_ECMULT_GEN_PRECISION=${SECP256K1_ECMULT_GEN_PRECISION}"
+		"-DSECP256K1_USE_ASM=OFF"
 	)
 	add_native_executable(gen_context src/gen_context.c)
 

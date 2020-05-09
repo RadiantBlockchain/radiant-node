@@ -54,6 +54,11 @@ script: |
   CMAKE_TOOLCHAIN_FILE[arm-linux-gnueabihf]=LinuxARM.cmake
   CMAKE_TOOLCHAIN_FILE[aarch64-linux-gnu]=LinuxAArch64.cmake
 
+  # Allow extra cmake option to be specified for each host
+  declare -A CMAKE_EXTRA_OPTIONS
+  # ARM assembly is supported but experimental, disable it for the release
+  CMAKE_EXTRA_OPTIONS[arm-linux-gnueabihf]="-DSECP256K1_USE_ASM=OFF"
+
   INSTALL_COMPONENTS="bitcoind bitcoin-qt bitcoin-seeder"
 
   FAKETIME_HOST_PROGS=""
@@ -163,7 +168,8 @@ script: |
       -DENABLE_STATIC_LIBSTDCXX=ON \
       -DENABLE_GLIBC_BACK_COMPAT=ON \
       -DCMAKE_INSTALL_PREFIX=${INSTALLPATH} \
-      -DCCACHE=OFF
+      -DCCACHE=OFF \
+      ${CMAKE_EXTRA_OPTIONS[${i}]}
 
     ninja
     ninja security-check
