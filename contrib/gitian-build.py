@@ -1,11 +1,19 @@
 #!/usr/bin/env python3
 
 import argparse
+import inspect
 import multiprocessing
 import os
 import subprocess
 import sys
 
+# Codes for bold red warning formatting are no-ops unless on POSIX
+BOLD, RED = ('', ''), ('', ''),
+if os.name == 'posix':
+    # primitive formatting on supported
+    # terminal via ANSI escape sequences:
+    BOLD = ('\033[0m', '\033[1m')
+    RED = ('\033[0m', '\033[0;31m')
 
 def setup():
     global args, workdir
@@ -285,28 +293,58 @@ def main():
     if args.setup:
         setup()
 
-    os.chdir('bitcoin-cash-node')
+    # If this is the first time you run gitian_build you never had a chance of initialize
+    # the project repo inside gitian-builder directory, in fact this is usually done by
+    # gitian-builder/bin/gbuild ruby script.
+    if not os.path.isdir('gitian-builder/inputs/bitcoin'):
+        subprocess.check_call(['mkdir', '-p', 'gitian-builder/inputs'])
+        os.chdir('gitian-builder/inputs')
+        subprocess.check_call(['git', 'clone', args.url, 'bitcoin'])
+
+    # Move to bitcoin-cash-node folder
+    os.chdir(os.path.join(workdir, 'bitcoin-cash-node'))
+
+    # If merge request argument, the fetch the MR and get the head commit
     if args.merge_request:
-        subprocess.check_call(
-            ['git', 'fetch', args.url, 'merge-requests/' + args.version + '/head:mr-' + args.version])
-        # if this is the first time you run gitian_build you never had a chance of initialize
-        # the project repo inside gitian-builder directory, in fact this is usually done by
-        # gitian-builder/bin/gbuild ruby script
-        if not os.path.isdir('../gitian-builder/inputs/bitcoin'):
-            subprocess.check_call(['mkdir', '-p', '../gitian-builder/inputs'])
-            os.chdir('../gitian-builder/inputs')
-            subprocess.check_call(['git', 'clone', args.url, 'bitcoin'])
-            os.chdir('../../bitcoin-cash-node')
-        os.chdir('../gitian-builder/inputs/bitcoin')
         subprocess.check_call(
             ['git', 'fetch', args.url, 'merge-requests/' + args.version + '/head:mr-' + args.version])
         args.commit = subprocess.check_output(
             ['git', 'show', '-s', '--format=%H', 'FETCH_HEAD'], universal_newlines=True, encoding='utf8').strip()
-        args.version = 'mr-' + args.version
-    print(args.commit)
+
+    # Still in bitcoin-cash-node/ ...
     subprocess.check_call(['git', 'fetch'])
     subprocess.check_call(['git', 'checkout', args.commit])
+
+    # Compare our own source code to bitcoin-cash-node version of gitian-build.py
+    # and raise a warning if it differs.
+    # Need to add newlines back in order to diff against file.
+    our_source = [line + '\n' for line in
+                      inspect.getsource(inspect.getmodule(inspect.currentframe())).splitlines()]
+    with open('contrib/gitian-build.py') as script_file:
+        script_source = script_file.readlines()
+        if our_source != script_source:
+            print(BOLD[1] + RED[1] + '*' * 70)
+            print("WARNING: gitian-build.py you are running differs from the one in\n"
+                  "         the source you are building!\n"
+                  "         If this is unexpected, please check whether you need to\n"
+                  "         copy the source tree's version to your top level build\n"
+                  "         directory.")
+            print('*' * 70 + RED[0] + BOLD[0])
+
+    # Update inputs/bitcoin/ to the commit to build
+    os.chdir(os.path.join(workdir, 'gitian-builder/inputs/bitcoin'))
+
+    subprocess.check_call(['git', 'fetch'])
+    if args.merge_request:
+        subprocess.check_call(
+            ['git', 'fetch', args.url, 'merge-requests/' + args.version + '/head:mr-' + args.version])
+        args.version = 'mr-' + args.version
+    subprocess.check_call(['git', 'checkout', args.commit])
+
+    # Head back to work dir, show some diagnostics before kicking off the build.
     os.chdir(workdir)
+    print("cwd:", os.getcwd())
+    print("commit:", args.commit)
 
     if args.build:
         build()
@@ -316,6 +354,8 @@ def main():
 
     if args.verify:
         verify()
+
+    os.chdir(workdir)
 
 
 if __name__ == '__main__':
