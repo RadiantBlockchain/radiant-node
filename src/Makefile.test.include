@@ -104,6 +104,7 @@ BITCOIN_TESTS =\
   test/feerate_tests.cpp \
   test/finalization_tests.cpp \
   test/flatfile_tests.cpp \
+  test/gbtlight_tests.cpp \
   test/getarg_tests.cpp \
   test/hash_tests.cpp \
   test/inv_tests.cpp \

@@ -21,6 +21,7 @@
 #include <consensus/validation.h>
 #include <flatfile.h>
 #include <fs.h>
+#include <gbtlight.h>
 #include <httprpc.h>
 #include <httpserver.h>
 #include <index/txindex.h>
@@ -1019,6 +1020,21 @@ void SetupServerArgs() {
     hidden_args.emplace_back("-daemon");
 #endif
 
+    // GBTLight args
+    gArgs.AddArg("-gbtstoredir=<dir>",
+                 strprintf("Specify a directory for storing getblocktemplatelight data (default: <datadir>/%s/)",
+                           gbtl::DEFAULT_JOB_DATA_SUBDIR),
+                 false, OptionsCategory::RPC);
+    gArgs.AddArg("-gbtcachesize=<n>",
+                 strprintf("Specify how many recent getblocktemplatelight jobs to keep cached in memory (default: %d)",
+                           gbtl::DEFAULT_JOB_CACHE_SIZE),
+                 false, OptionsCategory::RPC);
+    gArgs.AddArg("-gbtstoretime=<secs>",
+                 strprintf("Specify time in seconds to keep getblocktemplatelight data in the -gbtstoredir before it is "
+                           "automatically deleted (0 to disable autodeletion, default: %d).",
+                           gbtl::DEFAULT_JOB_DATA_EXPIRY_SECS),
+                 false, OptionsCategory::RPC);
+
     // Add the hidden options
     gArgs.AddHiddenArgs(hidden_args);
 }
@@ -1248,6 +1264,12 @@ static bool AppInitServers(Config &config,
     RPCServerSignals::OnStopped(&OnRPCStopped);
     if (!InitHTTPServer(config)) {
         return false;
+    }
+
+    try {
+        gbtl::Initialize(scheduler);
+    } catch (const std::exception &e) {
+        return InitError(strprintf("Unable to initialize GBTLight subsystem: %s. Aborting.", e.what()));
     }
 
     StartRPC();

@@ -156,4 +156,23 @@ BOOST_AUTO_TEST_CASE(format_script_test) {
                         "EQUAL HASH256 GREATERTHANOREQUAL RSHIFT");
 }
 
+BOOST_AUTO_TEST_CASE(parse_hash_str) {
+    { //uint160
+        uint160 expected, parsed;
+        const uint8_t expectedB[] = {11, 7, 174, 137, 172, 8, 44, 53, 28, 68, 166, 150, 72, 157, 105, 93, 215, 100,
+                                     211, 80};
+        std::memcpy(expected.begin(), expectedB, std::min(size_t(expected.size()), sizeof(expectedB)));
+        BOOST_CHECK_MESSAGE(ParseHashStr("50d364d75d699d4896a6441c352c08ac89ae070b", parsed) && parsed == expected,
+                            "Parsing hash160 should yield the expected result");
+    }
+    { //uint256
+        uint256 expected, parsed;
+        const uint8_t expectedB[] = {254, 163, 200, 88, 44, 199, 20, 58, 138, 71, 160, 166, 241, 110, 115, 45, 234,
+                                     234, 81, 59, 86, 139, 184, 78, 232, 1, 251, 90, 2, 231, 211, 45};
+        std::memcpy(expected.begin(), expectedB, std::min(size_t(expected.size()), sizeof(expectedB)));
+        BOOST_CHECK_MESSAGE(ParseHashStr("2dd3e7025afb01e84eb88b563b51eaea2d736ef1a6a0478a3a14c72c58c8a3fe", parsed)
+                            && parsed == expected, "Parsing hash256 should yield the expected result");
+    }
+}
+
 BOOST_AUTO_TEST_SUITE_END()

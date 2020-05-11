@@ -254,6 +254,14 @@ bool ParseHashStr(const std::string &strHex, uint256 &result) {
     return true;
 }
 
+bool ParseHashStr(const std::string &strHex, uint160 &result) {
+    if ((strHex.size() != 40) || !IsHex(strHex)) {
+        return false;
+    }
+    result.SetHex(strHex);
+    return true;
+}
+
 std::vector<uint8_t> ParseHexUV(const UniValue &v, const std::string &strName) {
     std::string strHex;
     if (v.isStr()) {

@@ -8,10 +8,13 @@
 #include <chain.h>
 #include <chainparams.h>
 #include <config.h>
+#include <consensus/activation.h>
 #include <consensus/consensus.h>
 #include <consensus/params.h>
 #include <consensus/validation.h>
 #include <core_io.h>
+#include <fs.h>
+#include <gbtlight.h>
 #include <key_io.h>
 #include <miner.h>
 #include <net.h>
@@ -31,7 +34,10 @@
 
 #include <univalue.h>
 
+#include <cmath>
 #include <cstdint>
+#include <cstring>
+#include <list>
 #include <memory>
 
 /**
@@ -331,11 +337,86 @@ static UniValue BIP22ValidationResult(const Config &config,
     return "valid?";
 }
 
-static UniValue getblocktemplate(const Config &config,
-                                 const JSONRPCRequest &request) {
-    if (request.fHelp || request.params.size() > 1) {
+/// Namespace for private data used by getblocktemplatelight and submitblocklight
+namespace gbtl {
+namespace {
+// for use with unordered_map below
+struct TrivialJobIdHasher {
+    std::size_t operator()(const JobId &jobId) const noexcept {
+        constexpr auto size = sizeof(std::size_t);
+        static_assert(JobId::size() >= size * 2, "sizeof(JobId) must be >= sizeof(size_t) * 2");
+        static_assert(size == 4 || size == 8, "expected 32-bit or 64-bit size_t");
+        // The below is faster on 32-bit arch's than calling jobId.GetUint64(), and about the same on 64-bit, so we
+        // went with this approach. We must ensure the pointer is aligned, and we do this by unconditionally moving
+        // forward into the array by size bytes and then zeroing out low order bits that break alignment (if any).
+        const auto alignedPtr = reinterpret_cast<std::uintptr_t>(jobId.begin() + size) & ~(size - 1UL);
+        // Lastly, just return the (aligned) bytes reinterpreted as size_t, which is as perfect a hash value for
+        // std::unordered_map as one could ask for.
+        return *reinterpret_cast<const std::size_t *>(alignedPtr);
+    }
+};
+/// Lock for the below two data structures
+Mutex gJobIdMut;
+/// Cache of transactions for block templates returned from getblocktemplatelight, used by submitblocklight
+std::unordered_map<JobId, std::vector<CTransactionRef>, TrivialJobIdHasher> gJobIdTxCache GUARDED_BY(gJobIdMut);
+/// This list allows us to implement an LRU cache. We remove items when this grows too large.
+std::list<JobId> gJobIdList GUARDED_BY(gJobIdMut);
+
+/// Bytes used as header and footer for the getblocktemplatelight data files we write out.
+const std::string kDataFileMagic = "GBT";
+} // namespace
+} // namespace gbtl
+
+static UniValue getblocktemplatecommon(bool fLight, const Config &config, const JSONRPCRequest &request) {
+    const bool wrongParamSize = fLight ? request.params.size() > 2 : request.params.size() > 1;
+    if (request.fHelp || wrongParamSize) {
+        const std::string name = fLight ? "getblocktemplatelight" : "getblocktemplate";
+        const auto lightExtraArgs = fLight ? " \"additional_txs\"" : "";
+        const auto lightExtraArgDesc =
+            fLight
+            ? "2. additional_txs           (json array of strings, optional) Hex encoded transactions"
+              " to add to the block (each tx must be unique and valid)\n"
+            : "";
+        const auto resultsKeysMiscDesc =
+            fLight
+            ? "  \"job_id\" : \"xxxx\",                (string) Job identifier as a hexadecimal hash160,"
+              " which is to be used as a parameter in a subsequent call to submitblocklight\n"
+              "  \"merkle\" : [ \"xxxx\", ... ],       (array) Hashes encoded in little-endian hexadecimal\n"
+            : "  \"transactions\" : [                (array) contents of "
+              "non-coinbase transactions that should be included in the next "
+              "block\n"
+              "      {\n"
+              "         \"data\" : \"xxxx\",             (string) transaction "
+              "data encoded in hexadecimal (byte-for-byte)\n"
+              "         \"txid\" : \"xxxx\",             (string) transaction id "
+              "encoded in little-endian hexadecimal\n"
+              "         \"hash\" : \"xxxx\",             (string) hash encoded "
+              "in little-endian hexadecimal\n"
+              "         \"depends\" : [                (array) array of numbers "
+              "\n"
+              "             n                          (numeric) transactions "
+              "before this one (by 1-based index in 'transactions' list) that "
+              "must be present in the final block if this one is\n"
+              "             ,...\n"
+              "         ],\n"
+              "         \"fee\": n,                    (numeric) difference in "
+              "value between transaction inputs and outputs (in satoshis); for "
+              "coinbase transactions, this is a negative number of the total "
+              "collected block fees (i.e., not including the block subsidy); if "
+              "key is not present, fee is unknown and clients MUST NOT assume "
+              "there isn't one\n"
+              "         \"sigops\" : n,                (numeric) total SigOps "
+              "count, as counted for purposes of block limits; if key is not "
+              "present, sigop count is unknown and clients MUST NOT assume it is "
+              "zero\n"
+              "         \"required\" : true|false      (boolean) if provided and "
+              "true, this transaction must be in the final block\n"
+              "      }\n"
+              "      ,...\n"
+              "  ],\n";
+
         throw std::runtime_error(
-            "getblocktemplate ( \"template_request\" )\n"
+            name + " ( \"template_request\"" + lightExtraArgs +" )\n"
             "\nIf the request parameters include a 'mode' key, that is used to "
             "explicitly select between the default 'template' request or a "
             "'proposal'.\n"
@@ -360,6 +441,7 @@ static UniValue getblocktemplate(const Config &config,
             "           ,...\n"
             "       ]\n"
             "     }\n"
+            + lightExtraArgDesc +
             "\n"
 
             "\nResult:\n"
@@ -368,38 +450,7 @@ static UniValue getblocktemplate(const Config &config,
             "block version\n"
             "  \"previousblockhash\" : \"xxxx\",     (string) The hash of "
             "current highest block\n"
-            "  \"transactions\" : [                (array) contents of "
-            "non-coinbase transactions that should be included in the next "
-            "block\n"
-            "      {\n"
-            "         \"data\" : \"xxxx\",             (string) transaction "
-            "data encoded in hexadecimal (byte-for-byte)\n"
-            "         \"txid\" : \"xxxx\",             (string) transaction id "
-            "encoded in little-endian hexadecimal\n"
-            "         \"hash\" : \"xxxx\",             (string) hash encoded "
-            "in little-endian hexadecimal\n"
-            "         \"depends\" : [                (array) array of numbers "
-            "\n"
-            "             n                          (numeric) transactions "
-            "before this one (by 1-based index in 'transactions' list) that "
-            "must be present in the final block if this one is\n"
-            "             ,...\n"
-            "         ],\n"
-            "         \"fee\": n,                    (numeric) difference in "
-            "value between transaction inputs and outputs (in satoshis); for "
-            "coinbase transactions, this is a negative Number of the total "
-            "collected block fees (ie, not including the block subsidy); if "
-            "key is not present, fee is unknown and clients MUST NOT assume "
-            "there isn't one\n"
-            "         \"sigops\" : n,                (numeric) total SigOps "
-            "count, as counted for purposes of block limits; if key is not "
-            "present, sigop count is unknown and clients MUST NOT assume it is "
-            "zero\n"
-            "         \"required\" : true|false      (boolean) if provided and "
-            "true, this transaction must be in the final block\n"
-            "      }\n"
-            "      ,...\n"
-            "  ],\n"
+            + resultsKeysMiscDesc +
             "  \"coinbaseaux\" : {                 (json object) data that "
             "should be included in the coinbase's scriptSig content\n"
             "      \"flags\" : \"xx\"                  (string) key name is to "
@@ -436,10 +487,10 @@ static UniValue getblocktemplate(const Config &config,
             "}\n"
 
             "\nExamples:\n" +
-            HelpExampleCli("getblocktemplate", "") +
-            HelpExampleRpc("getblocktemplate", ""));
+            HelpExampleCli(name, "") +
+            HelpExampleRpc(name, ""));
     }
-
+    const auto t0 = GetTimeMicros(); // perf. info, used iff logging BCLog::RPC
     LOCK(cs_main);
 
     std::string strMode = "template";
@@ -566,10 +617,15 @@ static UniValue getblocktemplate(const Config &config,
         // expires-immediately template to stop miners?
     }
 
+    struct LightResult {
+        const gbtl::JobId jobId;
+        const UniValue merkle;
+    };
     // Update block
     static CBlockIndex *pindexPrev;
     static int64_t nStart;
     static std::unique_ptr<CBlockTemplate> pblocktemplate;
+    static std::unique_ptr<LightResult> plightresult; // fLight mode only, cached result associated with pblocktemplate
     if (pindexPrev != ::ChainActive().Tip() ||
         (g_mempool.GetTransactionsUpdated() != nTransactionsUpdatedLast &&
          GetTime() - nStart > 5)) {
@@ -586,6 +642,7 @@ static UniValue getblocktemplate(const Config &config,
         CScript scriptDummy = CScript() << OP_TRUE;
         pblocktemplate =
             BlockAssembler(config, g_mempool).CreateNewBlock(scriptDummy);
+        plightresult.reset();
         if (!pblocktemplate) {
             throw JSONRPCError(RPC_OUT_OF_MEMORY, "Out of memory");
         }
@@ -598,6 +655,57 @@ static UniValue getblocktemplate(const Config &config,
     // pointer for convenience
     CBlock *pblock = &pblocktemplate->block;
 
+    // Temporary tx vector which is only used if we are in fLight mode and we have `additional_txs` specified by the
+    // client. This vector is the set of tx's in pblock *plus* `additional_txs` for this invocation.
+    // We use a std::unique_ptr here because it's lighter weight to construct than an empty std::vector would be. (The
+    // common case here is that this vector is unused, since `additional_txs` is an advanced feature).
+    using TxRefVector = std::vector<CTransactionRef>;
+    std::unique_ptr<TxRefVector> tmpBlockTxsWithAdditionalTxs;
+    // Below normally points to pblock->vtx -- *unless* we are in fLight mode and we have "additional_txs", in which
+    // case it points to the above vector (which will be made valid in that case).
+    TxRefVector *pvtx = &pblock->vtx;
+
+    if (fLight && request.params.size() > 1) {
+        // GBTLight only -- append transactions to be added from `additional_txs`. Note the contract with client code is
+        // these must be valid and unique. As a performance-saving measure we do not check them for validity or
+        // uniqueness.
+        //
+        // Also note: We do *NOT* append additional_txs to pblock! This would mean additional_txs get added each time
+        // we are called.  However, pblock sticks around as global state for 5 seconds. `additional_txs` is a
+        // per-invocation parameter, and should not affect global state.  So, instead, we must use the `pvtx` pointer
+        // above which will end up pointing to a private copy of pblock's tx data which we will create below.
+        const UniValue &injectedTxsHex = request.params[1].get_array(); // throws error to client if not array
+        const auto size = injectedTxsHex.size();
+        if (size) {
+            // copy pblock's txs since we need a private copy to modify the set of txs for this invocation
+            tmpBlockTxsWithAdditionalTxs = std::make_unique<TxRefVector>();
+            pvtx = tmpBlockTxsWithAdditionalTxs.get();
+            pvtx->reserve(pblock->vtx.size() + size); // final size is template tx's + additional_txs
+            pvtx->insert(pvtx->end(), pblock->vtx.begin(), pblock->vtx.end());
+            // next, inject additional_txs
+            for (size_t idx = 0; idx < size; ++idx) {
+                CMutableTransaction tx;
+                if (DecodeHexTx(tx, injectedTxsHex[idx].get_str())) {
+                    pvtx->push_back(MakeTransactionRef(std::move(tx)));
+                } else {
+                    throw JSONRPCError(RPC_DESERIALIZATION_ERROR,
+                                       strprintf("additional_txs transaction %d decode failure", idx));
+                }
+            }
+            LogPrint(BCLog::RPC, "added %d additional_txs to block template\n", size);
+            const Consensus::Params &consensusParams = config.GetChainParams().GetConsensus();
+            if (IsMagneticAnomalyEnabled(consensusParams, pindexPrev)) {
+                auto start = pvtx->front()->IsCoinBase() ? std::next(pvtx->begin()) : pvtx->begin();
+                std::sort(start, pvtx->end(),
+                          [](const CTransactionRef &a, const CTransactionRef &b) -> bool {
+                              return a->GetId() < b->GetId();
+                          });
+            }
+            // From this point forward the fLight code below must operate on the pvtx (private copy) of the tx set,
+            // and not pblock->vtx.
+        }
+    }
+
     // Update nTime
     UpdateTime(pblock, config.GetChainParams().GetConsensus(), pindexPrev);
     pblock->nNonce = 0;
@@ -605,28 +713,71 @@ static UniValue getblocktemplate(const Config &config,
     UniValue aCaps(UniValue::VARR);
     aCaps.push_back("proposal");
 
-    UniValue transactions(UniValue::VARR);
-    transactions.reserve(pblock->vtx.size());
-    int index_in_template = 0;
-    for (const auto &it : pblock->vtx) {
-        const CTransaction &tx = *it;
-        uint256 txId = tx.GetId();
+    uint160 jobId; // fLight version only, ends up in results["job_id"]
+    UniValue merkle(UniValue::VARR); // fLight version only, ends up in results["merkle"]
+    UniValue transactions(UniValue::VARR); // !fLight version only, ends up in results["transactions"]
+    if (fLight) {
+        assert(pvtx && (!tmpBlockTxsWithAdditionalTxs || pvtx == tmpBlockTxsWithAdditionalTxs.get()));
+        if (plightresult && pvtx == &pblock->vtx) {
+            // use cached light result since we know it's for this tx set (no additional_txs and result is valid)
+            LogPrint(BCLog::RPC, "Using cached merkle result\n");
+            jobId = plightresult->jobId; // copy jobId
+            merkle = plightresult->merkle; // copy UniValue
+        } else {
+            // merkle cached result not available (new template) or we have additional_txs and can't use cached result
+            LogPrint(BCLog::RPC, "Calculating new merkle result\n");
+            std::vector<uint256> vtxIdsNoCoinbase; // txs without coinbase
+            // we reserve 1 more than we need, because makeMerkleBranch may use a little more space
+            vtxIdsNoCoinbase.reserve(pvtx->size());
+            for (const auto &tx : *pvtx) {
+                if (tx->IsCoinBase())
+                    continue;
+                vtxIdsNoCoinbase.push_back(tx->GetId());
+            }
+            // make merkleSteps and merkle branch
+            const auto merkleSteps = gbtl::MakeMerkleBranch(std::move(vtxIdsNoCoinbase));
+            merkle.reserve(merkleSteps.size());
+            // hash source is Hash160(hashPrevBlock + concatenation_of_all_merkle_step_hashes)
+            std::vector<uint8_t> hashSource;
+            hashSource.reserve(pblock->hashPrevBlock.size() + merkleSteps.size()*32);
+            hashSource.insert(hashSource.end(), pblock->hashPrevBlock.begin(), pblock->hashPrevBlock.end());
+            for (const auto &h : merkleSteps) {
+                merkle.push_back(h.GetHex()); // push UniValue
+                hashSource.insert(hashSource.end(), h.begin(), h.end()); // add to hash source
+            }
+            // Compute the jobId -- we will return this jobId to the client and also generate a cache entry based on it
+            // towards the end of this function.
+            jobId = Hash160(hashSource.begin(), hashSource.end());
 
-        if (tx.IsCoinBase()) {
-            index_in_template++;
-            continue;
+            // Finally, cache the merkle results if they were calculated from the tx's in pblock (no additional_txs).
+            if (pvtx == &pblock->vtx) {
+                plightresult.reset(new LightResult{jobId, merkle});
+                LogPrint(BCLog::RPC, "Saved merkle result\n");
+            }
         }
+    } else {
+        // regular (!fLight) mode
+        transactions.reserve(pblock->vtx.size());
+        int index_in_template = 0;
+        for (const auto &it : pblock->vtx) {
+            const CTransaction &tx = *it;
 
-        UniValue entry(UniValue::VOBJ);
-        entry.pushKV("data", EncodeHexTx(tx), false);
-        entry.pushKV("txid", txId.GetHex(), false);
-        entry.pushKV("hash", tx.GetHash().GetHex(), false);
-        entry.pushKV("fee", pblocktemplate->entries[index_in_template].fees / SATOSHI, false);
-        int64_t nTxSigOps = pblocktemplate->entries[index_in_template].sigOpCount;
-        entry.pushKV("sigops", nTxSigOps, false);
+            if (tx.IsCoinBase()) {
+                index_in_template++;
+                continue;
+            }
 
-        transactions.push_back(std::move(entry));
-        index_in_template++;
+            UniValue entry(UniValue::VOBJ);
+            entry.pushKV("data", EncodeHexTx(tx), false);
+            entry.pushKV("txid", tx.GetId().GetHex(), false);
+            entry.pushKV("hash", tx.GetHash().GetHex(), false);
+            entry.pushKV("fee", pblocktemplate->entries[index_in_template].fees / SATOSHI, false);
+            int64_t nTxSigOps = pblocktemplate->entries[index_in_template].sigOpCount;
+            entry.pushKV("sigops", nTxSigOps, false);
+
+            transactions.push_back(std::move(entry));
+            index_in_template++;
+        }
     }
 
     UniValue aux(UniValue::VOBJ);
@@ -636,7 +787,12 @@ static UniValue getblocktemplate(const Config &config,
 
     UniValue aMutable(UniValue::VARR);
     aMutable.push_back("time");
-    aMutable.push_back("transactions");
+    if (!fLight) {
+        aMutable.push_back("transactions");
+    } else {
+        aMutable.push_back("job_id");
+        aMutable.push_back("merkle");
+    }
     aMutable.push_back("prevblock");
 
     UniValue result(UniValue::VOBJ);
@@ -645,7 +801,12 @@ static UniValue getblocktemplate(const Config &config,
     result.pushKV("version", pblock->nVersion, false);
 
     result.pushKV("previousblockhash", pblock->hashPrevBlock.GetHex(), false);
-    result.pushKV("transactions", std::move(transactions), false);
+    if (!fLight) {
+        result.pushKV("transactions", std::move(transactions), false);
+    } else {
+        result.pushKV("job_id", jobId.GetHex(), false);
+        result.pushKV("merkle", std::move(merkle), false);
+    }
     result.pushKV("coinbaseaux", std::move(aux), false);
     result.pushKV("coinbasevalue", int64_t(pblock->vtx[0]->vout[0].nValue / SATOSHI), false);
     result.pushKV("longpollid",
@@ -662,7 +823,21 @@ static UniValue getblocktemplate(const Config &config,
     result.pushKV("bits", strprintf("%08x", pblock->nBits), false);
     result.pushKV("height", int64_t(pindexPrev->nHeight) + 1, false);
 
+    if (fLight) {
+        // Note: this must be called with cs_main held (which is the case here)
+        gbtl::CacheAndSaveTxsToFile(jobId, pvtx);
+    }
+
+    LogPrint(BCLog::RPC, "getblocktemplatecommon: took %f secs\n", (GetTimeMicros() - t0) / 1e6);
     return result;
+}
+
+static UniValue getblocktemplate(const Config &config, const JSONRPCRequest &request) {
+    return getblocktemplatecommon(false, config, request);
+}
+
+static UniValue getblocktemplatelight(const Config &config, const JSONRPCRequest &request) {
+    return getblocktemplatecommon(true, config, request);
 }
 
 class submitblock_StateCatcher : public CValidationInterface {
@@ -686,26 +861,10 @@ protected:
     }
 };
 
-static UniValue submitblock(const Config &config,
-                            const JSONRPCRequest &request) {
-    // We allow 2 arguments for compliance with BIP22. Argument 2 is ignored.
-    if (request.fHelp || request.params.size() < 1 ||
-        request.params.size() > 2) {
-        throw std::runtime_error(
-            "submitblock \"hexdata\"  ( \"dummy\" )\n"
-            "\nAttempts to submit new block to network.\n"
-            "See https://en.bitcoin.it/wiki/BIP_0022 for full specification.\n"
-
-            "\nArguments\n"
-            "1. \"hexdata\"        (string, required) the hex-encoded block "
-            "data to submit\n"
-            "2. \"dummy\"          (optional) dummy value, for compatibility "
-            "with BIP22. This value is ignored.\n"
-            "\nResult:\n"
-            "\nExamples:\n" +
-            HelpExampleCli("submitblock", "\"mydata\"") +
-            HelpExampleRpc("submitblock", "\"mydata\""));
-    }
+/// If jobId is not nullptr, we are in `submitblocklight` mode, otherwise we are in regular `submitblock` mode.
+static UniValue submitblockcommon(const Config &config, const JSONRPCRequest &request,
+                                  const gbtl::JobId *jobId = nullptr) {
+    const auto t0 = GetTimeMicros(); // perf. logging, only used if BCLog::RPC
 
     std::shared_ptr<CBlock> blockptr = std::make_shared<CBlock>();
     CBlock &block = *blockptr;
@@ -713,9 +872,25 @@ static UniValue submitblock(const Config &config,
         throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "Block decode failed");
     }
 
-    if (block.vtx.empty() || !block.vtx[0]->IsCoinBase()) {
-        throw JSONRPCError(RPC_DESERIALIZATION_ERROR,
-                           "Block does not start with a coinbase");
+    auto tDeserTx = jobId ? GetTimeMicros() : 0; // for perf. logging iff BCLog::RPC is enabled
+
+    if (jobId) {
+        // submitblocklight version, client just sends header + coinbase and we add the rest
+        // of the tx's from a tx cache created previously in getblocktemplatelight
+        if (block.vtx.size() != 1 || !block.vtx[0]->IsCoinBase()) {
+            throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "Block must contain a single coinbase tx (light version)");
+        }
+
+        if (!gbtl::GetTxsFromCache(*jobId, block)) {
+            // not found in in-memory cache, try our getblocktemplatelight job file cache
+            gbtl::LoadTxsFromFile(*jobId, block); // throws on failure
+        }
+        tDeserTx = GetTimeMicros() - tDeserTx; // perf.
+    } else {
+        // regular version -- requires full block from client
+        if (block.vtx.empty() || !block.vtx[0]->IsCoinBase()) {
+            throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "Block does not start with a coinbase");
+        }
     }
 
     const BlockHash hash = block.GetHash();
@@ -736,8 +911,7 @@ static UniValue submitblock(const Config &config,
     submitblock_StateCatcher sc(block.GetHash());
     RegisterValidationInterface(&sc);
     bool accepted =
-        ProcessNewBlock(config, blockptr, /* fForceProcessing */ true,
-                        /* fNewBlock */ &new_block);
+        ProcessNewBlock(config, blockptr, /* fForceProcessing */ true, /* fNewBlock */ &new_block);
     // We are only interested in BlockChecked which will have been dispatched
     // in-thread, so no need to sync before unregistering.
     UnregisterValidationInterface(&sc);
@@ -752,7 +926,58 @@ static UniValue submitblock(const Config &config,
         return "inconclusive";
     }
 
-    return BIP22ValidationResult(config, sc.state);
+    const auto result = BIP22ValidationResult(config, sc.state);
+    if (jobId) {
+        LogPrint(BCLog::RPC, "SubmitBlock (light) deserialize duration: %f seconds\n", tDeserTx / 1e6);
+    }
+    LogPrint(BCLog::RPC, "SubmitBlock total duration: %f seconds\n", (GetTimeMicros() - t0) / 1e6);
+    return result;
+}
+
+static UniValue submitblock(const Config &config, const JSONRPCRequest &request) {
+    // We allow 2 arguments for compliance with BIP22. Argument 2 is ignored.
+    if (request.fHelp || request.params.size() < 1 || request.params.size() > 2) {
+        throw std::runtime_error(
+            "submitblock \"hexdata\"  ( \"dummy\" )\n"
+            "\nAttempts to submit new block to network.\n"
+            "See https://en.bitcoin.it/wiki/BIP_0022 for full specification.\n"
+
+            "\nArguments\n"
+            "1. \"hexdata\"        (string, required) the hex-encoded block "
+            "data to submit\n"
+            "2. \"dummy\"          (optional) dummy value, for compatibility "
+            "with BIP22. This value is ignored.\n"
+            "\nResult:\n"
+            "\nExamples:\n" +
+            HelpExampleCli("submitblock", "\"mydata\"") +
+            HelpExampleRpc("submitblock", "\"mydata\""));
+    }
+    return submitblockcommon(config, request);
+}
+
+static UniValue submitblocklight(const Config &config, const JSONRPCRequest &request) {
+    if (request.fHelp || request.params.size() != 2) {
+        throw std::runtime_error(
+            "submitblocklight \"hexdata\" \"job_id\"\n"
+            "\nAttempts to submit a new block to the network, based on a previous call to getblocktemplatelight.\n"
+
+            "\nArguments\n"
+            "1. \"hexdata\"        (string, required) The hex-encoded block data to submit. The block must have "
+            "exactly 1 transaction (coinbase). Additional transactions (if any) are appended from the light template.\n"
+            "2. \"job_id\"         (string, required) Identifier of the light template from which to retrieve the "
+            "non-coinbase transactions. This job_id must be obtained from a previous call to getblocktemplatelight.\n"
+            "\nResult:\n"
+            "\nExamples:\n" +
+            HelpExampleCli("submitblocklight", "\"mydata\" \"myjobid\"") +
+            HelpExampleRpc("submitblocklight", "\"mydata\", \"myjobid\""));
+    }
+
+    const auto jobIdStr = request.params[1].get_str();
+    gbtl::JobId jobId; // uint160
+    if (!ParseHashStr(jobIdStr, jobId)) {
+         throw std::runtime_error("job_id must be a 40 character hexadecimal string (not '" + jobIdStr + "')");
+    }
+    return submitblockcommon(config, request, &jobId);
 }
 
 static UniValue submitheader(const Config &config,
@@ -814,6 +1039,221 @@ static UniValue estimatefee(const Config &config,
     return ValueFromAmount(g_mempool.estimateFee().GetFeePerK());
 }
 
+namespace gbtl {
+
+std::vector<uint256> MakeMerkleBranch(std::vector<uint256> hashes) {
+    /*   This algorithm returns a merkle path suitable for reconstructing the merkle root of a block given a set of
+         txhashes and an unknown coinbase tx (a coinbase tx to be determined by the miner in the future).
+
+         Key: tx    = txid (leaf),
+              ?cb   = unknown coinbase (leaf),
+              m     = known internal merkle (not returned, but used internally for calculation),
+              ?     = unknown merkle (depends on not-yet-determined coinbase)
+              0,1,2 = The numbers below are the array positions of the returned 'steps' array.
+
+                        ?  <-- unknown root (calculated by miner when coinbase tx is decided, given returned "steps")
+                        /\
+                      /    \
+                    /        \
+                  /            \
+                 ?               2   <-- known "step" (returned)
+               /   \           /   \
+              ?      1        m      m  <-- known merkle (computed in-place, not returned)
+             / \    / \      / \    / \
+            |   |  |   |    |   |  |   |
+           ?cb  0  tx  tx   tx  tx tx  tx   <-- input hashes (txids)
+    */
+    std::vector<uint256> steps;
+    if (hashes.empty())
+        return steps;
+    steps.reserve(size_t(std::ceil(std::log2(hashes.size() + 1)))); // results will be of size ~log2 input hashes
+    while (hashes.size() > 1) {
+        // put first element
+        steps.push_back(hashes.front());
+        if (!(hashes.size() & 0x1)) {
+            // If size is even, push_back the end again, size should be an odd number.
+            // (because we ignore the coinbase tx when computing the merkle branch)
+            hashes.push_back(hashes.back());
+        }
+        // ignore the first one then merge two
+        const size_t reducedSize = (hashes.size() - 1) / 2;
+        for (size_t i = 0; i < reducedSize; ++i) {
+            // Hash = Double SHA256.
+            // The below SHA256D64 call is equivalent to this call, except it hashes in-place, so it's faster.
+            //hashes[i] = Hash(BEGIN(hashes[i * 2 + 1]), END(hashes[i * 2 + 1]),
+            //                 BEGIN(hashes[i * 2 + 2]), END(hashes[i * 2 + 2]));
+            SHA256D64(hashes[i].begin(), hashes[i * 2 + 1].begin(), 1);
+        }
+        hashes.resize(reducedSize);
+  }
+  assert(hashes.size() == 1);
+  steps.push_back(hashes.front()); // put the last one
+  return steps;
+}
+
+bool GetTxsFromCache(const JobId &jobId, CBlock &block) {
+    LOCK(gJobIdMut);
+    const auto it = gJobIdTxCache.find(jobId);
+    if (it != gJobIdTxCache.end()) {
+        // found!  Add to block
+        const auto & vtx = it->second;
+        block.vtx.insert(block.vtx.end(), vtx.begin(), vtx.end());
+        return true;
+    }
+    return false;
+}
+
+void LoadTxsFromFile(const JobId &jobId, CBlock &block) {
+    static const std::string errNoData{"job_id data not available"},
+                             errDataEmpty{"job_id data is empty"},
+                             errDataBad{"job_id data is invalid"};
+    const auto jobIdStr = jobId.GetHex();
+    fs::path filename = GetJobDataDir() / jobIdStr;
+    if (!fs::exists(filename)) {
+        LogPrintf("WARNING: SubmitBlockLight cannot find file for job_id %s, searching trash dir\n", jobIdStr);
+        filename = GetJobDataTrashDir() / jobIdStr;
+        if (!fs::exists(filename)) {
+            LogPrintf("WARNING: SubmitBlockLight cannot find file for job_id %s in trash dir either, giving up\n", jobIdStr);
+            throw JSONRPCError(RPC_INVALID_PARAMETER, errNoData);
+        }
+    }
+    LogPrint(BCLog::RPC, "SubmitBlockLight job_id %s found in %s\n", jobIdStr, filename.string());
+    try {
+        const auto magicLen = kDataFileMagic.size(); // 3 for "GBT"
+        std::vector<uint8_t> dataBuf;
+        {
+            fs::ifstream file(filename);
+
+            if (!file.is_open()) {
+                LogPrintf("WARNING: SubmitBlockLight found file for job_id %s, but open failed\n", jobIdStr);
+                throw JSONRPCError(RPC_INTERNAL_ERROR, errNoData);
+            }
+
+            std::streamoff fileSize{};
+            if (!file.seekg(0, file.end) || (fileSize = file.tellg()) < std::streamoff(magicLen * 2 + 1)) {
+                LogPrintf("WARNING: SubmitBlockLight job_id %s has invalid size\n", jobIdStr);
+                throw JSONRPCError(RPC_DESERIALIZATION_ERROR, errDataEmpty);
+            }
+            file.seekg(0, file.beg);
+            dataBuf.resize(size_t(fileSize));
+            char * const charDataBuf = reinterpret_cast<char *>(dataBuf.data());
+            file.read(charDataBuf, fileSize);
+            // check read was good and that header and footer match
+            if (file.fail()
+                    // header must match "GBT"
+                    || 0 != std::memcmp(charDataBuf, kDataFileMagic.data(), magicLen)
+                    // footer must match "GBT"
+                    || 0 != std::memcmp(charDataBuf + fileSize - magicLen, kDataFileMagic.data(), magicLen)) {
+                LogPrintf("WARNING: SubmitBlockLight job_id %s appears to be corrupt\n", jobIdStr);
+                throw JSONRPCError(RPC_DESERIALIZATION_ERROR, errDataBad);
+            }
+            // everything's ok, proceed
+        }
+        // deserialize the vector directly, starting at pos 3 (after "GBT" header)
+        VectorReader vr(SER_NETWORK, PROTOCOL_VERSION, dataBuf, magicLen /* start pos */);
+        uint32_t txCount = 0;
+        vr >> txCount;
+        for (uint32_t i = 0; i < txCount; ++i) {
+            CMutableTransaction mutableTx;
+            vr >> mutableTx;
+            block.vtx.push_back(MakeTransactionRef(std::move(mutableTx)));
+        }
+    } catch (const std::exception & e) {
+        // Note: JSONRPCError() above throws a UniValue so it will not be caught here (but it will
+        // propagate out anyway to the client). This clause is for low-level std::ios_base::failure
+        // and potentially even std::bad_alloc.
+        LogPrintf("WARNING: SubmitBlockLight job_id %s failed to deserialize: %s\n", jobIdStr, e.what());
+        throw JSONRPCError(RPC_DESERIALIZATION_ERROR, errDataBad);
+    }
+}
+
+void CacheAndSaveTxsToFile(const JobId &jobId, const std::vector<CTransactionRef> *pvtx) {
+    std::vector<CTransactionRef> storeTxs;
+    bool didSetupStoreTxs = false;
+    const auto setupStoreTxs = [&storeTxs, &didSetupStoreTxs, pvtx] {
+        if (didSetupStoreTxs)
+            return;
+        if (!pvtx->empty()) {
+            // we store all but the first tx (all but coinbase)
+            auto start = pvtx->front()->IsCoinBase() ? std::next(pvtx->begin()) : pvtx->begin();
+            storeTxs.insert(storeTxs.end(), start, pvtx->end());
+        }
+        didSetupStoreTxs = true;
+    };
+    // first, write to file if file does not already exist
+    {
+        const auto jobIdStr = jobId.GetHex();
+        fs::path outputFile = GetJobDataDir() / jobIdStr;
+        // There is no race condition here because this function is called from getblocktemplatecommon,
+        // with the cs_main lock held.
+        AssertLockHeld(cs_main);
+        if (!fs::exists(outputFile)) {
+            setupStoreTxs();
+            CDataStream datastream(SER_NETWORK, PROTOCOL_VERSION);
+            const uint32_t nTx = uint32_t(storeTxs.size());
+            datastream.reserve(256 * nTx + sizeof(nTx)); // assume avg 256 byte tx size. This doesn't have to be exact, this is just to avoid redundant allocations as we serialize.
+            datastream << nTx; // first write the size
+            for (const auto &txRef : storeTxs)
+                datastream << *txRef;
+
+            const auto t0 = GetTimeMicros(); // for perf. logging iff BCLog::RPC is enabled
+            auto tmpOut = outputFile;
+            tmpOut += gbtl::tmpExt; // += ".tmp"
+            bool ok{};
+            {
+                fs::ofstream ofile(tmpOut, std::ios_base::binary|std::ios_base::out|std::ios_base::trunc);
+                if ((ok = ofile.is_open())) {
+                    // "GBT" magic bytes at front
+                    using std::streamsize;
+                    ofile.write(kDataFileMagic.data(), streamsize(kDataFileMagic.size()));
+                    if (ofile)
+                        ofile.write(datastream.data(), streamsize(datastream.size()));
+                    if (ofile)
+                        // "GBT" magic bytes at end
+                        ofile.write(kDataFileMagic.data(), streamsize(kDataFileMagic.size()));
+                    ok = bool(ofile);
+                }
+            } // file is closed
+            if (ok) {
+                // now, atomically move it in place.
+                fs::rename(tmpOut, outputFile); // may throw (unlikely) iff another prog. created outputFile just now
+                LogPrint(BCLog::RPC, "getblocktemplatelight: %d txs written to %s in %f secs\n", storeTxs.size(),
+                         outputFile.string(), (GetTimeMicros() - t0) / 1e6);
+            } else {
+                LogPrintf("getblocktemplatelight: cannot write tx data to %s\n", tmpOut.string());
+                try { fs::remove(tmpOut); } catch (...) {}
+                // We must throw here. Clients should be alerted that there is a misconfiguration with bitcoind (even
+                // though we could theoretically continue and rely on in-memory cache, we are better off doing this).
+                throw JSONRPCError(RPC_INTERNAL_ERROR, "failed to save job tx data to disk");
+            }
+        }
+    }
+    // lastly, store cache if not already in cache
+    {
+        // we must hold this lock here since this data is shared with submitblocklight which doesn't hold cs_main
+        LOCK(gJobIdMut);
+        if (gJobIdTxCache.find(jobId) == gJobIdTxCache.end()) {
+            setupStoreTxs();
+            // put in cache, but first check size to limit cache size
+            if (gJobIdTxCache.size() >= GetJobCacheSize() && !gJobIdList.empty()) {
+                // remove the oldest jobId
+                const auto & oldJobId = gJobIdList.front();
+                LogPrint(BCLog::RPC, "getblocktemplatelight: in-memory cache full, old job_id %s removed\n",
+                         oldJobId.GetHex());
+                gJobIdTxCache.erase(oldJobId);
+                gJobIdList.pop_front();
+            }
+            // we insert using emplace and forward_as_tuple for minimal overhead
+            gJobIdTxCache.emplace(std::piecewise_construct,
+                                  std::forward_as_tuple(jobId), std::forward_as_tuple(std::move(storeTxs)));
+            // NB: at this point storeTxs is empty (moved)
+            gJobIdList.push_back(jobId);
+        }
+    }
+}
+
+} // namespace gbtl
+
 // clang-format off
 static const ContextFreeRPCCommand commands[] = {
     //  category   name                     actor (function)       argNames
@@ -822,7 +1262,9 @@ static const ContextFreeRPCCommand commands[] = {
     {"mining",     "getmininginfo",         getmininginfo,         {}},
     {"mining",     "prioritisetransaction", prioritisetransaction, {"txid", "dummy", "fee_delta"}},
     {"mining",     "getblocktemplate",      getblocktemplate,      {"template_request"}},
-    {"mining",     "submitblock",           submitblock,           {"hexdata", "dummy"}},
+    {"mining",     "getblocktemplatelight", getblocktemplatelight, {"template_request", "additional_txs"}},
+    {"mining",     "submitblock",           submitblock,           {"hexdata", "parameters"}},
+    {"mining",     "submitblocklight",      submitblocklight,      {"hexdata", "job_id"}},
     {"mining",     "submitheader",          submitheader,          {"hexdata"}},
 
     {"generating", "generatetoaddress",     generatetoaddress,     {"nblocks", "address", "maxtries"}},
