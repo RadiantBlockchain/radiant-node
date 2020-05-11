@@ -141,6 +141,7 @@ BITCOIN_CORE_H = \
   cuckoocache.h \
   flatfile.h \
   fs.h \
+  gbtlight.h \
   httprpc.h \
   httpserver.h \
   index/base.h \
@@ -263,6 +264,7 @@ libbitcoin_server_a_SOURCES = \
   consensus/activation.cpp \
   consensus/tx_verify.cpp \
   flatfile.cpp \
+  gbtlight.cpp \
   httprpc.cpp \
   httpserver.cpp \
   index/base.cpp \

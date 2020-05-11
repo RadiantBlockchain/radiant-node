@@ -453,6 +453,7 @@ add_library(server
 	consensus/tx_verify.cpp
 	dbwrapper.cpp
 	flatfile.cpp
+	gbtlight.cpp
 	httprpc.cpp
 	httpserver.cpp
 	index/base.cpp

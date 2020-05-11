@@ -516,8 +516,13 @@ class BitcoinTestFramework():
                 # Remove empty wallets dir
                 os.rmdir(cache_path(i, 'wallets'))
                 for entry in os.listdir(cache_path(i)):
-                    if entry not in ['chainstate', 'blocks']:
-                        os.remove(cache_path(i, entry))
+                    entry_path = cache_path(i, entry)
+                    if entry not in ['chainstate', 'blocks', 'gbt']:
+                        os.remove(entry_path)
+                    elif entry == 'gbt' and os.path.isdir(entry_path):
+                        # Clear the gbt/ subtree since its semantics are "cache"
+                        shutil.rmtree(entry_path)
+                    del entry_path
 
         for i in range(self.num_nodes):
             from_dir = get_datadir_path(self.options.cachedir, i)

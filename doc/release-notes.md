@@ -11,6 +11,19 @@ Overview
 
 ...
 
+GBT Light mining RPC added
+--------------------------
+
+Two new light-weight RPC calls were added:  `getblocktemplatelight` and `submitblocklight`. These RPCs reduce the round-trip time for mining software when retrieving new block templates.  Transaction data is never sent between mining software and `bitcoind`.  Instead, `job_id`'s are returned and `bitcoind` later reconstructs the full block based on this `job_id` and the solved header + coinbase submitted by the miner, leading to more efficient mining.
+
+A full description and specification for this facility can be found here: https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/blob/master/doc/getblocktemplatelight.md
+
+#### 3 new CLI / config options were added to manage GBT Light:
+  - `-gbtcachesize=<n>` - Specify how many recent `getblocktemplatelight` jobs to keep cached in memory (default: 10). Jobs not in the memory cache will be loaded from disk.
+  - `-gbtstoredir=<dir>` - Specify a directory for storing `getblocktemplatelight` data (default: `<datadir>/gbt/`).
+  - `-gbtstoretime=<secs>` - Specify time in seconds to keep `getblocktemplatelight` data in the `-gbtstoredir` before it is automatically deleted (0 to disable autodeletion, default: 3600).
+
+As usual, all of the above CLI arguments may also be specified in the `.conf` file for the node (but without the preceding `-` character).
 
 Account API removed
 -------------------
