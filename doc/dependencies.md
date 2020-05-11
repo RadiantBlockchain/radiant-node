@@ -17,6 +17,7 @@ These dependencies are required:
 | FreeType | [2.7.1](http://download.savannah.gnu.org/releases/freetype) |  | No |  |  |  |  |
 | GCC |  | [5.0](https://gcc.gnu.org/) (C++14 support) |  |  |  |  |  |
 | HarfBuzz-NG |  |  |  |  |  |  |  |
+| jemalloc | [5.2.1](https://github.com/jemalloc/jemalloc/releases) |  |  |  |  |
 | libevent | [2.1.8-stable](https://github.com/libevent/libevent/releases) | 2.0.22 | No |  |  |  Networking       | OS independent asynchronous networking |
 | libjpeg |  |  |  |  | Yes |  |  |
 | libpng |  |  |  |  | Yes |  |  |
