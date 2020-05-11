@@ -2296,7 +2296,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
     if (pfrom->nVersion == 0) {
         // Must have a version message before anything else
         LOCK(cs_main);
-        Misbehaving(pfrom, 1, "missing-version");
+        Misbehaving(pfrom, 10, "missing-version");
         return false;
     }
 
@@ -2345,7 +2345,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
     if (!pfrom->fSuccessfullyConnected) {
         // Must have a verack message before anything else
         LOCK(cs_main);
-        Misbehaving(pfrom, 1, "missing-verack");
+        Misbehaving(pfrom, 10, "missing-verack");
         return false;
     }
 
