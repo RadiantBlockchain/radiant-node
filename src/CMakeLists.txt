@@ -26,6 +26,7 @@ option(ENABLE_WERROR "Promote some compiler warnings to errors" OFF)
 option(START_WITH_UPNP "Make UPnP the default to map ports" OFF)
 option(ENABLE_CLANG_TIDY "Enable clang-tidy checks for Bitcoin Cash Node" OFF)
 option(ENABLE_PROFILING "Select the profiling tool to use" OFF)
+option(USE_JEMALLOC_EXPERIMENTAL "Use jemalloc as an allocation library (experimental)" OFF)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	set(DEFAULT_ENABLE_DBUS_NOTIFICATIONS ON)
@@ -233,6 +234,11 @@ if(ENABLE_GLIBC_BACK_COMPAT)
 	if(NOT HAVE_LARGE_FILE_SUPPORT)
 		add_linker_flags(-Wl,--wrap=fcntl -Wl,--wrap=fcntl64)
 	endif()
+endif()
+
+if(USE_JEMALLOC_EXPERIMENTAL)
+	find_package(Jemalloc REQUIRED)
+	link_libraries(Jemalloc::jemalloc)
 endif()
 
 
