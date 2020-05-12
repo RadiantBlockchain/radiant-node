@@ -23,33 +23,17 @@ wget -q -O - "${URL}" | tar -zxOf - "${KEYS_FILE}" | while read FINGERPRINT _; d
 ```
 
 
-Get the keys for versions 0.21.0:
+Get the keys for version 0.21.0:
 ```
 URL="https://download.bitcoincashnode.org/keys/keys.txt"
 wget -q -O - "${URL}" | while read FINGERPRINT _; do gpg --recv-keys "${FINGERPRINT}"; done
-```
-
-
-Get the keys for versions 0.20.11 or later:
-```
-VERSION="0.20.11"
-URL="https://download.bitcoinabc.org/${VERSION}/src/bitcoin-abc-${VERSION}.tar.gz"
-KEYS_FILE="bitcoin-abc-${VERSION}/contrib/gitian-signing/keys.txt"
-wget -q -O - "${URL}" | tar -zxOf - "${KEYS_FILE}" | while read FINGERPRINT _; do gpg --recv-keys "${FINGERPRINT}"; done
-```
-
-Get the keys for versions 0.20.10 or earlier:
-```
-VERSION="0.20.10"
-URL="https://raw.githubusercontent.com/Bitcoin-ABC/bitcoin-abc/v${VERSION}/contrib/gitian-signing/keys.txt"
-wget -q -O - "${URL}" | awk 1 | while read FINGERPRINT _; do gpg --recv-keys "${FINGERPRINT}"; done
 ```
 
 Check the binaries (all versions):
 ```
 FILE_PATTERN="./*-sha256sums.${VERSION}.asc"
 gpg --verify-files ${FILE_PATTERN}
-grep "bitcoin-abc-${VERSION}" ${FILE_PATTERN} | cut -d " " -f 2- | xargs ls 2> /dev/null |\
+grep "bitcoin-cash-node-${VERSION}" ${FILE_PATTERN} | cut -d " " -f 2- | xargs ls 2> /dev/null |\
   xargs -i grep -h "{}" ${FILE_PATTERN} | uniq | sha256sum -c
 ```
 
