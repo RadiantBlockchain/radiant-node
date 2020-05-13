@@ -147,6 +147,7 @@ nav:
         - dnsseed-policy.md
         - files.md
         - init.md
+        - publishing-documentation.md
         - Packaging:
             - README_osx.md
             - build-unix-arch.md
