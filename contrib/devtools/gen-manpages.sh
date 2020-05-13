@@ -17,6 +17,7 @@ BITCOIND=${BITCOIND:-$BINDIR/bitcoind}
 BITCOINCLI=${BITCOINCLI:-$BINDIR/bitcoin-cli}
 BITCOINTX=${BITCOINTX:-$BINDIR/bitcoin-tx}
 BITCOINQT=${BITCOINQT:-$BINDIR/qt/bitcoin-qt}
+BITCOINSEEDER=${BITCOINSEEDER:-$BINDIR/seeder/bitcoin-seeder}
 
 [ ! -x $BITCOIND ] && echo "$BITCOIND not found or not executable." && exit 1
 
@@ -35,7 +36,7 @@ for cmd in $BITCOIND $BITCOINQT; do
   sed -i "s/\-${BTCVER[1]}//g" ${DOCDIR}/cli/${cmdname}.md
 done
 
-for cmd in $BITCOINCLI $BITCOINTX; do
+for cmd in $BITCOINCLI $BITCOINTX $BITCOINSEEDER; do
   cmdname="${cmd##*/}"
   ${CONVERTOR} "`${cmd} -?`" > ${DOCDIR}/cli/${cmdname}.md
   sed -i "s/\-${BTCVER[1]}//g" ${DOCDIR}/cli/${cmdname}.md

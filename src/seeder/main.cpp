@@ -72,7 +72,7 @@ public:
                 PACKAGE_NAME " Seeder " + FormatFullVersion() + "\n";
             if (HelpRequested(gArgs)) {
                 strUsage +=
-                    "\nUsage: bitcoin-seeder -host=<host> -ns=<ns> "
+                    "\nUsage:  bitcoin-seeder -host=<host> -ns=<ns> "
                     "[-mbox=<mbox>] [-threads=<threads>] [-port=<port>]\n\n" +
                     gArgs.GetHelpMessage();
             }

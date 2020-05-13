@@ -41,7 +41,7 @@ i = 2
 # Print usage table
 createTable('Usage:')
 while lines[i][:8] in ('Usage:  ', 'or:     '):
-    row = lines[i][8:].split('  ', 1)
+    row = (lines[i][8:] + '  ').split('  ', 1)
     appendTableRow('`' + row[0] + '`', row[1].strip())
     i += 1
 printTable()
