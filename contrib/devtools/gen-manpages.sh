@@ -32,18 +32,16 @@ $BITCOIND --version | sed -n '1!p' >> footer.h2m
 
 for cmd in $BITCOIND $BITCOINQT; do
   cmdname="${cmd##*/}"
-  ${CONVERTOR} "`${cmd} -??`" > ${DOCDIR}/cli/${cmdname}.md
+  ${CONVERTOR} "`${cmd} -?? -lang=en_US`" > ${DOCDIR}/cli/${cmdname}.md
   sed -i "s/\-${BTCVER[1]}//g" ${DOCDIR}/cli/${cmdname}.md
+  help2man -N --version-string=${BTCVER[0]} --include=footer.h2m -o ${DOCDIR}/man/${cmdname}.1 --help-option="-? -lang=en_US" --version-option="-version -lang=en_US" ${cmd}
+  sed -i "s/\\\-${BTCVER[1]}//g" ${DOCDIR}/man/${cmdname}.1
 done
 
 for cmd in $BITCOINCLI $BITCOINTX $BITCOINSEEDER; do
   cmdname="${cmd##*/}"
   ${CONVERTOR} "`${cmd} -?`" > ${DOCDIR}/cli/${cmdname}.md
   sed -i "s/\-${BTCVER[1]}//g" ${DOCDIR}/cli/${cmdname}.md
-done
-
-for cmd in $BITCOIND $BITCOINCLI $BITCOINTX $BITCOINQT; do
-  cmdname="${cmd##*/}"
   help2man -N --version-string=${BTCVER[0]} --include=footer.h2m -o ${DOCDIR}/man/${cmdname}.1 ${cmd}
   sed -i "s/\\\-${BTCVER[1]}//g" ${DOCDIR}/man/${cmdname}.1
 done

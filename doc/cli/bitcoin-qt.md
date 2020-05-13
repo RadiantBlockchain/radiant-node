@@ -1,4 +1,4 @@
-# Bitcoin Cash Node Version v0.21.2 (64-Bit)
+# Bitcoin Cash Node version v0.21.2 (64-bit)
 
 | **Usage:**                          |   |
 | :---------------------------------- | - |
