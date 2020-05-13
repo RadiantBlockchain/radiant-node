@@ -553,12 +553,11 @@ std::optional<std::pair<sockaddr_storage, socklen_t>> CService::GetSockAddr() co
 }
 
 std::vector<uint8_t> CService::GetKey() const {
-    std::vector<uint8_t> vKey;
-    vKey.resize(18);
-    std::memcpy(vKey.data(), ip, 16);
-    vKey[16] = port / 0x100;
-    vKey[17] = port & 0x0FF;
-    return vKey;
+    auto addr = GetAddressBytes();
+    std::vector<uint8_t> key(addr, addr + GetAddressLen());
+    key.push_back(port >> 8); // most significant byte of our port
+    key.push_back(port & 0x0FF); // least significant byte of our port
+    return key;
 }
 
 std::string CService::ToStringPort() const {
