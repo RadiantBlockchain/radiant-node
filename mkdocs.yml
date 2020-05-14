@@ -10,6 +10,10 @@ docs_dir: doc
 
 theme:
     name: material
+    logo: images/logo.svg
+
+extra_css:
+  - stylesheets/custom.css
 
 plugins:
     - exclude:
