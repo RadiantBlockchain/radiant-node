@@ -53,9 +53,16 @@ enum Network {
     NET_MAX,
 };
 
-/** IP address (IPv6, or IPv4 using mapped IPv6 range (::FFFF:0:0/96)) */
+/**
+ * Network address.
+ */
 class CNetAddr {
 protected:
+    /**
+     * Network to which this address belongs.
+     */
+    Network m_net{NET_IPV6};
+
     static constexpr size_t ADDRLEN = 16;
     // in network byte order
     uint8_t ip[ADDRLEN];
@@ -68,6 +75,14 @@ public:
     explicit CNetAddr(const struct in6_addr &pipv6Addr, const uint32_t scope = 0);
 
     void SetIP(const CNetAddr &ip);
+
+    /**
+     * Set from a legacy IPv6 address.
+     * Legacy IPv6 address may be a normal IPv6 address, or another address
+     * (e.g. IPv4) disguised as IPv6. This encoding is used in the legacy
+     * `addr` encoding.
+     */
+    void SetLegacyIPv6(const uint8_t ipv6[16]);
 
 private:
     /**
@@ -144,7 +159,25 @@ public:
     }
     friend bool operator<(const CNetAddr &a, const CNetAddr &b);
 
-    SERIALIZE_METHODS(CNetAddr, obj) { READWRITE(obj.ip); }
+    /**
+     * Serialize to a stream.
+     */
+    template <typename Stream>
+    void Serialize(Stream &s) const {
+        s << ip;
+    }
+
+    /**
+     * Unserialize from a stream.
+     */
+    template <typename Stream>
+    void Unserialize(Stream &s) {
+        uint8_t ip_temp[sizeof(ip)];
+        s >> ip_temp;
+        // Use SetLegacyIPv6() so that m_net is set correctly. For example
+        // ::FFFF:0102:0304 should be set as m_net=NET_IPV4 (1.2.3.4).
+        SetLegacyIPv6(ip_temp);
+    }
 
     friend class CSubNet;
 };
