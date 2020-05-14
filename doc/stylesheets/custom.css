@@ -1,0 +1,35 @@
+/* Custom Styles */
+
+a, .md-nav__item--active > .md-nav__link {
+  color: #A31D36 !important;
+}
+
+a:hover {
+  color: #80172B !important;
+}
+
+label:hover {
+  color: #9D9FA5 !important;
+}
+
+.md-header {
+  background-color: #A31D36 !important;
+}
+
+@media screen and (max-width: 76.1875em) {
+  .md-nav--primary .md-nav__source, .md-nav--primary .md-nav__title {
+    background-color: #A31D36 !important;
+  }
+}
+
+.md-source__icon, .md-source__repository {
+  color: #fff;
+}
+
+footer .md-ellipsis, .md-footer-nav__button {
+  color: #fff;
+}
+
+.md-footer-copyright {
+  display: none;
+}
