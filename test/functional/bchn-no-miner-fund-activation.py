@@ -69,7 +69,6 @@ class MinerFundTest(BitcoinTestFramework):
         def run_test_for(bit, name, address):
             # Make sure we have a clean slate.
             node.invalidateblock(node.getblockhash(height + 1))
-            node.setmocktime(1580000000)
             self.run_miner_fund_test(bit, name, address)
 
         run_test_for(0, 'minerfund', MINER_FUND_ADDR)
@@ -118,6 +117,7 @@ class MinerFundTest(BitcoinTestFramework):
                         ["-blockversion={}".format(version), "-phononactivationtime={}".format(PHONON_ACTIVATION_TIME)])
 
         node = self.nodes[0]
+        node.setmocktime(1580000000)
         address = node.get_deterministic_priv_key().address
 
         def get_best_vote():
