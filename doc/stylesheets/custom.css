@@ -33,3 +33,12 @@ footer .md-ellipsis, .md-footer-nav__button {
 .md-footer-copyright {
   display: none;
 }
+
+.md-typeset code {
+  white-space: nowrap;
+}
+
+.md-typeset__table {
+  overflow-wrap: anywhere;
+}
+
