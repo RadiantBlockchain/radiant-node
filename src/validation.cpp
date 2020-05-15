@@ -1620,7 +1620,6 @@ static uint32_t GetNextBlockScriptFlags(const Consensus::Params &params,
 
     if (IsPhononEnabled(params, pindex)) {
         flags |= SCRIPT_REPORT_SIGCHECKS;
-        flags |= SCRIPT_ZERO_SIGOPS;
     }
 
     return flags;

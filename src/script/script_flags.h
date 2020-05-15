@@ -103,11 +103,6 @@ enum {
     // VERIFY_INPUT_SIGCHECKS
     SCRIPT_VERIFY_INPUT_SIGCHECKS = (1U << 22),
 
-    // Setting this flag zeroes sigops counting and thus results in the removal
-    // of all sigop limits. This flag only affects sigops counting, and will be
-    // removed during cleanup of the SigChecks upgrade.
-    SCRIPT_ZERO_SIGOPS = (1U << 30),
-
     // A utility flag to decide whether VerifyScript should output the correct
     // sigchecks value or to report zero.
     // This has no effect on script success / failure, and will be removed
