@@ -23,11 +23,17 @@ plugins:
 nav:
     - Home: README.md
     - API:
+        - Command-line interfaces:
+            - bitcoind: cli/bitcoind.md
+            - bitcoin-qt: cli/bitcoin-qt.md
+            - bitcoin-cli: cli/bitcoin-cli.md
+            - bitcoin-tx: cli/bitcoin-tx.md
+            - bitcoin-seeder: cli/bitcoin-seeder.md
         - REST-interface.md
-        - descriptors.md
-        - getblocktemplatelight.md
-        - zmq.md
-    - Release Notes:
+        - Output descriptors: descriptors.md
+        - getblocktemplatelight: getblocktemplatelight.md
+        - ZeroMQ: zmq.md
+    - Release notes:
         - release-notes/release-notes-0.21.1.md
         - release-notes/release-notes-0.21.0.md
         - Bitcoin ABC 0.14.1-0.20:
