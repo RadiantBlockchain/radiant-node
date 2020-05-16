@@ -34,11 +34,11 @@ footer .md-ellipsis, .md-footer-nav__button {
   display: none;
 }
 
-.md-typeset code {
-  white-space: nowrap;
-}
-
 .md-typeset__table {
   overflow-wrap: anywhere;
+}
+
+.md-typeset__table code {
+  white-space: nowrap;
 }
 
