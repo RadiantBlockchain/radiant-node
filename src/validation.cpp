@@ -650,18 +650,6 @@ AcceptToMemoryPoolWorker(const Config &config, CTxMemPool &pool,
                 break;
             }
         }
-        auto nSigOpsCount =
-            GetTransactionSigOpCount(tx, view, nextBlockScriptVerifyFlags);
-
-        // Check that the transaction doesn't have an excessive number of
-        // sigops.
-        static_assert(MAX_STANDARD_TX_SIGOPS <= MAX_TX_SIGOPS_COUNT,
-                      "we don't want transactions we can't even mine");
-        if (nSigOpsCount > MAX_STANDARD_TX_SIGOPS) {
-            return state.DoS(0, false, REJECT_NONSTANDARD,
-                             "bad-txns-too-many-sigops", false,
-                             strprintf("%d", nSigOpsCount));
-        }
 
         unsigned int nSize = tx.GetTotalSize();
 
@@ -690,16 +678,8 @@ AcceptToMemoryPoolWorker(const Config &config, CTxMemPool &pool,
             return false;
         }
 
-        // After the sigchecks activation we repurpose the 'sigops' tracking in
-        // mempool/mining to actually track sigchecks instead. (Proper SigOps
-        // will not need to be counted any more since it's getting deactivated.)
-        auto nSigChecksOrOps =
-            (nextBlockScriptVerifyFlags & SCRIPT_REPORT_SIGCHECKS)
-                ? nSigChecksStandard
-                : nSigOpsCount;
-
         CTxMemPoolEntry entry(ptx, nFees, nAcceptTime, ::ChainActive().Height(),
-                              fSpendsCoinbase, nSigChecksOrOps, lp);
+                              fSpendsCoinbase, nSigChecksStandard, lp);
 
         unsigned int nVirtualSize = entry.GetTxVirtualSize();
 
@@ -1864,14 +1844,6 @@ bool CChainState::ConnectBlock(const CBlock &block, CValidationState &state,
                 error("%s: accumulated fee in the block out of range.",
                       __func__),
                 REJECT_INVALID, "bad-txns-accumulated-fee-outofrange");
-        }
-
-        // GetTransactionSigOpCount counts 2 types of sigops:
-        // * legacy (always)
-        // * p2sh (when P2SH enabled in flags and excludes coinbase)
-        auto txSigOpsCount = GetTransactionSigOpCount(tx, view, flags);
-        if (txSigOpsCount > MAX_TX_SIGOPS_COUNT) {
-            return state.DoS(100, false, REJECT_INVALID, "bad-txn-sigops");
         }
 
         // The following checks do not apply to the coinbase.
@@ -3768,11 +3740,6 @@ static bool ContextualCheckBlock(const CBlock &block, CValidationState &state,
     const bool fIsMagneticAnomalyEnabled =
         IsMagneticAnomalyEnabled(params, pindexPrev);
 
-    // Note that pindexPrev may be null if reindexing genesis block.
-    const auto scriptFlags = pindexPrev
-                                 ? GetNextBlockScriptFlags(params, pindexPrev)
-                                 : SCRIPT_VERIFY_NONE;
-
     // Check transactions:
     // - canonical ordering
     // - ensure they are finalized
@@ -3802,14 +3769,6 @@ static bool ContextualCheckBlock(const CBlock &block, CValidationState &state,
             if (prevTx || !tx.IsCoinBase()) {
                 prevTx = &tx;
             }
-        }
-
-        // Count the sigops for the current transaction. If the tx or total
-        // sigops counts are too high, then the block is invalid.
-        const auto txSigOps = GetSigOpCountWithoutP2SH(tx, scriptFlags);
-        if (txSigOps > MAX_TX_SIGOPS_COUNT) {
-            return state.DoS(100, false, REJECT_INVALID, "bad-txn-sigops",
-                             false, "out-of-bounds SigOpCount");
         }
 
         if (!ContextualCheckTransaction(params, tx, state, nHeight,
