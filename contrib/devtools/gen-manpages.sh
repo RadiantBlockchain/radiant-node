@@ -8,18 +8,15 @@ export LC_ALL=C
 TOPDIR=${TOPDIR:-$(git rev-parse --show-toplevel)}
 BUILDDIR=${BUILDDIR:-$TOPDIR}
 
-BINDIR=${BINDIR:-$BUILDDIR/src}
-DOCDIR=${DOCDIR:-$TOPDIR/doc}
+BITCOIND="$BUILDDIR/src/bitcoind"
+BITCOINQT="$BUILDDIR/src/qt/bitcoin-qt"
+BITCOINCLI="$BUILDDIR/src/bitcoin-cli"
+BITCOINTX="$BUILDDIR/src/bitcoin-tx"
+BITCOINSEEDER="$BUILDDIR/src/seeder/bitcoin-seeder"
 
-CONVERTOR=${CONVERTOR:-$TOPDIR/contrib/devtools/cli-help-to-markdown.py}
-
-BITCOIND=${BITCOIND:-$BINDIR/bitcoind}
-BITCOINCLI=${BITCOINCLI:-$BINDIR/bitcoin-cli}
-BITCOINTX=${BITCOINTX:-$BINDIR/bitcoin-tx}
-BITCOINQT=${BITCOINQT:-$BINDIR/qt/bitcoin-qt}
-BITCOINSEEDER=${BITCOINSEEDER:-$BINDIR/seeder/bitcoin-seeder}
-
-[ ! -x $BITCOIND ] && echo "$BITCOIND not found or not executable." && exit 1
+for cmd in "$BITCOIND" "$BITCOINQT" "$BITCOINCLI" "$BITCOINTX" "$BITCOINSEEDER"; do
+  [ ! -x "$cmd" ] && echo "$cmd not found or not executable." && exit 1
+done
 
 # The autodetected version git tag can screw up manpage output a little bit
 read -r -a BTCVER <<< "$($BITCOINCLI --version | head -n1 | awk -F'[ -]' '{ print $7, $8 }')"
@@ -28,22 +25,22 @@ read -r -a BTCVER <<< "$($BITCOINCLI --version | head -n1 | awk -F'[ -]' '{ prin
 # This gets autodetected fine for bitcoind if --version-string is not set,
 # but has different outcomes for bitcoin-qt and bitcoin-cli.
 echo "[COPYRIGHT]" > footer.h2m
-$BITCOIND --version | sed -n '1!p' >> footer.h2m
+"$BITCOIND" --version | sed -n '1!p' >> footer.h2m
 
-for cmd in $BITCOIND $BITCOINQT; do
+for cmd in "$BITCOIND" "$BITCOINQT"; do
   cmdname="${cmd##*/}"
-  ${CONVERTOR} "`${cmd} -?? -lang=en_US`" > ${DOCDIR}/cli/${cmdname}.md
-  sed -i "s/\-${BTCVER[1]}//g" ${DOCDIR}/cli/${cmdname}.md
-  help2man -N --version-string=${BTCVER[0]} --include=footer.h2m -o ${DOCDIR}/man/${cmdname}.1 --help-option="-? -lang=en_US" --version-option="-version -lang=en_US" ${cmd}
-  sed -i "s/\\\-${BTCVER[1]}//g" ${DOCDIR}/man/${cmdname}.1
+  "$TOPDIR/contrib/devtools/cli-help-to-markdown.py" "$($cmd -?? -lang=en_US)" > "$TOPDIR/doc/cli/$cmdname.md"
+  sed -i "s/\-${BTCVER[1]}\(\-dirty\)\?//g" "$TOPDIR/doc/cli/$cmdname.md"
+  help2man -N --version-string=${BTCVER[0]} --include=footer.h2m -o "$TOPDIR/doc/man/$cmdname.1" --help-option="-? -lang=en_US" --version-option="-version -lang=en_US" "$cmd"
+  sed -i "s/\\\-${BTCVER[1]}\(\\\-dirty\)\?//g" "$TOPDIR/doc/man/$cmdname.1"
 done
 
-for cmd in $BITCOINCLI $BITCOINTX $BITCOINSEEDER; do
+for cmd in "$BITCOINCLI" "$BITCOINTX" "$BITCOINSEEDER"; do
   cmdname="${cmd##*/}"
-  ${CONVERTOR} "`${cmd} -?`" > ${DOCDIR}/cli/${cmdname}.md
-  sed -i "s/\-${BTCVER[1]}//g" ${DOCDIR}/cli/${cmdname}.md
-  help2man -N --version-string=${BTCVER[0]} --include=footer.h2m -o ${DOCDIR}/man/${cmdname}.1 ${cmd}
-  sed -i "s/\\\-${BTCVER[1]}//g" ${DOCDIR}/man/${cmdname}.1
+  "$TOPDIR/contrib/devtools/cli-help-to-markdown.py" "$($cmd -?)" > "$TOPDIR/doc/cli/$cmdname.md"
+  sed -i "s/\-${BTCVER[1]}\(\-dirty\)\?//g" "$TOPDIR/doc/cli/$cmdname.md"
+  help2man -N --version-string=${BTCVER[0]} --include=footer.h2m -o "$TOPDIR/doc/man/$cmdname.1" "$cmd"
+  sed -i "s/\\\-${BTCVER[1]}\(\\\-dirty\)\?//g" "$TOPDIR/doc/man/$cmdname.1"
 done
 
 rm -f footer.h2m

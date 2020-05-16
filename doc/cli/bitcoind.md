@@ -1,13 +1,14 @@
 # Bitcoin Cash Node Daemon version v0.21.2
 
-| **Usage:**           |                                |
-| :------------------- | ------------------------------ |
+| Usage                | Description                    |
+| :------------------- | :----------------------------- |
 | `bitcoind [options]` | Start Bitcoin Cash Node Daemon |
 
-***
+Options
+-------
 
-| **Options:**                       |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| :--------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Argument                           | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| :--------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `-?`, `-h`, `-help`                | Print this help message and exit                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | `-??`, `-hh`, `-help-debug`        | Print this help message including advanced debugging options and exit                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | `-alertnotify=<cmd>`               | Execute command when a relevant alert is received or we see a really long fork (%s in cmd is replaced by message)                                                                                                                                                                                                                                                                                                                                                                                                                             |
@@ -45,10 +46,11 @@
 | `-usecashaddr`                     | Use CashAddr address format for destination encoding instead of the legacy base58 format (default: 1)                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | `-version`                         | Print version and exit                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 
-***
+Connection options
+------------------
 
-| **Connection options:**              |                                                                                                                                                                                                                                                                                                      |
-| :----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Argument                             | Description                                                                                                                                                                                                                                                                                          |
+| :----------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `-addnode=<ip>`                      | Add a node to connect to and attempt to keep the connection open (see the `addnode` RPC command help for more info)                                                                                                                                                                                  |
 | `-banscore=<n>`                      | Threshold for disconnecting misbehaving peers (default: 100)                                                                                                                                                                                                                                         |
 | `-bantime=<n>`                       | Number of seconds to keep misbehaving peers from reconnecting (default: 86400)                                                                                                                                                                                                                       |
@@ -81,10 +83,11 @@
 | `-whitebind=<addr>`                  | Bind to given address and whitelist peers connecting to it. Use [host]:port notation for IPv6                                                                                                                                                                                                        |
 | `-whitelist=<IP address or network>` | Whitelist peers connecting from the given IP address (e.g. 1.2.3.4) or CIDR notated network (e.g. 1.2.3.0/24). Can be specified multiple times. Whitelisted peers cannot be DoS banned and their transactions are always relayed, even if they are already in the mempool, useful e.g. for a gateway |
 
-***
+Wallet options
+--------------
 
-| **Wallet options:**     |                                                                                                                                                                                                                                                                                                                                                                              |
-| :---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Argument                | Description                                                                                                                                                                                                                                                                                                                                                                  |
+| :---------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `-avoidpartialspends`   | Group outputs by address, selecting all or none, instead of selecting on a per-output basis. Privacy is improved as an address is only used once (unless someone sends to it after spending from it), but may result in slightly higher fees as suboptimal coin selection may result due to the added limitation (default: 0)                                                |
 | `-disablewallet`        | Do not load the wallet and disable wallet RPC calls                                                                                                                                                                                                                                                                                                                          |
 | `-fallbackfee=<amt>`    | A fee rate (in BCH/kB) that will be used when fee estimation has insufficient data (default: 0.0002)                                                                                                                                                                                                                                                                         |
@@ -101,28 +104,31 @@
 | `-walletnotify=<cmd>`   | Execute command when a wallet transaction changes (%s in cmd is replaced by TxID)                                                                                                                                                                                                                                                                                            |
 | `-zapwallettxes=<mode>` | Delete all wallet transactions and only recover those parts of the blockchain through -rescan on startup (1 = keep tx meta data e.g. payment request information, 2 = drop tx meta data)                                                                                                                                                                                     |
 
-***
+Wallet debugging/testing options
+--------------------------------
 
-| **Wallet debugging/testing options:** |                                                                                                 |
-| :------------------------------------ | ----------------------------------------------------------------------------------------------- |
-| `-dblogsize=<n>`                      | Flush wallet database activity from memory to disk log every &lt;n&gt; megabytes (default: 100) |
-| `-flushwallet`                        | Run a thread to flush wallet periodically (default: 1)                                          |
-| `-privdb`                             | Sets the DB_PRIVATE flag in the wallet db environment (default: 1)                              |
-| `-walletrejectlongchains`             | Wallet will not create transactions that violate mempool chain limits (default: 0)              |
+| Argument                  | Description                                                                                     |
+| :------------------------ | :---------------------------------------------------------------------------------------------- |
+| `-dblogsize=<n>`          | Flush wallet database activity from memory to disk log every &lt;n&gt; megabytes (default: 100) |
+| `-flushwallet`            | Run a thread to flush wallet periodically (default: 1)                                          |
+| `-privdb`                 | Sets the DB_PRIVATE flag in the wallet db environment (default: 1)                              |
+| `-walletrejectlongchains` | Wallet will not create transactions that violate mempool chain limits (default: 0)              |
 
-***
+ZeroMQ notification options
+---------------------------
 
-| **ZeroMQ notification options:** |                                                    |
-| :------------------------------- | -------------------------------------------------- |
-| `-zmqpubhashblock=<address>`     | Enable publish hash block in &lt;address&gt;       |
-| `-zmqpubhashtx=<address>`        | Enable publish hash transaction in &lt;address&gt; |
-| `-zmqpubrawblock=<address>`      | Enable publish raw block in &lt;address&gt;        |
-| `-zmqpubrawtx=<address>`         | Enable publish raw transaction in &lt;address&gt;  |
+| Argument                     | Description                                        |
+| :--------------------------- | :------------------------------------------------- |
+| `-zmqpubhashblock=<address>` | Enable publish hash block in &lt;address&gt;       |
+| `-zmqpubhashtx=<address>`    | Enable publish hash transaction in &lt;address&gt; |
+| `-zmqpubrawblock=<address>`  | Enable publish raw block in &lt;address&gt;        |
+| `-zmqpubrawtx=<address>`     | Enable publish raw transaction in &lt;address&gt;  |
 
-***
+Debugging/Testing options
+-------------------------
 
-| **Debugging/Testing options:**        |                                                                                                                                                                                                                                                                                                                                                                                   |
-| :------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Argument                              | Description                                                                                                                                                                                                                                                                                                                                                                       |
+| :------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `-addrmantest`                        | Allows to test address relay on localhost                                                                                                                                                                                                                                                                                                                                         |
 | `-checkblockindex`                    | Do a full consistency check for mapBlockIndex, setBlockIndexCandidates, ::ChainActive() and mapBlocksUnlinked occasionally. (default: 0, regtest: 1)                                                                                                                                                                                                                              |
 | `-checkblocks=<n>`                    | How many blocks to check at startup (default: 6, 0 = all)                                                                                                                                                                                                                                                                                                                         |
@@ -154,17 +160,19 @@
 | `-stopatheight`                       | Stop running after reaching the given height in the main chain (default: 0)                                                                                                                                                                                                                                                                                                       |
 | `-uacomment=<cmt>`                    | Append comment to the user agent string                                                                                                                                                                                                                                                                                                                                           |
 
-***
+Chain selection options
+-----------------------
 
-| **Chain selection options:** |                                                                                                                                                                    |
-| :--------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `-regtest`                   | Enter regression test mode, which uses a special chain in which blocks can be solved instantly. This is intended for regression testing tools and app development. |
-| `-testnet`                   | Use the test chain                                                                                                                                                 |
+| Argument   | Description                                                                                                                                                        |
+| :--------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `-regtest` | Enter regression test mode, which uses a special chain in which blocks can be solved instantly. This is intended for regression testing tools and app development. |
+| `-testnet` | Use the test chain                                                                                                                                                 |
 
-***
+Node relay options
+------------------
 
-| **Node relay options:**   |                                                                                                                                                                          |
-| :------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Argument                  | Description                                                                                                                                                              |
+| :------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `-acceptnonstdtxn`        | Relay and mine "non-standard" transactions (testnet/regtest only, default: 1)                                                                                            |
 | `-bytespersigop=<n>`      | Equivalent bytes per sigop in transactions for relay and mining (default: 50)                                                                                            |
 | `-datacarrier`            | Relay and mine OP_RETURN transactions (deprecated, will be removed in v0.22, use -datacarriersize instead; default: 1)                                                   |
@@ -176,18 +184,20 @@
 | `-whitelistforcerelay`    | Force relay of transactions from whitelisted peers even if they violate local relay policy (default: 1)                                                                  |
 | `-whitelistrelay`         | Accept relayed transactions received from whitelisted peers even when not relaying transactions (default: 1)                                                             |
 
-***
+Block creation options
+----------------------
 
-| **Block creation options:** |                                                                                                       |
-| :-------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `-blockmaxsize=<n>`         | Set maximum block size in bytes (default: 2000000)                                                    |
-| `-blockmintxfee=<amt>`      | Set lowest fee rate (in BCH/kB) for transactions to be included in block creation. (default: 0.00001) |
-| `-blockversion=<n>`         | Override block version to test forking scenarios                                                      |
+| Argument               | Description                                                                                           |
+| :--------------------- | :---------------------------------------------------------------------------------------------------- |
+| `-blockmaxsize=<n>`    | Set maximum block size in bytes (default: 2000000)                                                    |
+| `-blockmintxfee=<amt>` | Set lowest fee rate (in BCH/kB) for transactions to be included in block creation. (default: 0.00001) |
+| `-blockversion=<n>`    | Override block version to test forking scenarios                                                      |
 
-***
+RPC server options
+------------------
 
-| **RPC server options:**  |                                                                                                                                                                                                                                                                                                                                                                           |
-| :----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Argument                 | Description                                                                                                                                                                                                                                                                                                                                                               |
+| :----------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `-gbtcachesize=<n>`      | Specify how many recent getblocktemplatelight jobs to keep cached in memory (default: 10)                                                                                                                                                                                                                                                                                 |
 | `-gbtstoredir=<dir>`     | Specify a directory for storing getblocktemplatelight data (default: &lt;datadir&gt;/gbt/)                                                                                                                                                                                                                                                                                |
 | `-gbtstoretime=<secs>`   | Specify time in seconds to keep getblocktemplatelight data in the -gbtstoredir before it is automatically deleted (0 to disable autodeletion, default: 3600).                                                                                                                                                                                                             |
