@@ -84,7 +84,7 @@ int CAddrDb::Lookup_(const CService &ip) {
     return -1;
 }
 
-void CAddrDb::Good_(const CService &addr, int clientV, std::string clientSV,
+void CAddrDb::Good_(const CService &addr, int clientV, const std::string &clientSV,
                     int blocks) {
     int id = Lookup_(addr);
     if (id == -1) {

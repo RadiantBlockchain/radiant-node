@@ -300,7 +300,7 @@ protected:
     // get an IP to test (must call Good_ or Bad_ on result afterwards)
     bool Get_(CServiceResult &ip, int &wait);
     // mark an IP as good (must have been returned by Get_)
-    void Good_(const CService &ip, int clientV, std::string clientSV,
+    void Good_(const CService &ip, int clientV, const std::string &clientSV,
                int blocks);
     // mark an IP as bad (and optionally ban it) (must have been returned by
     // Get_)

@@ -90,7 +90,7 @@ void CSeederNode::PushVersion() {
     EndMessage();
 }
 
-PeerMessagingState CSeederNode::ProcessMessage(std::string strCommand,
+PeerMessagingState CSeederNode::ProcessMessage(const std::string &strCommand,
                                                CDataStream &recv) {
     // fprintf(stdout, "%s: RECV %s\n", ToString(you).c_str(),
     // strCommand.c_str());

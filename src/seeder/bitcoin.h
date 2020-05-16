@@ -54,7 +54,7 @@ private:
     bool ProcessMessages();
 
 protected:
-    PeerMessagingState ProcessMessage(std::string strCommand,
+    PeerMessagingState ProcessMessage(const std::string &strCommand,
                                       CDataStream &recv);
 
 public:
