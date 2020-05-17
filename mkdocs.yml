@@ -29,6 +29,147 @@ nav:
             - bitcoin-cli: cli/bitcoin-cli.md
             - bitcoin-tx: cli/bitcoin-tx.md
             - bitcoin-seeder: cli/bitcoin-seeder.md
+        - JSON-RPC interface:
+            - JSON-RPC commands list: json-rpc/README.md
+            - Blockchain:
+                - finalizeblock: json-rpc/finalizeblock.md
+                - getbestblockhash: json-rpc/getbestblockhash.md
+                - getblock: json-rpc/getblock.md
+                - getblockchaininfo: json-rpc/getblockchaininfo.md
+                - getblockcount: json-rpc/getblockcount.md
+                - getblockhash: json-rpc/getblockhash.md
+                - getblockheader: json-rpc/getblockheader.md
+                - getblockstats: json-rpc/getblockstats.md
+                - getchaintips: json-rpc/getchaintips.md
+                - getchaintxstats: json-rpc/getchaintxstats.md
+                - getdifficulty: json-rpc/getdifficulty.md
+                - getfinalizedblockhash: json-rpc/getfinalizedblockhash.md
+                - getmempoolancestors: json-rpc/getmempoolancestors.md
+                - getmempooldescendants: json-rpc/getmempooldescendants.md
+                - getmempoolentry: json-rpc/getmempoolentry.md
+                - getmempoolinfo: json-rpc/getmempoolinfo.md
+                - getrawmempool: json-rpc/getrawmempool.md
+                - gettxout: json-rpc/gettxout.md
+                - gettxoutproof: json-rpc/gettxoutproof.md
+                - gettxoutsetinfo: json-rpc/gettxoutsetinfo.md
+                - invalidateblock: json-rpc/invalidateblock.md
+                - parkblock: json-rpc/parkblock.md
+                - preciousblock: json-rpc/preciousblock.md
+                - pruneblockchain: json-rpc/pruneblockchain.md
+                - reconsiderblock: json-rpc/reconsiderblock.md
+                - savemempool: json-rpc/savemempool.md
+                - scantxoutset: json-rpc/scantxoutset.md
+                - unparkblock: json-rpc/unparkblock.md
+                - verifychain: json-rpc/verifychain.md
+                - verifytxoutproof: json-rpc/verifytxoutproof.md
+            - Control:
+                - getmemoryinfo: json-rpc/getmemoryinfo.md
+                - getrpcinfo: json-rpc/getrpcinfo.md
+                - help: json-rpc/help.md
+                - logging: json-rpc/logging.md
+                - stop: json-rpc/stop.md
+                - uptime: json-rpc/uptime.md
+            - Generating:
+                - generate: json-rpc/generate.md
+                - generatetoaddress: json-rpc/generatetoaddress.md
+            - Mining:
+                - getblocktemplate: json-rpc/getblocktemplate.md
+                - getblocktemplatelight: json-rpc/getblocktemplatelight.md
+                - getmininginfo: json-rpc/getmininginfo.md
+                - getnetworkhashps: json-rpc/getnetworkhashps.md
+                - prioritisetransaction: json-rpc/prioritisetransaction.md
+                - submitblock: json-rpc/submitblock.md
+                - submitblocklight: json-rpc/submitblocklight.md
+                - submitheader: json-rpc/submitheader.md
+            - Network:
+                - addnode: json-rpc/addnode.md
+                - clearbanned: json-rpc/clearbanned.md
+                - disconnectnode: json-rpc/disconnectnode.md
+                - getaddednodeinfo: json-rpc/getaddednodeinfo.md
+                - getconnectioncount: json-rpc/getconnectioncount.md
+                - getexcessiveblock: json-rpc/getexcessiveblock.md
+                - getnettotals: json-rpc/getnettotals.md
+                - getnetworkinfo: json-rpc/getnetworkinfo.md
+                - getnodeaddresses: json-rpc/getnodeaddresses.md
+                - getpeerinfo: json-rpc/getpeerinfo.md
+                - listbanned: json-rpc/listbanned.md
+                - ping: json-rpc/ping.md
+                - setban: json-rpc/setban.md
+                - setexcessiveblock: json-rpc/setexcessiveblock.md
+                - setnetworkactive: json-rpc/setnetworkactive.md
+            - Rawtransactions:
+                - combinepsbt: json-rpc/combinepsbt.md
+                - combinerawtransaction: json-rpc/combinerawtransaction.md
+                - converttopsbt: json-rpc/converttopsbt.md
+                - createpsbt: json-rpc/createpsbt.md
+                - createrawtransaction: json-rpc/createrawtransaction.md
+                - decodepsbt: json-rpc/decodepsbt.md
+                - decoderawtransaction: json-rpc/decoderawtransaction.md
+                - decodescript: json-rpc/decodescript.md
+                - finalizepsbt: json-rpc/finalizepsbt.md
+                - fundrawtransaction: json-rpc/fundrawtransaction.md
+                - getrawtransaction: json-rpc/getrawtransaction.md
+                - sendrawtransaction: json-rpc/sendrawtransaction.md
+                - signrawtransactionwithkey: json-rpc/signrawtransactionwithkey.md
+                - testmempoolaccept: json-rpc/testmempoolaccept.md
+            - Util:
+                - createmultisig: json-rpc/createmultisig.md
+                - estimatefee: json-rpc/estimatefee.md
+                - signmessagewithprivkey: json-rpc/signmessagewithprivkey.md
+                - validateaddress: json-rpc/validateaddress.md
+                - verifymessage: json-rpc/verifymessage.md
+            - Wallet:
+                - abandontransaction: json-rpc/abandontransaction.md
+                - abortrescan: json-rpc/abortrescan.md
+                - addmultisigaddress: json-rpc/addmultisigaddress.md
+                - backupwallet: json-rpc/backupwallet.md
+                - createwallet: json-rpc/createwallet.md
+                - dumpprivkey: json-rpc/dumpprivkey.md
+                - dumpwallet: json-rpc/dumpwallet.md
+                - encryptwallet: json-rpc/encryptwallet.md
+                - getaddressesbylabel: json-rpc/getaddressesbylabel.md
+                - getaddressinfo: json-rpc/getaddressinfo.md
+                - getbalance: json-rpc/getbalance.md
+                - getnewaddress: json-rpc/getnewaddress.md
+                - getrawchangeaddress: json-rpc/getrawchangeaddress.md
+                - getreceivedbyaddress: json-rpc/getreceivedbyaddress.md
+                - getreceivedbylabel: json-rpc/getreceivedbylabel.md
+                - gettransaction: json-rpc/gettransaction.md
+                - getunconfirmedbalance: json-rpc/getunconfirmedbalance.md
+                - getwalletinfo: json-rpc/getwalletinfo.md
+                - importaddress: json-rpc/importaddress.md
+                - importmulti: json-rpc/importmulti.md
+                - importprivkey: json-rpc/importprivkey.md
+                - importprunedfunds: json-rpc/importprunedfunds.md
+                - importpubkey: json-rpc/importpubkey.md
+                - importwallet: json-rpc/importwallet.md
+                - keypoolrefill: json-rpc/keypoolrefill.md
+                - listaddressgroupings: json-rpc/listaddressgroupings.md
+                - listlabels: json-rpc/listlabels.md
+                - listlockunspent: json-rpc/listlockunspent.md
+                - listreceivedbyaddress: json-rpc/listreceivedbyaddress.md
+                - listreceivedbylabel: json-rpc/listreceivedbylabel.md
+                - listsinceblock: json-rpc/listsinceblock.md
+                - listtransactions: json-rpc/listtransactions.md
+                - listunspent: json-rpc/listunspent.md
+                - listwalletdir: json-rpc/listwalletdir.md
+                - listwallets: json-rpc/listwallets.md
+                - loadwallet: json-rpc/loadwallet.md
+                - lockunspent: json-rpc/lockunspent.md
+                - removeprunedfunds: json-rpc/removeprunedfunds.md
+                - rescanblockchain: json-rpc/rescanblockchain.md
+                - sendmany: json-rpc/sendmany.md
+                - sendtoaddress: json-rpc/sendtoaddress.md
+                - sethdseed: json-rpc/sethdseed.md
+                - setlabel: json-rpc/setlabel.md
+                - settxfee: json-rpc/settxfee.md
+                - signmessage: json-rpc/signmessage.md
+                - signrawtransactionwithwallet: json-rpc/signrawtransactionwithwallet.md
+                - unloadwallet: json-rpc/unloadwallet.md
+                - walletcreatefundedpsbt: json-rpc/walletcreatefundedpsbt.md
+                - walletprocesspsbt: json-rpc/walletprocesspsbt.md
+            - Zmq:
+                - getzmqnotifications: json-rpc/getzmqnotifications.md
         - REST-interface.md
         - Output descriptors: descriptors.md
         - getblocktemplatelight: getblocktemplatelight.md
