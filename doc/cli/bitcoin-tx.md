@@ -1,31 +1,34 @@
 # Bitcoin Cash Node bitcoin-tx utility version v0.21.2
 
-| **Usage:**                                 |                                        |
-| :----------------------------------------- | -------------------------------------- |
+| Usage                                      | Description                            |
+| :----------------------------------------- | :------------------------------------- |
 | `bitcoin-tx [options] <hex-tx> [commands]` | Update hex-encoded bitcoin transaction |
 | `bitcoin-tx [options] -create [commands]`  | Create hex-encoded bitcoin transaction |
 
-***
+Options
+-------
 
-| **Options:**        |                                                                                                                                                  |
-| :------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Argument            | Description                                                                                                                                      |
+| :------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------- |
 | `-?`, `-h`, `-help` | Print this help message and exit                                                                                                                 |
 | `-create`           | Create new, empty TX.                                                                                                                            |
 | `-json`             | Select JSON output                                                                                                                               |
 | `-txid`             | Output only the hex-encoded transaction id of the resultant transaction.                                                                         |
 | `-usecashaddr`      | In JSON output, use CashAddr address format for destination encoding instead of the legacy base58 format (default: 0, will change to 1 in v0.22) |
 
-***
+Chain selection options
+-----------------------
 
-| **Chain selection options:** |                                                                                                                                                                    |
-| :--------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `-regtest`                   | Enter regression test mode, which uses a special chain in which blocks can be solved instantly. This is intended for regression testing tools and app development. |
-| `-testnet`                   | Use the test chain                                                                                                                                                 |
+| Argument   | Description                                                                                                                                                        |
+| :--------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `-regtest` | Enter regression test mode, which uses a special chain in which blocks can be solved instantly. This is intended for regression testing tools and app development. |
+| `-testnet` | Use the test chain                                                                                                                                                 |
 
-***
+Commands
+--------
 
-| **Commands:**                                                     |                                                                                                                                                                                                              |
-| :---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Argument                                                          | Description                                                                                                                                                                                                  |
+| :---------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `delin=N`                                                         | Delete input N from TX                                                                                                                                                                                       |
 | `delout=N`                                                        | Delete output N from TX                                                                                                                                                                                      |
 | `in=TXID:VOUT(:SEQUENCE_NUMBER)`                                  | Add input to TX                                                                                                                                                                                              |
@@ -38,9 +41,10 @@
 | `outscript=VALUE:SCRIPT[:FLAGS]`                                  | Add raw script output to TX. Optionally add the "S" flag to wrap the output in a pay-to-script-hash.                                                                                                         |
 | `sign=SIGHASH-FLAGS`                                              | Add zero or more signatures to transaction. This command requires JSON registers:prevtxs=JSON object, privatekeys=JSON object. See signrawtransactionwithkey docs for format of sighash flags, JSON objects. |
 
-***
+Register Commands
+-----------------
 
-| **Register Commands:** |                                            |
-| :--------------------- | ------------------------------------------ |
+| Argument               | Description                                |
+| :--------------------- | :----------------------------------------- |
 | `load=NAME:FILENAME`   | Load JSON file FILENAME into register NAME |
 | `set=NAME:JSON-STRING` | Set register NAME to given JSON-STRING     |

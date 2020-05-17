@@ -1,16 +1,17 @@
 # Bitcoin Cash Node RPC client version v0.21.2
 
-| **Usage:**                                               |                                                          |
-| :------------------------------------------------------- | -------------------------------------------------------- |
+| Usage                                                    | Description                                              |
+| :------------------------------------------------------- | :------------------------------------------------------- |
 | `bitcoin-cli [options] <command> [params]`               | Send command to Bitcoin Cash Node                        |
 | `bitcoin-cli [options] -named <command> [name=value]...` | Send command to Bitcoin Cash Node (with named arguments) |
 | `bitcoin-cli [options] help`                             | List commands                                            |
 | `bitcoin-cli [options] help <command>`                   | Get help for a command                                   |
 
-***
+Options
+-------
 
-| **Options:**              |                                                                                                                                                                                                                                                                                                                          |
-| :------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Argument                  | Description                                                                                                                                                                                                                                                                                                              |
+| :------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `-?`, `-h`, `-help`       | Print this help message and exit                                                                                                                                                                                                                                                                                         |
 | `-conf=<file>`            | Specify configuration file. Relative paths will be prefixed by datadir location. (default: bitcoin.conf)                                                                                                                                                                                                                 |
 | `-datadir=<dir>`          | Specify data directory                                                                                                                                                                                                                                                                                                   |
@@ -28,9 +29,10 @@
 | `-stdinrpcpass`           | Read RPC password from standard input as a single line. When combined with -stdin, the first line from standard input is used for the RPC password.                                                                                                                                                                      |
 | `-version`                | Print version and exit                                                                                                                                                                                                                                                                                                   |
 
-***
+Chain selection options
+-----------------------
 
-| **Chain selection options:** |                                                                                                                                                                    |
-| :--------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `-regtest`                   | Enter regression test mode, which uses a special chain in which blocks can be solved instantly. This is intended for regression testing tools and app development. |
-| `-testnet`                   | Use the test chain                                                                                                                                                 |
+| Argument   | Description                                                                                                                                                        |
+| :--------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `-regtest` | Enter regression test mode, which uses a special chain in which blocks can be solved instantly. This is intended for regression testing tools and app development. |
+| `-testnet` | Use the test chain                                                                                                                                                 |
