@@ -252,6 +252,14 @@ class MiningTest(BitcoinTestFramework):
         assert_equal(node.submitblock(
             hexdata=block.serialize().hex()), 'duplicate')
 
+        # Test for RPC_CLIENT_NOT_CONNECTED error
+        self.nodes[0].disconnect_p2ps()
+        self.nodes[1].disconnect_p2ps()
+        self.stop_node(1)
+        assert_raises_rpc_error(-9,  # RPC_CLIENT_NOT_CONNECTED
+                                "Bitcoin is not connected!",
+                                node.getblocktemplate)
+
 
 if __name__ == '__main__':
     MiningTest().main()
