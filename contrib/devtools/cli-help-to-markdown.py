@@ -14,16 +14,22 @@ import sys
 lines = sys.argv[1].split('\n')
 
 # Helper functions for generating (up-to-)two-column Markdown tables
+
+
 def createTable(first, second):
     global table, heads, widths
     table = []
     heads = (first, second)
     widths = [len(head) for head in heads]
+
+
 def appendTableRow(first, second):
     widths[0] = max(widths[0], len(first))
     widths[1] = max(widths[1], len(second))
     table.append((first, second))
-def printTable(columns = 2):
+
+
+def printTable(columns=2):
     line = '|'
     for col in range(columns):
         line += ' ' + heads[col].ljust(widths[col]) + ' |'
@@ -38,6 +44,7 @@ def printTable(columns = 2):
         for col in range(columns):
             line += ' ' + row[col].ljust(widths[col]) + ' |'
         print(line)
+
 
 # Print document title (binary name and version)
 print('# ' + lines[0])

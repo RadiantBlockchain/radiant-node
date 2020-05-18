@@ -27,6 +27,7 @@ i = 1
 headingPermitted = False
 section = []
 
+
 def printSection():
     # Truncate any trailing empty lines
     while section and section[-1] == '':
@@ -39,6 +40,7 @@ def printSection():
         for line in section:
             print(line)
         print('```')
+
 
 while i < len(lines):
     if headingPermitted and lines[i] and lines[i][-1] == ':':

@@ -15,6 +15,7 @@ if os.name == 'posix':
     BOLD = ('\033[0m', '\033[1m')
     RED = ('\033[0m', '\033[0;31m')
 
+
 def setup():
     global args, workdir
     programs = ['ruby', 'git', 'apt-cacher-ng', 'make', 'wget']
@@ -319,8 +320,8 @@ def main():
     # and raise a warning if it differs.
     # Need to add newlines back in order to diff against file.
     our_source = [line + '\n' for line in
-                      inspect.getsource(inspect.getmodule(inspect.currentframe())).splitlines()]
-    with open('contrib/gitian-build.py') as script_file:
+                  inspect.getsource(inspect.getmodule(inspect.currentframe())).splitlines()]
+    with open('contrib/gitian-build.py', 'r', encoding='utf-8') as script_file:
         script_source = script_file.readlines()
         if our_source != script_source:
             print(BOLD[1] + RED[1] + '*' * 70)
