@@ -116,8 +116,8 @@ BOOST_AUTO_TEST_CASE(write_name_qname_length_tests) {
     const std::string maxLengthLabel(MAX_LABEL_LENGTH, 'a');
 
     // Check behavior for a name that is the maximum length
-    std::string maxLengthQName = maxLengthLabel + '.' + maxLengthLabel + '.' +
-                                 maxLengthLabel + '.' + maxLengthLabel;
+    const std::string maxLengthQName = maxLengthLabel + '.' + maxLengthLabel + '.' +
+                                       maxLengthLabel + '.' + maxLengthLabel;
     BOOST_CHECK_EQUAL(maxLengthQName.size(), MAX_QUERY_NAME_LENGTH);
     CheckWriteName(maxLengthQName);
 
