@@ -74,9 +74,11 @@ while IFS= read -r line; do
           # Write category to new mkdocs file.
           echo "$indentation- $category:" >> "$TOPDIR/mkdocs-tmp.yml"
           # Write category to readme file.
-          echo "" >> "$TOPDIR/doc/json-rpc/README.md"
-          echo "## $category" >> "$TOPDIR/doc/json-rpc/README.md"
-          echo "" >> "$TOPDIR/doc/json-rpc/README.md"
+          {
+              echo
+              echo "## $category"
+              echo
+          } >> "$TOPDIR/doc/json-rpc/README.md"
         else
           # Found a command.
           command=${helpline%% *}
@@ -84,10 +86,12 @@ while IFS= read -r line; do
           echo "$indentation    - $command: json-rpc/$command.md" >> "$TOPDIR/mkdocs-tmp.yml"
           # Create command help page.
           "$TOPDIR/contrib/devtools/rpc-help-to-markdown.py" "$($BITCOINCLI -rpcwait -regtest -datadir="$TOPDIR/doc/json-rpc/tmp" -rpcuser=gen-manpages -rpcpassword=gen-manpages help $command)" > "$TOPDIR/doc/json-rpc/$command.md"
-          echo "" >> "$TOPDIR/doc/json-rpc/$command.md"
-          echo "***" >> "$TOPDIR/doc/json-rpc/$command.md"
-          echo "" >> "$TOPDIR/doc/json-rpc/$command.md"
-          echo "*$version*" >> "$TOPDIR/doc/json-rpc/$command.md"
+          {
+              echo
+              echo "***"
+              echo
+              echo "*$version*"
+          } >> "$TOPDIR/doc/json-rpc/$command.md"
           sed -i "s/\-${BTCVER[1]}\(\-dirty\)\?//g" "$TOPDIR/doc/json-rpc/$command.md"
           # Write command to readme file.
           if [ "$command" == "$helpline" ]; then
@@ -98,10 +102,12 @@ while IFS= read -r line; do
         fi
       fi
     done
-    echo "" >> "$TOPDIR/doc/json-rpc/README.md"
-    echo "***" >> "$TOPDIR/doc/json-rpc/README.md"
-    echo "" >> "$TOPDIR/doc/json-rpc/README.md"
-    echo "*$version*" >> "$TOPDIR/doc/json-rpc/README.md"
+    {
+        echo
+        echo "***"
+        echo
+        echo "*$version*"
+    } >> "$TOPDIR/doc/json-rpc/README.md"
     sed -i "s/\-${BTCVER[1]}\(\-dirty\)\?//g" "$TOPDIR/doc/json-rpc/README.md"
   else
     # Detect the end of indentation below the readme entry.
