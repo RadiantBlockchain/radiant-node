@@ -44,3 +44,81 @@ for cmd in "$BITCOINCLI" "$BITCOINTX" "$BITCOINSEEDER"; do
 done
 
 rm -f footer.h2m
+
+# Generate JSON-RPC API documentation.
+# Start a regtest node in a temporary data directory.
+mkdir -p "$TOPDIR/doc/json-rpc/tmp"
+"$BITCOIND" -daemon -debuglogfile=0 -regtest -datadir="$TOPDIR/doc/json-rpc/tmp" -rpcuser=gen-manpages -rpcpassword=gen-manpages
+# Create temporary new mkdocs file.
+rm -f "$TOPDIR/mkdocs-tmp.yml"
+# Remove any existing JSON-RPC documentation.
+rm "$TOPDIR"/doc/json-rpc/*.md
+# Get daemon version which will be included in footer.
+version="$($BITCOIND -version | head -n1)"
+# Iterate over the existing mkdocs file and locate the entry for json-rpc/README.md.
+indentation=""
+while IFS= read -r line; do
+  if [ "${line: -19}" == " json-rpc/README.md" ]; then
+    # json-rpc/README.md found; preserve it.
+    echo "$line" >> "$TOPDIR/mkdocs-tmp.yml"
+    indentation="${line%%-*}"
+    # The list of RPC commands will be inserted into the new mkdocs file below the readme entry.
+    # Get the list of RPC commands from the node and process it.
+    echo "Bitcoin Cash Node JSON-RPC commands" > "$TOPDIR/doc/json-rpc/README.md"
+    echo "===================================" >> "$TOPDIR/doc/json-rpc/README.md"
+    "$BITCOINCLI" -rpcwait -regtest -datadir="$TOPDIR/doc/json-rpc/tmp" -rpcuser=gen-manpages -rpcpassword=gen-manpages help | while read -r helpline; do
+      if [ -n "$helpline" ]; then
+        if [ "${helpline:0:3}" == "== " ] && [ "${helpline: -3}" == " ==" ]; then
+          # Found a category.
+          category="${helpline:3:-3}"
+          # Write category to new mkdocs file.
+          echo "$indentation- $category:" >> "$TOPDIR/mkdocs-tmp.yml"
+          # Write category to readme file.
+          echo "" >> "$TOPDIR/doc/json-rpc/README.md"
+          echo "## $category" >> "$TOPDIR/doc/json-rpc/README.md"
+          echo "" >> "$TOPDIR/doc/json-rpc/README.md"
+        else
+          # Found a command.
+          command=${helpline%% *}
+          # Write command to new mkdocs file.
+          echo "$indentation    - $command: json-rpc/$command.md" >> "$TOPDIR/mkdocs-tmp.yml"
+          # Create command help page.
+          "$TOPDIR/contrib/devtools/rpc-help-to-markdown.py" "$($BITCOINCLI -rpcwait -regtest -datadir="$TOPDIR/doc/json-rpc/tmp" -rpcuser=gen-manpages -rpcpassword=gen-manpages help $command)" > "$TOPDIR/doc/json-rpc/$command.md"
+          echo "" >> "$TOPDIR/doc/json-rpc/$command.md"
+          echo "***" >> "$TOPDIR/doc/json-rpc/$command.md"
+          echo "" >> "$TOPDIR/doc/json-rpc/$command.md"
+          echo "*$version*" >> "$TOPDIR/doc/json-rpc/$command.md"
+          sed -i "s/\-${BTCVER[1]}\(\-dirty\)\?//g" "$TOPDIR/doc/json-rpc/$command.md"
+          # Write command to readme file.
+          if [ "$command" == "$helpline" ]; then
+            echo "* [**\`$command\`**]($command.md)" >> "$TOPDIR/doc/json-rpc/README.md"
+          else
+            echo "* [**\`$command\`**\` ${helpline:${#command}}\`]($command.md)" >> "$TOPDIR/doc/json-rpc/README.md"
+          fi
+        fi
+      fi
+    done
+    echo "" >> "$TOPDIR/doc/json-rpc/README.md"
+    echo "***" >> "$TOPDIR/doc/json-rpc/README.md"
+    echo "" >> "$TOPDIR/doc/json-rpc/README.md"
+    echo "*$version*" >> "$TOPDIR/doc/json-rpc/README.md"
+    sed -i "s/\-${BTCVER[1]}\(\-dirty\)\?//g" "$TOPDIR/doc/json-rpc/README.md"
+  else
+    # Detect the end of indentation below the readme entry.
+    if [ "${line:0:${#indentation}}" != "$indentation" ]; then
+      indentation=""
+    fi
+    # Copy existing mkdocs entries into the new mkdocs file, but
+    # skip all existing entries below the readme entry on the same indentation level.
+    # This removes previously generated RPC documentation.
+    if [ "$indentation" == "" ]; then
+      echo "$line" >> "$TOPDIR/mkdocs-tmp.yml"
+    fi
+  fi
+done < "$TOPDIR/mkdocs.yml"
+# Stop the regtest node
+"$BITCOINCLI" -rpcwait -regtest -datadir="$TOPDIR/doc/json-rpc/tmp" -rpcuser=gen-manpages -rpcpassword=gen-manpages stop
+# Replace the old mkdocs file with the new one.
+mv -f "$TOPDIR/mkdocs-tmp.yml" "$TOPDIR/mkdocs.yml"
+# Remove the temporary node data directory
+rm -r "$TOPDIR/doc/json-rpc/tmp"
