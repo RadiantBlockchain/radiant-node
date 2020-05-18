@@ -1809,12 +1809,6 @@ bool CChainState::ConnectBlock(const CBlock &block, CValidationState &state,
     Amount nFees = Amount::zero();
     int nInputs = 0;
 
-    // Sigops counting. We need to do it again because of P2SH.
-    uint64_t nSigOpsCount = 0;
-    const uint64_t currentBlockSize =
-        ::GetSerializeSize(block, PROTOCOL_VERSION);
-    const uint64_t nMaxSigOpsCount = GetMaxBlockSigOpsCount(currentBlockSize);
-
     // Limit the total executed signature operations in the block, a consensus
     // rule. Tracking during the CPU-consuming part (validation of uncached
     // inputs) is per-input atomic and validation in each thread stops very
@@ -1878,12 +1872,6 @@ bool CChainState::ConnectBlock(const CBlock &block, CValidationState &state,
         auto txSigOpsCount = GetTransactionSigOpCount(tx, view, flags);
         if (txSigOpsCount > MAX_TX_SIGOPS_COUNT) {
             return state.DoS(100, false, REJECT_INVALID, "bad-txn-sigops");
-        }
-
-        nSigOpsCount += txSigOpsCount;
-        if (nSigOpsCount > nMaxSigOpsCount) {
-            return state.DoS(100, error("ConnectBlock(): too many sigops"),
-                             REJECT_INVALID, "bad-blk-sigops");
         }
 
         // The following checks do not apply to the coinbase.
@@ -3780,10 +3768,6 @@ static bool ContextualCheckBlock(const CBlock &block, CValidationState &state,
     const bool fIsMagneticAnomalyEnabled =
         IsMagneticAnomalyEnabled(params, pindexPrev);
 
-    // Keep track of the sigops count.
-    uint64_t nSigOps = 0;
-    const auto currentBlockSize = ::GetSerializeSize(block, PROTOCOL_VERSION);
-    auto nMaxSigOpsCount = GetMaxBlockSigOpsCount(currentBlockSize);
     // Note that pindexPrev may be null if reindexing genesis block.
     const auto scriptFlags = pindexPrev
                                  ? GetNextBlockScriptFlags(params, pindexPrev)
@@ -3825,11 +3809,6 @@ static bool ContextualCheckBlock(const CBlock &block, CValidationState &state,
         const auto txSigOps = GetSigOpCountWithoutP2SH(tx, scriptFlags);
         if (txSigOps > MAX_TX_SIGOPS_COUNT) {
             return state.DoS(100, false, REJECT_INVALID, "bad-txn-sigops",
-                             false, "out-of-bounds SigOpCount");
-        }
-        nSigOps += txSigOps;
-        if (nSigOps > nMaxSigOpsCount) {
-            return state.DoS(100, false, REJECT_INVALID, "bad-blk-sigops",
                              false, "out-of-bounds SigOpCount");
         }
 

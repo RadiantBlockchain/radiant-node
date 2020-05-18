@@ -58,8 +58,7 @@ static constexpr CFeeRate MEMPOOL_FULL_FEE_INCREMENT(1000 * SATOSHI);
 /**
  * Default for -bytespersigop .
  */
-static constexpr unsigned int DEFAULT_BYTES_PER_SIGOP =
-    1000000 / MAX_BLOCK_SIGOPS_PER_MB;
+static constexpr unsigned int DEFAULT_BYTES_PER_SIGOP = 50;
 /**
  * Min feerate for defining dust. Historically this has been the same as the
  * minRelayTxFee, however changing the dust limit changes which transactions are
