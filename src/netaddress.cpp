@@ -22,12 +22,61 @@
 #include <cassert>
 #include <cstdint>
 #include <cstring>
+#include <ios>
 #include <iterator>
 #include <limits>
 #include <tuple>
 
 static constexpr uint8_t pchSingleAddressNetmask[16] =
     {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+
+CNetAddr::BIP155Network CNetAddr::GetBIP155Network() const {
+    switch (m_net) {
+        case NET_IPV4:
+            return BIP155Network::IPV4;
+        case NET_IPV6:
+            return BIP155Network::IPV6;
+        case NET_ONION:
+            return BIP155Network::TORV2;
+        case NET_INTERNAL:   // should have been handled before calling this function
+        case NET_UNROUTABLE: // m_net is never and should not be set to NET_UNROUTABLE
+        case NET_MAX:        // m_net is never and should not be set to NET_MAX
+            assert(false);
+    } // no default case, so the compiler can warn about missing cases
+
+    assert(false);
+}
+
+bool CNetAddr::SetNetFromBIP155Network(uint8_t possible_bip155_net, size_t address_size) {
+    switch (possible_bip155_net) {
+        case BIP155Network::IPV4:
+            if (address_size == ADDR_IPV4_SIZE) {
+                m_net = NET_IPV4;
+                return true;
+            }
+            throw std::ios_base::failure(
+                strprintf("BIP155 IPv4 address with length %u (should be %u)", address_size, ADDR_IPV4_SIZE));
+        case BIP155Network::IPV6:
+            if (address_size == ADDR_IPV6_SIZE) {
+                m_net = NET_IPV6;
+                return true;
+            }
+            throw std::ios_base::failure(
+                strprintf("BIP155 IPv6 address with length %u (should be %u)", address_size, ADDR_IPV6_SIZE));
+        case BIP155Network::TORV2:
+            if (address_size == ADDR_TORV2_SIZE) {
+                m_net = NET_ONION;
+                return true;
+            }
+            throw std::ios_base::failure(
+                strprintf("BIP155 TORv2 address with length %u (should be %u)", address_size, ADDR_TORV2_SIZE));
+    }
+
+    // Don't throw on addresses with unknown network ids (maybe from the future).
+    // Instead silently drop them and have the unserialization code consume
+    // subsequent ones which may be known to us.
+    return false;
+}
 
 void CNetAddr::SetIP(const CNetAddr &ipIn) {
     // Size check.
