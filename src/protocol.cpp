@@ -22,6 +22,8 @@ namespace NetMsgType {
 const char *const VERSION = "version";
 const char *const VERACK = "verack";
 const char *const ADDR = "addr";
+const char *const ADDRV2 = "addrv2";
+const char *const SENDADDRV2 = "sendaddrv2";
 const char *const INV = "inv";
 const char *const GETDATA = "getdata";
 const char *const MERKLEBLOCK = "merkleblock";
@@ -60,16 +62,14 @@ bool IsBlockLike(const std::string &msg_type) {
  * above and in protocol.h.
  */
 static const std::vector<std::string> allNetMessageTypesVec{{
-    NetMsgType::VERSION,     NetMsgType::VERACK,     NetMsgType::ADDR,
-    NetMsgType::INV,         NetMsgType::GETDATA,    NetMsgType::MERKLEBLOCK,
-    NetMsgType::GETBLOCKS,   NetMsgType::GETHEADERS, NetMsgType::TX,
-    NetMsgType::HEADERS,     NetMsgType::BLOCK,      NetMsgType::GETADDR,
-    NetMsgType::MEMPOOL,     NetMsgType::PING,       NetMsgType::PONG,
-    NetMsgType::NOTFOUND,    NetMsgType::FILTERLOAD, NetMsgType::FILTERADD,
-    NetMsgType::FILTERCLEAR, NetMsgType::REJECT,     NetMsgType::SENDHEADERS,
-    NetMsgType::FEEFILTER,   NetMsgType::SENDCMPCT,  NetMsgType::CMPCTBLOCK,
-    NetMsgType::GETBLOCKTXN, NetMsgType::BLOCKTXN,   NetMsgType::EXTVERSION,
-    NetMsgType::DSPROOF,
+    NetMsgType::VERSION,     NetMsgType::VERACK,     NetMsgType::ADDR,        NetMsgType::ADDRV2,
+    NetMsgType::SENDADDRV2,  NetMsgType::INV,        NetMsgType::GETDATA,     NetMsgType::MERKLEBLOCK,
+    NetMsgType::GETBLOCKS,   NetMsgType::GETHEADERS, NetMsgType::TX,          NetMsgType::HEADERS,
+    NetMsgType::BLOCK,       NetMsgType::GETADDR,    NetMsgType::MEMPOOL,     NetMsgType::PING,
+    NetMsgType::PONG,        NetMsgType::NOTFOUND,   NetMsgType::FILTERLOAD,  NetMsgType::FILTERADD,
+    NetMsgType::FILTERCLEAR, NetMsgType::REJECT,     NetMsgType::SENDHEADERS, NetMsgType::FEEFILTER,
+    NetMsgType::SENDCMPCT,   NetMsgType::CMPCTBLOCK, NetMsgType::GETBLOCKTXN, NetMsgType::BLOCKTXN,
+    NetMsgType::EXTVERSION,  NetMsgType::DSPROOF,
 }};
 
 CMessageHeader::CMessageHeader(const MessageMagic &pchMessageStartIn) {
