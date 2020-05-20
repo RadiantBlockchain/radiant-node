@@ -7,7 +7,7 @@ set(CMAKE_USER_MAKE_RULES_OVERRIDE
 )
 
 project(bitcoin-cash-node
-	VERSION 0.21.2
+	VERSION 0.21.3
 	DESCRIPTION "Bitcoin Cash Node is a full node implementation of the Bitcoin Cash protocol."
 	HOMEPAGE_URL "https://www.bitcoincashnode.org"
 )
