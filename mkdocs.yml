@@ -175,6 +175,7 @@ nav:
         - getblocktemplatelight: getblocktemplatelight.md
         - ZeroMQ: zmq.md
     - Release notes:
+        - release-notes/release-notes-0.21.2.md
         - release-notes/release-notes-0.21.1.md
         - release-notes/release-notes-0.21.0.md
         - Bitcoin ABC 0.14.1-0.20:
