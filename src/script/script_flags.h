@@ -103,9 +103,6 @@ enum {
     // VERIFY_INPUT_SIGCHECKS
     SCRIPT_VERIFY_INPUT_SIGCHECKS = (1U << 22),
 
-    // Whether the new OP_REVERSEBYTES opcode can be used.
-    SCRIPT_ENABLE_OP_REVERSEBYTES = (1U << 23),
-
     // Setting this flag zeroes sigops counting and thus results in the removal
     // of all sigop limits. This flag only affects sigops counting, and will be
     // removed during cleanup of the SigChecks upgrade.
