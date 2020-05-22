@@ -11,7 +11,7 @@ orders of magnitude beyond current limits.
 What is Bitcoin Cash?
 ---------------------
 
-Bitcoin Cash is an experimental digital
+Bitcoin Cash is a digital
 currency that enables instant payments to anyone, anywhere in the world. It
 uses peer-to-peer technology to operate with no central authority: managing
 transactions and issuing money are carried out collectively by the network.
