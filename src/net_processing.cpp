@@ -128,7 +128,7 @@ struct COrphanTx {
 };
 
 RecursiveMutex g_cs_orphans;
-std::map<uint256, COrphanTx> mapOrphanTransactions GUARDED_BY(g_cs_orphans);
+std::map<TxId, COrphanTx> mapOrphanTransactions GUARDED_BY(g_cs_orphans);
 
 void EraseOrphansFor(NodeId peer);
 
@@ -245,7 +245,7 @@ struct IteratorComparator {
     }
 };
 std::map<COutPoint,
-         std::set<std::map<uint256, COrphanTx>::iterator, IteratorComparator>>
+         std::set<std::map<TxId, COrphanTx>::iterator, IteratorComparator>>
     mapOrphanTransactionsByPrev GUARDED_BY(g_cs_orphans);
 
 static size_t vExtraTxnForCompactIt GUARDED_BY(g_cs_orphans) = 0;
@@ -1014,7 +1014,7 @@ static void AddToCompactExtraTransactions(const CTransactionRef &tx)
 
 bool AddOrphanTx(const CTransactionRef &tx, NodeId peer)
     EXCLUSIVE_LOCKS_REQUIRED(g_cs_orphans) {
-    const uint256 &txid = tx->GetId();
+    const TxId &txid = tx->GetId();
     if (mapOrphanTransactions.count(txid)) {
         return false;
     }
@@ -1048,14 +1048,13 @@ bool AddOrphanTx(const CTransactionRef &tx, NodeId peer)
     return true;
 }
 
-static int EraseOrphanTx(uint256 hash) EXCLUSIVE_LOCKS_REQUIRED(g_cs_orphans) {
-    std::map<uint256, COrphanTx>::iterator it =
-        mapOrphanTransactions.find(hash);
+static int EraseOrphanTx(const TxId id) EXCLUSIVE_LOCKS_REQUIRED(g_cs_orphans) {
+    const auto it = mapOrphanTransactions.find(id);
     if (it == mapOrphanTransactions.end()) {
         return 0;
     }
     for (const CTxIn &txin : it->second.tx->vin) {
-        auto itPrev = mapOrphanTransactionsByPrev.find(txin.prevout);
+        const auto itPrev = mapOrphanTransactionsByPrev.find(txin.prevout);
         if (itPrev == mapOrphanTransactionsByPrev.end()) {
             continue;
         }
@@ -1071,10 +1070,10 @@ static int EraseOrphanTx(uint256 hash) EXCLUSIVE_LOCKS_REQUIRED(g_cs_orphans) {
 void EraseOrphansFor(NodeId peer) {
     LOCK(g_cs_orphans);
     int nErased = 0;
-    std::map<uint256, COrphanTx>::iterator iter = mapOrphanTransactions.begin();
+    auto iter = mapOrphanTransactions.begin();
     while (iter != mapOrphanTransactions.end()) {
         // Increment to avoid iterator becoming invalid.
-        std::map<uint256, COrphanTx>::iterator maybeErase = iter++;
+        const auto maybeErase = iter++;
         if (maybeErase->second.fromPeer == peer) {
             nErased += EraseOrphanTx(maybeErase->second.tx->GetId());
         }
@@ -1096,10 +1095,9 @@ unsigned int LimitOrphanTxSize(unsigned int nMaxOrphans) {
         int nErased = 0;
         int64_t nMinExpTime =
             nNow + ORPHAN_TX_EXPIRE_TIME - ORPHAN_TX_EXPIRE_INTERVAL;
-        std::map<uint256, COrphanTx>::iterator iter =
-            mapOrphanTransactions.begin();
+        auto iter = mapOrphanTransactions.begin();
         while (iter != mapOrphanTransactions.end()) {
-            std::map<uint256, COrphanTx>::iterator maybeErase = iter++;
+            const auto maybeErase = iter++;
             if (maybeErase->second.nTimeExpire <= nNow) {
                 nErased += EraseOrphanTx(maybeErase->second.tx->GetId());
             } else {
@@ -1118,9 +1116,8 @@ unsigned int LimitOrphanTxSize(unsigned int nMaxOrphans) {
     FastRandomContext rng;
     while (mapOrphanTransactions.size() > nMaxOrphans) {
         // Evict a random orphan:
-        uint256 randomhash = rng.rand256();
-        std::map<uint256, COrphanTx>::iterator it =
-            mapOrphanTransactions.lower_bound(randomhash);
+        const TxId randomTxId(rng.rand256());
+        auto it = mapOrphanTransactions.lower_bound(randomTxId);
         if (it == mapOrphanTransactions.end()) {
             it = mapOrphanTransactions.begin();
         }
@@ -1224,7 +1221,7 @@ void PeerLogicValidation::BlockConnected(
     const std::vector<CTransactionRef> &vtxConflicted) {
     LOCK(g_cs_orphans);
 
-    std::vector<uint256> vOrphanErase;
+    std::vector<TxId> vOrphanErase;
 
     for (const CTransactionRef &ptx : pblock->vtx) {
         const CTransaction &tx = *ptx;
@@ -1239,8 +1236,8 @@ void PeerLogicValidation::BlockConnected(
             for (auto mi = itByPrev->second.begin();
                  mi != itByPrev->second.end(); ++mi) {
                 const CTransaction &orphanTx = *(*mi)->second.tx;
-                const uint256 &orphanHash = orphanTx.GetHash();
-                vOrphanErase.push_back(orphanHash);
+                const TxId &orphanId = orphanTx.GetId();
+                vOrphanErase.push_back(orphanId);
             }
         }
     }
@@ -1248,7 +1245,7 @@ void PeerLogicValidation::BlockConnected(
     // Erase orphan transactions included or precluded by this block
     if (vOrphanErase.size()) {
         int nErased = 0;
-        for (const uint256 &orphanId : vOrphanErase) {
+        for (const auto &orphanId : vOrphanErase) {
             nErased += EraseOrphanTx(orphanId);
         }
         LogPrint(BCLog::MEMPOOL,
@@ -1429,7 +1426,7 @@ static bool AlreadyHave(const CInv &inv) EXCLUSIVE_LOCKS_REQUIRED(cs_main) {
 
             {
                 LOCK(g_cs_orphans);
-                if (mapOrphanTransactions.count(inv.hash)) {
+                if (mapOrphanTransactions.count(TxId{inv.hash})) {
                     return true;
                 }
             }
@@ -2759,7 +2756,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         }
 
         std::deque<COutPoint> vWorkQueue;
-        std::vector<uint256> vEraseQueue;
+        std::vector<TxId> vEraseQueue;
         CTransactionRef ptx;
         vRecv >> ptx;
         const CTransaction &tx = *ptx;
@@ -2868,8 +2865,8 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
                 }
             }
 
-            for (const uint256 &hash : vEraseQueue) {
-                EraseOrphanTx(hash);
+            for (const TxId &idOfOrphanTxToErase : vEraseQueue) {
+                EraseOrphanTx(idOfOrphanTxToErase);
             }
         } else if (fMissingInputs) {
             // It may be the case that the orphans parents have all been
