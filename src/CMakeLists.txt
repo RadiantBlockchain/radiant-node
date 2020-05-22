@@ -441,7 +441,6 @@ endif()
 add_library(server
 	addrdb.cpp
 	addrman.cpp
-	avalanche.cpp
 	banman.cpp
 	bloom.cpp
 	blockencodings.cpp

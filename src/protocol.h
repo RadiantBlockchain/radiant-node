@@ -251,16 +251,6 @@ extern const char *GETBLOCKTXN;
  * @since protocol version 70014 as described by BIP 152
  */
 extern const char *BLOCKTXN;
-/**
- * Contains an AvalanchePoll.
- * Peer should respond with "avaresponse" message.
- */
-extern const char *AVAPOLL;
-/**
- * Contains an AvalancheResponse.
- * Sent in response to a "avapoll" message.
- */
-extern const char *AVARESPONSE;
 
 /**
  * Indicate if the message is used to transmit the content of a block.
@@ -325,10 +315,6 @@ enum ServiceFlags : uint64_t {
     // collisions and other cases where nodes may be advertising a service they
     // do not actually support. Other service bits should be allocated via the
     // BIP process.
-
-    // NODE_AVALANCHE means the node supports Bitcoin Cash's avalanche
-    // preconsensus mechanism.
-    NODE_AVALANCHE = (1 << 24),
 };
 
 /**
