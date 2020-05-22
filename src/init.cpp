@@ -1054,7 +1054,7 @@ std::string LicenseInfo() {
            "\n" +
            strprintf(_("The source code is available from %s."),
                      URL_SOURCE_CODE) +
-           "\n" + "\n" + _("This is experimental software.") + "\n" +
+           "\n" + "\n" +
            strprintf(_("Distributed under the MIT software license, see the "
                        "accompanying file %s or %s"),
                      "COPYING", "<https://opensource.org/licenses/MIT>") +
