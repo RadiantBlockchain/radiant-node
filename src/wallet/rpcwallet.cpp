@@ -3888,7 +3888,7 @@ UniValue rescanblockchain(const Config &config, const JSONRPCRequest &request) {
         }
     }
 
-    CBlockIndex *stopBlock = pwallet->ScanForWalletTransactions(
+    const CBlockIndex *stopBlock = pwallet->ScanForWalletTransactions(
         pindexStart, pindexStop, reserver, true);
     if (!stopBlock) {
         if (pwallet->IsAbortingRescan()) {
