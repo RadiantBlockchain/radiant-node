@@ -4,6 +4,7 @@
 
 #include <bench/bench.h>
 
+#include <chain.h>
 #include <chainparams.h>
 #include <validation.h>
 
@@ -115,6 +116,9 @@ void benchmark::BenchRunner::RunAll(Printer &printer, uint64_t num_evals,
     printer.header();
 
     for (const auto &p : benchmarks()) {
+        TestingSetup test{CBaseChainParams::REGTEST};
+        assert(::ChainActive().Height() == 0);
+
         if (!std::regex_match(p.first, baseMatch, reFilter)) {
             continue;
         }

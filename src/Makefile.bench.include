@@ -11,6 +11,7 @@ bench_bench_bitcoin_SOURCES = \
   bench/bench_bitcoin.cpp \
   bench/bench.cpp \
   bench/bench.h \
+  bench/block_assemble.cpp \
   bench/cashaddr.cpp \
   bench/checkblock.cpp \
   bench/checkqueue.cpp \
@@ -31,7 +32,9 @@ bench_bench_bitcoin_SOURCES = \
   bench/lockedpool.cpp \
   bench/prevector.cpp \
   test/setup_common.h \
-  test/setup_common.cpp
+  test/setup_common.cpp \
+  test/util.h \
+  test/util.cpp
 
 nodist_bench_bench_bitcoin_SOURCES = $(GENERATED_BENCH_FILES)
 
