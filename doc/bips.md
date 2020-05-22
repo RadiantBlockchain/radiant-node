@@ -1,6 +1,6 @@
 BIPs that are implemented by Bitcoin ABC (up-to-date up to **v0.13.0**):
 
-* [`BIP 9`](https://github.com/bitcoin/bips/blob/master/bip-0009.mediawiki): The changes allowing multiple soft-forks to be deployed in parallel have been implemented since **v0.12.1**  ([PR #7575](https://github.com/bitcoin/bitcoin/pull/7575))
+* [`BIP 9`](https://github.com/bitcoin/bips/blob/master/bip-0009.mediawiki): The changes allowing multiple soft-forks to be deployed in parallel have been implemented since **v0.12.1**  ([PR #7575](https://github.com/bitcoin/bitcoin/pull/7575)). BIP 9 has been removed in Bitcoin ABC, partially re-added in Bitcoin Cash Node v0.21.0, and removed again in v0.21.3.
 * [`BIP 11`](https://github.com/bitcoin/bips/blob/master/bip-0011.mediawiki): Multisig outputs are standard since **v0.6.0** ([PR #669](https://github.com/bitcoin/bitcoin/pull/669)).
 * [`BIP 13`](https://github.com/bitcoin/bips/blob/master/bip-0013.mediawiki): The address format for P2SH addresses has been implemented since **v0.6.0** ([PR #669](https://github.com/bitcoin/bitcoin/pull/669)).
 * [`BIP 14`](https://github.com/bitcoin/bips/blob/master/bip-0014.mediawiki): The subversion string is being used as User Agent since **v0.6.0** ([PR #669](https://github.com/bitcoin/bitcoin/pull/669)).

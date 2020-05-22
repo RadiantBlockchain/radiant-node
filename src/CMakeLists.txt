@@ -390,7 +390,6 @@ add_library(common
 	primitives/block.cpp
 	protocol.cpp
 	scheduler.cpp
-	versionbitsinfo.cpp
 	warnings.cpp
 )
 
@@ -491,7 +490,6 @@ add_library(server
 	ui_interface.cpp
 	validation.cpp
 	validationinterface.cpp
-	versionbits.cpp
 )
 
 # This require libevent
