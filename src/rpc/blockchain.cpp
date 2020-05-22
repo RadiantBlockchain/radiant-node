@@ -29,7 +29,6 @@
 #include <util/system.h>
 #include <validation.h>
 #include <validationinterface.h>
-#include <versionbitsinfo.h> // For VersionBitsDeploymentInfo
 #include <warnings.h>
 
 #include <boost/thread/thread.hpp> // boost::thread::interrupt
@@ -1280,68 +1279,6 @@ static UniValue verifychain(const Config &config,
                                 nCheckDepth);
 }
 
-static void BIP9SoftForkDescPushBack(UniValue &softforks,
-                                     const Consensus::Params &consensusParams,
-                                     Consensus::DeploymentPos id)
-    EXCLUSIVE_LOCKS_REQUIRED(cs_main) {
-    // For BIP9 deployments.
-    // Deployments (e.g. testdummy) with timeout value before Jan 1, 2009 are
-    // hidden. A timeout value of 0 guarantees a softfork will never be
-    // activated. This is used when merging logic to implement a proposed
-    // softfork without a specified deployment schedule.
-    if (consensusParams.vDeployments[id].nTimeout <= 1230768000) {
-        return;
-    }
-
-    UniValue bip9(UniValue::VOBJ);
-    const ThresholdState thresholdState =
-        VersionBitsTipState(consensusParams, id);
-    switch (thresholdState) {
-        case ThresholdState::DEFINED:
-            bip9.pushKV("status", "defined");
-            break;
-        case ThresholdState::STARTED:
-            bip9.pushKV("status", "started");
-            break;
-        case ThresholdState::LOCKED_IN:
-            bip9.pushKV("status", "locked_in");
-            break;
-        case ThresholdState::ACTIVE:
-            bip9.pushKV("status", "active");
-            break;
-        case ThresholdState::FAILED:
-            bip9.pushKV("status", "failed");
-            break;
-    }
-    if (ThresholdState::STARTED == thresholdState) {
-        bip9.pushKV("bit", consensusParams.vDeployments[id].bit);
-    }
-    bip9.pushKV("start_time", consensusParams.vDeployments[id].nStartTime);
-    bip9.pushKV("timeout", consensusParams.vDeployments[id].nTimeout);
-    int64_t since_height = VersionBitsTipStateSinceHeight(consensusParams, id);
-    bip9.pushKV("since", since_height);
-    if (ThresholdState::STARTED == thresholdState) {
-        UniValue statsUV(UniValue::VOBJ);
-        BIP9Stats statsStruct = VersionBitsTipStatistics(consensusParams, id);
-        statsUV.pushKV("period", statsStruct.period);
-        statsUV.pushKV("threshold", statsStruct.threshold);
-        statsUV.pushKV("elapsed", statsStruct.elapsed);
-        statsUV.pushKV("count", statsStruct.count);
-        statsUV.pushKV("possible", statsStruct.possible);
-        bip9.pushKV("statistics", statsUV);
-    }
-
-    UniValue rv(UniValue::VOBJ);
-    rv.pushKV("type", "bip9");
-    rv.pushKV("bip9", bip9);
-    if (ThresholdState::ACTIVE == thresholdState) {
-        rv.pushKV("height", since_height);
-    }
-    rv.pushKV("active", ThresholdState::ACTIVE == thresholdState);
-
-    softforks.pushKV(VersionBitsDeploymentInfo[id].name, rv);
-}
-
 UniValue getblockchaininfo(const Config &config,
                            const JSONRPCRequest &request) {
     if (request.fHelp || request.params.size() != 0) {
@@ -1389,11 +1326,9 @@ UniValue getblockchaininfo(const Config &config,
 
     LOCK(cs_main);
 
-    const CChainParams &chainparams = config.GetChainParams();
-
     const CBlockIndex *tip = ::ChainActive().Tip();
     UniValue obj(UniValue::VOBJ);
-    obj.pushKV("chain", chainparams.NetworkIDString());
+    obj.pushKV("chain", config.GetChainParams().NetworkIDString());
     obj.pushKV("blocks", int(::ChainActive().Height()));
     obj.pushKV("headers", pindexBestHeader ? pindexBestHeader->nHeight : -1);
     obj.pushKV("bestblockhash", tip->GetBlockHash().GetHex());
@@ -1423,12 +1358,8 @@ UniValue getblockchaininfo(const Config &config,
         }
     }
 
-    UniValue softforks(UniValue::VOBJ);
-    for (int i = 0; i < (int)Consensus::MAX_VERSION_BITS_DEPLOYMENTS; i++) {
-        BIP9SoftForkDescPushBack(softforks, chainparams.GetConsensus(),
-                                 Consensus::DeploymentPos(i));
-    }
-    obj.pushKV("softforks", softforks);
+    // deprecated empty softforks object for backward API compatibility
+    obj.pushKV("softforks", UniValue(UniValue::VOBJ));
 
     obj.pushKV("warnings", GetWarnings("statusbar"));
     return obj;

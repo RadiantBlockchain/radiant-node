@@ -37,8 +37,9 @@ supported environment for the software. This may change in future.
 Note regarding BIP9 and `getblockchaininfo`
 -------------------------------------------
 
-BIP9 is inactive due to no available proposals to vote on and it may be
-removed in a future release.
+Bitcoin Cash Node 0.21.3 removed the (incomplete) BIP9 support. In earlier
+versions, it already was inactive due to no available proposals to vote on. The
+empty `softforks` field in `getblockchaininfo` will be removed in version 0.22.
 
 
 New RPC methods

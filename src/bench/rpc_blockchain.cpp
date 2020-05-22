@@ -6,6 +6,7 @@
 #include <bench/bench.h>
 #include <bench/data.h>
 
+#include <chain.h>
 #include <chainparams.h>
 #include <validation.h>
 #include <streams.h>
