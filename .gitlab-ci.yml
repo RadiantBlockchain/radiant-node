@@ -222,18 +222,6 @@ test-debian-benchmarks:
     dependencies:
         - build-debian
 
-test-debian-unittests_post_phonon:
-    stage: test
-    extends: .cache-debian
-    needs: ["build-debian-tests"]
-    script:
-        - ./build/src/test/test_bitcoin --logger=HRF:JUNIT,message,junit_unit_tests.xml -- -phononactivationtime=1575158400
-    dependencies:
-        - build-debian-tests
-    artifacts:
-        reports:
-            junit: junit_unit_tests.xml
-
 test-debian-utils:
     stage: test
     extends: .cache-debian
@@ -270,24 +258,6 @@ test-debian-functional:
         reports:
             junit: build/test/tmp/*/junit_results.xml
 
-test-debian-functional_post_phonon:
-    stage: test
-    extends: .cache-debian
-    needs: ["build-debian"]
-    script:
-        - (cd build; ninja -t restat)
-        - (cd build; ninja check-functional-upgrade-activated)
-        - ccache --show-stats
-    dependencies:
-        - build-debian
-    artifacts:
-        when: on_failure
-        paths:
-            - build/test/tmp
-        expire_in: 30 days
-        reports:
-            junit: build/test/tmp/*/junit_results.xml
-
 test-debian-functional-longeronly:
     stage: test
     extends: .cache-debian
@@ -297,26 +267,6 @@ test-debian-functional-longeronly:
     script:
         - (cd build; ninja -t restat)
         - (cd build; ninja check-functional-longeronly)
-        - ccache --show-stats
-    dependencies:
-        - build-debian
-    artifacts:
-        when: on_failure
-        paths:
-            - build/test/tmp
-        expire_in: 30 days
-        reports:
-            junit: build/test/tmp/*/junit_results.xml
-
-test-debian-functional-longeronly-post-phonon:
-    stage: test
-    extends: .cache-debian
-    needs: ["build-debian"]
-    rules:
-        - if: $CI_COMMIT_BRANCH == "master"
-    script:
-        - (cd build; ninja -t restat)
-        - (cd build; ninja check-functional-upgrade-activated-longeronly)
         - ccache --show-stats
     dependencies:
         - build-debian
