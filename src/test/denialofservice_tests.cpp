@@ -48,7 +48,7 @@ struct COrphanTx {
     NodeId fromPeer;
     int64_t nTimeExpire;
 };
-extern CCriticalSection g_cs_orphans;
+extern RecursiveMutex g_cs_orphans;
 extern std::map<uint256, COrphanTx>
     mapOrphanTransactions GUARDED_BY(g_cs_orphans);
 

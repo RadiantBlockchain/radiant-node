@@ -185,7 +185,7 @@ static constexpr bool DEFAULT_PARK_DEEP_REORG = true;
 static constexpr bool DEFAULT_AUTOMATIC_UNPARKING = true;
 
 extern CScript COINBASE_FLAGS;
-extern CCriticalSection cs_main;
+extern RecursiveMutex cs_main;
 extern CTxMemPool g_mempool;
 extern uint64_t nLastBlockTx;
 extern uint64_t nLastBlockSize;
