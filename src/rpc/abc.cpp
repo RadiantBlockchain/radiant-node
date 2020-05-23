@@ -44,8 +44,8 @@ static UniValue setexcessiveblock(Config &config,
             "\nResult\n"
             "  blockSize (integer) excessive block size in bytes\n"
             "\nExamples:\n" +
-            HelpExampleCli("setexcessiveblock", "25000000") +
-            HelpExampleRpc("setexcessiveblock", "25000000"));
+            HelpExampleCli("setexcessiveblock", "128000000") +
+            HelpExampleRpc("setexcessiveblock", "128000000"));
     }
 
     int64_t ebs = 0;
