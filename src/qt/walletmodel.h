@@ -91,8 +91,8 @@ public:
         SER_WRITE(obj, label_str = obj.label.toStdString());
         SER_WRITE(obj, message_str = obj.message.toStdString());
 #ifdef ENABLE_BIP70
-        if (paymentRequest.IsInitialized()) {
-            SER_WRITE(obj, paymentRequest.SerializeToString(&payment_request_str));
+        if (obj.paymentRequest.IsInitialized()) {
+            SER_WRITE(obj, obj.paymentRequest.SerializeToString(&payment_request_str));
         }
 #else
         SER_WRITE(obj, payment_request_str = obj.sPaymentRequest);
