@@ -4,7 +4,7 @@ export LC_ALL=C
 
 set -euo pipefail
 
-DEFAULT_PPA="bitcoin-abc"
+DEFAULT_PPA="bitcoin-cash-node"
 DPUT_CONFIG_FILE=~/".dput.cf"
 TOPLEVEL="$(git rev-parse --show-toplevel)"
 KEYS_TXT="${TOPLEVEL}"/contrib/gitian-signing/keys.txt
@@ -13,7 +13,7 @@ help_message() {
   echo "Build and sign Debian packages and push to a PPA."
   echo "Usage: $0 <options> signer"
   echo
-  echo "Example usage: $0 jasonbcox"
+  echo "Example usage: $0 freetrader"
   echo
   echo "signer will be used to fetch the signing key fingerprint from '${KEYS_TXT}'"
   echo "  That matching fingerprint will be used to fetch the correctly formatted name and email from GPG."
@@ -116,7 +116,7 @@ if [ ! -f ${DPUT_CONFIG_FILE} ]; then
 [${DEFAULT_PPA}]
 fqdn = ppa.launchpad.net
 method = ftp
-incoming = ~bitcoin-abc/ubuntu/ppa/
+incoming = ~bitcoin-cash-node/ubuntu/ppa/
 login = anonymous
 allow_unsigned_uploads = 0
 EOF
@@ -141,7 +141,7 @@ echo "Package version: ${PACKAGE_VERSION}"
 
 # Unpack the package source
 SOURCE_VERSION=$(echo "${PACKAGE_VERSION}" | grep -oE "[0-9]+\.[0-9]+\.[0-9]+")
-SOURCE_BASE_NAME="bitcoin-abc-${SOURCE_VERSION}"
+SOURCE_BASE_NAME="bitcoin-cash-node-${SOURCE_VERSION}"
 SOURCE_ARCHIVE="${SOURCE_BASE_NAME}.tar.gz"
 tar -zxf "${SOURCE_ARCHIVE}"
 
