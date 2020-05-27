@@ -32,17 +32,11 @@ EXPECTED_CIRCULAR_DEPENDENCIES=(
     "qt/addressbookpage -> qt/bitcoingui -> qt/walletview -> qt/receivecoinsdialog -> qt/addressbookpage"
     "qt/addressbookpage -> qt/bitcoingui -> qt/walletview -> qt/signverifymessagedialog -> qt/addressbookpage"
     "qt/addressbookpage -> qt/bitcoingui -> qt/walletview -> qt/sendcoinsdialog -> qt/sendcoinsentry -> qt/addressbookpage"
-    "avalanche -> validation -> avalanche"
     "chainparams -> protocol -> chainparams"
     "chainparamsbase -> util/system -> chainparamsbase"
-    "minerfund -> validation -> minerfund"
     "script/scriptcache -> validation -> script/scriptcache"
     "seeder/bitcoin -> seeder/db -> seeder/bitcoin"
     "chainparams -> protocol -> config -> chainparams"
-    "config -> globals -> policy/policy -> validation -> config"
-    "core_io -> psbt -> node/transaction -> validation -> core_io"
-    "config -> globals -> policy/policy -> validation -> key_io -> config"
-    "config -> globals -> policy/policy -> validation -> protocol -> config"
 )
 
 EXIT_CODE=0
