@@ -4,7 +4,6 @@
 
 #include <gbtlight.h>
 #include <logging.h>
-#include <rpc/mining.h> // for GBTLight::JobId
 #include <scheduler.h>
 #include <util/strencodings.h>
 #include <util/system.h>
