@@ -97,7 +97,7 @@ void CAddrDb::Good_(const CService &addr, int clientV, const std::string &client
     info.clientSubVersion = clientSV;
     info.blocks = blocks;
     info.Update(true);
-    if (info.IsGood() && goodId.count(id) == 0) {
+    if (info.IsReliable() && goodId.count(id) == 0) {
         goodId.insert(id);
         //    fprintf(stdout, "%s: good; %i good nodes now\n",
         //    ToString(addr).c_str(), (int)goodId.size());
@@ -130,7 +130,7 @@ void CAddrDb::Bad_(const CService &addr, int ban) {
         goodId.erase(id);
         idToInfo.erase(id);
     } else {
-        if (/*!info.IsGood() && */ goodId.count(id) == 1) {
+        if (/*!info.IsReliable() && */ goodId.count(id) == 1) {
             goodId.erase(id);
             //      fprintf(stdout, "%s: not good; %i good nodes left\n",
             //      ToString(addr).c_str(), (int)goodId.size());
