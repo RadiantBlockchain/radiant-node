@@ -214,7 +214,7 @@ ${CONTROL_SOURCE_NAME} (${PACKAGE_VERSION}-${DISTRO}${DEBIAN_PKG_VERSION}) ${DIS
 
   * New upstream release.
 
-  For an exhaustive list of changes please have a look at https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/blob/master/doc/release-notes.md
+  For an exhaustive list of changes please have a look at https://docs.bitcoincashnode.org/release-notes/release-notes-${PACKAGE_VERSION}/
 
  -- ${SIGNER}  ${DATE}
 EOF
