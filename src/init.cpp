@@ -418,7 +418,7 @@ void SetupServerArgs() {
     gArgs.AddArg("-datadir=<dir>", "Specify data directory", false,
                  OptionsCategory::OPTIONS);
     gArgs.AddArg(
-        "-dbbatchsize",
+        "-dbbatchsize=<n>",
         strprintf("Maximum database write batch size in bytes (default: %u)",
                   nDefaultDbBatchSize),
         true, OptionsCategory::OPTIONS);
