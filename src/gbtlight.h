@@ -6,6 +6,7 @@
 #define BITCOIN_GBTLIGHT_H
 
 #include <fs.h>
+#include <uint256.h>
 
 #include <cstdint>
 #include <string>
@@ -14,6 +15,7 @@ class CScheduler;
 
 /// getblocktemplatelight and submitblocklight related config variables and functions
 namespace gbtl {
+using JobId = uint160;
 /// Called once at app init if -server=true to set up some internal variables and create the subdirectory that the
 /// GBTLight subsystem uses.  Also creates a scheduler task for cleaning up old gbt light data files periodically
 /// (every hour).

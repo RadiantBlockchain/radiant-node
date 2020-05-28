@@ -5,6 +5,7 @@
 #ifndef BITCOIN_RPC_MINING_H
 #define BITCOIN_RPC_MINING_H
 
+#include <gbtlight.h>
 #include <primitives/transaction.h>
 #include <script/script.h>
 
@@ -21,7 +22,6 @@ UniValue generateBlocks(const Config &config,
                         int nGenerate, uint64_t nMaxTries, bool keepScript);
 
 namespace gbtl {
-using JobId = uint160;
 /** Used by getblocktemplatelight for the "merkle" UniValue entry it returns.  Returns a merkle branch used to
  *  reconstruct the merkle root for submitblocklight.  See the implementation of this function for more documentation.*/
 std::vector<uint256> MakeMerkleBranch(std::vector<uint256> vtxHashes);
