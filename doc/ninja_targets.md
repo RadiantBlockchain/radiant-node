@@ -205,7 +205,11 @@ where you can use `$HOME` or `$(pwd)` (if you want to install into your build fo
 
 ### package
 
-Creates a verisoned tarball package containing the executables, include header files, libraries and manual pages.
+Creates a versioned tarball package containing the executables, include header files, libraries and manual pages.
+
+### package_source
+
+Creates a versioned tar.gz archive containing the project source code already configured by cmake and ready to be built.
 
 
 ## Benchmarking targets
