@@ -28,15 +28,14 @@ class TestBitcoinCliGetBlockStats(BitcoinTestFramework):
         assert_equal(cli_response['blockhash'], block_0_hash)
 
         # check that it works with quoted strings
-        self.log.info(
-            "Testing `bitcoin-cli getblockstats '\"{}\"'`".format(block_0_hash))
+        self.log.info("Testing `bitcoin-cli getblockstats '\"{}\"'`".format(block_0_hash))
         cli_response = self.nodes[0].cli("getblockstats", "\"{}\"".format(block_0_hash)).send_cli()
         assert_equal(cli_response['blockhash'], block_0_hash)
 
-        # check that is raises JSON parsing error without the quotes
-        assert_raises_process_error(
-            1, "Error parsing JSON:{}".format(block_0_hash),
-            self.nodes[0].cli("getblockstats", "{}".format(block_0_hash)).echo)
+        # check that it works without the quotes
+        self.log.info("Testing `bitcoin-cli getblockstats {}`".format(block_0_hash))
+        cli_response = self.nodes[0].cli("getblockstats", "{}".format(block_0_hash)).send_cli()
+        assert_equal(cli_response['blockhash'], block_0_hash)
 
 
 if __name__ == '__main__':

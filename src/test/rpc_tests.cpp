@@ -359,33 +359,6 @@ BOOST_AUTO_TEST_CASE(rpc_parse_monetary_values) {
     BOOST_CHECK_THROW(AmountFromValue(ValueFromString("93e+9")), UniValue);
 }
 
-BOOST_AUTO_TEST_CASE(json_parse_errors) {
-    // Valid
-    BOOST_CHECK_EQUAL(ParseNonRFCJSONValue("1.0").get_real(), 1.0);
-    // Valid, with leading or trailing whitespace
-    BOOST_CHECK_EQUAL(ParseNonRFCJSONValue(" 1.0").get_real(), 1.0);
-    BOOST_CHECK_EQUAL(ParseNonRFCJSONValue("1.0 ").get_real(), 1.0);
-
-    // should fail, missing leading 0, therefore invalid JSON
-    BOOST_CHECK_THROW(AmountFromValue(ParseNonRFCJSONValue(".19e-6")),
-                      std::runtime_error);
-    BOOST_CHECK_EQUAL(AmountFromValue(ParseNonRFCJSONValue(
-                          "0.00000000000000000000000000000000000001e+30 ")),
-                      SATOSHI);
-    // Invalid, initial garbage
-    BOOST_CHECK_THROW(ParseNonRFCJSONValue("[1.0"), std::runtime_error);
-    BOOST_CHECK_THROW(ParseNonRFCJSONValue("a1.0"), std::runtime_error);
-    // Invalid, trailing garbage
-    BOOST_CHECK_THROW(ParseNonRFCJSONValue("1.0sds"), std::runtime_error);
-    BOOST_CHECK_THROW(ParseNonRFCJSONValue("1.0]"), std::runtime_error);
-    // BCH addresses should fail parsing
-    BOOST_CHECK_THROW(
-        ParseNonRFCJSONValue("175tWpb8K1S7NmH4Zx6rewF9WQrcZv245W"),
-        std::runtime_error);
-    BOOST_CHECK_THROW(ParseNonRFCJSONValue("3J98t1WpEZ73CNmQviecrnyiWrnqRhWNL"),
-                      std::runtime_error);
-}
-
 BOOST_AUTO_TEST_CASE(rpc_ban) {
     BOOST_CHECK_NO_THROW(CallRPC(std::string("clearbanned")));
 
