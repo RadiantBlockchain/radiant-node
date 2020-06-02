@@ -1897,6 +1897,35 @@ static T CalculateTruncatedMedian(std::vector<T> &scores) {
     }
 }
 
+void CalculatePercentilesBySize(Amount result[NUM_GETBLOCKSTATS_PERCENTILES], std::vector<std::pair<Amount, int64_t>>& scores, int64_t total_size)
+{
+    if (scores.empty()) {
+        return;
+    }
+
+    std::sort(scores.begin(), scores.end());
+
+    // 10th, 25th, 50th, 75th, and 90th percentile weight units.
+    const double weights[NUM_GETBLOCKSTATS_PERCENTILES] = {
+        total_size / 10.0, total_size / 4.0, total_size / 2.0, (total_size * 3.0) / 4.0, (total_size * 9.0) / 10.0
+    };
+
+    int64_t next_percentile_index = 0;
+    int64_t cumulative_weight = 0;
+    for (const auto& element : scores) {
+        cumulative_weight += element.second;
+        while (next_percentile_index < NUM_GETBLOCKSTATS_PERCENTILES && cumulative_weight >= weights[next_percentile_index]) {
+            result[next_percentile_index] = element.first;
+            ++next_percentile_index;
+        }
+    }
+
+    // Fill any remaining percentiles with the last value.
+    for (int64_t i = next_percentile_index; i < NUM_GETBLOCKSTATS_PERCENTILES; i++) {
+        result[i] = scores.back().first;
+    }
+}
+
 template <typename T> static inline bool SetHasKeys(const std::set<T> &set) {
     return false;
 }
@@ -1940,8 +1969,14 @@ static UniValue getblockstats(const Config &config,
             CURRENCY_UNIT +
             " per byte)\n"
             "  \"avgtxsize\": xxxxx,       (numeric) Average transaction size\n"
-            "  \"blockhash\": xxxxx,       (string) The block hash (to check "
-            "for potential reorgs)\n"
+            "  \"blockhash\": xxxxx,       (string) The block hash (to check for potential reorgs)\n"
+            "  \"feerate_percentiles\": [  (array of numeric) Feerates at the 10th, 25th, 50th, 75th, and 90th percentile weight unit (in satoshis per byte)\n"
+            "      \"10th_percentile_feerate\",      (numeric) The 10th percentile feerate\n"
+            "      \"25th_percentile_feerate\",      (numeric) The 25th percentile feerate\n"
+            "      \"50th_percentile_feerate\",      (numeric) The 50th percentile feerate\n"
+            "      \"75th_percentile_feerate\",      (numeric) The 75th percentile feerate\n"
+            "      \"90th_percentile_feerate\",      (numeric) The 90th percentile feerate\n"
+            "  ],\n"
             "  \"height\": xxxxx,          (numeric) The height of the block\n"
             "  \"ins\": xxxxx,             (numeric) The number of inputs "
             "(excluding coinbase)\n"
@@ -1956,6 +1991,8 @@ static UniValue getblockstats(const Config &config,
             "(in " +
             CURRENCY_UNIT +
             " per byte)\n"
+            " (deprecated, will be removed in v0.22, use 50th percentile "
+            " from 'feerate_percentiles')\n"
             "  \"mediantime\": xxxxx,      (numeric) The block median time "
             "past\n"
             "  \"mediantxsize\": xxxxx,    (numeric) Truncated median "
@@ -2037,9 +2074,9 @@ static UniValue getblockstats(const Config &config,
     const bool do_all = stats.size() == 0;
     const bool do_mediantxsize = do_all || stats.count("mediantxsize") != 0;
     const bool do_medianfee = do_all || stats.count("medianfee") != 0;
-    const bool do_medianfeerate = do_all || stats.count("medianfeerate") != 0;
+    const bool do_feerate_percentiles = do_all || stats.count("feerate_percentiles") != 0 || stats.count("medianfeerate") !=0;
     const bool loop_inputs =
-        do_all || do_medianfee || do_medianfeerate ||
+        do_all || do_medianfee || do_feerate_percentiles ||
         SetHasKeys(stats, "utxo_size_inc", "totalfee", "avgfee", "avgfeerate",
                    "minfee", "maxfee", "minfeerate", "maxfeerate");
     const bool loop_outputs = do_all || loop_inputs || stats.count("total_out");
@@ -2061,7 +2098,7 @@ static UniValue getblockstats(const Config &config,
     int64_t total_size = 0;
     int64_t utxo_size_inc = 0;
     std::vector<Amount> fee_array;
-    std::vector<Amount> feerate_array;
+    std::vector<std::pair<Amount, int64_t>> feerate_array;
     std::vector<int64_t> txsize_array;
 
     const Consensus::Params &params = config.GetChainParams().GetConsensus();
@@ -2132,13 +2169,21 @@ static UniValue getblockstats(const Config &config,
             minfee = std::min(minfee, txfee);
             totalfee += txfee;
 
-            Amount feerate = txfee / tx_size;
-            if (do_medianfeerate) {
-                feerate_array.push_back(feerate);
+            Amount feerate = tx_size ? txfee / tx_size : Amount::zero();
+            if (do_feerate_percentiles) {
+                feerate_array.emplace_back(feerate, tx_size);
             }
             maxfeerate = std::max(maxfeerate, feerate);
             minfeerate = std::min(minfeerate, feerate);
         }
+    }
+
+    Amount feerate_percentiles[NUM_GETBLOCKSTATS_PERCENTILES] = { Amount::zero() };
+    CalculatePercentilesBySize(feerate_percentiles, feerate_array, total_size);
+
+    UniValue feerates_res(UniValue::VARR);
+    for (int64_t i = 0; i < NUM_GETBLOCKSTATS_PERCENTILES; i++) {
+        feerates_res.push_back(ValueFromAmount(feerate_percentiles[i]));
     }
 
     UniValue ret_all(UniValue::VOBJ);
@@ -2153,6 +2198,7 @@ static UniValue getblockstats(const Config &config,
                                     ? total_size / (block.vtx.size() - 1)
                                     : 0);
     ret_all.pushKV("blockhash", pindex->GetBlockHash().GetHex());
+    ret_all.pushKV("feerate_percentiles", feerates_res);
     ret_all.pushKV("height", (int64_t)pindex->nHeight);
     ret_all.pushKV("ins", inputs);
     ret_all.pushKV("maxfee", ValueFromAmount(maxfee));
@@ -2160,8 +2206,7 @@ static UniValue getblockstats(const Config &config,
     ret_all.pushKV("maxtxsize", maxtxsize);
     ret_all.pushKV("medianfee",
                    ValueFromAmount(CalculateTruncatedMedian(fee_array)));
-    ret_all.pushKV("medianfeerate",
-                   ValueFromAmount(CalculateTruncatedMedian(feerate_array)));
+    ret_all.pushKV("medianfeerate", ValueFromAmount(feerate_percentiles[2]));
     ret_all.pushKV("mediantime", pindex->GetMedianTimePast());
     ret_all.pushKV("mediantxsize", CalculateTruncatedMedian(txsize_array));
     ret_all.pushKV(

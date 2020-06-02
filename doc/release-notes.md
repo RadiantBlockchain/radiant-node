@@ -1,7 +1,7 @@
 Release Notes for Bitcoin Cash Node version 0.21.3
 ==================================================
 
-Bitcoin Cash Node version 0.21.2 is now available from:
+Bitcoin Cash Node version 0.21.3 is now available from:
 
   <https://bitcoincashnode.org>
 
@@ -41,6 +41,12 @@ Bitcoin Cash Node 0.21.3 removed the (incomplete) BIP9 support. In earlier
 versions, it already was inactive due to no available proposals to vote on. The
 empty `softforks` field in `getblockchaininfo` will be removed in version 0.22.
 
+
+Deprecation note regarding `medianfeerate` field in `getblockstats`
+-----------------------------------------------------------------------
+
+The `medianfeerate` field in `getblockstats` output is deprecated, will be removed
+in v0.22. The 50th percentile from 'feerate_percentiles' array should be used instead.
 
 New RPC methods
 ---------------
