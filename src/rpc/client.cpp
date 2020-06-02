@@ -184,19 +184,6 @@ CRPCConvertTable::CRPCConvertTable() {
 
 static CRPCConvertTable rpcCvtTable;
 
-/**
- * Non-RFC4627 JSON parser, accepts internal values (such as numbers, true,
- * false, null) as well as objects and arrays.
- */
-UniValue ParseNonRFCJSONValue(const std::string &strVal) {
-    UniValue jVal;
-    if (!jVal.read(std::string("[") + strVal + std::string("]")) ||
-        !jVal.isArray() || jVal.size() != 1) {
-        throw std::runtime_error(std::string("Error parsing JSON:") + strVal);
-    }
-    return jVal[0];
-}
-
 UniValue RPCConvertValues(const std::string &strMethod,
                           const std::vector<std::string> &strParams) {
     UniValue params(UniValue::VARR);
@@ -204,12 +191,13 @@ UniValue RPCConvertValues(const std::string &strMethod,
     for (unsigned int idx = 0; idx < strParams.size(); idx++) {
         const std::string &strVal = strParams[idx];
 
-        if (!rpcCvtTable.convert(strMethod, idx)) {
+        UniValue json_value;
+        if (rpcCvtTable.convert(strMethod, idx) && json_value.read(strVal)) {
+            // parse string as JSON, insert bool/number/object/etc. value
+            params.push_back(json_value);
+        } else {
             // insert string value directly
             params.push_back(strVal);
-        } else {
-            // parse string as JSON, insert bool/number/object/etc. value
-            params.push_back(ParseNonRFCJSONValue(strVal));
         }
     }
 
@@ -231,12 +219,13 @@ UniValue RPCConvertNamedValues(const std::string &strMethod,
         std::string name = s.substr(0, pos);
         std::string value = s.substr(pos + 1);
 
-        if (!rpcCvtTable.convert(strMethod, name)) {
+        UniValue json_value;
+        if (!rpcCvtTable.convert(strMethod, name) || !json_value.read(value)) {
             // insert string value directly
             params.pushKV(name, value);
         } else {
             // parse string as JSON, insert bool/number/object/etc. value
-            params.pushKV(name, ParseNonRFCJSONValue(value));
+            params.pushKV(name, json_value);
         }
     }
 
