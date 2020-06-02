@@ -112,6 +112,13 @@
       "avgfeerate": 0.0,
       "avgtxsize": 0,
       "blockhash": "78a62acff8c7cf3d18e64dae0531acbf486373dade692aa2bfb8f54d5cae6c92",
+      "feerate_percentiles": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
       "height": 101,
       "ins": 0,
       "maxfee": 0.0,
@@ -140,6 +147,13 @@
       "avgtxsize": 191,
       "blockhash": "61e0f5087cc262ac7b10e77ab0a1e5ba34171cc0ad16716658ed6c154e58ccfe",
       "height": 102,
+      "feerate_percentiles": [
+        1e-08,
+        1e-08,
+        1e-08,
+        1e-08,
+        1e-08
+      ],
       "ins": 1,
       "maxfee": 1.92e-06,
       "maxfeerate": 1e-08,
@@ -166,6 +180,13 @@
       "avgfeerate": 1.06e-06,
       "avgtxsize": 214,
       "blockhash": "1f5619699145227f1a725669a4a755689a95cedbc0a696f1964187264c596a86",
+      "feerate_percentiles": [
+        1e-08,
+        1e-08,
+        1e-08,
+        0.00000301,
+        0.00000301
+      ],
       "height": 103,
       "ins": 3,
       "maxfee": 0.000678,

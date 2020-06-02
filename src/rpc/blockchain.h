@@ -6,6 +6,9 @@
 #define BITCOIN_RPC_BLOCKCHAIN_H
 
 #include <univalue.h>
+#include <vector>
+#include <stdint.h>
+#include <amount.h>
 
 class CBlock;
 class CBlockIndex;
@@ -14,6 +17,8 @@ class CTxMemPool;
 class JSONRPCRequest;
 
 UniValue getblockchaininfo(const Config &config, const JSONRPCRequest &request);
+
+static constexpr int NUM_GETBLOCKSTATS_PERCENTILES = 5;
 
 /**
  * Get the required difficulty of the next block w/r/t the given block index.
@@ -39,5 +44,8 @@ UniValue MempoolToJSON(const CTxMemPool &pool, bool verbose = false);
 /** Block header to JSON */
 UniValue blockheaderToJSON(const CBlockIndex *tip,
                            const CBlockIndex *blockindex);
+
+/** Used by getblockstats to get feerates at different percentiles by weight  */
+void CalculatePercentilesBySize(Amount result[NUM_GETBLOCKSTATS_PERCENTILES], std::vector<std::pair<Amount, int64_t>>& scores, int64_t total_size);
 
 #endif // BITCOIN_RPC_BLOCKCHAIN_H

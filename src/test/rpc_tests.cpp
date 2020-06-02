@@ -20,7 +20,10 @@
 
 #include <univalue.h>
 
-UniValue CallRPC(std::string args) {
+#include <rpc/blockchain.h>
+
+UniValue CallRPC(std::string args)
+{
     std::vector<std::string> vArgs;
     boost::split(vArgs, args, boost::is_any_of(" \t"));
     std::string strMethod = vArgs[0];
@@ -489,6 +492,84 @@ BOOST_AUTO_TEST_CASE(rpc_convert_values_generatetoaddress) {
     BOOST_CHECK_EQUAL(result[1].get_str(),
                       "mhMbmE2tE9xzJYCV9aNC8jKWN31vtGrguU");
     BOOST_CHECK_EQUAL(result[2].get_int(), 9);
+}
+
+BOOST_AUTO_TEST_CASE(rpc_getblockstats_calculate_percentiles_by_size)
+{
+    int64_t total_size = 200;
+    std::vector<std::pair<Amount, int64_t>> feerates;
+    Amount result[NUM_GETBLOCKSTATS_PERCENTILES] = { Amount::zero() };
+
+    for (int64_t i = 0; i < 100; i++) {
+        feerates.emplace_back(std::make_pair(Amount(1 * SATOSHI) ,1));
+    }
+
+    for (int64_t i = 0; i < 100; i++) {
+        feerates.emplace_back(std::make_pair(Amount(2 * SATOSHI) ,1));
+    }
+
+    CalculatePercentilesBySize(result, feerates, total_size);
+    BOOST_CHECK_EQUAL(result[0], Amount(1 * SATOSHI));
+    BOOST_CHECK_EQUAL(result[1], Amount(1 * SATOSHI));
+    BOOST_CHECK_EQUAL(result[2], Amount(1 * SATOSHI));
+    BOOST_CHECK_EQUAL(result[3], Amount(2 * SATOSHI));
+    BOOST_CHECK_EQUAL(result[4], Amount(2 * SATOSHI));
+
+    // Test with more pairs, and two pairs overlapping 2 percentiles.
+    total_size = 100;
+    Amount result2[NUM_GETBLOCKSTATS_PERCENTILES] = { Amount::zero() };
+    feerates.clear();
+
+    feerates.emplace_back(std::make_pair(Amount(1 * SATOSHI), 9));
+    feerates.emplace_back(std::make_pair(Amount(2 * SATOSHI), 16)); //10th + 25th percentile
+    feerates.emplace_back(std::make_pair(Amount(4 * SATOSHI), 50)); //50th + 75th percentile
+    feerates.emplace_back(std::make_pair(Amount(5 * SATOSHI), 10));
+    feerates.emplace_back(std::make_pair(Amount(9 * SATOSHI), 15));  // 90th percentile
+
+    CalculatePercentilesBySize(result2, feerates, total_size);
+
+    BOOST_CHECK_EQUAL(result2[0], Amount(2 * SATOSHI));
+    BOOST_CHECK_EQUAL(result2[1], Amount(2 * SATOSHI));
+    BOOST_CHECK_EQUAL(result2[2], Amount(4 * SATOSHI));
+    BOOST_CHECK_EQUAL(result2[3], Amount(4 * SATOSHI));
+    BOOST_CHECK_EQUAL(result2[4], Amount(9 * SATOSHI));
+
+    // Same test as above, but one of the percentile-overlapping pairs is split in 2.
+    total_size = 100;
+    Amount result3[NUM_GETBLOCKSTATS_PERCENTILES] = { Amount::zero() };
+    feerates.clear();
+
+    feerates.emplace_back(std::make_pair(Amount(1 * SATOSHI), 9));
+    feerates.emplace_back(std::make_pair(Amount(2 * SATOSHI), 11)); // 10th percentile
+    feerates.emplace_back(std::make_pair(Amount(2 * SATOSHI), 5)); // 25th percentile
+    feerates.emplace_back(std::make_pair(Amount(4 * SATOSHI), 50)); //50th + 75th percentile
+    feerates.emplace_back(std::make_pair(Amount(5 * SATOSHI), 10));
+    feerates.emplace_back(std::make_pair(Amount(9 * SATOSHI), 15)); // 90th percentile
+
+    CalculatePercentilesBySize(result3, feerates, total_size);
+
+    BOOST_CHECK_EQUAL(result3[0], Amount(2 * SATOSHI));
+    BOOST_CHECK_EQUAL(result3[1], Amount(2 * SATOSHI));
+    BOOST_CHECK_EQUAL(result3[2], Amount(4 * SATOSHI));
+    BOOST_CHECK_EQUAL(result3[3], Amount(4 * SATOSHI));
+    BOOST_CHECK_EQUAL(result3[4], Amount(9 * SATOSHI));
+
+    // Test with one transaction spanning all percentiles.
+    total_size = 104;
+    Amount result4[NUM_GETBLOCKSTATS_PERCENTILES] = { Amount::zero() };
+    feerates.clear();
+
+    feerates.emplace_back(std::make_pair(Amount(1 * SATOSHI), 100));
+    feerates.emplace_back(std::make_pair(Amount(2 * SATOSHI), 1));
+    feerates.emplace_back(std::make_pair(Amount(3 * SATOSHI), 1));
+    feerates.emplace_back(std::make_pair(Amount(3 * SATOSHI), 1));
+    feerates.emplace_back(std::make_pair(Amount(999999 * SATOSHI), 1));
+
+    CalculatePercentilesBySize(result4, feerates, total_size);
+
+    for (int64_t i = 0; i < NUM_GETBLOCKSTATS_PERCENTILES; i++) {
+        BOOST_CHECK_EQUAL(result4[i], Amount(1 * SATOSHI));
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
