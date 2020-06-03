@@ -778,14 +778,14 @@ static UniValue getblockheader(const Config &config,
     if (request.fHelp || request.params.size() < 1 ||
         request.params.size() > 2) {
         throw std::runtime_error(
-            "getblockheader \"blockhash\" ( verbose )\n"
+            "getblockheader hash_or_height ( verbose )\n"
             "\nIf verbose is false, returns a string that is serialized, "
             "hex-encoded data for blockheader 'hash'.\n"
             "If verbose is true, returns an Object with information about "
             "blockheader <hash>.\n"
             "\nArguments:\n"
-            "1. \"blockhash\"     (string, required) The block hash\n"
-            "2. verbose           (boolean, optional, default=true) true for a "
+            "1. \"hash_or_height\"  (numeric or string, required) The block hash or block height\n"
+            "2. verbose             (boolean, optional, default=true) true for a "
             "json object, false for the hex-encoded data\n"
             "\nResult (for verbose = true):\n"
             "{\n"
@@ -818,41 +818,66 @@ static UniValue getblockheader(const Config &config,
             "\"data\"             (string) A string that is serialized, "
             "hex-encoded data for block 'hash'.\n"
             "\nExamples:\n" +
-            HelpExampleCli("getblockheader", "\"00000000c937983704a73af28acdec3"
+            HelpExampleCli("getblockheader", "1000") +
+            HelpExampleRpc("getblockheader", "1000") +
+            HelpExampleCli("getblockheader", "'\"00000000c937983704a73af28acdec3"
                                              "7b049d214adbda81d7e2a3dd146f6ed09"
-                                             "\"") +
+                                             "\"'") +
             HelpExampleRpc("getblockheader", "\"00000000c937983704a73af28acdec3"
                                              "7b049d214adbda81d7e2a3dd146f6ed09"
                                              "\""));
     }
 
-    BlockHash hash(ParseHashV(request.params[0], "hash"));
+    const CBlockIndex *pindex{};
+    const CBlockIndex *tip{};
+
+    LOCK(cs_main);
+    if (request.params[0].isNum()) {
+        const int height = request.params[0].get_int();
+        if (height < 0) {
+            throw JSONRPCError(
+                RPC_INVALID_PARAMETER,
+                strprintf("Target block height %d is negative", height));
+        }
+        tip = ::ChainActive().Tip();
+        if (height > tip->nHeight) {
+            throw JSONRPCError(
+                RPC_INVALID_PARAMETER,
+                strprintf("Target block height %d after current tip %d", height,
+                          tip->nHeight));
+        }
+
+        pindex = ::ChainActive()[height];
+    } else {
+        const BlockHash hash(ParseHashV(request.params[0], "hash_or_height"));
+        pindex = LookupBlockIndex(hash);
+        tip = ::ChainActive().Tip();
+        if (!pindex) {
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Block not found");
+        }
+        if (!::ChainActive().Contains(pindex)) {
+            throw JSONRPCError(RPC_INVALID_PARAMETER,
+                               strprintf("Block is not in chain %s",
+                                         Params().NetworkIDString()));
+        }
+    }
+
+    assert(pindex != nullptr);
 
     bool fVerbose = true;
     if (!request.params[1].isNull()) {
         fVerbose = request.params[1].get_bool();
     }
 
-    const CBlockIndex *pblockindex;
-    const CBlockIndex *tip;
-    {
-        LOCK(cs_main);
-        pblockindex = LookupBlockIndex(hash);
-        tip = ::ChainActive().Tip();
-    }
-
-    if (!pblockindex) {
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Block not found");
-    }
-
+    UniValue ret;
     if (!fVerbose) {
         CDataStream ssBlock(SER_NETWORK, PROTOCOL_VERSION);
-        ssBlock << pblockindex->GetBlockHeader();
-        std::string strHex = HexStr(ssBlock.begin(), ssBlock.end());
-        return strHex;
+        ssBlock << pindex->GetBlockHeader();
+        ret = HexStr(ssBlock.begin(), ssBlock.end());
     }
 
-    return blockheaderToJSON(tip, pblockindex);
+    ret = blockheaderToJSON(tip, pindex);
+    return ret;
 }
 
 static CBlock GetBlockChecked(const Config &config,
@@ -2504,7 +2529,7 @@ static const ContextFreeRPCCommand commands[] = {
     { "blockchain",         "getblockchaininfo",      getblockchaininfo,      {} },
     { "blockchain",         "getblockcount",          getblockcount,          {} },
     { "blockchain",         "getblockhash",           getblockhash,           {"height"} },
-    { "blockchain",         "getblockheader",         getblockheader,         {"blockhash","verbose"} },
+    { "blockchain",         "getblockheader",         getblockheader,         {"hash_or_height","verbose"} },
     { "blockchain",         "getblockstats",          getblockstats,          {"hash_or_height","stats"} },
     { "blockchain",         "getchaintips",           getchaintips,           {} },
     { "blockchain",         "getchaintxstats",        getchaintxstats,        {"nblocks", "blockhash"} },

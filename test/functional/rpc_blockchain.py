@@ -239,20 +239,30 @@ class BlockchainTest(BitcoinTestFramework):
         node = self.nodes[0]
 
         assert_raises_rpc_error(-8,
-                                "hash must be of length 64 (not 8, for 'nonsense')",
+                                "hash_or_height must be of length 64 (not 8, for 'nonsense')",
                                 node.getblockheader,
                                 "nonsense")
         assert_raises_rpc_error(
             -8,
-            "hash must be hexadecimal string (not 'ZZZ7bb8b1697ea987f3b223ba7819250cae33efacb068d23dc24859824a77844')",
+            "hash_or_height must be hexadecimal string (not 'ZZZ7bb8b1697ea987f3b223ba7819250cae33efacb068d23dc24859824a77844')",
             node.getblockheader,
             "ZZZ7bb8b1697ea987f3b223ba7819250cae33efacb068d23dc24859824a77844")
         assert_raises_rpc_error(-5, "Block not found", node.getblockheader,
                                 "0cf7bb8b1697ea987f3b223ba7819250cae33efacb068d23dc24859824a77844")
+        assert_raises_rpc_error(
+            -8,
+            "Target block height 201 after current tip 200",
+            node.getblockheader,
+            201)
+        assert_raises_rpc_error(
+            -8,
+            "Target block height -10 is negative",
+            node.getblockheader,
+            -10)
 
         besthash = node.getbestblockhash()
         secondbesthash = node.getblockhash(199)
-        header = node.getblockheader(blockhash=besthash)
+        header = node.getblockheader(hash_or_height=besthash)
 
         assert_equal(header['hash'], besthash)
         assert_equal(header['height'], 200)
@@ -270,6 +280,9 @@ class BlockchainTest(BitcoinTestFramework):
         assert isinstance(header['version'], int)
         assert isinstance(int(header['versionHex'], 16), int)
         assert isinstance(header['difficulty'], Decimal)
+
+        header_by_height = node.getblockheader(hash_or_height=200)
+        assert_equal(header, header_by_height)
 
     def _test_getdifficulty(self):
         difficulty = self.nodes[0].getdifficulty()
