@@ -351,19 +351,19 @@ ArgsManager::ArgsManager()
     // nothing to do
 }
 
-const std::set<std::string> ArgsManager::GetUnsuitableSectionOnlyArgs() const {
+std::set<std::string> ArgsManager::GetUnsuitableSectionOnlyArgs() const {
     std::set<std::string> unsuitables;
 
     LOCK(cs_args);
 
     // if there's no section selected, don't worry
     if (m_network.empty()) {
-        return std::set<std::string>{};
+        return {};
     }
 
     // if it's okay to use the default section for this network, don't worry
     if (m_network == CBaseChainParams::MAIN) {
-        return std::set<std::string>{};
+        return {};
     }
 
     for (const auto &arg : m_network_only_args) {
@@ -394,7 +394,7 @@ const std::set<std::string> ArgsManager::GetUnsuitableSectionOnlyArgs() const {
     return unsuitables;
 }
 
-const std::set<std::string> ArgsManager::GetUnrecognizedSections() const {
+std::set<std::string> ArgsManager::GetUnrecognizedSections() const {
     // Section names to be recognized in the config file.
     static const std::set<std::string> available_sections{
         CBaseChainParams::REGTEST, CBaseChainParams::TESTNET,
