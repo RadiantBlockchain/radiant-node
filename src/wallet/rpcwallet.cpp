@@ -4505,8 +4505,8 @@ static UniValue walletprocesspsbt(const Config &config,
     UniValue result(UniValue::VOBJ);
     CDataStream ssTx(SER_NETWORK, PROTOCOL_VERSION);
     ssTx << psbtx;
-    result.pushKV("psbt", EncodeBase64(ssTx.str()));
-    result.pushKV("complete", complete);
+    result.pushKV("psbt", EncodeBase64((uint8_t *)ssTx.data(), ssTx.size()), false);
+    result.pushKV("complete", complete, false);
 
     return result;
 }
@@ -4687,9 +4687,9 @@ static UniValue walletcreatefundedpsbt(const Config &config,
     ssTx << psbtx;
 
     UniValue result(UniValue::VOBJ);
-    result.pushKV("psbt", EncodeBase64(ssTx.str()));
-    result.pushKV("fee", ValueFromAmount(fee));
-    result.pushKV("changepos", change_position);
+    result.pushKV("psbt", EncodeBase64((uint8_t *)ssTx.data(), ssTx.size()), false);
+    result.pushKV("fee", ValueFromAmount(fee), false);
+    result.pushKV("changepos", change_position, false);
     return result;
 }
 

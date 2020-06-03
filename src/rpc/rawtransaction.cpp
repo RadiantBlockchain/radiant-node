@@ -1774,12 +1774,12 @@ static UniValue finalizepsbt(const Config &config,
             mtx.vin[i].scriptSig = psbtx.inputs[i].final_script_sig;
         }
         ssTx << mtx;
-        result.pushKV("hex", HexStr(ssTx.str()));
+        result.pushKV("hex", HexStr(ssTx.begin(), ssTx.end()), false);
     } else {
         ssTx << psbtx;
-        result.pushKV("psbt", EncodeBase64(ssTx.str()));
+        result.pushKV("psbt", EncodeBase64((uint8_t *)ssTx.data(), ssTx.size()), false);
     }
-    result.pushKV("complete", complete);
+    result.pushKV("complete", complete, false);
 
     return result;
 }
