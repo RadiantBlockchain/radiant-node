@@ -384,6 +384,7 @@ add_library(common
 	key.cpp
 	key_io.cpp
 	keystore.cpp
+	net_permissions.cpp
 	netaddress.cpp
 	netbase.cpp
 	primitives/block.cpp
