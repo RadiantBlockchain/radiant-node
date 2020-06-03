@@ -1,5 +1,5 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2009-2019 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -816,11 +816,10 @@ static RecursiveMutex csPathCached;
 
 const fs::path &GetBlocksDir() {
     LOCK(csPathCached);
-
     fs::path &path = g_blocks_path_cache_net_specific;
 
-    // This can be called during exceptions by LogPrintf(), so we cache the
-    // value so we don't have to do memory allocations after that.
+    // Cache the path to avoid calling fs::create_directories on every call of
+    // this function
     if (!path.empty()) {
         return path;
     }
@@ -843,11 +842,10 @@ const fs::path &GetBlocksDir() {
 
 const fs::path &GetDataDir(bool fNetSpecific) {
     LOCK(csPathCached);
-
     fs::path &path = fNetSpecific ? pathCachedNetSpecific : pathCached;
 
-    // This can be called during exceptions by LogPrintf(), so we cache the
-    // value so we don't have to do memory allocations after that.
+    // Cache the path to avoid calling fs::create_directories on every call of
+    // this function
     if (!path.empty()) {
         return path;
     }
