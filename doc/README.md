@@ -15,13 +15,13 @@ you can verify the integrity of the binaries by following these instructions, re
 VERSION with the value relevant to you:
 
 Get the keys for versions 0.21.1 or later:
+
 ```
 VERSION="0.21.1"
 URL="https://download.bitcoincashnode.org/releases/${VERSION}/src/bitcoin-cash-node-${VERSION}.tar.gz"
 KEYS_FILE="bitcoin-cash-node-${VERSION}/contrib/gitian-signing/keys.txt"
 wget -q -O - "${URL}" | tar -zxOf - "${KEYS_FILE}" | while read FINGERPRINT _; do gpg --recv-keys "${FINGERPRINT}"; done
 ```
-
 
 Get the keys for version 0.21.0:
 ```
@@ -64,7 +64,7 @@ Drag bitcoin-cash-node to your applications folder, and then run bitcoin-cash-no
 ### Need Help?
 
 * See the documentation at the [Bitcoin Wiki](https://en.bitcoin.it/wiki/Main_Page)
-for help and more information.
+  for help and more information.
 * Ask for help on the [Bitcoin Cash Node Subreddit](https://www.reddit.com/r/bitcoincashnode/).
 
 Building
@@ -95,6 +95,7 @@ The Bitcoin Cash Node repo's [root README](/README.md) contains relevant informa
 - [Benchmarking](benchmarking.md)
 
 ### Miscellaneous
+
 - [Assets Attribution](assets-attribution.md)
 - [Files](files.md)
 - [Fuzz-testing](fuzzing.md)

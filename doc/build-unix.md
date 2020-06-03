@@ -8,6 +8,7 @@ Some notes on how to build Bitcoin Cash Node in Unix.
 * For FreeBSD specific instructions, see [build-freebsd.md](build-freebsd.md) in this directory.
 
 **Table of contents**
+
 * [UNIX BUILD NOTES](build-unix.md#unix-build-notes)
   * [To Build](build-unix.md#to-build)
     * [Disable-wallet mode](build-unix.md#disable-wallet-mode)

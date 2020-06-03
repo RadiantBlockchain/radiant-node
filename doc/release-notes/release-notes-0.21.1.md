@@ -137,26 +137,31 @@ Changes since Bitcoin Cash Node 0.21.0
 - [build-unix-rpm.md](build-unix-rpm.md) : (build, refactor) split out from [build-unix.md](build-unix.md)
 
 **Removed documents:**
+
 - [gitian-building/gitian-building-mac-os-sdk.md](gitian-building/gitian-building-mac-os-sdk.md) : obsoleted instructions
 
 **Notable commits grouped by functionality:**
 
 Security or consensus relevant fixes
+
 - 83252d0 [CVE-2019-18936] Pull UniValue subtree from Bitcoin Core
 - 5a761db [validation.cpp] update 'cousins' during UpdateFlags (Bitcoin ABC)
 
 Interfaces / RPC
+
 - 0c019c5 Add help text for -parkdeepreorg and -automaticunparking
 - 9d36ab1 Make hidden reorg protection RPC commands visible
 - d0ed11f `getblocktemplate` RPC help fixes
 
 Peformance optimizations
+
 - 54d94d1 Don't park blocks when there is no actual reorg
 - 4e9a173 The parked block marker, pindexBestParked, is set to null if it is about to be cleared.
 - 3be2000 UniValue & RPC Interface: Significant performance improvements
 - 472118a UniValue performance speedups for .write()
 
 GUI
+
 - 6ce344f Qt: Fix #47; quirk when switching versions after selecting Satoshi (sats)
 - 9f1598b Qt: Set AA_EnableHighDpiScaling before QApplication instance creation
 - a512311 Add 'GRAPHENE' and 'CF' GUI labels in nodes' supported services
@@ -167,6 +172,7 @@ GUI
 - b2bf997 Modify Bitcoin Qt desktop file to reflect we are Bitcoin Cash Node
 
 Code quality
+
 - 6786e42 Fix many PVS static analyzer warnings and/or errors
 - 38e9fde13 Fix two compiler warnings (clang 11.0.0)
 - 80e4cff sha256_shani.cpp + clang: suppress -Wcast-align warnings
@@ -177,6 +183,7 @@ Code quality
 - 6c139ae [CMAKE] Factorize the test suite target name construction
 
 Documentation updates
+
 - ff23d72 [doc] Add revised xversion spec (draft) - provided by Greg Griffith (Bitcoin Unlimited)
 - 41f2204 d50e0f2 939f729 f67fa40 ae737a6 335cdc0 Update contributing, build, developer and gitian docs
 - 86e229c 7dea808 Fix up obsolete ABC references
@@ -196,17 +203,21 @@ Documentation updates
 - f187c05d0 Update man pages as per release process
 
 Build / general:
+
 - 6d3f9c6 fix inconsistency in benchmark binary name between ninja / autotools build
 - 4493b2a [SECP256K1] Fix ability to compile tests without -DVERIFY.
 - 245c7d14a Exclude gitian-building documents from Windows installer package (NSIS)
 
 Build / Linux:
+
 - d559b10 Needed changes to get Ubuntu PPA services to buid deb packages
 
 Build / MacOSX:
+
 - 5f22c42 Update to using MacOSX10.11.sdk.tar.xz from Github for gitian building
 
 Tests / test framework
+
 - 3d5b166 Add `startfrom` parameter to test_runner
 - 6930a54 [QA] Add extra column in Python Test runner to show order in which tests were run
 - 4f3fc89 Fix handling of functional test runner parameters --extended, --cutoff, and --startfrom
@@ -216,25 +227,30 @@ Tests / test framework
 - 2653ef7 [backport] Add test to check that transactions expire from mempool
 
 Benchmarks
+
 - d8cf0f9 Bench: Added a more complex test to rpc_mempool.cpp
 - 2ece470 Add an additional test, "JsonReadWrite1MBBlockData"
 - dcd0859 Make BlockToJsonVerbose benchmark more challenging
 - 822e0ff bench: Benchmark blockToJSON
 
 Seeds / seeder software
+
 - 419fa06fe update of static IP seeds
 - 01e8356 Replace BTCfork DNS seeders which are moving to new domain names
 - 254a6a4 Add unit tests for CSeederNode::ProcessMessage()
 
 Maintainer tools
+
 - c05d7074d Restore git-subtree-check.sh script
 - fea33a6 Bring univalue back into the subtree list
 - d76918e Move github-release to appropriate contrib sub-directory
 
 Infrastructure
+
 - dcf4337 Use BCHN download server as fallback for dependencies (depends/)
 
 Cleanup
+
 - dd7e62f Remove GitHub issue template; add Gitlab issue template 'Bug_report' in its place
 - 5f1d605 Use consistent copyright notices
 - c769b90 Remove declaration of undefined function accidentally introduced in D5135
@@ -243,6 +259,7 @@ Cleanup
 - c5bbcbd Remove BIP9 and BIP145 references from getblocktemplate RPC help
 
 Continuous Integration (GitLab CI)
+
 - 290de1a [ci] Add clang build
 - 21e830e ac29dbe [ci] Add 1-eval benchmark execution to test stage
 - b5546be Add static checks stage to CI pipeline
@@ -252,6 +269,7 @@ Continuous Integration (GitLab CI)
 - a9472d8 [ci] Added jobs for remaining qa tests
 
 Backports
+
 - a693072 Core: #11269: [Mempool] CTxMemPoolEntry::UpdateAncestorState: modifySigOps param type
 - e915394 Core: #12035: [qt] change µBTC to bits
 - c929cde Core: #13264: [qt] Satoshi unit

@@ -13,6 +13,7 @@ the Gitian builds. This guide explains how to set up the environment, and how
 to start the builds.
 
 Requirements:
+
  - A machine with at least 64b of disk space
  - 16GB of RAM
  - Several installed tools:

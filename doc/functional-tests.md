@@ -8,10 +8,10 @@ etc.
 There are currently two sets of tests in the [/test/](/test/) directory:
 
 - [functional](/test/functional) which test the functionality of
-bitcoind and bitcoin-qt by interacting with them through the RPC and P2P
-interfaces.
+  bitcoind and bitcoin-qt by interacting with them through the RPC and P2P
+  interfaces.
 - [util](/test/util) which tests the bitcoin utilities, currently only
-bitcoin-tx.
+  bitcoin-tx.
 
 The util tests are run as part of `make check` target. The functional
 tests are run by the Teamcity continuous build process whenever a diff is
@@ -258,20 +258,17 @@ P2P messages. These can be found in the following source files:
 #### Using the P2P interface
 
 - `messages.py` contains all the definitions for objects that pass
-over the network (`CBlock`, `CTransaction`, etc, along with the network-level
-wrappers for them, `msg_block`, `msg_tx`, etc).
-
+  over the network (`CBlock`, `CTransaction`, etc, along with the network-level
+  wrappers for them, `msg_block`, `msg_tx`, etc).
 - P2P tests have two threads. One thread handles all network communication
-with the bitcoind(s) being tested in a callback-based event loop; the other
-implements the test logic.
-
+  with the bitcoind(s) being tested in a callback-based event loop; the other
+  implements the test logic.
 - `P2PConnection` is the class used to connect to a bitcoind.  `P2PInterface`
-contains the higher level logic for processing P2P payloads and connecting to
-the Bitcoin Core node application logic. For custom behaviour, subclass the
-P2PInterface object and override the callback methods.
-
+  contains the higher level logic for processing P2P payloads and connecting to
+  the Bitcoin Core node application logic. For custom behaviour, subclass the
+  P2PInterface object and override the callback methods.
 - Can be used to write tests where specific P2P protocol behavior is tested.
-Examples tests are `p2p_unrequested_blocks.py`, `p2p_compactblocks.py`.
+  Examples tests are `p2p_unrequested_blocks.py`, `p2p_compactblocks.py`.
 
 ### test-framework modules
 
