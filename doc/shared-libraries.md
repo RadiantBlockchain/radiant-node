@@ -18,6 +18,7 @@ The interface is defined in the C header `bitcoinconsensus.h` located in  `src/s
 `bitcoinconsensus_verify_script` returns an `int` with the status of the verification. It will be `1` if the input script correctly spends the previous output `scriptPubKey`.
 
 ##### Parameters
+
 - `const unsigned char *scriptPubKey` - The previous output script that encumbers spending.
 - `unsigned int scriptPubKeyLen` - The number of bytes for the `scriptPubKey`.
 - `const unsigned char *txTo` - The transaction with the input that is spending the previous output.
@@ -27,6 +28,7 @@ The interface is defined in the C header `bitcoinconsensus.h` located in  `src/s
 - `bitcoinconsensus_error* err` - Will have the error/success code for the operation *(see below)*.
 
 ##### Script Flags
+
 - `bitcoinconsensus_SCRIPT_FLAGS_VERIFY_NONE`
 - `bitcoinconsensus_SCRIPT_FLAGS_VERIFY_P2SH` - Evaluate P2SH ([BIP16](https://github.com/bitcoin/bips/blob/master/bip-0016.mediawiki)) subscripts
 - `bitcoinconsensus_SCRIPT_FLAGS_VERIFY_DERSIG` - Enforce strict DER ([BIP66](https://github.com/bitcoin/bips/blob/master/bip-0066.mediawiki)) compliance
@@ -35,8 +37,8 @@ The interface is defined in the C header `bitcoinconsensus.h` located in  `src/s
 - `bitcoinconsensus_SCRIPT_FLAGS_VERIFY_WITNESS` - Enable WITNESS ([BIP141](https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki))
 - `bitcoinconsensus_SCRIPT_ENABLE_SIGHASH_FORKID` - Enable SIGHASH_FORKID replay protection ([UAHF](https://gitlab.com/bitcoin-cash-node/bchn-sw/bitcoincash-upgrade-specifications/-/blob/master/spec/uahf-technical-spec.md#req-6-2-mandatory-signature-shift-via-hash-type))
 
-
 ##### Errors
+
 - `bitcoinconsensus_ERR_OK` - No errors with input parameters *(see the return value of `bitcoinconsensus_verify_script` for the verification status)*
 - `bitcoinconsensus_ERR_TX_INDEX` - An invalid index for `txTo`
 - `bitcoinconsensus_ERR_TX_SIZE_MISMATCH` - `txToLen` did not match with the size of `txTo`
@@ -44,10 +46,12 @@ The interface is defined in the C header `bitcoinconsensus.h` located in  `src/s
 - `bitcoinconsensus_ERR_AMOUNT_REQUIRED` - Input amount is required if WITNESS is used
 
 ### Example Implementations
+
 - [Bitcoin Cash Node (BCHN)](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/blob/master/src/script/bitcoinconsensus.h)
 - [Bitcoin Unlimited (BUCash)](https://github.com/BitcoinUnlimited/BitcoinUnlimited/blob/release/src/script/bitcoinconsensus.h)
 
 ### Historic Example Implementations in Bitcoin (pre-dating Bitcoin Cash)
+
 - [Bitcoin Core](https://github.com/bitcoin/bitcoin/blob/master/src/script/bitcoinconsensus.h)
 - [NBitcoin](https://github.com/NicolasDorier/NBitcoin/blob/master/NBitcoin/Script.cs#L814) (.NET Bindings)
 - [node-libbitcoinconsensus](https://github.com/bitpay/node-libbitcoinconsensus) (Node.js Bindings)

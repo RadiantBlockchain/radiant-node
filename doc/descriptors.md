@@ -10,6 +10,7 @@ the UTXO set, see the `scantxoutset` RPC help.
 ## Features
 
 Output descriptors currently support:
+
 - Pay-to-pubkey scripts (P2PK), through the `pk` function.
 - Pay-to-pubkey-hash scripts (P2PKH), through the `pkh` function.
 - Pay-to-script-hash scripts (P2SH), through the `sh` function.
@@ -33,6 +34,7 @@ Output descriptors currently support:
 Descriptors consist of several types of expressions. The top level expression is always a `SCRIPT`.
 
 `SCRIPT` expressions:
+
 - `sh(SCRIPT)` (top level only): P2SH embed the argument.
 - `pk(KEY)` (anywhere): P2PK output for the given public key.
 - `pkh(KEY)` (anywhere): P2PKH output for the given public key (use `addr` if you only know the pubkey hash).
@@ -42,15 +44,17 @@ Descriptors consist of several types of expressions. The top level expression is
 - `raw(HEX)` (top level only): the script whose hex encoding is HEX.
 
 `KEY` expressions:
+
 - Hex encoded public keys (66 characters starting with `02` or `03`, or 130 characters starting with `04`).
 - [WIF](https://en.bitcoin.it/wiki/Wallet_import_format) encoded private keys may be specified instead of the corresponding public key, with the same meaning.
--`xpub` encoded extended public key or `xprv` encoded private key (as defined in [BIP 32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki)).
+- `xpub` encoded extended public key or `xprv` encoded private key (as defined in [BIP 32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki)).
   - Followed by zero or more `/NUM` unhardened and `/NUM'` hardened BIP32 derivation steps.
   - Optionally followed by a single `/*` or `/*'` final step to denote all (direct) unhardened or hardened children.
   - The usage of hardened derivation steps requires providing the private key.
   - Instead of a `'`, the suffix `h` can be used to denote hardened derivation.
 
 `ADDR` expressions are any type of supported address:
+
 - P2PKH addresses (base58, of the form `1...`). Note that P2PKH addresses in descriptors cannot be used for P2PK outputs (use the `pk` function instead).
 - P2SH addresses (base58, of the form `3...`, defined in [BIP 13](https://github.com/bitcoin/bips/blob/master/bip-0013.mediawiki)).
 

@@ -595,6 +595,7 @@ TRY_LOCK(cs_vNodes, lockNodes);
 Scripts
 --------------------------
 ### Shebang
+
 - Use `#!/usr/bin/env bash` instead of obsolete `#!/bin/bash`.
   - [*Rationale*](https://github.com/dylanaraps/pure-bash-bible#shebang):
     `#!/bin/bash` assumes it is always installed to /bin/ which can cause issues;
@@ -696,6 +697,7 @@ GUI
 
 Unit Tests
 -----------
+
  - Test suite naming convention: The Boost test suite in file 
    `src/test/foo_tests.cpp` should be named `foo_tests`. Test suite names must
    be unique.

@@ -224,6 +224,7 @@ can be found in the files `src/xversionmessage.h` and
 
 
 ## References
+
 - [1] https://reference.cash/protocol/#command
 - [2] https://reference.cash/protocol/network/messages/
 - [3] https://reference.cash/protocol/p2p/compact__int/
