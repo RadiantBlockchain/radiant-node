@@ -17,10 +17,9 @@
 #include <util/strencodings.h>
 #include <util/time.h>
 
-#include <boost/thread.hpp>
-
 #include <cstdarg>
 #include <memory>
+#include <thread>
 
 #if (defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__DragonFly__))
 #include <pthread.h>
@@ -1352,7 +1351,7 @@ bool SetupNetworking() {
 }
 
 int GetNumCores() {
-    return boost::thread::physical_concurrency();
+    return std::thread::hardware_concurrency();
 }
 
 std::string CopyrightHolders(const std::string &strPrefix) {
