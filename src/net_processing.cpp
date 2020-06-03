@@ -3603,7 +3603,12 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         pfrom->fSentAddr = true;
 
         pfrom->vAddrToSend.clear();
-        auto vAddr = connman->GetAddresses(pfrom->addr.GetNetwork());
+        std::vector<CAddress> vAddr;
+        if (pfrom->HasPermission(PF_ADDR)) {
+            vAddr = connman->GetAddresses();
+        } else {
+            vAddr = connman->GetAddresses(pfrom->addr.GetNetwork());
+        }
         FastRandomContext insecure_rand;
         for (const CAddress &addr : vAddr) {
             pfrom->PushAddress(addr, insecure_rand);
