@@ -10,6 +10,14 @@
 #include <cstddef>
 #include <type_traits>
 
+#ifdef DEBUG
+#define CONSTEXPR_IF_NOT_DEBUG
+#define ASSERT_IF_DEBUG(x) assert((x))
+#else
+#define CONSTEXPR_IF_NOT_DEBUG constexpr
+#define ASSERT_IF_DEBUG(x)
+#endif
+
 /** A Span is an object that can refer to a contiguous sequence of objects.
  *
  * It implements a subset of C++20's std::span.
@@ -35,7 +43,9 @@ public:
      * which is hard to implement without std::address_of.
      */
     template <typename T, typename std::enable_if_t<std::is_convertible_v<T (*)[], C (*)[]>, int> = 0>
-    constexpr Span(T *begin, T *end) noexcept : m_data(begin), m_size(end - begin) {}
+    CONSTEXPR_IF_NOT_DEBUG Span(T *begin, T *end) noexcept : m_data(begin), m_size(end - begin) {
+        ASSERT_IF_DEBUG(end >= begin);
+    }
 
     /** Implicit conversion of spans between compatible types.
      *
@@ -76,22 +86,34 @@ public:
     constexpr C *data() const noexcept { return m_data; }
     constexpr C *begin() const noexcept { return m_data; }
     constexpr C *end() const noexcept { return m_data + m_size; }
+    CONSTEXPR_IF_NOT_DEBUG C &front() const noexcept {
+        ASSERT_IF_DEBUG(size() > 0);
+        return *begin();
+    }
+    CONSTEXPR_IF_NOT_DEBUG C &back() const noexcept {
+        ASSERT_IF_DEBUG(size() > 0);
+        return *(end() - 1);
+    }
     constexpr std::size_t size() const noexcept { return m_size; }
     constexpr bool empty() const noexcept { return size() == 0; }
-    constexpr C &operator[](std::size_t pos) const noexcept { return m_data[pos]; }
-    constexpr C &front() const noexcept { return *begin(); }
-    constexpr C &back() const noexcept { return *(end()-1); }
-
-    constexpr Span<C> subspan(std::size_t offset) const noexcept {
+    CONSTEXPR_IF_NOT_DEBUG C &operator[](std::size_t pos) const noexcept {
+        ASSERT_IF_DEBUG(size() > pos);
+        return m_data[pos];
+    }
+    CONSTEXPR_IF_NOT_DEBUG Span<C> subspan(std::size_t offset) const noexcept {
+        ASSERT_IF_DEBUG(size() >= offset);
         return offset <= m_size? Span<C>(m_data + offset, m_size - offset) : Span<C>(end(), std::size_t{0});
     }
-    constexpr Span<C> subspan(std::size_t offset, std::size_t count) const noexcept {
+    CONSTEXPR_IF_NOT_DEBUG Span<C> subspan(std::size_t offset, std::size_t count) const noexcept {
+        ASSERT_IF_DEBUG(size() >= offset + count);
         return offset + count <= m_size ? Span<C>(m_data + offset, count) : Span<C>(end(), std::size_t{0});
     }
-    constexpr Span<C> first(std::size_t count) const noexcept {
+    CONSTEXPR_IF_NOT_DEBUG Span<C> first(std::size_t count) const noexcept {
+        ASSERT_IF_DEBUG(size() >= count);
         return count <= m_size ? Span<C>(m_data, count) : Span<C>(begin(), std::size_t{0});
     }
-    constexpr Span<C> last(std::size_t count) const noexcept {
+    CONSTEXPR_IF_NOT_DEBUG Span<C> last(std::size_t count) const noexcept {
+        ASSERT_IF_DEBUG(size() >= count);
         return count <= m_size ? Span<C>(m_data + m_size - count, count) : Span<C>(end(), std::size_t{0});
     }
 
