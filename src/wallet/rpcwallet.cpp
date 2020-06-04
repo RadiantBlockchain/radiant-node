@@ -4197,7 +4197,7 @@ UniValue getaddressesbylabel(const Config &config,
          pwallet->mapAddressBook) {
         if (item.second.name == label) {
             ret.pushKV(EncodeDestination(item.first, config),
-                       AddressBookDataToJSON(item.second, false));
+                       AddressBookDataToJSON(item.second, false), false);
         }
     }
 
