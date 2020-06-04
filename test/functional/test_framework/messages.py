@@ -501,7 +501,7 @@ class CBlockHeader:
     def __repr__(self):
         return "CBlockHeader(nVersion={} hashPrevBlock={:064x} hashMerkleRoot={:064x} nTime={} nBits={:08x} nNonce={:08x})".format(
             self.nVersion, self.hashPrevBlock, self.hashMerkleRoot,
-            time.ctime(self.nTime), self.nBits, self.nNonce)
+            self.nTime, self.nBits, self.nNonce)
 
 
 class CBlock(CBlockHeader):
@@ -560,7 +560,7 @@ class CBlock(CBlockHeader):
     def __repr__(self):
         return "CBlock(nVersion={} hashPrevBlock={:064x} hashMerkleRoot={:064x} nTime={} nBits={:08x} nNonce={:08x} vtx={})".format(
             self.nVersion, self.hashPrevBlock, self.hashMerkleRoot,
-            time.ctime(self.nTime), self.nBits, self.nNonce, repr(self.vtx))
+            self.nTime, self.nBits, self.nNonce, repr(self.vtx))
 
 
 class PrefilledTransaction:
@@ -875,7 +875,7 @@ class msg_version:
 
     def __repr__(self):
         return 'msg_version(nVersion={} nServices={} nTime={} addrTo={} addrFrom={} nNonce=0x{:016X} strSubVer={} nStartingHeight={} nRelay={})'.format(
-            self.nVersion, self.nServices, time.ctime(self.nTime),
+            self.nVersion, self.nServices, self.nTime,
             repr(self.addrTo), repr(self.addrFrom), self.nNonce,
             self.strSubVer, self.nStartingHeight, self.nRelay)
 
