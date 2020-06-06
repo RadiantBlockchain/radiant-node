@@ -146,7 +146,7 @@ The storage location of jobs persisted on disk SHOULD be configurable.
 
 (optional) **GBTL-JOB-CLEAN-REQ-1**
 
-If an implementation persists jobs on disk for some time, then it SHOULD 
+If an implementation persists jobs on disk for some time, then it SHOULD
 offer a configurable mechanism for them to be automatically deleted in order
 to conserve disk space.
 

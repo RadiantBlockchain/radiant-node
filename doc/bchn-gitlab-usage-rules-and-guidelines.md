@@ -160,7 +160,7 @@ NOTE: MR = "Merge Request"
 - "seeder": issue/MR relates to bitcoin-seeder component
 
 - "HODL" : issue/MR is on hold until further notice, usually because of a technical problem
- 
+
 - "HODL GANG" : issue/MR needs ecosystem feedback for further decision
 
 - "community" : issue/MR is classified as relating to some changes that touch on the social aspects of the projects, such as expectations of maintainers to contributors and vice versa
@@ -186,7 +186,7 @@ The commit tags below are used reasonably frequently.
 - "[doc]": this commit changes only documentation files
 
 - "[ci]": this commit changes files which steer the Continuous Integration process
- 
+
 - "[qa]" or "QA": this commit relates to files guiding Quality Assurance process
 
 - "[backport]" or "[port]": this commit is related to a (back)port of a change from external source

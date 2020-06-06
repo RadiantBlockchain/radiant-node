@@ -254,7 +254,7 @@ All these options are passed via `-D` (defines) to the `cmake` command.
 - -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/LinuxARM.cmake  # select ARM Linux toolchain
 
 - -DCCACHE=OFF  # disable ccache
-  
+
 - -DCMAKE_C_COMPILER=clang    # select clang as C compiler
 
 - -DCMAKE_CXX_COMPILER=clang++    # select clang++ as C++ compiler
@@ -263,6 +263,6 @@ All these options are passed via `-D` (defines) to the `cmake` command.
 
 - -DCMAKE_CXX_COMPILER=afl-g++    # select afl-g++ as C++ compiler
 
-- -DENABLE_GLIBC_BACK_COMPAT=ON  
-  
+- -DENABLE_GLIBC_BACK_COMPAT=ON
+
 - -DENABLE_STATIC_LIBSTDCXX=ON
