@@ -16,6 +16,7 @@ bench_bench_bitcoin_SOURCES = \
   bench/checkblock.cpp \
   bench/checkqueue.cpp \
   bench/data/block413567.cpp \
+  bench/data/block556034.cpp \
   bench/duplicate_inputs.cpp \
   bench/examples.cpp \
   bench/rollingbloom.cpp \

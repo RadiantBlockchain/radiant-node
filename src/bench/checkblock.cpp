@@ -15,21 +15,21 @@
 // a block off the wire, but before we can relay the block on to peers using
 // compact block relay.
 
-static void DeserializeBlockTest(benchmark::State &state) {
-    CDataStream stream(benchmark::data::block413567, SER_NETWORK, PROTOCOL_VERSION);
+static void DeserializeBlockTest(const std::vector<uint8_t> &data, benchmark::State &state) {
+    CDataStream stream(data, SER_NETWORK, PROTOCOL_VERSION);
     char a = '\0';
     stream.write(&a, 1); // Prevent compaction
 
     while (state.KeepRunning()) {
         CBlock block;
         stream >> block;
-        bool rewound = stream.Rewind(benchmark::data::block413567.size());
+        bool rewound = stream.Rewind(data.size());
         assert(rewound);
     }
 }
 
-static void DeserializeAndCheckBlockTest(benchmark::State &state) {
-    CDataStream stream(benchmark::data::block413567, SER_NETWORK, PROTOCOL_VERSION);
+static void DeserializeAndCheckBlockTest(const std::vector<uint8_t> &data, benchmark::State &state) {
+    CDataStream stream(data, SER_NETWORK, PROTOCOL_VERSION);
     char a = '\0';
     stream.write(&a, 1); // Prevent compaction
 
@@ -41,7 +41,7 @@ static void DeserializeAndCheckBlockTest(benchmark::State &state) {
         // here.
         CBlock block;
         stream >> block;
-        bool rewound = stream.Rewind(benchmark::data::block413567.size());
+        bool rewound = stream.Rewind(data.size());
         assert(rewound);
 
         CValidationState validationState;
@@ -50,5 +50,20 @@ static void DeserializeAndCheckBlockTest(benchmark::State &state) {
     }
 }
 
-BENCHMARK(DeserializeBlockTest, 130);
-BENCHMARK(DeserializeAndCheckBlockTest, 160);
+static void DeserializeBlockTest_1MB(benchmark::State &state) {
+    DeserializeBlockTest(benchmark::data::block413567, state);
+}
+static void DeserializeBlockTest_32MB(benchmark::State &state) {
+    DeserializeBlockTest(benchmark::data::block556034, state);
+}
+static void DeserializeAndCheckBlockTest_1MB(benchmark::State &state) {
+    DeserializeAndCheckBlockTest(benchmark::data::block413567, state);
+}
+static void DeserializeAndCheckBlockTest_32MB(benchmark::State &state) {
+    DeserializeAndCheckBlockTest(benchmark::data::block556034, state);
+}
+
+BENCHMARK(DeserializeBlockTest_1MB, 160);
+BENCHMARK(DeserializeBlockTest_32MB, 3);
+BENCHMARK(DeserializeAndCheckBlockTest_1MB, 130);
+BENCHMARK(DeserializeAndCheckBlockTest_32MB, 2);

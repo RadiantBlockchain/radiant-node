@@ -16,10 +16,10 @@
 
 #include <univalue.h>
 
-static void BlockToJsonVerbose(benchmark::State& state) {
+static void BlockToJsonVerbose(const std::vector<uint8_t> &data, benchmark::State &state) {
     SelectParams(CBaseChainParams::MAIN);
 
-    CDataStream stream(benchmark::data::block413567, SER_NETWORK, PROTOCOL_VERSION);
+    CDataStream stream(data, SER_NETWORK, PROTOCOL_VERSION);
     char a = '\0';
     stream.write(&a, 1); // Prevent compaction
 
@@ -29,7 +29,7 @@ static void BlockToJsonVerbose(benchmark::State& state) {
     CBlockIndex blockindex;
     const auto blockHash = block.GetHash();
     blockindex.phashBlock = &blockHash;
-    blockindex.nBits = 403014710;
+    blockindex.nBits = block.nBits;
 
     while (state.KeepRunning()) {
         (void)JSONRPCReply(
@@ -39,10 +39,10 @@ static void BlockToJsonVerbose(benchmark::State& state) {
     }
 }
 
-static void JsonReadWrite1MBBlock(benchmark::State& state) {
+static void JsonReadWriteBlock(const std::vector<uint8_t> &data, benchmark::State &state) {
     SelectParams(CBaseChainParams::MAIN);
 
-    CDataStream stream(benchmark::data::block413567, SER_NETWORK, PROTOCOL_VERSION);
+    CDataStream stream(data, SER_NETWORK, PROTOCOL_VERSION);
     char a = '\0';
     stream.write(&a, 1); // Prevent compaction
 
@@ -52,7 +52,7 @@ static void JsonReadWrite1MBBlock(benchmark::State& state) {
     CBlockIndex blockindex;
     const auto blockHash = block.GetHash();
     blockindex.phashBlock = &blockHash;
-    blockindex.nBits = 403014710;
+    blockindex.nBits = block.nBits;
     const auto blockuv = blockToJSON(block, &blockindex, &blockindex, /*verbose*/ true);
 
     UniValue uv;
@@ -63,5 +63,20 @@ static void JsonReadWrite1MBBlock(benchmark::State& state) {
     }
 }
 
-BENCHMARK(BlockToJsonVerbose, 10);
-BENCHMARK(JsonReadWrite1MBBlock, 7);
+static void BlockToJsonVerbose_1MB(benchmark::State &state) {
+    BlockToJsonVerbose(benchmark::data::block413567, state);
+}
+static void BlockToJsonVerbose_32MB(benchmark::State &state) {
+    BlockToJsonVerbose(benchmark::data::block556034, state);
+}
+static void JsonReadWriteBlock_1MB(benchmark::State &state) {
+    JsonReadWriteBlock(benchmark::data::block413567, state);
+}
+static void JsonReadWriteBlock_32MB(benchmark::State &state) {
+    JsonReadWriteBlock(benchmark::data::block556034, state);
+}
+
+BENCHMARK(BlockToJsonVerbose_1MB, 10);
+BENCHMARK(BlockToJsonVerbose_32MB, 1);
+BENCHMARK(JsonReadWriteBlock_1MB, 17);
+BENCHMARK(JsonReadWriteBlock_32MB, 1);
