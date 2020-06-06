@@ -1206,8 +1206,8 @@ UniValue gettxout(const Config &config, const JSONRPCRequest &request) {
             CURRENCY_UNIT +
             "\n"
             "  \"scriptPubKey\" : {         (json object)\n"
-            "     \"asm\" : \"code\",       (string) \n"
-            "     \"hex\" : \"hex\",        (string) \n"
+            "     \"asm\" : \"code\",       (string)\n"
+            "     \"hex\" : \"hex\",        (string)\n"
             "     \"reqSigs\" : n,          (numeric) Number of required "
             "signatures\n"
             "     \"type\" : \"pubkeyhash\", (string) The type, eg pubkeyhash\n"
@@ -2430,7 +2430,7 @@ static UniValue scantxoutset(const Config &config,
             "    \"height\" : n,                 (numeric) Height of the "
             "unspent transaction output\n"
             "   }\n"
-            "   ,...], \n"
+            "   ,...],\n"
             " \"total_amount\" : x.xxx,          (numeric) The total amount of "
             "all found unspent outputs in " +
             CURRENCY_UNIT +
