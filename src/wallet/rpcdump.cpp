@@ -1467,7 +1467,7 @@ UniValue importmulti(const Config &config, const JSONRPCRequest &mainRequest) {
         // Verify all timestamps are present before importing any keys.
         now = ::ChainActive().Tip() ? ::ChainActive().Tip()->GetMedianTimePast()
                                     : 0;
-        for (const UniValue &data : requests.getValues()) {
+        for (const UniValue &data : requests.getArrayValues()) {
             GetImportTimestamp(data, now);
         }
 
@@ -1479,7 +1479,7 @@ UniValue importmulti(const Config &config, const JSONRPCRequest &mainRequest) {
             fRescan = false;
         }
 
-        for (const UniValue &data : requests.getValues()) {
+        for (const UniValue &data : requests.getArrayValues()) {
             const int64_t timestamp =
                 std::max(GetImportTimestamp(data, now), minimumTimestamp);
             const UniValue result = ProcessImport(pwallet, data, timestamp);
@@ -1509,11 +1509,11 @@ UniValue importmulti(const Config &config, const JSONRPCRequest &mainRequest) {
             throw JSONRPCError(RPC_MISC_ERROR, "Rescan aborted by user.");
         }
         if (scannedTime > nLowestTimestamp) {
-            std::vector<UniValue> results = response.getValues();
+            std::vector<UniValue> results = response.getArrayValues();
             response.clear();
             response.setArray();
             size_t i = 0;
-            for (const UniValue &request : requests.getValues()) {
+            for (const UniValue &request : requests.getArrayValues()) {
                 // If key creation date is within the successfully scanned
                 // range, or if the import result already has an error set, let
                 // the result stand unmodified. Otherwise replace the result
