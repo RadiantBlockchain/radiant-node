@@ -3339,20 +3339,20 @@ static UniValue listunspent(const Config &config,
     if (!request.params[4].isNull()) {
         const UniValue &options = request.params[4].get_obj();
 
-        if (options.exists("minimumAmount")) {
-            nMinimumAmount = AmountFromValue(options["minimumAmount"]);
+        if (auto minimumAmountUV = options.find("minimumAmount")) {
+            nMinimumAmount = AmountFromValue(*minimumAmountUV);
         }
 
-        if (options.exists("maximumAmount")) {
-            nMaximumAmount = AmountFromValue(options["maximumAmount"]);
+        if (auto maximumAmountUV = options.find("maximumAmount")) {
+            nMaximumAmount = AmountFromValue(*maximumAmountUV);
         }
 
-        if (options.exists("minimumSumAmount")) {
-            nMinimumSumAmount = AmountFromValue(options["minimumSumAmount"]);
+        if (auto minimumSumAmountUV = options.find("minimumSumAmount")) {
+            nMinimumSumAmount = AmountFromValue(*minimumSumAmountUV);
         }
 
-        if (options.exists("maximumCount")) {
-            nMaximumCount = options["maximumCount"].get_int64();
+        if (auto maximumCountUV = options.find("maximumCount")) {
+            nMaximumCount = maximumCountUV->get_int64();
         }
     }
 
@@ -3449,9 +3449,9 @@ void FundTransaction(CWallet *const pwallet, CMutableTransaction &tx,
                 },
                 true, true);
 
-            if (options.exists("changeAddress")) {
+            if (auto changeAddressUV = options.find("changeAddress")) {
                 CTxDestination dest = DecodeDestination(
-                    options["changeAddress"].get_str(), pwallet->chainParams);
+                    changeAddressUV->get_str(), pwallet->chainParams);
 
                 if (!IsValidDestination(dest)) {
                     throw JSONRPCError(
@@ -3462,28 +3462,25 @@ void FundTransaction(CWallet *const pwallet, CMutableTransaction &tx,
                 coinControl.destChange = dest;
             }
 
-            if (options.exists("changePosition")) {
-                change_position = options["changePosition"].get_int();
+            if (auto changePositionUV = options.find("changePosition")) {
+                change_position = changePositionUV->get_int();
             }
 
-            if (options.exists("includeWatching")) {
-                coinControl.fAllowWatchOnly =
-                    options["includeWatching"].get_bool();
+            if (auto includeWatchingUV = options.find("includeWatching")) {
+                coinControl.fAllowWatchOnly = includeWatchingUV->get_bool();
             }
 
-            if (options.exists("lockUnspents")) {
-                lockUnspents = options["lockUnspents"].get_bool();
+            if (auto lockUnspentsUV = options.find("lockUnspents")) {
+                lockUnspents = lockUnspentsUV->get_bool();
             }
 
-            if (options.exists("feeRate")) {
-                coinControl.m_feerate =
-                    CFeeRate(AmountFromValue(options["feeRate"]));
+            if (auto feeRateUV = options.find("feeRate")) {
+                coinControl.m_feerate = CFeeRate(AmountFromValue(*feeRateUV));
                 coinControl.fOverrideFeeRate = true;
             }
 
-            if (options.exists("subtractFeeFromOutputs")) {
-                subtractFeeFromOutputs =
-                    options["subtractFeeFromOutputs"].get_array();
+            if (auto subtractFeeFromOutputsUV = options.find("subtractFeeFromOutputs")) {
+                subtractFeeFromOutputs = subtractFeeFromOutputsUV->get_array();
             }
         }
     }
@@ -3930,8 +3927,8 @@ public:
             subobj.pushKV("scriptPubKey", HexStr(subscript.begin(), subscript.end()));
             // Always report the pubkey at the top level, so that
             // `getnewaddress()['pubkey']` always works.
-            if (subobj.exists("pubkey")) {
-                obj.pushKV("pubkey", subobj["pubkey"]);
+            if (auto pubkeyUV = subobj.find("pubkey")) {
+                obj.pushKV("pubkey", *pubkeyUV);
             }
             obj.pushKV("embedded", std::move(subobj));
             if (include_addresses) {

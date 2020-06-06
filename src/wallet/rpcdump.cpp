@@ -1011,25 +1011,25 @@ static UniValue ProcessImport(CWallet *const pwallet, const UniValue &data,
         const UniValue &scriptPubKey = data["scriptPubKey"];
 
         // Should have script or JSON with "address".
-        if (!(scriptPubKey.getType() == UniValue::VOBJ &&
-              scriptPubKey.exists("address")) &&
-            !(scriptPubKey.getType() == UniValue::VSTR)) {
+        bool isScript = scriptPubKey.getType() == UniValue::VSTR;
+        const UniValue* addressUV = scriptPubKey.getType() == UniValue::VOBJ ? scriptPubKey.find("address") : nullptr;
+        if (!addressUV && !isScript) {
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid scriptPubKey");
         }
 
         // Optional fields.
-        const std::string &strRedeemScript =
-            data.exists("redeemscript") ? data["redeemscript"].get_str() : "";
-        const UniValue &pubKeys =
-            data.exists("pubkeys") ? data["pubkeys"].get_array() : UniValue();
-        const UniValue &keys =
-            data.exists("keys") ? data["keys"].get_array() : UniValue();
-        const bool internal =
-            data.exists("internal") ? data["internal"].get_bool() : false;
-        const bool watchOnly =
-            data.exists("watchonly") ? data["watchonly"].get_bool() : false;
-        const std::string &label =
-            data.exists("label") && !internal ? data["label"].get_str() : "";
+        const auto redeemscriptUV = data.find("redeemscript");
+        const std::string &strRedeemScript = redeemscriptUV ? redeemscriptUV->get_str() : "";
+        const auto pubkeysUV = data.find("pubkeys");
+        const UniValue &pubKeys = pubkeysUV ? pubkeysUV->get_array() : NullUniValue;
+        const auto keysUV = data.find("keys");
+        const UniValue &keys = keysUV ? keysUV->get_array() : NullUniValue;
+        const auto internalUV = data.find("internal");
+        const bool internal = internalUV ? internalUV->get_bool() : false;
+        const auto watchonlyUV = data.find("watchonly");
+        const bool watchOnly = watchonlyUV ? watchonlyUV->get_bool() : false;
+        const auto labelUV = data.find("label");
+        const std::string &label = labelUV && !internal ? labelUV->get_str() : "";
 
         // If private keys are disabled, abort if private keys are being
         // imported
@@ -1040,11 +1040,10 @@ static UniValue ProcessImport(CWallet *const pwallet, const UniValue &data,
                                "private keys disabled");
         }
 
-        bool isScript = scriptPubKey.getType() == UniValue::VSTR;
         bool isP2SH = strRedeemScript.length() > 0;
         const std::string &output = isScript
                                         ? scriptPubKey.get_str()
-                                        : scriptPubKey["address"].get_str();
+                                        : addressUV->get_str();
 
         // Parse the output.
         CScript script;
@@ -1075,7 +1074,7 @@ static UniValue ProcessImport(CWallet *const pwallet, const UniValue &data,
         }
 
         // Internal + Label
-        if (internal && data.exists("label")) {
+        if (internal && labelUV) {
             throw JSONRPCError(
                 RPC_INVALID_PARAMETER,
                 "Incompatibility found between internal and label");
@@ -1367,8 +1366,8 @@ static UniValue ProcessImport(CWallet *const pwallet, const UniValue &data,
 }
 
 static int64_t GetImportTimestamp(const UniValue &data, int64_t now) {
-    if (data.exists("timestamp")) {
-        const UniValue &timestamp = data["timestamp"];
+    if (auto timestampUV = data.find("timestamp")) {
+        const UniValue &timestamp = *timestampUV;
         if (timestamp.isNum()) {
             return timestamp.get_int64();
         } else if (timestamp.isStr() && timestamp.get_str() == "now") {
@@ -1443,8 +1442,8 @@ UniValue importmulti(const Config &config, const JSONRPCRequest &mainRequest) {
     if (!mainRequest.params[1].isNull()) {
         const UniValue &options = mainRequest.params[1];
 
-        if (options.exists("rescan")) {
-            fRescan = options["rescan"].get_bool();
+        if (auto rescanUV = options.find("rescan")) {
+            fRescan = rescanUV->get_bool();
         }
     }
 
@@ -1519,11 +1518,12 @@ UniValue importmulti(const Config &config, const JSONRPCRequest &mainRequest) {
                 // the result stand unmodified. Otherwise replace the result
                 // with an error message.
                 if (scannedTime <= GetImportTimestamp(request, now) ||
-                    results.at(i).exists("error")) {
+                    results.at(i).find("error")) {
                     response.push_back(results.at(i));
                 } else {
                     UniValue result = UniValue(UniValue::VOBJ);
-                    result.pushKV("success", UniValue(false));
+                    result.reserve(2);
+                    result.pushKV("success", UniValue(false), false);
                     result.pushKV(
                         "error",
                         JSONRPCError(
@@ -1543,7 +1543,8 @@ UniValue importmulti(const Config &config, const JSONRPCRequest &mainRequest) {
                                 "options).",
                                 GetImportTimestamp(request, now),
                                 scannedTime - TIMESTAMP_WINDOW - 1,
-                                TIMESTAMP_WINDOW)));
+                                TIMESTAMP_WINDOW)),
+                        false);
                     response.push_back(std::move(result));
                 }
                 ++i;
