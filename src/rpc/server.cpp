@@ -506,7 +506,7 @@ transformNamedArguments(const JSONRPCRequest &in,
     // Build a map of parameters, and remove ones that have been processed, so
     // that we can throw a focused error if there is an unknown one.
     const std::vector<std::string> &keys = in.params.getKeys();
-    const std::vector<UniValue> &values = in.params.getValues();
+    const std::vector<UniValue> &values = in.params.getObjectValues();
     std::unordered_map<std::string, const UniValue *> argsIn;
     for (size_t i = 0; i < keys.size(); ++i) {
         argsIn[keys[i]] = &values[i];

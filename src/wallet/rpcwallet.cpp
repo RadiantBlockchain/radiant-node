@@ -1702,7 +1702,7 @@ UniValue listtransactions(const Config &config, const JSONRPCRequest &request) {
         nCount = ret.size() - nFrom;
     }
 
-    std::vector<UniValue> arrTmp = ret.getValues();
+    std::vector<UniValue> arrTmp = ret.getArrayValues();
 
     std::vector<UniValue>::iterator first = arrTmp.begin();
     std::advance(first, nFrom);

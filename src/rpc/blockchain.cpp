@@ -2470,7 +2470,7 @@ static UniValue scantxoutset(const Config &config,
 
         // loop through the scan objects
         for (const UniValue &scanobject :
-             request.params[1].get_array().getValues()) {
+             request.params[1].getArrayValues()) {
             std::string desc_str;
             int range = 1000;
             if (scanobject.isStr()) {
