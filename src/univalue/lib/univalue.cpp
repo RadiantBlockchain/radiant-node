@@ -323,13 +323,3 @@ const char *uvTypeName(UniValue::VType t) noexcept
     // not reached
     return NULL;
 }
-
-const UniValue& find_value(const UniValue& obj, const std::string& name) noexcept
-{
-    // NB: keys is always empty if typ != VOBJ, and keys.size() == values.size() if type == VOBJ
-    for (size_t i = 0, nKeys = obj.keys.size(); i < nKeys; ++i)
-        if (obj.keys[i] == name)
-            return obj.values[i];
-
-    return NullUniValue;
-}

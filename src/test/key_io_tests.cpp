@@ -40,14 +40,12 @@ BOOST_AUTO_TEST_CASE(key_io_valid_parse) {
         std::string exp_base58string = test[0].get_str();
         std::vector<uint8_t> exp_payload = ParseHex(test[1].get_str());
         const UniValue &metadata = test[2].get_obj();
-        bool isPrivkey = find_value(metadata, "isPrivkey").get_bool();
-        SelectParams(find_value(metadata, "chain").get_str());
-        bool try_case_flip =
-            find_value(metadata, "tryCaseFlip").isNull()
-                ? false
-                : find_value(metadata, "tryCaseFlip").get_bool();
+        bool isPrivkey = metadata["isPrivkey"].get_bool();
+        SelectParams(metadata["chain"].get_str());
+        const UniValue& tryCaseFlipUV = metadata["tryCaseFlip"];
+        bool try_case_flip = tryCaseFlipUV.isNull() ? false : tryCaseFlipUV.get_bool();
         if (isPrivkey) {
-            bool isCompressed = find_value(metadata, "isCompressed").get_bool();
+            bool isCompressed = metadata["isCompressed"].get_bool();
             // Must be valid private key
             privkey = DecodeSecret(exp_base58string);
             BOOST_CHECK_MESSAGE(privkey.IsValid(), "!IsValid:" + strTest);
@@ -112,10 +110,10 @@ BOOST_AUTO_TEST_CASE(key_io_valid_gen) {
         std::string exp_base58string = test[0].get_str();
         std::vector<uint8_t> exp_payload = ParseHex(test[1].get_str());
         const UniValue &metadata = test[2].get_obj();
-        bool isPrivkey = find_value(metadata, "isPrivkey").get_bool();
-        SelectParams(find_value(metadata, "chain").get_str());
+        bool isPrivkey = metadata["isPrivkey"].get_bool();
+        SelectParams(metadata["chain"].get_str());
         if (isPrivkey) {
-            bool isCompressed = find_value(metadata, "isCompressed").get_bool();
+            bool isCompressed = metadata["isCompressed"].get_bool();
             CKey key;
             key.Set(exp_payload.begin(), exp_payload.end(), isCompressed);
             assert(key.IsValid());

@@ -494,11 +494,11 @@ static UniValue getblocktemplatecommon(bool fLight, const Config &config, const 
     LOCK(cs_main);
 
     std::string strMode = "template";
-    UniValue lpval = NullUniValue;
+    const UniValue *lpval = &NullUniValue;
     std::set<std::string> setClientRules;
     if (!request.params[0].isNull()) {
         const UniValue &oparam = request.params[0].get_obj();
-        const UniValue &modeval = find_value(oparam, "mode");
+        const UniValue &modeval = oparam["mode"];
         if (modeval.isStr()) {
             strMode = modeval.get_str();
         } else if (modeval.isNull()) {
@@ -506,10 +506,10 @@ static UniValue getblocktemplatecommon(bool fLight, const Config &config, const 
         } else {
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid mode");
         }
-        lpval = find_value(oparam, "longpollid");
+        lpval = &oparam["longpollid"];
 
         if (strMode == "proposal") {
-            const UniValue &dataval = find_value(oparam, "data");
+            const UniValue &dataval = oparam["data"];
             if (!dataval.isStr()) {
                 throw JSONRPCError(RPC_TYPE_ERROR,
                                    "Missing data String key for proposal");
@@ -569,16 +569,16 @@ static UniValue getblocktemplatecommon(bool fLight, const Config &config, const 
 
     static unsigned int nTransactionsUpdatedLast;
 
-    if (!lpval.isNull()) {
+    if (!lpval->isNull()) {
         // Wait to respond until either the best block changes, OR a minute has
         // passed and there are more transactions
         uint256 hashWatchedChain;
         std::chrono::steady_clock::time_point checktxtime;
         unsigned int nTransactionsUpdatedLastLP;
 
-        if (lpval.isStr()) {
+        if (lpval->isStr()) {
             // Format: <hashBestChain><nTransactionsUpdatedLast>
-            std::string lpstr = lpval.get_str();
+            const std::string &lpstr = lpval->get_str();
 
             hashWatchedChain = ParseHashV(lpstr.substr(0, 64), "longpollid");
             nTransactionsUpdatedLastLP = atoi64(lpstr.substr(64));

@@ -1,5 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -445,7 +446,7 @@ CMutableTransaction ConstructTransaction(const CChainParams &params,
 
         TxId txid(ParseHashO(o, "txid"));
 
-        const UniValue &vout_v = find_value(o, "vout");
+        const UniValue &vout_v = o["vout"];
         if (vout_v.isNull()) {
             throw JSONRPCError(RPC_INVALID_PARAMETER,
                                "Invalid parameter, missing vout key");
@@ -467,7 +468,7 @@ CMutableTransaction ConstructTransaction(const CChainParams &params,
                              : std::numeric_limits<uint32_t>::max());
 
         // Set the sequence number if passed in the parameters object.
-        const UniValue &sequenceObj = find_value(o, "sequence");
+        const UniValue &sequenceObj = o["sequence"];
         if (sequenceObj.isNum()) {
             int64_t seqNr64 = sequenceObj.get_int64();
             if (seqNr64 < 0 || seqNr64 > std::numeric_limits<uint32_t>::max()) {
@@ -711,8 +712,7 @@ static UniValue decodescript(const Config &config,
 
     ScriptPubKeyToUniv(script, r, false);
 
-    UniValue type;
-    type = find_value(r, "type");
+    const UniValue& type = r["type"];
 
     if (type.isStr() && type.get_str() != "scripthash") {
         // P2SH cannot be wrapped in a P2SH. If this script is already a P2SH,
@@ -893,7 +893,7 @@ UniValue SignTransaction(interfaces::Chain &chain, CMutableTransaction &mtx,
 
             TxId txid(ParseHashO(prevOut, "txid"));
 
-            int nOut = find_value(prevOut, "vout").get_int();
+            int nOut = prevOut["vout"].get_int();
             if (nOut < 0) {
                 throw JSONRPCError(RPC_DESERIALIZATION_ERROR,
                                    "vout must be positive");
@@ -941,12 +941,9 @@ UniValue SignTransaction(interfaces::Chain &chain, CMutableTransaction &mtx,
                     prevOut, {
                                  {"redeemScript", UniValueType(UniValue::VSTR)},
                              });
-                UniValue v = find_value(prevOut, "redeemScript");
-                if (!v.isNull()) {
-                    std::vector<uint8_t> rsData(ParseHexV(v, "redeemScript"));
-                    CScript redeemScript(rsData.begin(), rsData.end());
-                    keystore->AddCScript(redeemScript);
-                }
+                std::vector<uint8_t> rsData(ParseHexO(prevOut, "redeemScript"));
+                CScript redeemScript(rsData.begin(), rsData.end());
+                keystore->AddCScript(redeemScript);
             }
         }
     }
