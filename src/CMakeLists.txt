@@ -210,6 +210,29 @@ find_package(OpenSSL REQUIRED)
 # libtool style configure
 add_subdirectory(config)
 
+# Enable LFS (Large File Support) on targets that don't have it natively.
+# This should be defined before the libraries are included as leveldb need the
+# definition to be set.
+if(NOT HAVE_LARGE_FILE_SUPPORT)
+	add_compile_definitions(_FILE_OFFSET_BITS=64)
+	add_linker_flags(-Wl,--large-address-aware)
+endif()
+
+if(ENABLE_GLIBC_BACK_COMPAT)
+	# Wrap some glibc functions with ours
+	add_linker_flags(-Wl,--wrap=__divmoddi4)
+	add_linker_flags(-Wl,--wrap=log2f)
+
+	if(NOT HAVE_LARGE_FILE_SUPPORT)
+		add_linker_flags(-Wl,--wrap=fcntl -Wl,--wrap=fcntl64)
+	endif()
+endif()
+
+
+# Make sure that all the global compiler and linker flags are set BEFORE
+# including the libraries so they apply as needed.
+
+
 # libraries
 add_subdirectory(crypto)
 add_subdirectory(leveldb)
@@ -309,21 +332,7 @@ target_include_directories(util
 )
 
 if(ENABLE_GLIBC_BACK_COMPAT)
-	# Wrap some glibc functions with ours
-	add_linker_flags(-Wl,--wrap=__divmoddi4)
-	add_linker_flags(-Wl,--wrap=log2f)
-
-	if(NOT HAVE_LARGE_FILE_SUPPORT)
-		add_linker_flags(-Wl,--wrap=fcntl -Wl,--wrap=fcntl64)
-	endif()
-
 	target_sources(util PRIVATE compat/glibc_compat.cpp)
-endif()
-
-# Enable LFS (Large File Support) on targets that don't have it natively.
-if(NOT HAVE_LARGE_FILE_SUPPORT)
-	add_compiler_flags(-D_FILE_OFFSET_BITS=64)
-	add_linker_flags(-Wl,--large-address-aware)
 endif()
 
 # Target specific configs
