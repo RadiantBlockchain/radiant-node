@@ -4,7 +4,7 @@
 
 //
 // To re-create univalue_escapes.h:
-// $ g++ -o gen gen.cpp
+// $ g++ -std=c++14 -I/path/to/univalue/include -o gen gen.cpp
 // $ ./gen > univalue_escapes.h
 //
 
@@ -43,7 +43,7 @@ static void outputEscape()
 	        "#define BITCOIN_UNIVALUE_UNIVALUE_ESCAPES_H\n"
 	        "#include <array>\n"
 	        "\n"
-	        "static const std::array<const char *, 256> escapes = {\n");
+	        "static const std::array<const char *, 256> escapes = {{\n");
 
 	for (unsigned int i = 0; i < 256; i++) {
 		if (escapes[i].empty()) {
@@ -71,7 +71,7 @@ static void outputEscape()
 		}
 	}
 
-	printf(	"};\n"
+	printf(	"}};\n"
 	        "#endif // BITCOIN_UNIVALUE_UNIVALUE_ESCAPES_H\n");
 }
 

@@ -3,7 +3,7 @@
 #define BITCOIN_UNIVALUE_UNIVALUE_ESCAPES_H
 #include <array>
 
-static const std::array<const char *, 256> escapes = {
+static const std::array<const char *, 256> escapes = {{
 	"\\u0000",
 	"\\u0001",
 	"\\u0002",
@@ -260,5 +260,5 @@ static const std::array<const char *, 256> escapes = {
 	nullptr,
 	nullptr,
 	nullptr,
-};
+}};
 #endif // BITCOIN_UNIVALUE_UNIVALUE_ESCAPES_H
