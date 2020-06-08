@@ -48,6 +48,15 @@ Deprecation note regarding `medianfeerate` field in `getblockstats`
 The `medianfeerate` field in `getblockstats` output is deprecated, will be removed
 in v0.22. The 50th percentile from 'feerate_percentiles' array should be used instead.
 
+Deprecation note regarding the autotools build system
+-----------------------------------------------------
+
+The autotools build system (`autogen`, `configure`, ...) is deprecated and
+will be removed in a future release. CMake is the replacement build system,
+look at the documentation for the build instructions. To continue using the
+autotools build system, pass the --enable-deprecated-build-system flag to
+`configure`.
+
 New RPC methods
 ---------------
 
