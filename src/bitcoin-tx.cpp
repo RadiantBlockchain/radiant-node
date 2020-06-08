@@ -674,8 +674,8 @@ static void MutateTxSign(CMutableTransaction &tx, const std::string &flagStr) {
             CTxOut txout;
             txout.scriptPubKey = scriptPubKey;
             txout.nValue = Amount::zero();
-            if (prevOut.exists("amount")) {
-                txout.nValue = AmountFromValue(prevOut["amount"]);
+            if (auto amountUV = prevOut.find("amount")) {
+                txout.nValue = AmountFromValue(*amountUV);
             }
 
             view.AddCoin(out, Coin(txout, 1, false), true);
@@ -683,12 +683,12 @@ static void MutateTxSign(CMutableTransaction &tx, const std::string &flagStr) {
 
         // If redeemScript given and private keys given, add redeemScript to the
         // tempKeystore so it can be signed:
-        if (scriptPubKey.IsPayToScriptHash() &&
-            prevOut.exists("redeemScript")) {
-            UniValue v = prevOut["redeemScript"];
-            std::vector<uint8_t> rsData(ParseHexUV(v, "redeemScript"));
-            CScript redeemScript(rsData.begin(), rsData.end());
-            tempKeystore.AddCScript(redeemScript);
+        if (scriptPubKey.IsPayToScriptHash()) {
+            if (auto redeemScriptUV = prevOut.find("redeemScript")) {
+                std::vector<uint8_t> rsData(ParseHexUV(*redeemScriptUV, "redeemScript"));
+                CScript redeemScript(rsData.begin(), rsData.end());
+                tempKeystore.AddCScript(redeemScript);
+            }
         }
     }
 

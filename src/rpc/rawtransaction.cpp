@@ -916,9 +916,8 @@ UniValue SignTransaction(interfaces::Chain &chain, CMutableTransaction &mtx,
                 CTxOut txout;
                 txout.scriptPubKey = scriptPubKey;
                 txout.nValue = Amount::zero();
-                if (prevOut.exists("amount")) {
-                    txout.nValue =
-                        AmountFromValue(find_value(prevOut, "amount"));
+                if (auto amountUV = prevOut.find("amount")) {
+                    txout.nValue = AmountFromValue(*amountUV);
                 } else {
                     // amount param is required in replay-protected txs.
                     // Note that we must check for its presence here rather
