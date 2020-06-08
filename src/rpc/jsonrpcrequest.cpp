@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2019 The Bitcoin developers
+// Copyright (c) 2018-2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -18,10 +18,10 @@ void JSONRPCRequest::parse(const UniValue &valRequest) {
     const UniValue &request = valRequest.get_obj();
 
     // Parse id now so errors from here on will have the id
-    id = find_value(request, "id");
+    id = request["id"];
 
     // Parse method
-    UniValue valMethod = find_value(request, "method");
+    const UniValue& valMethod = request["method"];
     if (valMethod.isNull()) {
         throw JSONRPCError(RPC_INVALID_REQUEST, "Missing method");
     }
@@ -33,11 +33,11 @@ void JSONRPCRequest::parse(const UniValue &valRequest) {
              SanitizeString(strMethod));
 
     // Parse params
-    UniValue valParams = find_value(request, "params");
+    const UniValue& valParams = request["params"];
     if (valParams.isArray() || valParams.isObject()) {
         params = valParams;
     } else if (valParams.isNull()) {
-        params = UniValue(UniValue::VARR);
+        params.setArray();
     } else {
         throw JSONRPCError(RPC_INVALID_REQUEST,
                            "Params must be an array or object");

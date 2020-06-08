@@ -142,7 +142,6 @@ public:
     const UniValue& get_array() const;
 
     constexpr enum VType type() const noexcept { return getType(); }
-    friend const UniValue& find_value( const UniValue& obj, const std::string& name) noexcept;
 };
 
 enum jtokentype {
@@ -199,7 +198,5 @@ static constexpr bool json_isspace(int ch) noexcept
 }
 
 extern const UniValue NullUniValue;
-
-const UniValue& find_value( const UniValue& obj, const std::string& name) noexcept;
 
 #endif // __UNIVALUE_H__

@@ -2476,14 +2476,14 @@ static UniValue scantxoutset(const Config &config,
             if (scanobject.isStr()) {
                 desc_str = scanobject.get_str();
             } else if (scanobject.isObject()) {
-                const UniValue & desc_uni = find_value(scanobject, "desc");
+                const UniValue & desc_uni = scanobject["desc"];
                 if (desc_uni.isNull()) {
                     throw JSONRPCError(
                         RPC_INVALID_PARAMETER,
                         "Descriptor needs to be provided in scan object");
                 }
                 desc_str = desc_uni.get_str();
-                const UniValue & range_uni = find_value(scanobject, "range");
+                const UniValue & range_uni = scanobject["range"];
                 if (!range_uni.isNull()) {
                     range = range_uni.get_int();
                     if (range < 0 || range > 1000000) {

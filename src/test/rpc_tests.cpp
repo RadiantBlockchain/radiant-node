@@ -1,4 +1,5 @@
 // Copyright (c) 2012-2016 The Bitcoin Core developers
+// Copyright (c) 2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -35,10 +36,9 @@ UniValue CallRPC(std::string args)
     request.fHelp = false;
     BOOST_CHECK(tableRPC[strMethod]);
     try {
-        UniValue result = tableRPC[strMethod]->call(config, request);
-        return result;
+        return tableRPC[strMethod]->call(config, request);
     } catch (const UniValue &objError) {
-        throw std::runtime_error(find_value(objError, "message").get_str());
+        throw std::runtime_error(objError["message"].get_str());
     }
 }
 
@@ -79,9 +79,9 @@ BOOST_AUTO_TEST_CASE(rpc_rawparams) {
         "9e2bbf32d826a1e222031fd888ac00000000";
     BOOST_CHECK_NO_THROW(
         r = CallRPC(std::string("decoderawtransaction ") + rawtx));
-    BOOST_CHECK_EQUAL(find_value(r.get_obj(), "size").get_int(), 193);
-    BOOST_CHECK_EQUAL(find_value(r.get_obj(), "version").get_int(), 1);
-    BOOST_CHECK_EQUAL(find_value(r.get_obj(), "locktime").get_int(), 0);
+    BOOST_CHECK_EQUAL(r.get_obj()["size"].get_int(), 193);
+    BOOST_CHECK_EQUAL(r.get_obj()["version"].get_int(), 1);
+    BOOST_CHECK_EQUAL(r.get_obj()["locktime"].get_int(), 0);
     BOOST_CHECK_THROW(
         r = CallRPC(std::string("decoderawtransaction ") + rawtx + " extra"),
         std::runtime_error);
@@ -101,20 +101,20 @@ BOOST_AUTO_TEST_CASE(rpc_togglenetwork) {
     UniValue r;
 
     r = CallRPC("getnetworkinfo");
-    bool netState = find_value(r.get_obj(), "networkactive").get_bool();
+    bool netState = r.get_obj()["networkactive"].get_bool();
     BOOST_CHECK_EQUAL(netState, true);
 
     BOOST_CHECK_NO_THROW(CallRPC("setnetworkactive false"));
     r = CallRPC("getnetworkinfo");
-    int numConnection = find_value(r.get_obj(), "connections").get_int();
+    int numConnection = r.get_obj()["connections"].get_int();
     BOOST_CHECK_EQUAL(numConnection, 0);
 
-    netState = find_value(r.get_obj(), "networkactive").get_bool();
+    netState = r.get_obj()["networkactive"].get_bool();
     BOOST_CHECK_EQUAL(netState, false);
 
     BOOST_CHECK_NO_THROW(CallRPC("setnetworkactive true"));
     r = CallRPC("getnetworkinfo");
-    netState = find_value(r.get_obj(), "networkactive").get_bool();
+    netState = r.get_obj()["networkactive"].get_bool();
     BOOST_CHECK_EQUAL(netState, true);
 }
 
@@ -143,10 +143,10 @@ BOOST_AUTO_TEST_CASE(rpc_rawsign) {
     g_rpc_interfaces = &interfaces;
     r = CallRPC(std::string("signrawtransactionwithkey ") + notsigned + " [] " +
                 prevout);
-    BOOST_CHECK(find_value(r.get_obj(), "complete").get_bool() == false);
+    BOOST_CHECK_EQUAL(r.get_obj()["complete"].get_bool(), false);
     r = CallRPC(std::string("signrawtransactionwithkey ") + notsigned + " [" +
                 privkey1 + "," + privkey2 + "] " + prevout);
-    BOOST_CHECK(find_value(r.get_obj(), "complete").get_bool() == true);
+    BOOST_CHECK_EQUAL(r.get_obj()["complete"].get_bool(), true);
     g_rpc_interfaces = nullptr;
 }
 
@@ -368,97 +368,102 @@ BOOST_AUTO_TEST_CASE(rpc_ban) {
     UniValue r;
     BOOST_CHECK_NO_THROW(r = CallRPC(std::string("setban 127.0.0.0 add")));
     // portnumber for setban not allowed
-    BOOST_CHECK_THROW(r = CallRPC(std::string("setban 127.0.0.0:8334")),
-                      std::runtime_error);
+    BOOST_CHECK_THROW(r = CallRPC(std::string("setban 127.0.0.0:8334")), std::runtime_error);
     BOOST_CHECK_NO_THROW(r = CallRPC(std::string("listbanned")));
-    UniValue ar = r.get_array();
-    UniValue o1 = ar[0].get_obj();
-    UniValue adr = find_value(o1, "address");
-    BOOST_CHECK_EQUAL(adr.get_str(), "127.0.0.0/32");
+    {
+        const UniValue& ar = r.get_array();
+        const UniValue& o1 = ar[0].get_obj();
+        const UniValue& adr = o1["address"];
+        BOOST_CHECK_EQUAL(adr.get_str(), "127.0.0.0/32");
+    }
     BOOST_CHECK_NO_THROW(CallRPC(std::string("setban 127.0.0.0 remove")));
     BOOST_CHECK_NO_THROW(r = CallRPC(std::string("listbanned")));
-    ar = r.get_array();
-    BOOST_CHECK_EQUAL(ar.size(), 0UL);
+    {
+        const UniValue& ar = r.get_array();
+        BOOST_CHECK_EQUAL(ar.size(), 0UL);
+    }
 
     // Set ban way in the future: 2283-12-18 19:33:20
-    BOOST_CHECK_NO_THROW(
-        r = CallRPC(std::string("setban 127.0.0.0/24 add 9907731200 true")));
+    BOOST_CHECK_NO_THROW(r = CallRPC(std::string("setban 127.0.0.0/24 add 9907731200 true")));
     BOOST_CHECK_NO_THROW(r = CallRPC(std::string("listbanned")));
-    ar = r.get_array();
-    o1 = ar[0].get_obj();
-    adr = find_value(o1, "address");
-    UniValue banned_until = find_value(o1, "banned_until");
-    BOOST_CHECK_EQUAL(adr.get_str(), "127.0.0.0/24");
-    // absolute time check
-    BOOST_CHECK_EQUAL(banned_until.get_int64(), 9907731200);
+    {
+        const UniValue& ar = r.get_array();
+        const UniValue& o1 = ar[0].get_obj();
+        const UniValue& adr = o1["address"];
+        const UniValue& banned_until = o1["banned_until"];
+        BOOST_CHECK_EQUAL(adr.get_str(), "127.0.0.0/24");
+        // absolute time check
+        BOOST_CHECK_EQUAL(banned_until.get_int64(), 9907731200);
+    }
 
     BOOST_CHECK_NO_THROW(CallRPC(std::string("clearbanned")));
 
-    BOOST_CHECK_NO_THROW(
-        r = CallRPC(std::string("setban 127.0.0.0/24 add 200")));
+    BOOST_CHECK_NO_THROW(r = CallRPC(std::string("setban 127.0.0.0/24 add 200")));
     BOOST_CHECK_NO_THROW(r = CallRPC(std::string("listbanned")));
-    ar = r.get_array();
-    o1 = ar[0].get_obj();
-    adr = find_value(o1, "address");
-    banned_until = find_value(o1, "banned_until");
-    BOOST_CHECK_EQUAL(adr.get_str(), "127.0.0.0/24");
-    int64_t now = GetTime();
-    BOOST_CHECK(banned_until.get_int64() > now);
-    BOOST_CHECK(banned_until.get_int64() - now <= 200);
+    {
+        const UniValue& ar = r.get_array();
+        const UniValue& o1 = ar[0].get_obj();
+        const UniValue& adr = o1["address"];
+        const UniValue& banned_until = o1["banned_until"];
+        BOOST_CHECK_EQUAL(adr.get_str(), "127.0.0.0/24");
+        int64_t now = GetTime();
+        BOOST_CHECK(banned_until.get_int64() > now);
+        BOOST_CHECK(banned_until.get_int64() - now <= 200);
+    }
 
     // must throw an exception because 127.0.0.1 is in already banned subnet
     // range
-    BOOST_CHECK_THROW(r = CallRPC(std::string("setban 127.0.0.1 add")),
-                      std::runtime_error);
+    BOOST_CHECK_THROW(r = CallRPC(std::string("setban 127.0.0.1 add")), std::runtime_error);
 
     BOOST_CHECK_NO_THROW(CallRPC(std::string("setban 127.0.0.0/24 remove")));
     BOOST_CHECK_NO_THROW(r = CallRPC(std::string("listbanned")));
-    ar = r.get_array();
-    BOOST_CHECK_EQUAL(ar.size(), 0UL);
+    {
+        const UniValue& ar = r.get_array();
+        BOOST_CHECK_EQUAL(ar.size(), 0UL);
+    }
 
-    BOOST_CHECK_NO_THROW(
-        r = CallRPC(std::string("setban 127.0.0.0/255.255.0.0 add")));
-    BOOST_CHECK_THROW(r = CallRPC(std::string("setban 127.0.1.1 add")),
-                      std::runtime_error);
+    BOOST_CHECK_NO_THROW(r = CallRPC(std::string("setban 127.0.0.0/255.255.0.0 add")));
+    BOOST_CHECK_THROW(r = CallRPC(std::string("setban 127.0.1.1 add")), std::runtime_error);
 
     BOOST_CHECK_NO_THROW(CallRPC(std::string("clearbanned")));
     BOOST_CHECK_NO_THROW(r = CallRPC(std::string("listbanned")));
-    ar = r.get_array();
-    BOOST_CHECK_EQUAL(ar.size(), 0UL);
+    {
+        const UniValue& ar = r.get_array();
+        BOOST_CHECK_EQUAL(ar.size(), 0UL);
+    }
 
     // invalid IP
-    BOOST_CHECK_THROW(r = CallRPC(std::string("setban test add")),
-                      std::runtime_error);
+    BOOST_CHECK_THROW(r = CallRPC(std::string("setban test add")), std::runtime_error);
 
     // IPv6 tests
-    BOOST_CHECK_NO_THROW(
-        r = CallRPC(
-            std::string("setban FE80:0000:0000:0000:0202:B3FF:FE1E:8329 add")));
+    BOOST_CHECK_NO_THROW(r = CallRPC(std::string("setban FE80:0000:0000:0000:0202:B3FF:FE1E:8329 add")));
     BOOST_CHECK_NO_THROW(r = CallRPC(std::string("listbanned")));
-    ar = r.get_array();
-    o1 = ar[0].get_obj();
-    adr = find_value(o1, "address");
-    BOOST_CHECK_EQUAL(adr.get_str(), "fe80::202:b3ff:fe1e:8329/128");
+    {
+        const UniValue& ar = r.get_array();
+        const UniValue& o1 = ar[0].get_obj();
+        const UniValue& adr = o1["address"];
+        BOOST_CHECK_EQUAL(adr.get_str(), "fe80::202:b3ff:fe1e:8329/128");
+    }
 
     BOOST_CHECK_NO_THROW(CallRPC(std::string("clearbanned")));
-    BOOST_CHECK_NO_THROW(r = CallRPC(std::string(
-                             "setban 2001:db8::/ffff:fffc:0:0:0:0:0:0 add")));
+    BOOST_CHECK_NO_THROW(r = CallRPC(std::string("setban 2001:db8::/ffff:fffc:0:0:0:0:0:0 add")));
     BOOST_CHECK_NO_THROW(r = CallRPC(std::string("listbanned")));
-    ar = r.get_array();
-    o1 = ar[0].get_obj();
-    adr = find_value(o1, "address");
-    BOOST_CHECK_EQUAL(adr.get_str(), "2001:db8::/30");
+    {
+        const UniValue& ar = r.get_array();
+        const UniValue& o1 = ar[0].get_obj();
+        const UniValue& adr = o1["address"];
+        BOOST_CHECK_EQUAL(adr.get_str(), "2001:db8::/30");
+    }
 
     BOOST_CHECK_NO_THROW(CallRPC(std::string("clearbanned")));
-    BOOST_CHECK_NO_THROW(
-        r = CallRPC(std::string(
-            "setban 2001:4d48:ac57:400:cacf:e9ff:fe1d:9c63/128 add")));
+    BOOST_CHECK_NO_THROW(r = CallRPC(std::string("setban 2001:4d48:ac57:400:cacf:e9ff:fe1d:9c63/128 add")));
     BOOST_CHECK_NO_THROW(r = CallRPC(std::string("listbanned")));
-    ar = r.get_array();
-    o1 = ar[0].get_obj();
-    adr = find_value(o1, "address");
-    BOOST_CHECK_EQUAL(adr.get_str(),
-                      "2001:4d48:ac57:400:cacf:e9ff:fe1d:9c63/128");
+    {
+        const UniValue& ar = r.get_array();
+        const UniValue& o1 = ar[0].get_obj();
+        const UniValue& adr = o1["address"];
+        BOOST_CHECK_EQUAL(adr.get_str(), "2001:4d48:ac57:400:cacf:e9ff:fe1d:9c63/128");
+    }
 }
 
 BOOST_AUTO_TEST_CASE(rpc_convert_values_generatetoaddress) {

@@ -143,7 +143,7 @@ void RPCTypeCheckObj(const UniValue &o,
                      const std::map<std::string, UniValueType> &typesExpected,
                      bool fAllowNull, bool fStrict) {
     for (const auto &t : typesExpected) {
-        const UniValue &v = find_value(o, t.first);
+        const UniValue &v = o[t.first];
         if (!fAllowNull && v.isNull()) {
             throw JSONRPCError(RPC_TYPE_ERROR,
                                strprintf("Missing %s", t.first));
@@ -203,7 +203,7 @@ uint256 ParseHashV(const UniValue &v, std::string strName) {
     return uint256S(strHex);
 }
 uint256 ParseHashO(const UniValue &o, std::string strKey) {
-    return ParseHashV(find_value(o, strKey), strKey);
+    return ParseHashV(o[strKey], strKey);
 }
 std::vector<uint8_t> ParseHexV(const UniValue &v, std::string strName) {
     std::string strHex;
@@ -219,7 +219,7 @@ std::vector<uint8_t> ParseHexV(const UniValue &v, std::string strName) {
     return ParseHex(strHex);
 }
 std::vector<uint8_t> ParseHexO(const UniValue &o, std::string strKey) {
-    return ParseHexV(find_value(o, strKey), strKey);
+    return ParseHexV(o[strKey], strKey);
 }
 
 /**
