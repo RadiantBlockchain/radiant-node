@@ -59,8 +59,8 @@ This means that there should be quick turnaround for patches to be proposed,
 reviewed, and committed. Changes should not sit in a queue for long.
 
 Here are some tips to help keep the development working as intended. These
-are guidelines for the normal and expected development process. Developers 
-can use their judgement to deviate from these guidelines when they have a 
+are guidelines for the normal and expected development process. Developers
+can use their judgement to deviate from these guidelines when they have a
 good reason to do so.
 
 - Keep each change small and self-contained.
@@ -78,7 +78,7 @@ you keep both implementations in the codebase for a while, as described
 [here](https://www.gamasutra.com/view/news/128325/Opinion_Parallel_Implementations.php)
 - There are no "development" branches, all merge requests apply to the master
 branch, and should always improve it (no regressions).
-- As soon as you see a bug, you fix it. Do not continue on. Fixing the bug becomes the 
+- As soon as you see a bug, you fix it. Do not continue on. Fixing the bug becomes the
 top priority, more important than completing other tasks.
 - Do not break the build, it is important to keep master green as much as possible.
 If a merge has been done and breaks the build, fix it quickly. If it cannot be fixed
@@ -89,7 +89,7 @@ Here are some handy links for development practices aligned with Bitcoin Cash No
 
 - [BCHN GitLab development working rules and guidelines](doc/bchn-gitlab-usage-rules-and-guidelines.md)
 - [Developer Notes](doc/developer-notes.md)
-- [How to Do Code Reviews Like a Human - Part 1](https://mtlynch.io/human-code-reviews-1/) 
+- [How to Do Code Reviews Like a Human - Part 1](https://mtlynch.io/human-code-reviews-1/)
 - [How to Do Code Reviews Like a Human - Part 2](https://mtlynch.io/human-code-reviews-2/)
 - [Large Diffs Are Hurting Your Ability To Ship](https://medium.com/@kurtisnusbaum/large-diffs-are-hurting-your-ability-to-ship-e0b2b41e8acf)
 - [Parallel Implementations](https://www.gamasutra.com/view/news/128325/Opinion_Parallel_Implementations.php)
@@ -149,16 +149,16 @@ git remote add upstream https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node.g
 
 ```
 [alias]
-   mr = !sh -c 'git fetch $1 merge-requests/$2/head:mr-$1-$2 && git checkout mr-$1-$2' -
+   mreq = !sh -c 'git fetch $1 merge-requests/$2/head:mr-$1-$2 && git checkout mr-$1-$2' -
 ```
 
-This 'mr' alias can be used to easily check out Merge Requests from our
+This 'mreq' alias can be used to easily check out Merge Requests from our
 main repository if you intend to test them or work on them.
 
 Example:
 
 ```
-$ git mr origin 93
+$ git mreq upstream 93
 ```
 
 This will checkout `merge-requests/93/head` and put you in a branch called `mr-origin-93`.
