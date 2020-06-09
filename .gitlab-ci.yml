@@ -526,6 +526,9 @@ pages:
         - pip install mkdocs-material
         - pip install mkdocs-exclude
     script:
+        # Symlink documents outside docs that we also also want published
+        - (cd doc; ln -s ../CONTRIBUTING.md)
+        - (cd doc; ln -s ../DISCLOSURE_POLICY.md)
         - mkdocs build
         - mv site public
     artifacts:
