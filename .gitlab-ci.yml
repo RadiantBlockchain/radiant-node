@@ -512,6 +512,20 @@ build-arm:
     dependencies:
         - build-arm-depends
 
+fuzz-libfuzzer:
+    stage: test
+    extends: .debian-clang-env
+    needs: []
+    rules:
+        - if: $CI_COMMIT_BRANCH == "master"
+    script:
+        - git clone --branch master --single-branch --depth=1 https://gitlab.com/bitcoin-cash-node/bchn-sw/qa-assets
+        - mkdir buildFuzzer
+        - cd buildFuzzer
+        - cmake -GNinja .. -DCCACHE=OFF -DENABLE_SANITIZERS="fuzzer;address"
+        - ninja bitcoin-fuzzers link-fuzz-test_runner.py
+        - ./test/fuzz/test_runner.py -l DEBUG ../qa-assets/fuzz_seed_corpus/
+
 ## Deploy documentation
 pages:
     stage: deployment
