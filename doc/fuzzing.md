@@ -17,7 +17,7 @@ Extract the example seeds (or other starting inputs) into the inputs
 directory before starting fuzzing.
 
 ```
-git clone https://github.com/Bitcoin-ABC/qa-assets
+git clone https://gitlab.com/bitcoin-cash-node/bchn-sw/qa-assets
 export DIR_FUZZ_IN=$PWD/qa-assets/fuzz_seed_corpus
 ```
 
@@ -102,4 +102,8 @@ See https://llvm.org/docs/LibFuzzer.html#running on how to run the libFuzzer
 instrumented executable.
 
 Alternatively run the script in `./test/fuzz/test_runner.py` and provide it
-with the `${DIR_FUZZ_IN}` created earlier.
+with the `${DIR_FUZZ_IN}` created earlier:
+`./test/fuzz/test_runner.py -l DEBUG $DIR_FUZZ_IN`
+
+If the `test_runner.py` script is missing, create it with
+`ninja link-fuzz-test_runner.py`
