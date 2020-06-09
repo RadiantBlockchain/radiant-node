@@ -40,7 +40,7 @@ namespace {
 
     class PendingWalletTxImpl : public PendingWalletTx {
     public:
-        PendingWalletTxImpl(CWallet &wallet)
+        explicit PendingWalletTxImpl(CWallet &wallet)
             : m_wallet(wallet), m_key(&wallet) {}
 
         const CTransaction &get() override { return *m_tx; }
@@ -136,7 +136,7 @@ namespace {
 
     class WalletImpl : public Wallet {
     public:
-        WalletImpl(const std::shared_ptr<CWallet> &wallet)
+        explicit WalletImpl(const std::shared_ptr<CWallet> &wallet)
             : m_shared_wallet(wallet), m_wallet(*wallet.get()) {}
 
         bool encryptWallet(const SecureString &wallet_passphrase) override {
