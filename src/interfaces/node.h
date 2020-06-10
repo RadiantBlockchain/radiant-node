@@ -5,7 +5,7 @@
 #ifndef BITCOIN_INTERFACES_NODE_H
 #define BITCOIN_INTERFACES_NODE_H
 
-#include <addrdb.h>     // For banmap_t
+#include <addrdb.h>     // For BanTables
 #include <amount.h>     // For Amount
 #include <net.h>        // For CConnman::NumConnections
 #include <netaddress.h> // For Network
@@ -110,7 +110,7 @@ public:
     virtual bool getNodesStats(NodesStats &stats) = 0;
 
     //! Get ban map entries.
-    virtual bool getBanned(banmap_t &banmap) = 0;
+    virtual bool getBanned(BanTables &banmap) = 0;
 
     //! Ban node.
     virtual bool ban(const CNetAddr &net_addr, BanReason reason,

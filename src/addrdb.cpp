@@ -116,11 +116,11 @@ bool DeserializeFileDB(const CChainParams &chainParams, const fs::path &path,
 CBanDB::CBanDB(fs::path ban_list_path, const CChainParams &_chainParams)
     : m_ban_list_path(std::move(ban_list_path)), chainParams(_chainParams) {}
 
-bool CBanDB::Write(const banmap_t &banSet) {
+bool CBanDB::Write(const BanTables &banSet) {
     return SerializeFileDB(chainParams, "banlist", m_ban_list_path, banSet);
 }
 
-bool CBanDB::Read(banmap_t &banSet) {
+bool CBanDB::Read(BanTables &banSet) {
     return DeserializeFileDB(chainParams, m_ban_list_path, banSet);
 }
 
@@ -142,6 +142,21 @@ bool CAddrDB::Read(CAddrMan &addr, CDataStream &ssPeers) {
     if (!ret) {
         // Ensure addrman is left in a clean state
         addr.Clear();
+    }
+    return ret;
+}
+
+
+// Aggregated ban table - used only for Qt UI and RPC `listbanned`
+BanTables::AggregatedMap BanTables::toAggregatedMap() const {
+    AggregatedMap ret;
+
+    for (const auto &entry : subNets)
+        ret.insert(entry);
+    for (const auto &entry : addresses) {
+        ret.emplace(std::piecewise_construct,
+                    std::forward_as_tuple(CSubNet{entry.first}),
+                    std::forward_as_tuple(entry.second));
     }
     return ret;
 }
