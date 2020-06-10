@@ -179,6 +179,10 @@ Similar to `check-functional-upgrade-activated` target, but runs with the `--ext
 
 Same as above but running long Python regression tests only (`--startfrom=40`).
 
+### coverage-<target>
+
+Generate coverage report for <target>. See [generate coverage report](coverage.md).
+
 ### test_bitcoin
 
 Build the core application's C++ unit test runner (executable produced at `src/test/test_bitcoin`)

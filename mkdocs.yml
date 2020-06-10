@@ -320,6 +320,7 @@ nav:
         - CONTRIBUTING.md
         - backporting.md
         - bchn-gitlab-usage-rules-and-guidelines.md
+        - coverage.md
         - benchmarking.md
         - developer-notes.md
         - functional-tests.md
