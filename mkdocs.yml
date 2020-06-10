@@ -317,6 +317,7 @@ nav:
             - gitian-building/gitian-building-setup-gitian-debian.md
             - gitian-building/gitian-building-vagrant.md
     - Development:
+        - CONTRIBUTING.md
         - backporting.md
         - bchn-gitlab-usage-rules-and-guidelines.md
         - benchmarking.md
@@ -337,6 +338,7 @@ nav:
         - bips.md
         - xversionmessage.md
     - Miscellaneous:
+        - DISCLOSURE_POLICY.md
         - assets-attribution.md
         - reduce-traffic.md
         - tor.md
