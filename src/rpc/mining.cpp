@@ -344,15 +344,12 @@ namespace {
 struct TrivialJobIdHasher {
     std::size_t operator()(const JobId &jobId) const noexcept {
         constexpr auto size = sizeof(std::size_t);
-        static_assert(JobId::size() >= size * 2, "sizeof(JobId) must be >= sizeof(size_t) * 2");
-        static_assert(size == 4 || size == 8, "expected 32-bit or 64-bit size_t");
-        // The below is faster on 32-bit arch's than calling jobId.GetUint64(), and about the same on 64-bit, so we
-        // went with this approach. We must ensure the pointer is aligned, and we do this by unconditionally moving
-        // forward into the array by size bytes and then zeroing out low order bits that break alignment (if any).
-        const auto alignedPtr = reinterpret_cast<std::uintptr_t>(jobId.begin() + size) & ~(size - 1UL);
-        // Lastly, just return the (aligned) bytes reinterpreted as size_t, which is as perfect a hash value for
-        // std::unordered_map as one could ask for.
-        return *reinterpret_cast<const std::size_t *>(alignedPtr);
+        static_assert(JobId::size() >= size, "sizeof(JobId) must be >= sizeof(size_t)");
+        // this is faster than calling jobId.GetUint64(), especially for 32-bit.
+        // note: we must use memcpy to guarantee aligned access.
+        std::size_t ret;
+        std::memcpy(&ret, jobId.begin(), size);
+        return ret;
     }
 };
 /// Lock for the below two data structures
