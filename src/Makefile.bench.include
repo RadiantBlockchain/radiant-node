@@ -32,6 +32,7 @@ bench_bench_bitcoin_SOURCES = \
   bench/base58.cpp \
   bench/lockedpool.cpp \
   bench/prevector.cpp \
+  bench/banman.cpp \
   test/setup_common.h \
   test/setup_common.cpp \
   test/util.h \
