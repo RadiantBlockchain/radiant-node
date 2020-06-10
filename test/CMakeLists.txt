@@ -52,6 +52,9 @@ make_link(util/bitcoin-util-test.py)
 make_link(util/rpcauth-test.py)
 make_link(fuzz/test_runner.py)
 
+include(Coverage)
+include(TestSuite)
+
 macro(add_functional_test_check TARGET COMMENT)
 	add_custom_target(${TARGET}
 		COMMENT "${COMMENT}"
@@ -66,6 +69,8 @@ macro(add_functional_test_check TARGET COMMENT)
 		USES_TERMINAL
 		VERBATIM
 	)
+
+	add_custom_target_coverage(${TARGET})
 endmacro()
 
 add_functional_test_check(check-functional
