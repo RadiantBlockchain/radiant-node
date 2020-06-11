@@ -4,6 +4,7 @@ project(bench_bitcoin)
 
 add_executable(bench_bitcoin
 	EXCLUDE_FROM_ALL
+	banman.cpp
 	base58.cpp
 	bench.cpp
 	bench_bitcoin.cpp
