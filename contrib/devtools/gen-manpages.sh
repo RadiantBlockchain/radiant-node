@@ -58,7 +58,7 @@ version="$($BITCOIND -version | head -n1)"
 # Iterate over the existing mkdocs file and locate the entry for json-rpc/README.md.
 indentation=""
 while IFS= read -r line; do
-  if [ "${line: -19}" == " json-rpc/README.md" ]; then
+  if [ "${line: -23}" == " doc/json-rpc/README.md" ]; then
     # json-rpc/README.md found; preserve it.
     echo "$line" >> "$TOPDIR/mkdocs-tmp.yml"
     indentation="${line%%-*}"
@@ -83,7 +83,7 @@ while IFS= read -r line; do
           # Found a command.
           command=${helpline%% *}
           # Write command to new mkdocs file.
-          echo "$indentation    - $command: json-rpc/$command.md" >> "$TOPDIR/mkdocs-tmp.yml"
+          echo "$indentation    - $command: doc/json-rpc/$command.md" >> "$TOPDIR/mkdocs-tmp.yml"
           # Create command help page.
           "$TOPDIR/contrib/devtools/rpc-help-to-markdown.py" "$($BITCOINCLI -rpcwait -regtest -datadir="$TOPDIR/doc/json-rpc/tmp" -rpcuser=gen-manpages -rpcpassword=gen-manpages help $command)" > "$TOPDIR/doc/json-rpc/$command.md"
           {
