@@ -92,7 +92,7 @@ static void RescanWallet(CWallet &wallet, const WalletRescanReserver &reserver,
     }
 }
 
-UniValue importprivkey(const Config &config, const JSONRPCRequest &request) {
+UniValue importprivkey(const Config &, const JSONRPCRequest &request) {
     std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
     CWallet *const pwallet = wallet.get();
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
@@ -208,7 +208,7 @@ UniValue importprivkey(const Config &config, const JSONRPCRequest &request) {
     return NullUniValue;
 }
 
-UniValue abortrescan(const Config &config, const JSONRPCRequest &request) {
+UniValue abortrescan(const Config &, const JSONRPCRequest &request) {
     std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
     CWallet *const pwallet = wallet.get();
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
@@ -382,7 +382,7 @@ UniValue importaddress(const Config &config, const JSONRPCRequest &request) {
     return NullUniValue;
 }
 
-UniValue importprunedfunds(const Config &config,
+UniValue importprunedfunds(const Config &,
                            const JSONRPCRequest &request) {
     std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
     CWallet *const pwallet = wallet.get();
@@ -462,7 +462,7 @@ UniValue importprunedfunds(const Config &config,
         "No addresses in wallet correspond to included transaction");
 }
 
-UniValue removeprunedfunds(const Config &config,
+UniValue removeprunedfunds(const Config &,
                            const JSONRPCRequest &request) {
     std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
     CWallet *const pwallet = wallet.get();
@@ -510,7 +510,7 @@ UniValue removeprunedfunds(const Config &config,
     return NullUniValue;
 }
 
-UniValue importpubkey(const Config &config, const JSONRPCRequest &request) {
+UniValue importpubkey(const Config &, const JSONRPCRequest &request) {
     std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
     CWallet *const pwallet = wallet.get();
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
@@ -1382,7 +1382,7 @@ static int64_t GetImportTimestamp(const UniValue &data, int64_t now) {
                        "Missing required timestamp field for key");
 }
 
-UniValue importmulti(const Config &config, const JSONRPCRequest &mainRequest) {
+UniValue importmulti(const Config &, const JSONRPCRequest &mainRequest) {
     std::shared_ptr<CWallet> const wallet =
         GetWalletForJSONRPCRequest(mainRequest);
     CWallet *const pwallet = wallet.get();
@@ -1478,15 +1478,17 @@ UniValue importmulti(const Config &config, const JSONRPCRequest &mainRequest) {
             fRescan = false;
         }
 
+        response.reserve(requests.size());
+
         for (const UniValue &data : requests.getArrayValues()) {
-            const int64_t timestamp =
-                std::max(GetImportTimestamp(data, now), minimumTimestamp);
-            const UniValue result = ProcessImport(pwallet, data, timestamp);
-            response.push_back(result);
+            const int64_t timestamp =  std::max(GetImportTimestamp(data, now), minimumTimestamp);
+            response.push_back( ProcessImport(pwallet, data, timestamp) );
 
             if (!fRescan) {
                 continue;
             }
+
+            const UniValue & result = response.back();
 
             // If at least one request was successful then allow rescan.
             if (result["success"].get_bool()) {
@@ -1508,9 +1510,10 @@ UniValue importmulti(const Config &config, const JSONRPCRequest &mainRequest) {
             throw JSONRPCError(RPC_MISC_ERROR, "Rescan aborted by user.");
         }
         if (scannedTime > nLowestTimestamp) {
-            std::vector<UniValue> results = response.getArrayValues();
-            response.clear();
-            response.setArray();
+            std::vector<UniValue> results = response.takeArrayValues(); // cheap constant-time move
+            // response is now an empty array after the above call
+            response.reserve(requests.size());
+            assert(results.size() == requests.size());
             size_t i = 0;
             for (const UniValue &request : requests.getArrayValues()) {
                 // If key creation date is within the successfully scanned
@@ -1518,8 +1521,8 @@ UniValue importmulti(const Config &config, const JSONRPCRequest &mainRequest) {
                 // the result stand unmodified. Otherwise replace the result
                 // with an error message.
                 if (scannedTime <= GetImportTimestamp(request, now) ||
-                    results.at(i).find("error")) {
-                    response.push_back(results.at(i));
+                    results[i].find("error")) {
+                    response.push_back(std::move(results[i]));
                 } else {
                     UniValue result = UniValue(UniValue::VOBJ);
                     result.reserve(2);
