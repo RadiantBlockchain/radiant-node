@@ -79,7 +79,7 @@ The following are developer notes on how to build Bitcoin Cash Node on your nati
 
 Development
 ---------------------
-The Bitcoin Cash Node repo's [root README](/README.md) contains relevant information on the development process and automated testing.
+The Bitcoin Cash Node repo's [root README](../README.md) contains relevant information on the development process and automated testing.
 
 - [Developer Notes](developer-notes.md)
 - [Release Notes](release-notes.md)
@@ -106,5 +106,5 @@ The Bitcoin Cash Node repo's [root README](/README.md) contains relevant informa
 
 License
 ---------------------
-Distribution is done under the [MIT software license](/COPYING).
+Distribution is done under the [MIT software license](../COPYING).
 This product includes software developed by the OpenSSL Project for use in the [OpenSSL Toolkit](https://www.openssl.org/), cryptographic software written by Eric Young ([eay@cryptsoft.com](mailto:eay@cryptsoft.com)), and UPnP software written by Thomas Bernard.

@@ -182,7 +182,7 @@ Connecting to the VM
 
 After the VM has booted you can connect to it using SSH, and files can be copied from and to the VM using a SFTP utility.
 Connect to `localhost`, port `22222` (or the port configured when installing the VM).
-On Windows you can use [putty](http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html) and [WinSCP](http://winscp.net/eng/index.php).
+On Windows you can use [putty](https://www.chiark.greenend.org.uk/~sgtatham/putty/download.html) and [WinSCP](https://winscp.net/eng/index.php).
 
 For example, to connect as `gitianuser` from a Linux command prompt use
 
