@@ -17,14 +17,14 @@ Bitcoin Cash Node Release Process
       Manually test bitcoin-qt by sending some transactions and navigating through the menus.
 
 3. Update the documents / code which needs to be updated every release
-    - Check that [release-notes.md](doc/release-notes.md) is complete, and fill in any missing items.
-    - Update [bips.md](/doc/bips.md) to account for changes since the last release.
-    - (major releases) Update [`BLOCK_CHAIN_SIZE`](/src/qt/intro.cpp) to the current size plus
+    - Check that [release-notes.md](release-notes.md) is complete, and fill in any missing items.
+    - Update [bips.md](bips.md) to account for changes since the last release.
+    - (major releases) Update [`BLOCK_CHAIN_SIZE`](../src/qt/intro.cpp) to the current size plus
       some overhead.
     - Regenerate manpages (run `contrib/devtools/gen-manpages.sh`, or for out-of-tree builds run
       `BUILDDIR=$PWD/build contrib/devtools/gen-manpages.sh`).
-    - Update seeds as per [contrib/seeds/README.md](/contrib/seeds/README.md).
-    - Update [`src/chainparams.cpp`](/src/chainparams.cpp) m_assumed_blockchain_size and m_assumed_chain_state_size with the current size plus some overhead.
+    - Update seeds as per [contrib/seeds/README.md](../contrib/seeds/README.md).
+    - Update [`src/chainparams.cpp`](../src/chainparams.cpp) m_assumed_blockchain_size and m_assumed_chain_state_size with the current size plus some overhead.
 
 4. Add git tag for release
     a. Create the tag: `git tag vM.m.r` (M = major version, m = minor version, r = revision)
@@ -42,7 +42,7 @@ Bitcoin Cash Node Release Process
 
 ## Release
 
-6. Create Gitian Builds (see [gitian-building.md](/doc/gitian-building.md))
+6. Create Gitian Builds (see [gitian-building.md](gitian-building.md))
 
 7. Verify matching Gitian Builds, gather signatures
 
