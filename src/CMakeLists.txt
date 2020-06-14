@@ -490,7 +490,6 @@ add_library(server
 	noui.cpp
 	outputtype.cpp
 	policy/fees.cpp
-	policy/mempool.cpp
 	policy/policy.cpp
 	pow.cpp
 	rest.cpp
