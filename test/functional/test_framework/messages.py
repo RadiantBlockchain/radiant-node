@@ -45,6 +45,10 @@ MAX_BLOCK_BASE_SIZE = 1000000
 # 1 BCH in satoshis
 COIN = 100000000
 
+MAX_PROTOCOL_MESSAGE_LENGTH = 2 * 1024 * 1024  # Maximum length of incoming protocol messages
+MAX_HEADERS_RESULTS = 2000  # Number of headers sent in one getheaders result
+MAX_INV_SIZE = 50000  # Maximum number of entries in an 'inv' protocol message
+
 NODE_NETWORK = (1 << 0)
 # NODE_GETUTXO = (1 << 1)
 NODE_BLOOM = (1 << 2)
