@@ -54,7 +54,9 @@ class InvalidMessagesTest(BitcoinTestFramework):
         self.test_checksum()
         self.test_size()
         self.test_msgtype()
-        self.test_large_inv()
+        self.test_oversized_inv_msg()
+        self.test_oversized_getdata_msg()
+        self.test_oversized_headers_msg()
         self.test_resource_exhaustion()
 
     def test_buffer(self):
@@ -123,19 +125,21 @@ class InvalidMessagesTest(BitcoinTestFramework):
             conn.sync_with_ping(timeout=1)
             self.nodes[0].disconnect_p2ps()
 
-    def test_large_inv(self):
-        self.log.info("Test oversized inv/getdata/headers messages are logged as misbehaving")
-        conn = self.nodes[0].add_p2p_connection(P2PInterface())
-        with self.nodes[0].assert_debug_log(['Misbehaving', '(0 -> 20) reason: oversized-inv']):
-            msg = msg_inv([CInv(MSG_TX, 1)] * 50001)
-            conn.send_and_ping(msg)
-        with self.nodes[0].assert_debug_log(['Misbehaving', '(20 -> 40) reason: too-many-inv']):
-            msg = msg_getdata([CInv(MSG_TX, 1)] * 50001)
-            conn.send_and_ping(msg)
-        with self.nodes[0].assert_debug_log(['Misbehaving', '(40 -> 60) reason: too-many-headers']):
-            msg = msg_headers([CBlockHeader()] * 2001)
-            conn.send_and_ping(msg)
+    def test_oversized_msg(self, msg, size, expected_reason):
+        msg_type = msg.command.decode('ascii')
+        self.log.info("Test {} message of size {} is logged as misbehaving".format(msg_type, size))
+        with self.nodes[0].assert_debug_log(['Misbehaving', 'reason: {}'.format(expected_reason)]):
+            self.nodes[0].add_p2p_connection(P2PInterface()).send_and_ping(msg)
         self.nodes[0].disconnect_p2ps()
+
+    def test_oversized_inv_msg(self):
+        self.test_oversized_msg(msg_inv([CInv(MSG_TX, 1)] * 50001), 50001, 'oversized-inv')
+
+    def test_oversized_getdata_msg(self):
+        self.test_oversized_msg(msg_getdata([CInv(MSG_TX, 1)] * 50001), 50001, 'too-many-inv')
+
+    def test_oversized_headers_msg(self):
+        self.test_oversized_msg(msg_headers([CBlockHeader()] * 2001), 2001, 'too-many-headers')
 
     def test_resource_exhaustion(self):
         self.log.info("Test node stays up despite many large junk messages")
