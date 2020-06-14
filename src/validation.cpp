@@ -4709,9 +4709,7 @@ static bool LoadBlockIndexDB(const Config &config)
     }
 
     // Check whether we need to continue reindexing
-    bool fReindexing = false;
-    pblocktree->ReadReindexing(fReindexing);
-    if (fReindexing) {
+    if (pblocktree->IsReindexing()) {
         fReindex = true;
     }
 
