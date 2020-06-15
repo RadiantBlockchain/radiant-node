@@ -146,8 +146,7 @@ void HelpMessageDialog::on_okButton_accepted() {
 }
 
 /** "Shutdown" window */
-ShutdownWindow::ShutdownWindow(QWidget *parent, Qt::WindowFlags f)
-    : QWidget(parent, f) {
+ShutdownWindow::ShutdownWindow(QWidget *parent) : QWidget(parent) {
     QVBoxLayout *layout = new QVBoxLayout();
     layout->addWidget(new QLabel(
         tr("%1 is shutting down...").arg(tr(PACKAGE_NAME)) + "<br /><br />" +
