@@ -265,9 +265,8 @@ void TransactionView::setModel(WalletModel *_model) {
 
         if (_model->getOptionsModel()) {
             // Add third party transaction URLs to context menu
-            QStringList listUrls =
-                _model->getOptionsModel()->getThirdPartyTxUrls().split(
-                    "|", QString::SkipEmptyParts);
+            QStringList listUrls = GUIUtil::splitSkipEmptyParts(
+                _model->getOptionsModel()->getThirdPartyTxUrls(), "|");
             for (int i = 0; i < listUrls.size(); ++i) {
                 const auto url = listUrls[i].trimmed();
                 const auto host = QUrl(url, QUrl::StrictMode).host();
