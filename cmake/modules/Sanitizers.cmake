@@ -25,6 +25,12 @@ function(enable_sanitizers)
 	set(CMAKE_EXE_LINKER_FLAGS ${_save_linker_flags})
 
 	if(NOT ${_sanitizers_compile})
+		if (NOT ((${CMAKE_C_COMPILER} MATCHES ".*clang.*") AND (${CMAKE_CXX_COMPILER} MATCHES ".*clang.*")))
+			message(STATUS "
+Check for sanitizer support failed. A common error is not setting \
+C/C++ compiler to 'clang' when using libFuzzer. See\n \
+https://docs.bitcoincashnode.org/doc/fuzzing/")
+		endif()
 		message(FATAL_ERROR "The sanitizers option is not supported: ${_fsanitize_option}")
 	endif()
 
