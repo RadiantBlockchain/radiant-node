@@ -187,6 +187,8 @@ add_compiler_flags(
 	-Wshadow
 	-Wrange-loop-analysis
 	-Wredundant-decls
+)
+add_cxx_compiler_flags(
 	-Wredundant-move
 )
 
