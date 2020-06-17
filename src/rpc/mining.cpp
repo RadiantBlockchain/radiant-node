@@ -1080,8 +1080,8 @@ std::vector<uint256> MakeMerkleBranch(std::vector<uint256> hashes) {
         for (size_t i = 0; i < reducedSize; ++i) {
             // Hash = Double SHA256.
             // The below SHA256D64 call is equivalent to this call, except it hashes in-place, so it's faster.
-            //hashes[i] = Hash(BEGIN(hashes[i * 2 + 1]), END(hashes[i * 2 + 1]),
-            //                 BEGIN(hashes[i * 2 + 2]), END(hashes[i * 2 + 2]));
+            //hashes[i] = Hash(hashes[i * 2 + 1].begin(), hashes[i * 2 + 1].end(),
+            //                 hashes[i * 2 + 2].begin(), hashes[i * 2 + 2].end());
             SHA256D64(hashes[i].begin(), hashes[i * 2 + 1].begin(), 1);
         }
         hashes.resize(reducedSize);
