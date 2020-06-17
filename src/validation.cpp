@@ -163,7 +163,7 @@ public:
         EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
     // Block disconnection on our pcoinsTip:
-    bool DisconnectTip(const Config &config, CValidationState &state,
+    bool DisconnectTip(const CChainParams &params, CValidationState &state,
                        DisconnectedBlockTransactions *disconnectpool)
         EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
@@ -2283,11 +2283,11 @@ static void UpdateTip(const CChainParams &params, CBlockIndex *pindexNew) {
  * disconnectpool (note that the caller is responsible for mempool consistency
  * in any case).
  */
-bool CChainState::DisconnectTip(const Config &config, CValidationState &state,
+bool CChainState::DisconnectTip(const CChainParams &params,
+                                CValidationState &state,
                                 DisconnectedBlockTransactions *disconnectpool) {
     AssertLockHeld(cs_main);
     CBlockIndex *pindexDelete = m_chain.Tip();
-    const CChainParams &params = config.GetChainParams();
     const Consensus::Params &consensusParams = params.GetConsensus();
 
     assert(pindexDelete);
@@ -2317,8 +2317,7 @@ bool CChainState::DisconnectTip(const Config &config, CValidationState &state,
              (GetTimeMicros() - nStart) * MILLI);
 
     // Write the chain state to disk, if necessary.
-    if (!FlushStateToDisk(config.GetChainParams(), state,
-                          FlushStateMode::IF_NEEDED)) {
+    if (!FlushStateToDisk(params, state, FlushStateMode::IF_NEEDED)) {
         return false;
     }
 
@@ -2832,7 +2831,7 @@ bool CChainState::ActivateBestChainStep(
     bool fBlocksDisconnected = false;
     DisconnectedBlockTransactions disconnectpool;
     while (m_chain.Tip() && m_chain.Tip() != pindexFork) {
-        if (!DisconnectTip(config, state, &disconnectpool)) {
+        if (!DisconnectTip(config.GetChainParams(), state, &disconnectpool)) {
             // This is likely a fatal error, but keep the mempool consistent,
             // just in case. Only remove from the mempool in this case.
             disconnectpool.updateMempoolForReorg(config, false);
@@ -3160,7 +3159,8 @@ bool CChainState::UnwindBlock(const Config &config, CValidationState &state,
 
         DisconnectedBlockTransactions disconnectpool;
 
-        bool ret = DisconnectTip(config, state, &disconnectpool);
+        bool ret =
+            DisconnectTip(config.GetChainParams(), state, &disconnectpool);
 
         // DisconnectTip will add transactions to disconnectpool.
         // Adjust the mempool to be consistent with the new tip, adding
