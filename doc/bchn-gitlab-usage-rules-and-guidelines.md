@@ -165,6 +165,8 @@ NOTE: MR = "Merge Request"
 
 - "community" : issue/MR is classified as relating to some changes that touch on the social aspects of the projects, such as expectations of maintainers to contributors and vice versa
 
+- "gitian": issue/MR that touches on the gitian build system, or requires a gitian build as part of its test plan
+
 
 ### Historical labels considered to be deprecated until further notice
 
