@@ -46,6 +46,7 @@ if(Event_INCLUDE_DIR)
 		HINTS "${BREW_HINT}"
 		INCLUDE_DIRS ${Event_INCLUDE_DIRS}
 		PATHS ${PC_Event_LIBRARY_DIRS}
+		INTERFACE_LINK_LIBRARIES "$<$<PLATFORM_ID:Windows>:ws2_32;shell32;advapi32>"
 	)
 
 	set(_Event_WINDOWS_LIBRARIES "$<$<PLATFORM_ID:Windows>:ws2_32;shell32;advapi32>")
