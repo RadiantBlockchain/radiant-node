@@ -17,6 +17,7 @@ add_library(wallet
 	db.cpp
 	fees.cpp
 	init.cpp
+	psbtwallet.cpp
 	rpcdump.cpp
 	rpcwallet.cpp
 	wallet.cpp
