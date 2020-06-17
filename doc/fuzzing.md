@@ -62,7 +62,7 @@ The fuzzing can be sped up significantly (~200x) by using `afl-clang-fast` and
 compiling using `afl-clang-fast`/`afl-clang-fast++` the resulting
 binary will be instrumented in such a way that the AFL features "persistent
 mode" and "deferred forkserver" can be used.
-See https://github.com/mcarpenter/afl/tree/master/llvm_mode for details.
+See https://github.com/google/AFL/tree/master/llvm_mode for details.
 
 ### Fuzzing
 

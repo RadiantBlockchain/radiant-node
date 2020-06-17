@@ -119,6 +119,9 @@ test/cache/*
 
 /doc/doxygen/
 
+files-for-mkdocs/
+/site/
+
 libbitcoinconsensus.pc
 contrib/devtools/split-debug.sh
 

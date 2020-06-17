@@ -530,7 +530,9 @@ pages:
         - (cd files-for-mkdocs ; ln -s ../* . ; rm -rf files-for-mkdocs)
         - rm -f files-for-mkdocs/{depends,src}
         # Add parts from depends and src that were excluded above
-        - tar cf - $(find src depends -name \*.md) src/interfaces/*.h src/qt/intro.cpp src/chainparams.cpp | ( cd files-for-mkdocs ; tar xf - )
+        - tar cf - $(find src depends -name \*.md) | ( cd files-for-mkdocs ; tar xf - )
+        # Add specific files referenced from the docs
+        - tar cf - src/chainparams.cpp src/crypto/sha256_sse4.cpp src/interfaces/*.h src/qt/intro.cpp | ( cd files-for-mkdocs ; tar xf - )
         - mkdocs build
         - mv site public
     artifacts:

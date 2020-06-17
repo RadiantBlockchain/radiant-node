@@ -46,10 +46,10 @@ Various coding styles have been used during the history of the codebase,
 and the result is not very consistent. However, we're now trying to converge to
 a single style, so please use it in new code. Old code will be converted
 gradually and you are encouraged to use the provided
-[clang-format-diff script](/contrib/devtools/README.md#clang-format-diffpy)
+[clang-format-diff script](../contrib/devtools/README.md#clang-format-diffpy)
 to clean up the patch automatically before submitting a pull request.
 
-- Basic rules specified in [src/.clang-format](/src/.clang-format).
+- Basic rules specified in `src/.clang-format`.
   - Braces on new lines for namespaces, classes, functions, methods.
   - Braces on the same line for everything else.
   - 4 space indentation (no tabs) for every block except namespaces.
@@ -153,7 +153,7 @@ For example, to describe a function use:
  */
 bool function(int arg1, const char *arg2)
 ```
-A complete list of `@xxx` commands can be found at http://www.stack.nl/~dimitri/doxygen/manual/commands.html.
+A complete list of `@xxx` commands can be found at [https://www.doxygen.nl/manual/commands.html](https://www.doxygen.nl/manual/commands.html).
 As Doxygen recognizes the comments by the delimiters (`/**` and `*/` in this case), you don't
 *need* to provide any commands for a comment to be valid; just a description text is fine.
 
@@ -194,8 +194,7 @@ Not OK (used plenty in the current source, but not picked up):
 //
 ```
 
-A full list of comment syntaxes picked up by doxygen can be found at http://www.stack.nl/~dimitri/doxygen/manual/docblocks.html,
-but if possible use one of the above styles.
+A full list of comment syntaxes picked up by doxygen can be found at [https://www.doxygen.nl/manual/docblocks.html](https://www.doxygen.nl/manual/docblocks.html), but if possible use one of the above styles.
 
 To build doxygen locally to test changes to the Doxyfile or visualize your comments before landing changes:
 ```
@@ -255,7 +254,7 @@ Run with the `-testnet` option to run with "play bitcoins" on the test network, 
 are testing multi-machine code that needs to operate across the internet.
 
 If you are testing something that can run on one machine, run with the `-regtest` option.
-In regression test mode, blocks can be created on-demand; see [test/functional/](/test/functional) for tests
+In regression test mode, blocks can be created on-demand; see [test/functional/](../test/functional) for tests
 that run in `-regtest` mode.
 
 ### DEBUG_LOCKORDER
@@ -335,7 +334,7 @@ will fail with a linker error when testing the sanitizer flags.
 The test suite should pass cleanly with the `thread` and `undefined` sanitizers,
 but there are a number of known problems when using the `address` sanitizer. The
 address sanitizer is known to fail in
-[sha256_sse4::Transform](/src/crypto/sha256_sse4.cpp) which makes it unusable
+[sha256_sse4::Transform](../src/crypto/sha256_sse4.cpp) which makes it unusable
 unless you also use `--disable-asm` when running configure. We would like to fix
 sanitizer issues, so please send pull requests if you can fix any errors found
 by the address sanitizer (or any other sanitizer).

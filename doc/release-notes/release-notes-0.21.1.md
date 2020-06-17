@@ -128,17 +128,17 @@ Changes since Bitcoin Cash Node 0.21.0
 
 **New documents:**
 
-- [xversionmessage.md](xversionmessage.md) : (protocol) xversion / extversion draft specification
-- [ninja_targets.md](ninja_targets.md) : (development) describes build system targets
-- [bchn-gitlab-usage-rules-and-guidelines.md](bchn-gitlab-usage-rules-and-guidelines.md) : (process) rules for working on BCHN
-- [release-notes/release-notes-0.21.0.md](release-notes/release-notes-0.21.0.md) : previous version release notes
-- [build-unix-arch.md](build-unix-arch.md) : (build, refactor) split out from [build-unix.md](build-unix.md)
-- [build-unix-deb.md](build-unix-deb.md) : (build, refactor) split out from [build-unix.md](build-unix.md)
-- [build-unix-rpm.md](build-unix-rpm.md) : (build, refactor) split out from [build-unix.md](build-unix.md)
+- [xversionmessage.md](../xversionmessage.md) : (protocol) xversion / extversion draft specification
+- [ninja_targets.md](../ninja_targets.md) : (development) describes build system targets
+- [bchn-gitlab-usage-rules-and-guidelines.md](../bchn-gitlab-usage-rules-and-guidelines.md) : (process) rules for working on BCHN
+- [release-notes/release-notes-0.21.0.md](release-notes-0.21.0.md) : previous version release notes
+- [build-unix-arch.md](../build-unix-arch.md) : (build, refactor) split out from [build-unix.md](../build-unix.md)
+- [build-unix-deb.md](../build-unix-deb.md) : (build, refactor) split out from [build-unix.md](../build-unix.md)
+- [build-unix-rpm.md](../build-unix-rpm.md) : (build, refactor) split out from [build-unix.md](../build-unix.md)
 
 **Removed documents:**
 
-- [gitian-building/gitian-building-mac-os-sdk.md](gitian-building/gitian-building-mac-os-sdk.md) : obsoleted instructions
+- gitian-building/gitian-building-mac-os-sdk.md : obsoleted instructions
 
 **Notable commits grouped by functionality:**
 
