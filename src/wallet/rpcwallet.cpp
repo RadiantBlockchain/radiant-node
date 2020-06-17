@@ -1013,24 +1013,23 @@ static UniValue sendmany(const Config &config, const JSONRPCRequest &request) {
     std::vector<CRecipient> vecSend;
 
     Amount totalAmount = Amount::zero();
-    std::vector<std::string> keys = sendTo.getKeys();
-    for (const std::string &name_ : keys) {
-        CTxDestination dest = DecodeDestination(name_, config.GetChainParams());
+    for (auto &entry : sendTo.getObjectEntries()) {
+        CTxDestination dest = DecodeDestination(entry.first, config.GetChainParams());
         if (!IsValidDestination(dest)) {
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY,
                                std::string("Invalid Bitcoin address: ") +
-                                   name_);
+                                   entry.first);
         }
 
         if (destinations.count(dest)) {
             throw JSONRPCError(
                 RPC_INVALID_PARAMETER,
-                std::string("Invalid parameter, duplicated address: ") + name_);
+                std::string("Invalid parameter, duplicated address: ") + entry.first);
         }
         destinations.insert(dest);
 
         CScript scriptPubKey = GetScriptForDestination(dest);
-        Amount nAmount = AmountFromValue(sendTo[name_]);
+        Amount nAmount = AmountFromValue(entry.second);
         if (nAmount <= Amount::zero()) {
             throw JSONRPCError(RPC_TYPE_ERROR, "Invalid amount for send");
         }
@@ -1039,7 +1038,7 @@ static UniValue sendmany(const Config &config, const JSONRPCRequest &request) {
         bool fSubtractFeeFromAmount = false;
         for (size_t idx = 0; idx < subtractFeeFromAmount.size(); idx++) {
             const UniValue &addr = subtractFeeFromAmount[idx];
-            if (addr.get_str() == name_) {
+            if (addr.get_str() == entry.first) {
                 fSubtractFeeFromAmount = true;
             }
         }

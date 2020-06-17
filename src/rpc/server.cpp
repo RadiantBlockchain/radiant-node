@@ -159,9 +159,9 @@ void RPCTypeCheckObj(const UniValue &o,
     }
 
     if (fStrict) {
-        for (const std::string &k : o.getKeys()) {
-            if (typesExpected.count(k) == 0) {
-                std::string err = strprintf("Unexpected key %s", k);
+        for (auto &kv : o.getObjectEntries()) {
+            if (typesExpected.count(kv.first) == 0) {
+                std::string err = strprintf("Unexpected key %s", kv.first);
                 throw JSONRPCError(RPC_TYPE_ERROR, err);
             }
         }
@@ -505,11 +505,9 @@ transformNamedArguments(const JSONRPCRequest &in,
     out.params = UniValue(UniValue::VARR);
     // Build a map of parameters, and remove ones that have been processed, so
     // that we can throw a focused error if there is an unknown one.
-    const std::vector<std::string> &keys = in.params.getKeys();
-    const std::vector<UniValue> &values = in.params.getObjectValues();
     std::unordered_map<std::string, const UniValue *> argsIn;
-    for (size_t i = 0; i < keys.size(); ++i) {
-        argsIn[keys[i]] = &values[i];
+    for (auto &entry : in.params.getObjectEntries()) {
+        argsIn[entry.first] = &entry.second;
     }
     // Process expected parameters.
     int hole = 0;

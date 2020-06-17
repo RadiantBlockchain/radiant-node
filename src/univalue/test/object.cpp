@@ -110,8 +110,7 @@ BOOST_AUTO_TEST_CASE(univalue_typecheck)
     BOOST_CHECK_THROW(v4.get_str(), std::runtime_error);
     BOOST_CHECK_EQUAL(v4.get_real(), 1000);
     BOOST_CHECK_THROW(v4.get_array(), std::runtime_error);
-    BOOST_CHECK_THROW(v4.getKeys(), std::runtime_error);
-    BOOST_CHECK_THROW(v4.getObjectValues(), std::runtime_error);
+    BOOST_CHECK_THROW(v4.getObjectEntries(), std::runtime_error);
     BOOST_CHECK_THROW(v4.get_obj(), std::runtime_error);
 
     UniValue v5;
