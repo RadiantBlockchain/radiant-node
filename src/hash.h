@@ -199,8 +199,7 @@ uint256 SerializeHash(const T &obj, int nType = SER_GETHASH,
 // MurmurHash3: ultra-fast hash suitable for hash tables but not cryptographically secure
 uint32_t MurmurHash3(uint32_t nHashSeed,
                      const uint8_t *pDataToHash, size_t nDataLen /* bytes */);
-inline uint32_t MurmurHash3(uint32_t nHashSeed,
-                            const std::vector<uint8_t> &vDataToHash) {
+inline uint32_t MurmurHash3(uint32_t nHashSeed, Span<const uint8_t> vDataToHash) {
     return MurmurHash3(nHashSeed, vDataToHash.data(), vDataToHash.size());
 }
 
