@@ -123,7 +123,8 @@ class BlockSigChecksActivationTest(BitcoinTestFramework):
             "-replayprotectionactivationtime={}".format(
             REPLAY_PROTECTION_START_TIME),
             "-excessiveblocksize={}".format(MAXBLOCKSIZE),
-            "-blockmaxsize={}".format(MAXBLOCKSIZE)]]
+            "-blockmaxsize={}".format(MAXBLOCKSIZE),
+            "-acceptnonstdtxn=1"]]
 
     def getbestblock(self, node):
         """Get the best block. Register its height so we can use build_block."""
