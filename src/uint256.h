@@ -16,10 +16,10 @@ template <unsigned int BITS> class base_blob {
 protected:
     static constexpr unsigned WIDTH = BITS / 8;
     static_assert(WIDTH * 8 == BITS && WIDTH > 0, "BITS must be evenly divisible by 8 and larger than 0");
-    uint8_t data[WIDTH];
+    uint8_t m_data[WIDTH];
 
 public:
-    constexpr base_blob() noexcept : data{0} {}
+    constexpr base_blob() noexcept : m_data{0} {}
 
     /// type tag + convenience member for uninitialized c'tor
     static constexpr struct Uninitialized_t {} Uninitialized{};
@@ -35,7 +35,7 @@ public:
     constexpr bool IsNull() const noexcept {
         unsigned i = 0;
         do {
-            if (data[i] != 0)
+            if (m_data[i] != 0)
                 return false;
         } while (++i < WIDTH);
         return true;
@@ -47,8 +47,8 @@ public:
         // compare MSB-first (in reverse because data is little endian)
         unsigned i = WIDTH - 1;
         do {
-            const uint8_t a = data[i];
-            const uint8_t b = other.data[i];
+            const uint8_t a = m_data[i];
+            const uint8_t b = other.m_data[i];
 
             if (a > b) {
                 return 1;
@@ -85,18 +85,18 @@ public:
     void SetHex(const std::string &str) noexcept;
     std::string ToString() const { return GetHex(); }
 
-    constexpr uint8_t *begin() noexcept { return &data[0]; }
+    constexpr uint8_t *begin() noexcept { return &m_data[0]; }
 
     constexpr uint8_t *end() noexcept { return begin() + size(); }
 
-    constexpr const uint8_t *begin() const noexcept { return &data[0]; }
+    constexpr const uint8_t *begin() const noexcept { return &m_data[0]; }
 
     constexpr const uint8_t *end() const noexcept { return begin() + size(); }
 
     static constexpr unsigned size() noexcept { return WIDTH; }
 
     constexpr uint64_t GetUint64(int pos) const noexcept {
-        const uint8_t *const ptr = &data[pos * 8];
+        const uint8_t *const ptr = &m_data[pos * 8];
         return uint64_t(ptr[0]) | (uint64_t(ptr[1]) << 8) |
                (uint64_t(ptr[2]) << 16) | (uint64_t(ptr[3]) << 24) |
                (uint64_t(ptr[4]) << 32) | (uint64_t(ptr[5]) << 40) |
