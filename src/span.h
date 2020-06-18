@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <type_traits>
 
 #ifdef DEBUG
@@ -228,4 +229,30 @@ constexpr auto MakeSpan(V &&v) ->
 template <typename V>
 constexpr auto MakeSpan(V &v) -> Span<typename std::remove_pointer_t<decltype(v.data())>> {
     return v;
+}
+
+// Helper functions to safely cast to uint8_t pointers.
+inline uint8_t *UInt8Cast(char *c) {
+    return reinterpret_cast<uint8_t *>(c);
+}
+inline uint8_t *UInt8Cast(uint8_t *c) {
+    return c;
+}
+inline const uint8_t *UInt8Cast(const char *c) {
+    return reinterpret_cast<const uint8_t *>(c);
+}
+inline const uint8_t *UInt8Cast(const uint8_t *c) {
+    return c;
+}
+
+// Helper function to safely convert a Span to a Span<[const] uint8_t>.
+template <typename T>
+constexpr auto UInt8SpanCast(Span<T> s) -> Span<typename std::remove_pointer_t<decltype(UInt8Cast(s.data()))>> {
+    return {UInt8Cast(s.data()), s.size()};
+}
+
+/** Like MakeSpan, but for (const) uint8_t member types only. Only works for (un)signed char containers. */
+template <typename V>
+constexpr auto MakeUInt8Span(V &&v) -> decltype(UInt8SpanCast(MakeSpan(std::forward<V>(v)))) {
+    return UInt8SpanCast(MakeSpan(std::forward<V>(v)));
 }
