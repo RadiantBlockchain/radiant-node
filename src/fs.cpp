@@ -40,7 +40,8 @@ FileLock::~FileLock() {
     }
 }
 
-static bool IsWSL() {
+// Returns true if and only if this system is WSL v1. v2, Linux, macOS, etc always return false.
+static bool IsWSLv1() {
     struct utsname uname_data;
     return uname(&uname_data) == 0 &&
            std::string(uname_data.version).find("Microsoft") !=
@@ -52,10 +53,11 @@ bool FileLock::TryLock() {
         return false;
     }
 
-    // Exclusive file locking is broken on WSL using fcntl (issue #18622)
-    // This workaround can be removed once the bug on WSL is fixed
-    static const bool is_wsl = IsWSL();
-    if (is_wsl) {
+    // Exclusive file locking is broken on WSL v1 only using fcntl (Core issue #18622).
+    // This workaround can be removed once the bug on WSLv1 is fixed.
+    // WSL v2 does not suffer from this bug.
+    static const bool is_wsl_v1 = IsWSLv1();
+    if (is_wsl_v1) {
         if (flock(fd, LOCK_EX | LOCK_NB) == -1) {
             reason = GetErrorReason();
             return false;
