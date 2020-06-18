@@ -85,6 +85,9 @@ public:
     void SetHex(const std::string &str) noexcept;
     std::string ToString() const { return GetHex(); }
 
+    constexpr const uint8_t *data() const noexcept { return &m_data[0]; }
+    constexpr uint8_t *data() noexcept { return &m_data[0]; }
+
     constexpr uint8_t *begin() noexcept { return &m_data[0]; }
 
     constexpr uint8_t *end() noexcept { return begin() + size(); }
