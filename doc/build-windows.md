@@ -1,5 +1,4 @@
-WINDOWS BUILD NOTES
-====================
+# WINDOWS BUILD NOTES
 
 Below are some notes on how to build Bitcoin Cash Node for Windows.
 
@@ -21,31 +20,129 @@ Other options which may work, but which have not been extensively tested are
 
 In any case please make sure that the compiler supports C++14.
 
-Installing Windows Subsystem for Linux
----------------------------------------
+**Note** These notes cover building binaries from source, for running Bitcoin
+Cash Node natively under Windows. If you just want to run Bitcoin Cash Node,
+you can download binaries from the [Bitcoin Cash Node website](https://bitcoincashnode.org/en/download.html).
+If you wish to both compile and run Bitcoin Cash Node on Windows, *under WSL*,
+you can refer to the [Unix build guide](build-unix.md),
+and follow those instructions from within WSL.
 
-With Windows 10, Microsoft has released a new feature named the [Windows
+## Windows Subsystem for Linux
+
+With Windows 10, Microsoft has released a feature named the [Windows
 Subsystem for Linux (WSL)](https://msdn.microsoft.com/commandline/wsl/about). This
 feature allows you to run a bash shell directly on Windows in an Ubuntu-based
 environment. Within this environment you can cross compile for Windows without
 the need for a separate Linux VM or server. Note that while WSL can be installed
 with other Linux variants, such as OpenSUSE, the following instructions have only
-been tested with Ubuntu Bionic.
+been tested with Ubuntu 20.04 (and 18.04, see below).
+
+In May 2020 WSL 2 was released with Windows 10, Version 2004, Build 19041.
 
 WSL is not supported in versions of Windows prior to Windows 10 or on
-Windows Server SKUs. In addition, it is available [only for 64-bit versions of
-Windows](https://msdn.microsoft.com/en-us/commandline/wsl/install_guide).
+Windows Server SKUs. In addition, it is available only for 64-bit versions of
+Windows.
 
-Full instructions to install WSL are available on the above link.
-To enable WSL on Windows 10 with Fall Creators Update installed
-(version >= 16215.0) do the following:
+## Building with WSL 2 and Ubuntu 20.04
 
-1. Open the Windows Features dialog (`OptionalFeatures.exe`)
-2. Enable 'Windows Subsystem for Linux'
-3. Click 'OK' and restart if necessary
+This is the recommended method.
 
-Installing Ubuntu 18.04 on WSL
-------------------------------
+### Installing Ubuntu 20.04 on Windows Subsystem for Linux 2
+
+It is beyond the scope of this guide to cover installation of WSL 2 and Ubuntu
+20.04 on WSL 2. Instructions to install WSL 2 are available at the
+[Windows Subsystem for Linux Installation Guide for Windows 10](https://docs.microsoft.com/en-us/windows/wsl/install-win10).
+
+Once WSL 2 is installed Ubuntu 20.04 can be found in the
+[Microsoft Store](https://www.microsoft.com/store/apps/9n6svws3rx71). You will
+be asked to create a new UNIX user account. This is a separate account from your
+Windows account.
+
+Once the bash shell is active, you can log in and follow the instructions below,
+starting with the "Cross-compilation" section. Compiling the 64-bit version is
+recommended, but it is possible to compile the 32-bit version.
+
+### Cross-compilation for Ubuntu and Windows Subsystem for Linux 2
+
+The steps below can be performed on Ubuntu (including in a VM) or WSL 2. The depends
+system will also work on other Linux distributions, however the commands for
+installing the toolchain will be different.
+
+First, install the general dependencies:
+
+```bash
+    sudo apt update
+    sudo apt upgrade
+    sudo apt install autoconf automake build-essential bsdmainutils cmake curl git git-lfs libboost-all-dev libevent-dev libssl-dev libtool ninja-build nsis pkg-config python3
+```
+
+A host toolchain (`build-essential`) is necessary because some dependency
+packages (such as `protobuf`) need to build host utilities that are used in the
+build process.
+
+See also: [dependencies.md](dependencies.md).
+
+### Building for 64-bit Windows
+
+The first step is to install the `mingw-w64` cross-compilation tool chain.
+
+```bash
+    sudo apt install g++-mingw-w64-x86-64
+```
+
+Next, configure the `mingw-w64` to the posix<sup>[1](#footnote1)</sup> compiler option.
+
+```bash
+    sudo update-alternatives --config x86_64-w64-mingw32-g++ # Set the default mingw32 g++ compiler option to posix.
+    sudo update-alternatives --config x86_64-w64-mingw32-gcc # Set the default mingw32 gcc compiler option to posix.
+```
+
+Note that for WSL 2 the Bitcoin Cash Node source path MUST be somewhere in the default
+mount file system, for example `/usr/src/bitcoin-cash-node`, AND not under `/mnt/d/`.
+This means you cannot use a directory that is located directly on the host Windows
+file system to perform the build.
+
+Acquire the source in the usual way:
+
+```bash
+    git clone https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node.git
+    cd bitcoin-cash-node
+```
+
+Once the source code is ready the build steps are below:
+
+```bash
+    export PATH=$(echo "$PATH" | sed -e 's/:\/mnt.*//g') # strip out problematic Windows %PATH% imported var
+    cd depends
+    make build-win64
+    cd ..
+    mkdir build
+    cd build
+    cmake -GNinja .. -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/Win64.cmake -DBUILD_BITCOIN_SEEDER=OFF # seeder not supported in Windows yet
+    ninja
+    ninja package #to build the install-package
+```
+
+### Installation
+
+After building using the Windows subsystem it can be useful to copy the compiled
+executables to a directory on the windows drive in the same directory structure
+as they appear in the release `.zip` archive. This can be done in the following
+way. This will install to `c:\workspace\bitcoin-cash-node`, for example:
+
+```bash
+    cmake -GNinja .. -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/Win32.cmake -DBUILD_BITCOIN_SEEDER=OFF -DCMAKE_INSTALL_PREFIX=/mnt/c/workspace/bitcoin-cash-node
+    sudo ninja install
+```
+
+## Building with WSL and Ubuntu 18.04
+
+Building with WSL 2 and Ubuntu 20.04 is strongly recommended, but if for some
+reason you find your self unable to install WSL 2, the below guide will work for
+WSL. Here you will need to use Ubuntu 18.04, and that brings with it some extra
+complications.
+
+### Installing Ubuntu 18.04 on WSL
 
 At the time of writing (April 2020) the Windows Subsystem for Linux installs Ubuntu
 Focal 20.04 if you just search for Ubuntu in the Microsoft Shop. However, there is
@@ -67,8 +164,7 @@ After the bash shell is active, you can follow the instructions below, starting
 with the "Cross-compilation" section. Compiling the 64-bit version is
 recommended, but it is possible to compile the 32-bit version.
 
-Cross-compilation for Ubuntu and Windows Subsystem for Linux
-------------------------------------------------------------
+### Cross-compilation for Ubuntu and Windows Subsystem for Linux
 
 The steps below can be performed on Ubuntu (including in a VM) or WSL. The depends
 system will also work on other Linux distributions, however the commands for
@@ -79,7 +175,7 @@ First, install the general dependencies:
 ```bash
     sudo apt update
     sudo apt upgrade
-    sudo apt install autoconf automake build-essential bsdmainutils curl git libboost-all-dev libevent-dev libssl-dev libtool ninja-build pkg-config python3
+    sudo apt install autoconf automake build-essential bsdmainutils curl git git-lfs libboost-all-dev libevent-dev libssl-dev libtool ninja-build pkg-config python3
 ```
 
 The `cmake` version packaged with Ubuntu Bionic is too old for building Building
@@ -99,8 +195,7 @@ build process.
 
 See also: [dependencies.md](dependencies.md).
 
-Building for 64-bit Windows
----------------------------
+### Building for 64-bit Windows
 
 The first step is to install the `mingw-w64` cross-compilation tool chain.
 
@@ -130,7 +225,7 @@ Acquire the source in the usual way:
 Once the source code is ready the build steps are below:
 
 ```bash
-    PATH=$(echo "$PATH" | sed -e 's/:\/mnt.*//g') # strip out problematic Windows %PATH% imported var
+    export PATH=$(echo "$PATH" | sed -e 's/:\/mnt.*//g') # strip out problematic Windows %PATH% imported var
     cd depends
     make build-win64
     cd ..
@@ -140,8 +235,7 @@ Once the source code is ready the build steps are below:
     ninja
 ```
 
-Building BCHN installer
------------------------
+### Building BCHN installer
 
 To build a Windows installer for BCHN you need a newer version of the `nsis` package
 than is availiable in Ubuntu 18.04. To install a newer `nsis` from Ubuntu 19.10
@@ -158,8 +252,7 @@ Then, back in the build directory, you can build the package with the command
     ninja package
 ```
 
-Installation
--------------
+### Installation
 
 After building using the Windows subsystem it can be useful to copy the compiled
 executables to a directory on the windows drive in the same directory structure
@@ -171,14 +264,12 @@ way. This will install to `c:\workspace\bitcoin-cash-node`, for example:
     sudo ninja install
 ```
 
-Depends system
---------------
+## Depends system
 
 For further documentation on the depends system see [README.md](../depends/README.md)
 in the depends directory.
 
-Footnotes
----------
+## Footnotes
 
 <a name="footnote1">1</a>: Starting from Ubuntu Xenial 16.04, both the 32 and 64
 bit `Mingw-w64` packages install two different compiler options to allow a choice
