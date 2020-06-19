@@ -19,30 +19,18 @@ class CAddrMan;
 class CDataStream;
 class CChainParams;
 
-typedef enum BanReason {
-    BanReasonUnknown = 0,
-    BanReasonNodeMisbehaving = 1,
-    BanReasonManuallyAdded = 2
-} BanReason;
-
 class CBanEntry {
 public:
     static const int CURRENT_VERSION = 1;
     int nVersion;
     int64_t nCreateTime;
     int64_t nBanUntil;
-    uint8_t banReason;
 
     CBanEntry() { SetNull(); }
 
     explicit CBanEntry(int64_t nCreateTimeIn) {
         SetNull();
         nCreateTime = nCreateTimeIn;
-    }
-
-    explicit CBanEntry(int64_t n_create_time_in, BanReason ban_reason_in)
-        : CBanEntry(n_create_time_in) {
-        banReason = ban_reason_in;
     }
 
     ADD_SERIALIZE_METHODS;
@@ -52,6 +40,7 @@ public:
         READWRITE(this->nVersion);
         READWRITE(nCreateTime);
         READWRITE(nBanUntil);
+        uint8_t banReason = 2; //! For backward compatibility
         READWRITE(banReason);
     }
 
@@ -59,18 +48,6 @@ public:
         nVersion = CBanEntry::CURRENT_VERSION;
         nCreateTime = 0;
         nBanUntil = 0;
-        banReason = BanReasonUnknown;
-    }
-
-    std::string banReasonToString() const {
-        switch (banReason) {
-            case BanReasonNodeMisbehaving:
-                return "node misbehaving";
-            case BanReasonManuallyAdded:
-                return "manually added";
-            default:
-                return "unknown";
-        }
     }
 };
 

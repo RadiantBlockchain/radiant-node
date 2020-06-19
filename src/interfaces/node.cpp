@@ -147,10 +147,9 @@ namespace {
             }
             return false;
         }
-        bool ban(const CNetAddr &net_addr, BanReason reason,
-                 int64_t ban_time_offset) override {
+        bool ban(const CNetAddr &net_addr, int64_t ban_time_offset) override {
             if (g_banman) {
-                g_banman->Ban(net_addr, reason, ban_time_offset);
+                g_banman->Ban(net_addr, ban_time_offset);
                 return true;
             }
             return false;

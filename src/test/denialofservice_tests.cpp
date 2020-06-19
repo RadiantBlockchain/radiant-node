@@ -8,6 +8,7 @@
 #include <chain.h>
 #include <chainparams.h>
 #include <config.h>
+#include <crypto/siphash.h>
 #include <keystore.h>
 #include <net.h>
 #include <net_processing.h>
@@ -22,6 +23,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <cstdint>
+#include <cstring>
 
 struct CConnmanTest : public CConnman {
     using CConnman::CConnman;
@@ -228,18 +230,18 @@ BOOST_AUTO_TEST_CASE(stale_tip_peer_management) {
     connman->ClearNodes();
 }
 
-BOOST_AUTO_TEST_CASE(DoS_banning) {
+BOOST_AUTO_TEST_CASE(DoS_autodiscourage) {
     const Config &config = GetConfig();
     std::atomic<bool> interruptDummy(false);
 
     auto banman = std::make_unique<BanMan>(GetDataDir() / "banlist.dat",
                                            config.GetChainParams(), nullptr,
-                                           DEFAULT_MISBEHAVING_BANTIME);
+                                           DEFAULT_MANUAL_BANTIME);
     auto connman = std::make_unique<CConnman>(config, 0x1337, 0x1337);
     auto peerLogic = std::make_unique<PeerLogicValidation>(
         connman.get(), banman.get(), scheduler, false);
 
-    banman->ClearBanned();
+    banman->ClearAll();
     CAddress addr1(ip(0xa0b0c001), NODE_NONE);
     CNode dummyNode1(id++, NODE_NETWORK, 0, INVALID_SOCKET, addr1, 0, 0,
                      CAddress(), "", true);
@@ -249,16 +251,18 @@ BOOST_AUTO_TEST_CASE(DoS_banning) {
     dummyNode1.fSuccessfullyConnected = true;
     {
         LOCK(cs_main);
-        // Should get banned.
+        // Should get discouraged.
         Misbehaving(dummyNode1.GetId(), 100, "");
     }
     {
         LOCK2(cs_main, dummyNode1.cs_sendProcessing);
         peerLogic->SendMessages(config, &dummyNode1, interruptDummy);
     }
-    BOOST_CHECK(banman->IsBanned(addr1));
-    // Different IP, not banned.
-    BOOST_CHECK(!banman->IsBanned(ip(0xa0b0c001 | 0x0000ff00)));
+    // check discouraged but not banned
+    BOOST_CHECK(banman->IsDiscouraged(addr1));
+    BOOST_CHECK(!banman->IsBanned(addr1));
+    // Different IP, not discouraged.
+    BOOST_CHECK(!banman->IsDiscouraged(ip(0xa0b0c001 | 0x0000ff00)));
 
     CAddress addr2(ip(0xa0b0c002), NODE_NONE);
     CNode dummyNode2(id++, NODE_NETWORK, 0, INVALID_SOCKET, addr2, 1, 1,
@@ -275,10 +279,10 @@ BOOST_AUTO_TEST_CASE(DoS_banning) {
         LOCK2(cs_main, dummyNode2.cs_sendProcessing);
         peerLogic->SendMessages(config, &dummyNode2, interruptDummy);
     }
-    // 2 not banned yet...
-    BOOST_CHECK(!banman->IsBanned(addr2));
+    // 2 not discouraged yet...
+    BOOST_CHECK(!banman->IsDiscouraged(addr2));
     // ... but 1 still should be.
-    BOOST_CHECK(banman->IsBanned(addr1));
+    BOOST_CHECK(banman->IsDiscouraged(addr1));
     {
         LOCK(cs_main);
         Misbehaving(dummyNode2.GetId(), 50, "");
@@ -287,7 +291,8 @@ BOOST_AUTO_TEST_CASE(DoS_banning) {
         LOCK2(cs_main, dummyNode2.cs_sendProcessing);
         peerLogic->SendMessages(config, &dummyNode2, interruptDummy);
     }
-    BOOST_CHECK(banman->IsBanned(addr2));
+    BOOST_CHECK(banman->IsDiscouraged(addr2));
+    BOOST_CHECK(!banman->IsBanned(addr2));
 
     bool dummy;
     peerLogic->FinalizeNode(config, dummyNode1.GetId(), dummy);
@@ -300,12 +305,12 @@ BOOST_AUTO_TEST_CASE(DoS_banscore) {
 
     auto banman = std::make_unique<BanMan>(GetDataDir() / "banlist.dat",
                                            config.GetChainParams(), nullptr,
-                                           DEFAULT_MISBEHAVING_BANTIME);
+                                           DEFAULT_MANUAL_BANTIME);
     auto connman = std::make_unique<CConnman>(config, 0x1337, 0x1337);
     auto peerLogic = std::make_unique<PeerLogicValidation>(
         connman.get(), banman.get(), scheduler, false);
 
-    banman->ClearBanned();
+    banman->ClearAll();
     // because 11 is my favorite number.
     gArgs.ForceSetArg("-banscore", "111");
     CAddress addr1(ip(0xa0b0c001), NODE_NONE);
@@ -323,7 +328,7 @@ BOOST_AUTO_TEST_CASE(DoS_banscore) {
         LOCK2(cs_main, dummyNode1.cs_sendProcessing);
         peerLogic->SendMessages(config, &dummyNode1, interruptDummy);
     }
-    BOOST_CHECK(!banman->IsBanned(addr1));
+    BOOST_CHECK(!banman->IsDiscouraged(addr1));
     {
         LOCK(cs_main);
         Misbehaving(dummyNode1.GetId(), 10, "");
@@ -332,7 +337,7 @@ BOOST_AUTO_TEST_CASE(DoS_banscore) {
         LOCK2(cs_main, dummyNode1.cs_sendProcessing);
         peerLogic->SendMessages(config, &dummyNode1, interruptDummy);
     }
-    BOOST_CHECK(!banman->IsBanned(addr1));
+    BOOST_CHECK(!banman->IsDiscouraged(addr1));
     {
         LOCK(cs_main);
         Misbehaving(dummyNode1.GetId(), 1, "");
@@ -341,7 +346,7 @@ BOOST_AUTO_TEST_CASE(DoS_banscore) {
         LOCK2(cs_main, dummyNode1.cs_sendProcessing);
         peerLogic->SendMessages(config, &dummyNode1, interruptDummy);
     }
-    BOOST_CHECK(banman->IsBanned(addr1));
+    BOOST_CHECK(banman->IsDiscouraged(addr1));
     gArgs.ForceSetArg("-banscore", std::to_string(DEFAULT_BANSCORE_THRESHOLD));
 
     bool dummy;
@@ -354,12 +359,12 @@ BOOST_AUTO_TEST_CASE(DoS_bantime) {
 
     auto banman = std::make_unique<BanMan>(GetDataDir() / "banlist.dat",
                                            config.GetChainParams(), nullptr,
-                                           DEFAULT_MISBEHAVING_BANTIME);
+                                           DEFAULT_MANUAL_BANTIME);
     auto connman = std::make_unique<CConnman>(config, 0x1337, 0x1337);
     auto peerLogic = std::make_unique<PeerLogicValidation>(
         connman.get(), banman.get(), scheduler, false);
 
-    banman->ClearBanned();
+    banman->ClearAll();
     int64_t nStartTime = GetTime();
     // Overrides future calls to GetTime()
     SetMockTime(nStartTime);
@@ -380,16 +385,83 @@ BOOST_AUTO_TEST_CASE(DoS_bantime) {
         LOCK2(cs_main, dummyNode.cs_sendProcessing);
         peerLogic->SendMessages(config, &dummyNode, interruptDummy);
     }
-    BOOST_CHECK(banman->IsBanned(addr));
+    const CNetAddr bannedAddr{ip(0xd0e0f002)};
+    banman->Ban(bannedAddr);
+
+    BOOST_CHECK(banman->IsBanned(bannedAddr));
+    BOOST_CHECK(banman->IsDiscouraged(addr));
+    BOOST_CHECK(!banman->IsBanned(addr));
 
     SetMockTime(nStartTime + 60 * 60);
-    BOOST_CHECK(banman->IsBanned(addr));
+    BOOST_CHECK(banman->IsDiscouraged(addr));
+    BOOST_CHECK(banman->IsBanned(bannedAddr));
 
     SetMockTime(nStartTime + 60 * 60 * 24 + 1);
-    BOOST_CHECK(!banman->IsBanned(addr));
+    // banning should expire
+    BOOST_CHECK(!banman->IsBanned(bannedAddr));
+    // discouragement never expires ...
+    BOOST_CHECK(banman->IsDiscouraged(addr));
+    // ... unless we clear the discourage bloom filter
+    banman->ClearDiscouraged();
+    BOOST_CHECK(!banman->IsDiscouraged(addr));
 
     bool dummy;
     peerLogic->FinalizeNode(config, dummyNode.GetId(), dummy);
+}
+
+static CNetAddr GenAddress() {
+    // deterministic hasher to always generate the same set of addrs
+    static CSipHasher hasher{0xfeedbeeff00d1234, 0x9001231231471231};
+    static uint64_t last{0x123456789abcdef7};
+    uint64_t lo, hi;
+    last = lo = hasher.Write(last).Finalize();
+    last = hi = hasher.Write(last).Finalize();
+    static const auto ip6 = [](uint64_t w1, uint64_t w2) {
+        struct in6_addr s;
+        static_assert(sizeof(s) == sizeof(uint64_t) * 2, "ipv6 address should be 128 bits");
+        uint8_t *buf = reinterpret_cast<uint8_t *>(&s);
+        std::memcpy(buf, &w1, sizeof(w1));
+        std::memcpy(buf + sizeof(w1), &w2, sizeof(w2));
+        return CNetAddr{s};
+    };
+    return ip6(lo, hi);
+}
+
+BOOST_AUTO_TEST_CASE(DoS_DiscourageRolling) {
+    const Config &config = GetConfig();
+    auto banman = std::make_unique<BanMan>(GetDataDir() / "banlist.dat",
+                                           config.GetChainParams(), nullptr,
+                                           DEFAULT_MANUAL_BANTIME);
+    banman->ClearAll();
+
+    constexpr int FilterSize = int(BanMan::DiscourageFilterSize());
+    constexpr int NGen = FilterSize * 1.5 + 1;
+    std::vector<CNetAddr> addrs;
+    addrs.reserve(NGen);
+    for (int i = 0; i < NGen; ++i) {
+        auto addr = GenAddress();
+        banman->Discourage(addr);
+        // make sure discouragement at least immediately works
+        BOOST_CHECK(banman->IsDiscouraged(addr));
+        addrs.push_back(addr);
+    }
+
+    // check the rolling properly of the filter in that it "forgets" older discouraged addresses after
+    // its filter size is exhausted.
+    BOOST_CHECK(!banman->IsDiscouraged(addrs.front()));
+
+    // check that the most recent additions are still all discouraged (but not banned)
+    int i = 0;
+    for (auto rit = addrs.rbegin(); rit != addrs.rend() && i < FilterSize; ++i, ++rit) {
+        BOOST_CHECK(banman->IsDiscouraged(*rit));
+        BOOST_CHECK(!banman->IsBanned(*rit));
+    }
+
+    // next, clear the filter and check nothing is Discouraged anymore
+    banman->ClearDiscouraged();
+    for (const auto &addr : addrs) {
+        BOOST_CHECK(!banman->IsDiscouraged(addr));
+    }
 }
 
 static CTransactionRef RandomOrphan() {

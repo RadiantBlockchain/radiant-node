@@ -169,7 +169,7 @@ int nSyncStarted GUARDED_BY(cs_main) = 0;
 
 /**
  * Sources of received blocks, saved to be able to send them reject messages or
- * ban them when processing happens afterwards.
+ * discourage them when processing happens afterwards.
  * Set mapBlockSource[hash].second to false if the node should not be punished
  * if the block is invalid.
  */
@@ -273,9 +273,8 @@ struct CNodeState {
     bool fCurrentlyConnected;
     //! Accumulated misbehaviour score for this peer.
     int nMisbehavior;
-    //! Whether this peer should be disconnected and banned (unless
-    //! whitelisted).
-    bool fShouldBan;
+    //! Whether this peer should be disconnected and marked as discouraged (unless whitelisted with noban).
+    bool fShouldDiscourage;
     //! String name of this peer (debugging/logging purposes).
     const std::string name;
     //! List of asynchronously-determined block rejections to notify this peer
@@ -426,7 +425,7 @@ struct CNodeState {
         : address(addrIn), name(addrNameIn) {
         fCurrentlyConnected = false;
         nMisbehavior = 0;
-        fShouldBan = false;
+        fShouldDiscourage = false;
         pindexBestKnownBlock = nullptr;
         hashLastUnknownBlock = BlockHash();
         pindexLastCommonBlock = nullptr;
@@ -1132,7 +1131,7 @@ unsigned int LimitOrphanTxSize(unsigned int nMaxOrphans) {
 }
 
 /**
- * Mark a misbehaving peer to be banned depending upon the value of `-banscore`.
+ * Mark a misbehaving peer to be discouraged depending upon the value of `-banscore`.
  */
 void Misbehaving(NodeId pnode, int howmuch, const std::string &reason)
     EXCLUSIVE_LOCKS_REQUIRED(cs_main) {
@@ -1150,10 +1149,10 @@ void Misbehaving(NodeId pnode, int howmuch, const std::string &reason)
     if (state->nMisbehavior >= banscore &&
         state->nMisbehavior - howmuch < banscore) {
         LogPrintf(
-            "%s: %s peer=%d (%d -> %d) reason: %s BAN THRESHOLD EXCEEDED\n",
+            "%s: %s peer=%d (%d -> %d) reason: %s DISCOURAGE THRESHOLD EXCEEDED\n",
             __func__, state->name, pnode, state->nMisbehavior - howmuch,
             state->nMisbehavior, reason.c_str());
-        state->fShouldBan = true;
+        state->fShouldDiscourage = true;
     } else {
         LogPrintf("%s: %s peer=%d (%d -> %d) reason: %s\n", __func__,
                   state->name, pnode, state->nMisbehavior - howmuch,
@@ -1363,7 +1362,7 @@ void PeerLogicValidation::UpdatedBlockTip(const CBlockIndex *pindexNew,
 }
 
 /**
- * Handle invalid block rejection and consequent peer banning, maintain which
+ * Handle invalid block rejection and consequent peer discouragement, maintain which
  * peers announce compact blocks.
  */
 void PeerLogicValidation::BlockChecked(const CBlock &block,
@@ -3197,7 +3196,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
             // disconnect the peer if the header turns out to be for an invalid
             // block.
             // Note that if a peer tries to build on an invalid chain, that will
-            // be detected and the peer will be banned.
+            // be detected and the peer will be discouraged.
             return ProcessHeadersMessage(config, pfrom, connman,
                                          {cmpctblock.header},
                                          /*punish_duplicate_invalid=*/false);
@@ -3295,7 +3294,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
                 // 3. the block is otherwise invalid (eg invalid coinbase,
                 //    block is too big, too many legacy sigops, etc).
                 // So if CheckBlock failed, #3 is the only possibility.
-                // Under BIP 152, we don't DoS-ban unless proof of work is
+                // Under BIP 152, we don't DoS-discourage unless proof of work is
                 // invalid (we don't require all the stateless checks to have
                 // been run). This is handled below, so just treat this as
                 // though the block was successfully read, and rely on the
@@ -3645,8 +3644,8 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
     return true;
 }
 
-bool PeerLogicValidation::SendRejectsAndCheckIfBanned(CNode *pnode,
-                                                      bool enable_bip61)
+bool PeerLogicValidation::SendRejectsAndCheckIfShouldDiscourage(CNode *pnode,
+                                                                bool enable_bip61)
     EXCLUSIVE_LOCKS_REQUIRED(cs_main) {
     AssertLockHeld(cs_main);
     CNodeState &state = *State(pnode->GetId());
@@ -3663,8 +3662,8 @@ bool PeerLogicValidation::SendRejectsAndCheckIfBanned(CNode *pnode,
     }
     state.rejects.clear();
 
-    if (state.fShouldBan) {
-        state.fShouldBan = false;
+    if (state.fShouldDiscourage) {
+        state.fShouldDiscourage = false;
         if (pnode->HasPermission(PF_NOBAN)) {
             LogPrintf("Warning: not punishing whitelisted peer %s!\n",
                       pnode->addr.ToString());
@@ -3672,14 +3671,14 @@ bool PeerLogicValidation::SendRejectsAndCheckIfBanned(CNode *pnode,
             LogPrintf("Warning: not punishing manually-connected peer %s!\n",
                       pnode->addr.ToString());
         } else if (pnode->addr.IsLocal()) {
-            // Disconnect but don't ban _this_ local node
-            LogPrintf("Warning: disconnecting but not banning local peer %s!\n",
+            // Disconnect but don't discourage _this_ local node
+            LogPrintf("Warning: disconnecting but not discouraging local peer %s!\n",
                       pnode->addr.ToString());
             pnode->fDisconnect = true;
         } else {
-            // Disconnect and ban all nodes sharing the address
+            // Disconnect and discourage all nodes sharing the address
             if (m_banman) {
-                m_banman->Ban(pnode->addr, BanReasonNodeMisbehaving);
+                m_banman->Discourage(pnode->addr);
             }
             connman->DisconnectNode(pnode->addr);
         }
@@ -3746,9 +3745,9 @@ bool PeerLogicValidation::ProcessMessages(const Config &config, CNode *pfrom,
                  "PROCESSMESSAGE: INVALID MESSAGESTART %s peer=%d\n",
                  SanitizeString(msg.hdr.GetCommand()), pfrom->GetId());
 
-        // Make sure we ban where that come from for some time.
+        // Make sure we discourage and disconnect where that come from
         if (m_banman) {
-            m_banman->Ban(pfrom->addr, BanReasonNodeMisbehaving);
+            m_banman->Discourage(pfrom->addr);
         }
         connman->DisconnectNode(pfrom->addr);
 
@@ -3783,7 +3782,7 @@ bool PeerLogicValidation::ProcessMessages(const Config &config, CNode *pfrom,
                    hdr.pchChecksum + CMessageHeader::CHECKSUM_SIZE),
             pfrom->GetId());
         if (m_banman) {
-            m_banman->Ban(pfrom->addr, BanReasonNodeMisbehaving);
+            m_banman->Discourage(pfrom->addr);
         }
         connman->DisconnectNode(pfrom->addr);
         return fMoreWork;
@@ -3841,7 +3840,7 @@ bool PeerLogicValidation::ProcessMessages(const Config &config, CNode *pfrom,
     }
 
     LOCK(cs_main);
-    SendRejectsAndCheckIfBanned(pfrom, m_enable_bip61);
+    SendRejectsAndCheckIfShouldDiscourage(pfrom, m_enable_bip61);
 
     return fMoreWork;
 }
@@ -4107,7 +4106,7 @@ bool PeerLogicValidation::SendMessages(const Config &config, CNode *pto,
         return true;
     }
 
-    if (SendRejectsAndCheckIfBanned(pto, m_enable_bip61)) {
+    if (SendRejectsAndCheckIfShouldDiscourage(pto, m_enable_bip61)) {
         return true;
     }
     CNodeState &state = *State(pto->GetId());

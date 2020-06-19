@@ -47,7 +47,7 @@ static void BanManAddressIsBanned(benchmark::State &state) {
     for (auto & addr : chkAddresses)
         addr = gen();
     for (size_t i = 0; i < nAddressesBanned; ++i)
-        banman.Ban(gen(), BanReasonNodeMisbehaving);
+        banman.Ban(gen(), 0, false, false /* disable slow saves to disk */);
 
     size_t index = 0;
     while (state.KeepRunning()) {
@@ -55,8 +55,8 @@ static void BanManAddressIsBanned(benchmark::State &state) {
     }
 }
 
-static void BanManAddressIsBannedLevel(benchmark::State &state) {
-    constexpr size_t nAddressesBanned = 65535, nAddressChk = 1000;
+static void BanManAddressIsDiscouraged(benchmark::State &state) {
+    constexpr size_t nAddressesBanned = BanMan::DiscourageFilterSize(), nAddressChk = 1000;
     SelectParams(CBaseChainParams::MAIN);
     const Config &config = GetConfig();
     const CChainParams params = config.GetChainParams();
@@ -66,11 +66,11 @@ static void BanManAddressIsBannedLevel(benchmark::State &state) {
     for (auto & addr : chkAddresses)
         addr = gen();
     for (size_t i = 0; i < nAddressesBanned; ++i)
-        banman.Ban(gen(), BanReasonNodeMisbehaving);
+        banman.Discourage(gen());
 
     size_t index = 0;
     while (state.KeepRunning()) {
-        banman.IsBannedLevel(chkAddresses[index++ % nAddressChk]);
+        banman.IsDiscouraged(chkAddresses[index++ % nAddressChk]);
     }
 }
 
@@ -86,11 +86,11 @@ static void BanManAddressBan(benchmark::State &state) {
         addr = gen();
     size_t banTime = 60, index = 0;
     while (state.KeepRunning()) {
-        banman.Ban(addresses[index++ % nAddressGen], BanReasonNodeMisbehaving, banTime++);
+        banman.Ban(addresses[index++ % nAddressGen], banTime++, false, false /* disable slow saves to disk */);
     }
 }
 
 
 BENCHMARK(BanManAddressIsBanned, 500);
-BENCHMARK(BanManAddressIsBannedLevel, 500);
+BENCHMARK(BanManAddressIsDiscouraged, 20000000);
 BENCHMARK(BanManAddressBan, 2400000);
