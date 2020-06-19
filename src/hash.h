@@ -26,10 +26,11 @@ private:
 public:
     static const size_t OUTPUT_SIZE = CSHA256::OUTPUT_SIZE;
 
-    void Finalize(uint8_t hash[OUTPUT_SIZE]) {
+    void Finalize(Span<uint8_t> output) {
+        assert(output.size() == OUTPUT_SIZE);
         uint8_t buf[CSHA256::OUTPUT_SIZE];
         sha.Finalize(buf);
-        sha.Reset().Write(buf, CSHA256::OUTPUT_SIZE).Finalize(hash);
+        sha.Reset().Write(buf, CSHA256::OUTPUT_SIZE).Finalize(output.data());
     }
 
     CHash256 &Write(Span<const uint8_t> input) {
@@ -51,10 +52,11 @@ private:
 public:
     static const size_t OUTPUT_SIZE = CRIPEMD160::OUTPUT_SIZE;
 
-    void Finalize(uint8_t hash[OUTPUT_SIZE]) {
+    void Finalize(Span<uint8_t> output) {
+        assert(output.size() == OUTPUT_SIZE);
         uint8_t buf[CSHA256::OUTPUT_SIZE];
         sha.Finalize(buf);
-        CRIPEMD160().Write(buf, CSHA256::OUTPUT_SIZE).Finalize(hash);
+        CRIPEMD160().Write(buf, CSHA256::OUTPUT_SIZE).Finalize(output.data());
     }
 
     CHash160 &Write(Span<const uint8_t> input) {
@@ -74,7 +76,7 @@ template <typename T1> inline uint256 Hash(const T1 pbegin, const T1 pend) {
     uint256 result;
     CHash256()
         .Write({pbegin == pend ? pblank : (const uint8_t *)&pbegin[0], (pend - pbegin) * sizeof(pbegin[0])})
-        .Finalize((uint8_t *)&result);
+        .Finalize(result);
     return result;
 }
 
@@ -87,7 +89,7 @@ inline uint256 Hash(const T1 p1begin, const T1 p1end, const T2 p2begin,
     CHash256()
         .Write({p1begin == p1end ? pblank : (const uint8_t *)&p1begin[0], (p1end - p1begin) * sizeof(p1begin[0])})
         .Write({p2begin == p2end ? pblank : (const uint8_t *)&p2begin[0], (p2end - p2begin) * sizeof(p2begin[0])})
-        .Finalize((uint8_t *)&result);
+        .Finalize(result);
     return result;
 }
 
@@ -97,7 +99,7 @@ template <typename T1> inline uint160 Hash160(const T1 pbegin, const T1 pend) {
     uint160 result;
     CHash160()
         .Write({pbegin == pend ? pblank : (const uint8_t *)&pbegin[0], (pend - pbegin) * sizeof(pbegin[0])})
-        .Finalize((uint8_t *)&result);
+        .Finalize(result);
     return result;
 }
 
@@ -133,8 +135,8 @@ public:
 
     // invalidates the object
     uint256 GetHash() {
-        uint256 result;
-        ctx.Finalize(&*result.begin());
+        uint256 result{uint256::Uninitialized};
+        ctx.Finalize(result);
         return result;
     }
 
