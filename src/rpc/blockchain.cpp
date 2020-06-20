@@ -874,9 +874,10 @@ static UniValue getblockheader(const Config &config,
         CDataStream ssBlock(SER_NETWORK, PROTOCOL_VERSION);
         ssBlock << pindex->GetBlockHeader();
         ret = HexStr(ssBlock.begin(), ssBlock.end());
+    } else {
+        ret = blockheaderToJSON(tip, pindex);
     }
 
-    ret = blockheaderToJSON(tip, pindex);
     return ret;
 }
 
