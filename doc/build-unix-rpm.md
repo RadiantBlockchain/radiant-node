@@ -8,12 +8,13 @@
 Minimal build requirements:
 
 ```bash
-sudo dnf install boost-devel cmake gcc-c++ git libevent-devel miniupnpc-devel ninja-build openssl-devel python3 zeromq-devel
+sudo dnf install boost-devel cmake gcc-c++ git git-lfs libevent-devel miniupnpc-devel ninja-build openssl-devel python3 zeromq-devel
 ```
 
 You can do without either of the `miniupnpc-devel` and `zeromq-devel` package,
 then you just need to pass `-DENABLE_UPNP=OFF` or `-DBUILD_BITCOIN_ZMQ=OFF` on
-the `cmake` command line.
+the `cmake` command line. You can also do without the `git-lfs` package, if you
+don't intend to run the benchmark tool.
 
 BerkeleyDB 5.3 or later is required for the wallet. This can be installed with:
 

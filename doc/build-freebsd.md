@@ -34,21 +34,30 @@ pkg install libzmq4
 If not installed, ZeroMQ support should be disabled by passing `-DBUILD_BITCOIN_ZMQ=OFF`
 to `cmake`.
 
-In order to run the test suite (recommended), you will need to have Python 3 installed:
+In order to run the test suite (recommended), you will need to have Python 3:
 
 ```bash
 pkg install python3
 ```
 
+In order to run the benchmark tool, you will need to have `git-lfs` installed:
+
+```bash
+pkg install git-lfs
+```
+
 To run the ZeroMQ tests:
+
 ```bash
 pkg install py37-pyzmq
 ```
+
 For the wallet (optional):
 
 ```bash
 pkg install db5
 ```
+
 If you also want to build the GUI client `bitcoin-qt` Qt 5 is necessary.
 To build with Qt 5 you need the following packages installed:
 
