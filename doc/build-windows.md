@@ -76,6 +76,8 @@ First, install the general dependencies:
     sudo apt install autoconf automake build-essential bsdmainutils cmake curl git git-lfs libboost-all-dev libevent-dev libssl-dev libtool ninja-build nsis pkg-config python3
 ```
 
+You can do without the `git-lfs` package, if you don't intend to run the benchmark tool.
+
 A host toolchain (`build-essential`) is necessary because some dependency
 packages (such as `protobuf`) need to build host utilities that are used in the
 build process.

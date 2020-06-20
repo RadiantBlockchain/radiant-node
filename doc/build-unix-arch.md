@@ -5,11 +5,12 @@
 You will need the following dependencies:
 
 ```bash
-    pacman -S boost cmake git libevent ninja python miniupnpc zeromq
+    pacman -S boost cmake git git-lfs libevent ninja python miniupnpc zeromq
 ```
 
-You can do without the `miniupnpc` and zeromq package, then you just need to need to pass
-`-DENABLE_UPNP=OFF` or `-DBUILD_BITCOIN_ZMQ=OFF` on the `cmake` command line.
+You can do without the `miniupnpc` and `zeromq` package, then you just need to need to pass
+`-DENABLE_UPNP=OFF` or `-DBUILD_BITCOIN_ZMQ=OFF` on the `cmake` command line. You can also
+do without the `git-lfs` package, if you don't intend to run the benchmark tool.
 
 If you want to build the GUI client `bitcoin-qt` Qt 5 is necessary.
 To build with Qt 5 you need the following packages installed:
