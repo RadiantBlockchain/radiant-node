@@ -22,6 +22,8 @@ Tests correspond to code in rpc/blockchain.cpp.
 from decimal import Decimal
 import http.client
 import subprocess
+import string
+from io import BytesIO
 
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import (
@@ -32,12 +34,14 @@ from test_framework.util import (
     assert_raises_rpc_error,
     assert_is_hash_string,
     assert_is_hex_string,
+    hex_str_to_bytes,
 )
 from test_framework.blocktools import (
     create_block,
     create_coinbase,
 )
 from test_framework.messages import (
+    CBlockHeader,
     msg_block,
 )
 from test_framework.mininode import (
@@ -283,6 +287,31 @@ class BlockchainTest(BitcoinTestFramework):
 
         header_by_height = node.getblockheader(hash_or_height=200)
         assert_equal(header, header_by_height)
+
+        # check that we actually get a hex string back from getblockheader
+        # if verbose is set to false.
+        header_verbose_false = node.getblockheader(200, False)
+        assert not isinstance(header_verbose_false, dict)
+        assert isinstance(header_verbose_false, str)
+        assert (c in string.hexdigits for c in header_verbose_false)
+        assert_is_hex_string(header_verbose_false)
+
+        # check that header_verbose_false is the same header we get via
+        # getblockheader(hash_or_height=besthash) just in a different "form"
+        h = CBlockHeader()
+        h.deserialize(BytesIO(hex_str_to_bytes(header_verbose_false)))
+        h.calc_sha256()
+
+        assert_equal(header['version'], h.nVersion)
+        assert_equal(header['time'], h.nTime)
+        assert_equal(header['previousblockhash'], "{:064x}".format(h.hashPrevBlock))
+        assert_equal(header['merkleroot'], "{:064x}".format(h.hashMerkleRoot))
+        assert_equal(header['hash'], h.hash)
+
+        # check that we get the same header by hash and by height in
+        # the case verbose is set to False
+        header_verbose_false_by_hash = node.getblockheader(besthash, False)
+        assert_equal(header_verbose_false_by_hash, header_verbose_false)
 
     def _test_getdifficulty(self):
         difficulty = self.nodes[0].getdifficulty()
