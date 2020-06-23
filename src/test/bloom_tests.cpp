@@ -1100,18 +1100,25 @@ BOOST_AUTO_TEST_CASE(rolling_bloom) {
     g_mock_deterministic_tests = true;
 
     // last-100-entry, 1% false positive:
-    CRollingBloomFilter rb1(100, 0.01);
+    constexpr int nElements = 100;
+    CRollingBloomFilter rb1(nElements, 0.01);
 
     // Overfill:
     static const int DATASIZE = 399;
     std::vector<uint8_t> data[DATASIZE];
     for (int i = 0; i < DATASIZE; i++) {
         data[i] = RandomData();
-        rb1.insert(data[i]);
+        if (i % 2 == 0)  // alternate between vector API and raw pointer API
+            rb1.insert(data[i]);
+        else
+            rb1.insert(data[i].data(), data[i].size());
     }
     // Last 100 guaranteed to be remembered:
-    for (int i = 299; i < DATASIZE; i++) {
-        BOOST_CHECK(rb1.contains(data[i]));
+    for (int i = DATASIZE - nElements; i < DATASIZE; i++) {
+        if (i % 2 == 1)  // alternate between vector API and raw pointer API
+            BOOST_CHECK(rb1.contains(data[i]));
+        else
+            BOOST_CHECK(rb1.contains(data[i].data(), data[i].size()));
     }
 
     // false positive rate is 1%, so we should get about 100 hits if
@@ -1166,6 +1173,23 @@ BOOST_AUTO_TEST_CASE(rolling_bloom) {
     for (int i = 0; i < DATASIZE; i++) {
         BOOST_CHECK(rb2.contains(data[i]));
     }
+
+    rb2.reset();
+    // check hash256 & hash160 APIs
+    const uint256 ahash{data[0]};
+    auto h160vec = data[1];
+    h160vec.resize(uint160::size());
+    const uint160 ahash160{h160vec};
+    BOOST_CHECK(!rb2.contains(ahash));
+    BOOST_CHECK(!rb2.contains(ahash160));
+    rb2.insert(ahash);
+    rb2.insert(ahash160);
+    BOOST_CHECK(rb2.contains(ahash));
+    BOOST_CHECK(rb2.contains(ahash160));
+    // check raw data ptr APIs
+    rb2.insert(data[2].data(), data[2].size());
+    BOOST_CHECK(rb2.contains(data[2].data(), data[2].size()));
+
     g_mock_deterministic_tests = false;
 }
 

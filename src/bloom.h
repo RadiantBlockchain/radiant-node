@@ -6,13 +6,13 @@
 #define BITCOIN_BLOOM_H
 
 #include <serialize.h>
+#include <uint256.h>
 
 #include <cstdint>
 #include <vector>
 
 class COutPoint;
 class CTransaction;
-class uint256;
 
 //! 20,000 items with fp rate < 0.1% or 10,000 items and <0.0001%
 static const uint32_t MAX_BLOOM_FILTER_SIZE = 36000; // bytes
@@ -138,10 +138,17 @@ public:
     // randomizer is properly initialized.
     CRollingBloomFilter(const uint32_t nElements, const double nFPRate);
 
-    void insert(const std::vector<uint8_t> &vKey);
-    void insert(const uint256 &hash);
-    bool contains(const std::vector<uint8_t> &vKey) const;
-    bool contains(const uint256 &hash) const;
+    void insert(const uint8_t *bytes, size_t len);
+    void insert(const std::vector<uint8_t> &vKey) { insert(vKey.data(), vKey.size()); }
+    // for e.g. hash256 & hash160
+    template<unsigned int N>
+    void insert(const base_blob<N> &hash) { insert(hash.begin(), hash.size()); }
+
+    bool contains(const uint8_t *bytes, size_t len) const;
+    bool contains(const std::vector<uint8_t> &vKey) const { return contains(vKey.data(), vKey.size()); }
+    // for e.g. hash256 & hash160
+    template<unsigned int N>
+    bool contains(const base_blob<N> &hash) const { return contains(hash.begin(), hash.size()); }
 
     void reset();
 

@@ -249,8 +249,8 @@ CRollingBloomFilter::CRollingBloomFilter(const uint32_t nElements,
 /* Similar to CBloomFilter::Hash */
 static inline uint32_t
 RollingBloomHash(uint32_t nHashNum, uint32_t nTweak,
-                 const std::vector<uint8_t> &vDataToHash) {
-    return MurmurHash3(nHashNum * 0xFBA4C795 + nTweak, vDataToHash);
+                 const uint8_t *pDataToHash, size_t nDataLen) {
+    return MurmurHash3(nHashNum * 0xFBA4C795 + nTweak, pDataToHash, nDataLen);
 }
 
 // A replacement for x % n. This assumes that x and n are 32bit integers, and x
@@ -261,7 +261,7 @@ static inline uint32_t FastMod(uint32_t x, size_t n) {
     return (uint64_t(x) * uint64_t(n)) >> 32;
 }
 
-void CRollingBloomFilter::insert(const std::vector<uint8_t> &vKey) {
+void CRollingBloomFilter::insert(const uint8_t *bytes, size_t len) {
     if (nEntriesThisGeneration == nEntriesPerGeneration) {
         nEntriesThisGeneration = 0;
         nGeneration++;
@@ -281,7 +281,7 @@ void CRollingBloomFilter::insert(const std::vector<uint8_t> &vKey) {
     nEntriesThisGeneration++;
 
     for (int n = 0; n < nHashFuncs; n++) {
-        uint32_t h = RollingBloomHash(n, nTweak, vKey);
+        uint32_t h = RollingBloomHash(n, nTweak, bytes, len);
         int bit = h & 0x3F;
         /* FastMod works with the upper bits of h, so it is safe to ignore that
          * the lower bits of h are already used for bit. */
@@ -295,14 +295,9 @@ void CRollingBloomFilter::insert(const std::vector<uint8_t> &vKey) {
     }
 }
 
-void CRollingBloomFilter::insert(const uint256 &hash) {
-    std::vector<uint8_t> vData(hash.begin(), hash.end());
-    insert(vData);
-}
-
-bool CRollingBloomFilter::contains(const std::vector<uint8_t> &vKey) const {
+bool CRollingBloomFilter::contains(const uint8_t *bytes, size_t len) const {
     for (int n = 0; n < nHashFuncs; n++) {
-        uint32_t h = RollingBloomHash(n, nTweak, vKey);
+        uint32_t h = RollingBloomHash(n, nTweak, bytes, len);
         int bit = h & 0x3F;
         uint32_t pos = FastMod(h, data.size());
         /* If the relevant bit is not set in either data[pos & ~1] or data[pos |
@@ -312,11 +307,6 @@ bool CRollingBloomFilter::contains(const std::vector<uint8_t> &vKey) const {
         }
     }
     return true;
-}
-
-bool CRollingBloomFilter::contains(const uint256 &hash) const {
-    std::vector<uint8_t> vData(hash.begin(), hash.end());
-    return contains(vData);
 }
 
 void CRollingBloomFilter::reset() {
