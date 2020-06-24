@@ -68,7 +68,7 @@ static UniValue validateaddress(const Config &config,
         ret.emplace_back("address", EncodeDestination(dest, config));
 
         CScript scriptPubKey = GetScriptForDestination(dest);
-        ret.emplace_back("scriptPubKey", HexStr(scriptPubKey.begin(), scriptPubKey.end()));
+        ret.emplace_back("scriptPubKey", HexStr(scriptPubKey));
 
         DescribeAddress(dest, ret);
     }
@@ -150,7 +150,7 @@ static UniValue createmultisig(const Config &config,
     UniValue::Object result;
     result.reserve(2);
     result.emplace_back("address", EncodeDestination(dest, config));
-    result.emplace_back("redeemScript", HexStr(inner.begin(), inner.end()));
+    result.emplace_back("redeemScript", HexStr(inner));
 
     return result;
 }

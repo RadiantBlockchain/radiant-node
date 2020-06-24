@@ -91,27 +91,20 @@ BOOST_AUTO_TEST_CASE(util_ParseHex) {
 }
 
 BOOST_AUTO_TEST_CASE(util_HexStr) {
-    BOOST_CHECK_EQUAL(HexStr(ParseHex_expected,
-                             ParseHex_expected + sizeof(ParseHex_expected)),
+    BOOST_CHECK_EQUAL(HexStr(ParseHex_expected),
                       "04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0"
                       "ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d"
                       "578a4c702b6bf11d5f");
 
-    BOOST_CHECK_EQUAL(HexStr(ParseHex_expected, ParseHex_expected + 5, true),
-                      "04 67 8a fd b0");
+    BOOST_CHECK_EQUAL(HexStr(Span<const uint8_t>(ParseHex_expected).first(5), true), "04 67 8a fd b0");
 
-    BOOST_CHECK_EQUAL(HexStr(ParseHex_expected + sizeof(ParseHex_expected),
-                             ParseHex_expected + sizeof(ParseHex_expected)),
-                      "");
+    BOOST_CHECK_EQUAL(HexStr(Span<const uint8_t>(ParseHex_expected).last(0)), "");
 
-    BOOST_CHECK_EQUAL(HexStr(ParseHex_expected + sizeof(ParseHex_expected),
-                             ParseHex_expected + sizeof(ParseHex_expected),
-                             true),
-                      "");
+    BOOST_CHECK_EQUAL(HexStr(Span<const uint8_t>(ParseHex_expected).last(0), true), "");
 
-    BOOST_CHECK_EQUAL(HexStr(ParseHex_expected, ParseHex_expected), "");
+    BOOST_CHECK_EQUAL(HexStr(Span<const uint8_t>(ParseHex_expected).first(0)), "");
 
-    BOOST_CHECK_EQUAL(HexStr(ParseHex_expected, ParseHex_expected, true), "");
+    BOOST_CHECK_EQUAL(HexStr(Span<const uint8_t>(ParseHex_expected).first(0), true), "");
 
     std::vector<uint8_t> ParseHex_vec(ParseHex_expected, ParseHex_expected + 5);
 
@@ -1278,8 +1271,7 @@ BOOST_FIXTURE_TEST_CASE(util_SettingsMerge, SettingsMergeTestingSetup) {
 
     uint8_t out_sha_bytes[CSHA256::OUTPUT_SIZE];
     out_sha.Finalize(out_sha_bytes);
-    std::string out_sha_hex =
-        HexStr(std::begin(out_sha_bytes), std::end(out_sha_bytes));
+    std::string out_sha_hex = HexStr(out_sha_bytes);
 
     // If check below fails, should manually dump the results with:
     //

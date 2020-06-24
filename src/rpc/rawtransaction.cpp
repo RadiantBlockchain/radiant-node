@@ -340,7 +340,7 @@ static UniValue gettxoutproof(const Config &config,
     CDataStream ssMB(SER_NETWORK, PROTOCOL_VERSION);
     CMerkleBlock mb(block, setTxIds);
     ssMB << mb;
-    return HexStr(ssMB.begin(), ssMB.end());
+    return HexStr(ssMB);
 }
 
 static UniValue verifytxoutproof(const Config &,
@@ -697,7 +697,7 @@ static UniValue::Object TxInErrorToJSON(const CTxIn& txin, std::string&& strMess
     entry.reserve(5);
     entry.emplace_back("txid", txin.prevout.GetTxId().ToString());
     entry.emplace_back("vout", txin.prevout.GetN());
-    entry.emplace_back("scriptSig", HexStr(txin.scriptSig.begin(), txin.scriptSig.end()));
+    entry.emplace_back("scriptSig", HexStr(txin.scriptSig));
     entry.emplace_back("sequence", txin.nSequence);
     entry.emplace_back("error", std::move(strMessage));
     return entry;
@@ -1601,7 +1601,7 @@ static UniValue finalizepsbt(const Config &,
             mtx.vin[i].scriptSig = psbtx.inputs[i].final_script_sig;
         }
         ssTx << mtx;
-        result.emplace_back("hex", HexStr(ssTx.begin(), ssTx.end()));
+        result.emplace_back("hex", HexStr(ssTx));
     } else {
         ssTx << psbtx;
         result.emplace_back("psbt", EncodeBase64(reinterpret_cast<uint8_t *>(ssTx.data()), ssTx.size()));

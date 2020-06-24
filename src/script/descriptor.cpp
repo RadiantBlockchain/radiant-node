@@ -67,9 +67,7 @@ class OriginPubkeyProvider final : public PubkeyProvider {
     std::unique_ptr<PubkeyProvider> m_provider;
 
     std::string OriginString() const {
-        return HexStr(std::begin(m_origin.fingerprint),
-                      std::end(m_origin.fingerprint)) +
-               FormatKeyPath(m_origin.path);
+        return HexStr(m_origin.fingerprint) + FormatKeyPath(m_origin.path);
     }
 
 public:
@@ -120,9 +118,7 @@ public:
     }
     bool IsRange() const override { return false; }
     size_t GetSize() const override { return m_pubkey.size(); }
-    std::string ToString() const override {
-        return HexStr(m_pubkey.begin(), m_pubkey.end());
-    }
+    std::string ToString() const override { return HexStr(m_pubkey); }
     bool ToPrivateString(const SigningProvider &arg,
                          std::string &ret) const override {
         CKey key;
@@ -283,9 +279,7 @@ public:
 
     bool IsRange() const override { return false; }
     bool IsSolvable() const override { return false; }
-    std::string ToString() const override {
-        return "raw(" + HexStr(m_script.begin(), m_script.end()) + ")";
-    }
+    std::string ToString() const override { return "raw(" + HexStr(m_script) + ")"; }
     bool ToPrivateString(const SigningProvider &arg,
                          std::string &out) const override {
         out = ToString();

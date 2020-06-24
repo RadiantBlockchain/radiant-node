@@ -830,7 +830,7 @@ static UniValue getblockheader(const Config &config,
     if (!fVerbose) {
         CDataStream ssBlock(SER_NETWORK, PROTOCOL_VERSION);
         ssBlock << pindex->GetBlockHeader();
-        return HexStr(ssBlock.begin(), ssBlock.end());
+        return HexStr(ssBlock);
     }
 
     return blockheaderToJSON(tip, pindex);
@@ -965,7 +965,7 @@ static UniValue getblock(const Config &config, const JSONRPCRequest &request) {
         CDataStream ssBlock(SER_NETWORK,
                             PROTOCOL_VERSION | RPCSerializationFlags());
         ssBlock << block;
-        std::string strHex = HexStr(ssBlock.begin(), ssBlock.end());
+        std::string strHex = HexStr(ssBlock);
         return strHex;
     }
 
@@ -2522,7 +2522,7 @@ static UniValue scantxoutset(const Config &config,
             unspent.reserve(5);
             unspent.emplace_back("txid", outpoint.GetTxId().GetHex());
             unspent.emplace_back("vout", outpoint.GetN());
-            unspent.emplace_back("scriptPubKey", HexStr(txo.scriptPubKey.begin(), txo.scriptPubKey.end()));
+            unspent.emplace_back("scriptPubKey", HexStr(txo.scriptPubKey));
             unspent.emplace_back("amount", ValueFromAmount(txo.nValue));
             unspent.emplace_back("height", coin.GetHeight());
 

@@ -53,8 +53,7 @@ std::string FormatScript(const CScript &script) {
             }
 
             if (vch.size() > 0) {
-                ret += strprintf("0x%x 0x%x ", HexStr(it2, it - vch.size()),
-                                 HexStr(it - vch.size(), it));
+                ret += strprintf("0x%x 0x%x ", HexStr(it2, it - vch.size()), HexStr(it - vch.size(), it));
             } else {
                 ret += strprintf("0x%x ", HexStr(it2, it));
             }
@@ -174,7 +173,7 @@ std::string ScriptToAsmStr(const CScript &script, bool fAttemptSighashDecode, bo
 std::string EncodeHexTx(const CTransaction &tx, const int serializeFlags) {
     CDataStream ssTx(SER_NETWORK, PROTOCOL_VERSION | serializeFlags);
     ssTx << tx;
-    return HexStr(ssTx.begin(), ssTx.end());
+    return HexStr(ssTx);
 }
 
 UniValue::Object ScriptToUniv(const Config &config, const CScript &script, bool include_address, bool f64BitNums) {
@@ -184,7 +183,7 @@ UniValue::Object ScriptToUniv(const Config &config, const CScript &script, bool 
     UniValue::Object out;
     out.reserve(3 + extracted);
     out.emplace_back("asm", ScriptToAsmStr(script, false, f64BitNums));
-    out.emplace_back("hex", HexStr(script.begin(), script.end()));
+    out.emplace_back("hex", HexStr(script));
 
     std::vector<std::vector<uint8_t>> solns;
     out.emplace_back("type", GetTxnOutputType(Solver(script, solns)));
@@ -201,7 +200,7 @@ UniValue::Object ScriptPubKeyToUniv(const Config &config, const CScript &scriptP
     UniValue::Object out;
     out.emplace_back("asm", ScriptToAsmStr(scriptPubKey, false, f64BitNums));
     if (fIncludeHex) {
-        out.emplace_back("hex", HexStr(scriptPubKey.begin(), scriptPubKey.end()));
+        out.emplace_back("hex", HexStr(scriptPubKey));
     }
 
     txnouttype type;
@@ -251,7 +250,7 @@ UniValue::Object TxToUniv(const Config &config, const CTransaction &tx, const ui
         UniValue::Object in;
         if (tx.IsCoinBase()) {
             in.reserve(2);
-            in.emplace_back("coinbase", HexStr(txin.scriptSig.begin(), txin.scriptSig.end()));
+            in.emplace_back("coinbase", HexStr(txin.scriptSig));
         } else {
             in.reserve(4);
             in.emplace_back("txid", txin.prevout.GetTxId().GetHex());
@@ -259,7 +258,7 @@ UniValue::Object TxToUniv(const Config &config, const CTransaction &tx, const ui
             UniValue::Object o;
             o.reserve(2);
             o.emplace_back("asm", ScriptToAsmStr(txin.scriptSig, true, f64BitNums));
-            o.emplace_back("hex", HexStr(txin.scriptSig.begin(), txin.scriptSig.end()));
+            o.emplace_back("hex", HexStr(txin.scriptSig));
             in.emplace_back("scriptSig", std::move(o));
         }
         in.emplace_back("sequence", txin.nSequence);

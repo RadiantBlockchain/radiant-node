@@ -692,7 +692,7 @@ static UniValue getblocktemplatecommon(bool fLight, const Config &config, const 
 
     UniValue::Object aux;
     aux.reserve(1);
-    aux.emplace_back("flags", HexStr(COINBASE_FLAGS.begin(), COINBASE_FLAGS.end()));
+    aux.emplace_back("flags", HexStr(COINBASE_FLAGS));
 
     arith_uint256 hashTarget = arith_uint256().SetCompact(pblock->nBits);
 
