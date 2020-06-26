@@ -71,47 +71,27 @@ public:
 };
 
 /** Compute the 256-bit hash of an object. */
-template <typename T1> inline uint256 Hash(const T1 pbegin, const T1 pend) {
-    static const uint8_t pblank[1] = {};
-    uint256 result;
-    CHash256()
-        .Write({pbegin == pend ? pblank : (const uint8_t *)&pbegin[0], (pend - pbegin) * sizeof(pbegin[0])})
-        .Finalize(result);
+template <typename T>
+inline uint256 Hash(const T &in1) {
+    uint256 result{uint256::Uninitialized};
+    CHash256().Write(MakeUInt8Span(in1)).Finalize(result);
     return result;
 }
 
 /** Compute the 256-bit hash of the concatenation of two objects. */
 template <typename T1, typename T2>
-inline uint256 Hash(const T1 p1begin, const T1 p1end, const T2 p2begin,
-                    const T2 p2end) {
-    static const uint8_t pblank[1] = {};
-    uint256 result;
-    CHash256()
-        .Write({p1begin == p1end ? pblank : (const uint8_t *)&p1begin[0], (p1end - p1begin) * sizeof(p1begin[0])})
-        .Write({p2begin == p2end ? pblank : (const uint8_t *)&p2begin[0], (p2end - p2begin) * sizeof(p2begin[0])})
-        .Finalize(result);
+inline uint256 Hash(const T1 &in1, const T2 &in2) {
+    uint256 result{uint256::Uninitialized};
+    CHash256().Write(MakeUInt8Span(in1)).Write(MakeUInt8Span(in2)).Finalize(result);
     return result;
 }
 
 /** Compute the 160-bit hash an object. */
-template <typename T1> inline uint160 Hash160(const T1 pbegin, const T1 pend) {
-    static uint8_t pblank[1] = {};
-    uint160 result;
-    CHash160()
-        .Write({pbegin == pend ? pblank : (const uint8_t *)&pbegin[0], (pend - pbegin) * sizeof(pbegin[0])})
-        .Finalize(result);
+template <typename T1>
+inline uint160 Hash160(const T1 &in1) {
+    uint160 result{uint160::Uninitialized};
+    CHash160().Write(MakeUInt8Span(in1)).Finalize(result);
     return result;
-}
-
-/** Compute the 160-bit hash of a vector. */
-inline uint160 Hash160(const std::vector<uint8_t> &vch) {
-    return Hash160(vch.begin(), vch.end());
-}
-
-/** Compute the 160-bit hash of a vector. */
-template <unsigned int N>
-inline uint160 Hash160(const prevector<N, uint8_t> &vch) {
-    return Hash160(vch.begin(), vch.end());
 }
 
 /** A writer stream (for serialization) that computes a 256-bit hash. */

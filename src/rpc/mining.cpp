@@ -655,7 +655,7 @@ static UniValue getblocktemplatecommon(bool fLight, const Config &config, const 
             }
             // Compute the jobId -- we will return this jobId to the client and also generate a cache entry based on it
             // towards the end of this function.
-            jobId = Hash160(hashSource.begin(), hashSource.end());
+            jobId = Hash160(hashSource);
 
             // Finally, cache the merkle results if they were calculated from the tx's in pblock (no additional_txs).
             if (pvtx == &pblock->vtx) {
