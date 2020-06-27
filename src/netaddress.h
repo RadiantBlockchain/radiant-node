@@ -14,6 +14,7 @@
 #include <span.h>
 
 #include <cstdint>
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -36,7 +37,7 @@ protected:
     uint32_t scopeId{0};
 
 public:
-    CNetAddr();
+    constexpr CNetAddr() noexcept : ip{0} {}
     explicit CNetAddr(const struct in_addr &ipv4Addr);
     void SetIP(const CNetAddr &ip);
 
@@ -133,7 +134,7 @@ protected:
     bool valid;
 
 public:
-    CSubNet();
+    constexpr CSubNet() noexcept : netmask{0}, valid{false} {}
     CSubNet(const CNetAddr &addr, int32_t mask);
     CSubNet(const CNetAddr &addr, const CNetAddr &mask);
 
@@ -143,7 +144,11 @@ public:
     bool Match(const CNetAddr &addr) const;
 
     std::string ToString() const;
-    bool IsValid() const;
+    constexpr bool IsValid() const { return valid; }
+    // returns true if this is a single ip subnet (<ipv4>/32 or <ipv6>/128)
+    bool IsSingleIP() const;
+
+    constexpr const CNetAddr & Network() const { return network; }
 
     friend bool operator==(const CSubNet &a, const CSubNet &b);
     friend bool operator!=(const CSubNet &a, const CSubNet &b) {
@@ -165,14 +170,20 @@ public:
 class CService : public CNetAddr {
 protected:
     // host order
-    uint16_t port;
+    uint16_t port{0};
 
 public:
-    CService();
-    CService(const CNetAddr &ip, unsigned short port);
-    CService(const struct in_addr &ipv4Addr, unsigned short port);
+    constexpr CService() noexcept = default;
+    CService(const CNetAddr &cip, unsigned short portIn)
+        : CNetAddr(cip), port(portIn) {}
+    CService(const struct in_addr &ipv4Addr, unsigned short portIn)
+        : CNetAddr(ipv4Addr), port(portIn) {}
+    CService(const struct in6_addr &ipv6Addr, unsigned short portIn)
+        : CNetAddr(ipv6Addr), port(portIn) {}
+    explicit CService(const struct sockaddr_in6 &addr);
     explicit CService(const struct sockaddr_in &addr);
-    unsigned short GetPort() const;
+
+    constexpr uint16_t GetPort() const { return port; }
     bool GetSockAddr(struct sockaddr *paddr, socklen_t *addrlen) const;
     bool SetSockAddr(const struct sockaddr *paddr);
     friend bool operator==(const CService &a, const CService &b);
@@ -185,8 +196,6 @@ public:
     std::string ToStringPort() const;
     std::string ToStringIPPort() const;
 
-    CService(const struct in6_addr &ipv6Addr, unsigned short port);
-    explicit CService(const struct sockaddr_in6 &addr);
 
     ADD_SERIALIZE_METHODS;
 
@@ -196,5 +205,11 @@ public:
         READWRITE(WrapBigEndian(port));
     }
 };
+
+// template specializations of std::hash for std::unordered_map support
+namespace std {
+template <> struct hash<CNetAddr> { size_t operator()(const CNetAddr &) const; };
+template <> struct hash<CSubNet>  { size_t operator()(const CSubNet  &) const; };
+} // namespace std
 
 #endif // BITCOIN_NETADDRESS_H

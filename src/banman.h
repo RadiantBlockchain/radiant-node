@@ -45,24 +45,27 @@ public:
     void Ban(const CSubNet &sub_net, const BanReason &ban_reason,
              int64_t ban_time_offset = 0, bool since_unix_epoch = false);
     void ClearBanned();
-    int IsBannedLevel(CNetAddr net_addr);
-    bool IsBanned(CNetAddr net_addr);
-    bool IsBanned(CSubNet sub_net);
+    int IsBannedLevel(const CNetAddr &net_addr) const;
+    bool IsBanned(const CNetAddr &net_addr) const;
+    bool IsBanned(const CSubNet &sub_net) const;
     bool Unban(const CNetAddr &net_addr);
     bool Unban(const CSubNet &sub_net);
-    void GetBanned(banmap_t &banmap);
+    void GetBanned(BanTables &banmap);
     void DumpBanlist();
 
 private:
-    void SetBanned(const banmap_t &banmap);
-    bool BannedSetIsDirty();
+    void SetBanned(const BanTables &banmap);
+    bool BannedSetIsDirty() const;
     //! set the "dirty" flag for the banlist
     void SetBannedSetDirty(bool dirty = true);
     //! clean unused entries (if bantime has expired)
     void SweepBanned();
 
-    RecursiveMutex m_cs_banned;
-    banmap_t m_banned GUARDED_BY(m_cs_banned);
+    CBanEntry CreateBanEntry(const BanReason &ban_reason, int64_t ban_time_offset, bool since_unix_epoch) const;
+    void UnbanCommon();
+
+    mutable RecursiveMutex m_cs_banned;
+    BanTables m_banned GUARDED_BY(m_cs_banned);
     bool m_is_dirty GUARDED_BY(m_cs_banned);
     CClientUIInterface *m_client_interface = nullptr;
     CBanDB m_ban_db;

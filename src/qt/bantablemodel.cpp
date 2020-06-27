@@ -49,12 +49,12 @@ public:
 
     /** Pull a full list of banned nodes from CNode into our cache */
     void refreshBanlist(interfaces::Node &node) {
-        banmap_t banMap;
+        BanTables banMap;
         node.getBanned(banMap);
 
         cachedBanlist.clear();
         cachedBanlist.reserve(banMap.size());
-        for (const auto &entry : banMap) {
+        for (const auto &entry : banMap.toAggregatedMap()) {
             CCombinedBan banEntry;
             banEntry.subnet = entry.first;
             banEntry.banEntry = entry.second;

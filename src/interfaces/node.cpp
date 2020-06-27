@@ -140,7 +140,7 @@ namespace {
             }
             return false;
         }
-        bool getBanned(banmap_t &banmap) override {
+        bool getBanned(BanTables &banmap) override {
             if (g_banman) {
                 g_banman->GetBanned(banmap);
                 return true;

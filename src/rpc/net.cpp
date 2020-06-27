@@ -731,19 +731,22 @@ static UniValue listbanned(const Config &config,
                            "Error: Ban database not loaded");
     }
 
-    banmap_t banMap;
+    BanTables banMap;
     g_banman->GetBanned(banMap);
 
     UniValue bannedAddresses(UniValue::VARR);
-    for (const auto &entry : banMap) {
+    const auto allBans = banMap.toAggregatedMap();
+    bannedAddresses.reserve(allBans.size());
+    for (const auto &entry : allBans) {
         const CBanEntry &banEntry = entry.second;
         UniValue rec(UniValue::VOBJ);
-        rec.pushKV("address", entry.first.ToString());
-        rec.pushKV("banned_until", banEntry.nBanUntil);
-        rec.pushKV("ban_created", banEntry.nCreateTime);
-        rec.pushKV("ban_reason", banEntry.banReasonToString());
+        rec.reserve(4);
+        rec.pushKV("address", entry.first.ToString(), false);
+        rec.pushKV("banned_until", banEntry.nBanUntil, false);
+        rec.pushKV("ban_created", banEntry.nCreateTime, false);
+        rec.pushKV("ban_reason", banEntry.banReasonToString(), false);
 
-        bannedAddresses.push_back(rec);
+        bannedAddresses.push_back(std::move(rec));
     }
 
     return bannedAddresses;
