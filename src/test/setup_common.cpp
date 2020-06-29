@@ -128,7 +128,7 @@ TestingSetup::TestingSetup(const std::string &chainName)
 
     g_banman =
         std::make_unique<BanMan>(GetDataDir() / "banlist.dat", chainparams,
-                                 nullptr, DEFAULT_MISBEHAVING_BANTIME);
+                                 nullptr, DEFAULT_MANUAL_BANTIME);
     // Deterministic randomness for tests.
     g_connman = std::make_unique<CConnman>(config, 0x1337, 0x1337);
 }

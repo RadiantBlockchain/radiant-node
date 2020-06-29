@@ -32,7 +32,7 @@ private:
     CConnman *const connman;
     BanMan *const m_banman;
 
-    bool SendRejectsAndCheckIfBanned(CNode *pnode, bool enable_bip61)
+    bool SendRejectsAndCheckIfShouldDiscourage(CNode *pnode, bool enable_bip61)
         EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
 public:

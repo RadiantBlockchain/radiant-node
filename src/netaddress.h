@@ -16,6 +16,7 @@
 #include <cstdint>
 #include <functional>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 enum Network {
@@ -98,6 +99,14 @@ public:
     enum Network GetNetwork() const;
     std::string ToString() const;
     std::string ToStringIP() const;
+    //! Returns a pointer to the raw bytes of the IP address. Data is of GetAddressLen() length.
+    const uint8_t *GetAddressBytes() const { return ip; }
+    //! Returns the byte length of the pointer returned by GetAddressBytes()
+    static constexpr size_t GetAddressLen() {
+        static_assert(std::is_array<decltype(ip)>::value,
+                      "Assumption here is that `ip` is an array. If this changes fix the below line.");
+        return sizeof(ip);
+    }
     unsigned int GetByte(int n) const;
     uint64_t GetHash() const;
     bool GetInAddr(struct in_addr *pipv4Addr) const;

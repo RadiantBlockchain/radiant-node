@@ -65,6 +65,28 @@ behavior on regtest. Be reminded that the testnet still allows non-standard
 txs by default and that the policy can be locally adjusted with the
 `-acceptnonstdtxn` command line flag for both test chains.
 
+Changes to automatic banning
+----------------------------
+
+Automatic banning of peers for bad behavior has been slightly altered:
+
+- Automatic bans are now referred to as "discouraged" in log output, as
+  they're not (and weren't even before) strictly banned: incoming connections
+  are still allowed from them (as was the case before this change), but they're
+  preferred for eviction.
+- Automatic bans will no longer time-out automatically after 24 hours.
+  Depending on traffic from other peers, automatic bans may time-out at an
+  indeterminate time.
+- Automatic bans will no longer be persisted across restarts. Only manual bans
+  will be persisted.
+- Automatic bans will no longer be returned by the `listbanned` RPC.
+- Automatic bans can no longer be lifted with the `setban remove` RPC command.
+  If you need to remove an automatic ban, you must clear all automatic bans with
+  the `clearbanned false true` RPC command, or restart the software to clear
+  automatic bans.
+- All extant automatic bans ("node misbehaving") that are currently stored in the
+  node's `banlist.dat` file will be converted into "manual bans" and will expire
+  within 24 hours after first running this version of BCHN.
 
 New RPC methods
 ---------------
@@ -75,7 +97,18 @@ New RPC methods
 Low-level RPC changes
 ----------------------
 
-...
+- The `clearbanned` method now optionally can take two additional boolean
+  arguments (both default to true if unspecified). These arguments can be used
+  to control whether manual or automatic bans are to be cleared (or both).
+- The `listbanned` method no longer lists automatic bans.
+- The `listbanned` method's results array has changed slightly. All entries
+  now have their `banned_reason` as "manually added" (since `listbanned` can
+  now only ever show manual bans). The "node misbehaving" value for this key
+  will never appear. This key is now deprecated and may be removed altogether
+  in a future release of BCHN.
+- The `setban` method can no longer lift individual automatic bans. Use
+  `clearbanned` instead to clear all bans, or `clearbanned false true` to
+  clear all automatic bans (while preserving all manual bans).
 
 
 Regressions

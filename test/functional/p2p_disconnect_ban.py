@@ -30,6 +30,9 @@ class DisconnectBanTest(BitcoinTestFramework):
         assert_equal(len(self.nodes[1].getpeerinfo()), 0)
         assert_equal(len(self.nodes[1].listbanned()), 1)
 
+        self.log.info("clearbanned: don't clear manual bans but clear automatic bans")
+        self.nodes[1].clearbanned(manual=False, automatic=True)
+        assert_equal(len(self.nodes[1].listbanned()), 1)
         self.log.info("clearbanned: successfully clear ban list")
         self.nodes[1].clearbanned()
         assert_equal(len(self.nodes[1].listbanned()), 0)
@@ -55,7 +58,7 @@ class DisconnectBanTest(BitcoinTestFramework):
         self.log.info("setban remove: successfully unban subnet")
         self.nodes[1].setban("127.0.0.0/24", "remove")
         assert_equal(len(self.nodes[1].listbanned()), 0)
-        self.nodes[1].clearbanned()
+        self.nodes[1].clearbanned(manual=True, automatic=False)
         assert_equal(len(self.nodes[1].listbanned()), 0)
 
         self.log.info("setban: test persistence across node restart")

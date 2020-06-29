@@ -632,6 +632,7 @@ static UniValue setban(const Config &config, const JSONRPCRequest &request) {
         throw std::runtime_error(
             "setban \"subnet\" \"command\" ( bantime absolute )\n"
             "\nAttempts to add or remove a IP/Subnet from the banned list.\n"
+            "Peers that are automatically banned cannot be unbanned.\n"
             "\nArguments:\n"
             "1. \"subnet\"       (string, required) The IP/Subnet (see "
             "getpeerinfo for nodes IP) with an optional netmask (default is "
@@ -696,12 +697,12 @@ static UniValue setban(const Config &config, const JSONRPCRequest &request) {
         }
 
         if (isSubnet) {
-            g_banman->Ban(subNet, BanReasonManuallyAdded, banTime, absolute);
+            g_banman->Ban(subNet, banTime, absolute);
             if (g_connman) {
                 g_connman->DisconnectNode(subNet);
             }
         } else {
-            g_banman->Ban(netAddr, BanReasonManuallyAdded, banTime, absolute);
+            g_banman->Ban(netAddr, banTime, absolute);
             if (g_connman) {
                 g_connman->DisconnectNode(netAddr);
             }
@@ -710,7 +711,7 @@ static UniValue setban(const Config &config, const JSONRPCRequest &request) {
         if (!(isSubnet ? g_banman->Unban(subNet) : g_banman->Unban(netAddr))) {
             throw JSONRPCError(RPC_CLIENT_INVALID_IP_OR_SUBNET,
                                "Error: Unban failed. Requested address/subnet "
-                               "was not previously banned.");
+                               "was not previously manually banned.");
         }
     }
     return NullUniValue;
@@ -720,7 +721,7 @@ static UniValue listbanned(const Config &config,
                            const JSONRPCRequest &request) {
     if (request.fHelp || request.params.size() != 0) {
         throw std::runtime_error("listbanned\n"
-                                 "\nList all banned IPs/Subnets.\n"
+                                 "\nList all manually banned IPs/Subnets.\n"
                                  "\nExamples:\n" +
                                  HelpExampleCli("listbanned", "") +
                                  HelpExampleRpc("listbanned", ""));
@@ -744,7 +745,7 @@ static UniValue listbanned(const Config &config,
         rec.pushKV("address", entry.first.ToString(), false);
         rec.pushKV("banned_until", banEntry.nBanUntil, false);
         rec.pushKV("ban_created", banEntry.nCreateTime, false);
-        rec.pushKV("ban_reason", banEntry.banReasonToString(), false);
+        rec.pushKV("ban_reason", "manually added", false); //! For backward compatibility
 
         bannedAddresses.push_back(std::move(rec));
     }
@@ -754,12 +755,20 @@ static UniValue listbanned(const Config &config,
 
 static UniValue clearbanned(const Config &config,
                             const JSONRPCRequest &request) {
-    if (request.fHelp || request.params.size() != 0) {
-        throw std::runtime_error("clearbanned\n"
-                                 "\nClear all banned IPs.\n"
+    if (request.fHelp || request.params.size() > 2) {
+        throw std::runtime_error("clearbanned ( manual automatic )\n"
+                                 "\nClear all banned and/or discouraged IPs.\n"
+                                 "\nArguments:\n"
+                                 "1. \"manual\"       (boolean, optional) true to clear all manual bans, false to not "
+                                 "clear them. (default = true)\n"
+                                 "2. \"automatic\"    (boolean, optional) true to clear all automatic discouragements, "
+                                 "false to not clear them. (default = true)\n"
                                  "\nExamples:\n" +
                                  HelpExampleCli("clearbanned", "") +
-                                 HelpExampleRpc("clearbanned", ""));
+                                 HelpExampleCli("clearbanned", "true") +
+                                 HelpExampleCli("clearbanned", "true false") +
+                                 HelpExampleRpc("clearbanned", "") +
+                                 HelpExampleRpc("clearbanned", "false, true"));
     }
 
     if (!g_banman) {
@@ -768,7 +777,17 @@ static UniValue clearbanned(const Config &config,
             "Error: Peer-to-peer functionality missing or disabled");
     }
 
-    g_banman->ClearBanned();
+    bool manual = true, automatic = true;
+
+    if (request.params.size() > 0)
+        manual = request.params[0].get_bool();
+    if (request.params.size() > 1)
+        automatic = request.params[1].get_bool();
+
+    if (manual)
+        g_banman->ClearBanned();
+    if (automatic)
+        g_banman->ClearDiscouraged();
 
     return NullUniValue;
 }
@@ -870,7 +889,7 @@ static const ContextFreeRPCCommand commands[] = {
     { "network",            "getnetworkinfo",         getnetworkinfo,         {} },
     { "network",            "setban",                 setban,                 {"subnet", "command", "bantime", "absolute"} },
     { "network",            "listbanned",             listbanned,             {} },
-    { "network",            "clearbanned",            clearbanned,            {} },
+    { "network",            "clearbanned",            clearbanned,            {"manual", "automatic"} },
     { "network",            "setnetworkactive",       setnetworkactive,       {"state"} },
     { "network",            "getnodeaddresses",       getnodeaddresses,       {"count"} },
 };

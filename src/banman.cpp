@@ -79,38 +79,10 @@ void BanMan::ClearBanned() {
     }
 }
 
-int BanMan::IsBannedLevel(const CNetAddr &net_addr) const {
-    // Returns the most severe level of banning that applies to this address.
-    // 0 - Not banned
-    // 1 - Automatic misbehavior ban
-    // 2 - Any other ban
-    int level = 0;
-    auto current_time = GetTime();
+void BanMan::ClearDiscouraged()
+{
     LOCK(m_cs_banned);
-    auto foundAddr = m_banned.addresses.find(net_addr);
-    if (foundAddr != m_banned.addresses.end()) {
-        // address-level ban hit
-        if (current_time < foundAddr->second.nBanUntil) {
-            if (foundAddr->second.banReason != BanReasonNodeMisbehaving) {
-                return 2;
-            }
-            level = 1;
-        }
-        // continue scanning the subnet ban table for a higher level
-    }
-    // fall back to scanning the (smaller) subnet ban table
-    for (const auto &it : m_banned.subNets) {
-        const CSubNet &sub_net = it.first;
-        const CBanEntry &ban_entry = it.second;
-
-        if (current_time < ban_entry.nBanUntil && sub_net.Match(net_addr)) {
-            if (ban_entry.banReason != BanReasonNodeMisbehaving) {
-                return 2;
-            }
-            level = 1;
-        }
-    }
-    return level;
+    m_discouraged.reset();
 }
 
 bool BanMan::IsBanned(const CNetAddr &net_addr) const
@@ -148,9 +120,15 @@ bool BanMan::IsBanned(const CSubNet &sub_net) const
     return false;
 }
 
-CBanEntry BanMan::CreateBanEntry(const BanReason &ban_reason, int64_t ban_time_offset, bool since_unix_epoch) const
+bool BanMan::IsDiscouraged(const CNetAddr &net_addr) const
 {
-    CBanEntry ban_entry(GetTime(), ban_reason);
+    LOCK(m_cs_banned);
+    return m_discouraged.contains(net_addr.GetAddressBytes(), net_addr.GetAddressLen());
+}
+
+CBanEntry BanMan::CreateBanEntry(int64_t ban_time_offset, bool since_unix_epoch) const
+{
+    CBanEntry ban_entry(GetTime());
 
     int64_t normalized_ban_time_offset = ban_time_offset;
     bool normalized_since_unix_epoch = since_unix_epoch;
@@ -163,10 +141,9 @@ CBanEntry BanMan::CreateBanEntry(const BanReason &ban_reason, int64_t ban_time_o
     return ban_entry;
 }
 
-void BanMan::Ban(const CNetAddr &net_addr, const BanReason &ban_reason,
-                 int64_t ban_time_offset, bool since_unix_epoch)
+void BanMan::Ban(const CNetAddr &net_addr, int64_t ban_time_offset, bool since_unix_epoch, bool save_to_disk)
 {
-    CBanEntry ban_entry = CreateBanEntry(ban_reason, ban_time_offset, since_unix_epoch);
+    CBanEntry ban_entry = CreateBanEntry(ban_time_offset, since_unix_epoch);
     {
         LOCK(m_cs_banned);
         if (m_banned.addresses[net_addr].nBanUntil < ban_entry.nBanUntil) {
@@ -181,21 +158,20 @@ void BanMan::Ban(const CNetAddr &net_addr, const BanReason &ban_reason,
         m_client_interface->BannedListChanged();
     }
 
-    // store banlist to disk immediately if user requested ban
-    if (ban_reason == BanReasonManuallyAdded) {
+    if (save_to_disk) {
+        // store banlist to disk immediately
         DumpBanlist();
     }
 }
 
-void BanMan::Ban(const CSubNet &sub_net, const BanReason &ban_reason,
-                 int64_t ban_time_offset, bool since_unix_epoch)
+void BanMan::Ban(const CSubNet &sub_net, int64_t ban_time_offset, bool since_unix_epoch, bool save_to_disk)
 {
     if (sub_net.IsSingleIP()) {
         // make sure to send single-ip "subnet" bans to the right table
-        Ban(sub_net.Network(), ban_reason, ban_time_offset, since_unix_epoch);
+        Ban(sub_net.Network(), ban_time_offset, since_unix_epoch, save_to_disk);
         return;
     }
-    CBanEntry ban_entry = CreateBanEntry(ban_reason, ban_time_offset, since_unix_epoch);
+    CBanEntry ban_entry = CreateBanEntry(ban_time_offset, since_unix_epoch);
     {
         LOCK(m_cs_banned);
         if (m_banned.subNets[sub_net].nBanUntil < ban_entry.nBanUntil) {
@@ -210,10 +186,16 @@ void BanMan::Ban(const CSubNet &sub_net, const BanReason &ban_reason,
         m_client_interface->BannedListChanged();
     }
 
-    // store banlist to disk immediately if user requested ban
-    if (ban_reason == BanReasonManuallyAdded) {
+    if (save_to_disk) {
+        // store banlist to disk immediately
         DumpBanlist();
     }
+}
+
+void BanMan::Discourage(const CNetAddr &net_addr)
+{
+    LOCK(m_cs_banned);
+    m_discouraged.insert(net_addr.GetAddressBytes(), net_addr.GetAddressLen());
 }
 
 bool BanMan::Unban(const CNetAddr &net_addr) {

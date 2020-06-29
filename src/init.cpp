@@ -560,13 +560,12 @@ void SetupServerArgs() {
                  false, OptionsCategory::CONNECTION);
     gArgs.AddArg(
         "-banscore=<n>",
-        strprintf("Threshold for disconnecting misbehaving peers (default: %u)",
+        strprintf("Threshold for disconnecting and discouraging misbehaving peers (default: %u)",
                   DEFAULT_BANSCORE_THRESHOLD),
         false, OptionsCategory::CONNECTION);
     gArgs.AddArg("-bantime=<n>",
-                 strprintf("Number of seconds to keep misbehaving peers from "
-                           "reconnecting (default: %u)",
-                           DEFAULT_MISBEHAVING_BANTIME),
+                 strprintf("Default bantime (in seconds) for manually configured bans (default: %u)",
+                           DEFAULT_MANUAL_BANTIME),
                  false, OptionsCategory::CONNECTION);
     gArgs.AddArg("-bind=<addr>",
                  "Bind to given address and always listen on it. Use "
@@ -2035,7 +2034,7 @@ bool AppInitMain(Config &config, RPCServer &rpcServer,
     assert(!g_banman);
     g_banman = std::make_unique<BanMan>(
         GetDataDir() / "banlist.dat", config.GetChainParams(), &uiInterface,
-        gArgs.GetArg("-bantime", DEFAULT_MISBEHAVING_BANTIME));
+        gArgs.GetArg("-bantime", DEFAULT_MANUAL_BANTIME));
     assert(!g_connman);
     g_connman = std::make_unique<CConnman>(
         config, GetRand(std::numeric_limits<uint64_t>::max()),

@@ -1039,16 +1039,19 @@ void CConnman::AcceptConnection(const ListenSocket &hListenSocket) {
     // sockets on all platforms.  Set it again here just to be sure.
     SetSocketNoDelay(hSocket);
 
-    int bannedlevel = m_banman ? m_banman->IsBannedLevel(addr) : 0;
+    // Don't accept connections from banned peers.
+    const bool banned = m_banman && m_banman->IsBanned(addr);
+    if (banned && !NetPermissions::HasFlag(permissionFlags, NetPermissionFlags::PF_NOBAN)) {
+        LogPrint(BCLog::NET, "connection from %s dropped (banned)\n", addr.ToString());
+        CloseSocket(hSocket);
+        return;
+    }
 
-    // Don't accept connections from banned peers, but if our inbound slots
-    // aren't almost full, accept if the only banning reason was an automatic
-    // misbehavior ban.
-    if (!NetPermissions::HasFlag(permissionFlags,
-                                 NetPermissionFlags::PF_NOBAN) &&
-        bannedlevel > ((nInbound + 1 < nMaxInbound) ? 1 : 0)) {
-        LogPrint(BCLog::NET, "connection from %s dropped (banned)\n",
-                 addr.ToString());
+    // Only accept connections from discouraged peers if our inbound slots aren't (almost) full.
+    const bool discouraged = m_banman && m_banman->IsDiscouraged(addr);
+    if (discouraged && !NetPermissions::HasFlag(permissionFlags, NetPermissionFlags::PF_NOBAN)
+            && nInbound + 1 >= nMaxInbound) {
+        LogPrint(BCLog::NET, "connection from %s dropped (discouraged)\n", addr.ToString());
         CloseSocket(hSocket);
         return;
     }
@@ -1081,7 +1084,7 @@ void CConnman::AcceptConnection(const ListenSocket &hListenSocket) {
     // If this flag is present, the user probably expect that RPC and QT report
     // it as whitelisted (backward compatibility)
     pnode->m_legacyWhitelisted = legacyWhitelisted;
-    pnode->m_prefer_evict = bannedlevel > 0;
+    pnode->m_prefer_evict = banned || discouraged;
     m_msgproc->InitializeNode(*config, pnode);
 
     LogPrint(BCLog::NET, "connection from %s accepted\n", addr.ToString());
@@ -1965,9 +1968,11 @@ void CConnman::OpenNetworkConnection(const CAddress &addrConnect,
         return;
     }
     if (!pszDest) {
-        if (IsLocal(addrConnect) ||
+        const bool banned_or_discouraged
+                = m_banman && (m_banman->IsDiscouraged(addrConnect) || m_banman->IsBanned(addrConnect));
+        if (banned_or_discouraged ||
+            IsLocal(addrConnect) ||
             FindNode(static_cast<CNetAddr>(addrConnect)) ||
-            (m_banman && m_banman->IsBanned(addrConnect)) ||
             FindNode(addrConnect.ToStringIPPort())) {
             return;
         }
