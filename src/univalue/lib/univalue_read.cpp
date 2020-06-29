@@ -19,16 +19,16 @@ namespace {
  */
 constexpr size_t MAX_JSON_DEPTH = 512;
 
-constexpr bool json_isdigit(int ch) noexcept
+constexpr bool json_isdigit(char ch) noexcept
 {
-    return ((ch >= '0') && (ch <= '9'));
+    return ch >= '0' && ch <= '9';
 }
 
 // convert hexadecimal string to unsigned integer
 const char *hatoui(const char *first, const char *last,
                    unsigned int& out) noexcept
 {
-    unsigned int result = 0;
+    out = 0;
     for (; first != last; ++first)
     {
         int digit;
@@ -44,9 +44,8 @@ const char *hatoui(const char *first, const char *last,
         else
             break;
 
-        result = 16 * result + digit;
+        out = 16 * out + digit;
     }
-    out = result;
 
     return first;
 }
@@ -58,7 +57,7 @@ enum jtokentype getJsonToken(std::string& tokenVal, unsigned int& consumed,
     tokenVal.clear();
     consumed = 0;
 
-    const char *rawStart = raw;
+    const char * const rawStart = raw;
 
     while (raw < end && (json_isspace(*raw)))          // skip whitespace
         raw++;
@@ -124,60 +123,53 @@ enum jtokentype getJsonToken(std::string& tokenVal, unsigned int& consumed,
     case '8':
     case '9': {
         // part 1: int
-        std::string numStr;
+        const char * const first = raw;
+        const bool firstIsMinus = *first == '-';
 
-        const char *first = raw;
+        const char * const firstDigit = first + firstIsMinus;
 
-        const char *firstDigit = first;
-        if (!json_isdigit(*firstDigit))
-            firstDigit++;
-        if ((*firstDigit == '0') && json_isdigit(firstDigit[1]))
+        if (*firstDigit == '0' && firstDigit + 1 < end && json_isdigit(firstDigit[1]))
             return JTOK_ERR;
 
-        numStr += *raw;                       // copy first char
-        raw++;
+        raw++;                                  // consume first char
 
-        if ((*first == '-') && (raw < end) && (!json_isdigit(*raw)))
+        if (firstIsMinus && (raw >= end || !json_isdigit(*raw))) {
+            // reject buffers ending in '-' or '-' followed by non-digit
             return JTOK_ERR;
+        }
 
-        while (raw < end && json_isdigit(*raw)) {  // copy digits
-            numStr += *raw;
+        while (raw < end && json_isdigit(*raw)) {  // consume digits
             raw++;
         }
 
         // part 2: frac
         if (raw < end && *raw == '.') {
-            numStr += *raw;                   // copy .
-            raw++;
+            raw++;                              // consume .
 
             if (raw >= end || !json_isdigit(*raw))
                 return JTOK_ERR;
-            while (raw < end && json_isdigit(*raw)) { // copy digits
-                numStr += *raw;
+            while (raw < end && json_isdigit(*raw)) { // consume digits
                 raw++;
             }
         }
 
         // part 3: exp
         if (raw < end && (*raw == 'e' || *raw == 'E')) {
-            numStr += *raw;                   // copy E
-            raw++;
+            raw++;                              // consume E
 
-            if (raw < end && (*raw == '-' || *raw == '+')) { // copy +/-
-                numStr += *raw;
+            if (raw < end && (*raw == '-' || *raw == '+')) { // consume +/-
                 raw++;
             }
 
             if (raw >= end || !json_isdigit(*raw))
                 return JTOK_ERR;
-            while (raw < end && json_isdigit(*raw)) { // copy digits
-                numStr += *raw;
+            while (raw < end && json_isdigit(*raw)) { // consume digits
                 raw++;
             }
         }
 
-        tokenVal = numStr;
-        consumed = (raw - rawStart);
+        tokenVal.assign(first, raw - first);
+        consumed = raw - rawStart;
         return JTOK_NUMBER;
         }
 
@@ -238,8 +230,8 @@ enum jtokentype getJsonToken(std::string& tokenVal, unsigned int& consumed,
 
         if (!writer.finalize())
             return JTOK_ERR;
-        tokenVal = valStr;
-        consumed = (raw - rawStart);
+        tokenVal = std::move(valStr);
+        consumed = raw - rawStart;
         return JTOK_STRING;
         }
 

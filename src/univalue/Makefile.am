@@ -91,13 +91,20 @@ TEST_FILES = \
 	$(TEST_DATA_DIR)/fail37.json \
 	$(TEST_DATA_DIR)/fail38.json \
 	$(TEST_DATA_DIR)/fail39.json \
+	$(TEST_DATA_DIR)/fail3.json \
 	$(TEST_DATA_DIR)/fail40.json \
 	$(TEST_DATA_DIR)/fail41.json \
 	$(TEST_DATA_DIR)/fail42.json \
 	$(TEST_DATA_DIR)/fail44.json \
 	$(TEST_DATA_DIR)/fail45.json \
-	$(TEST_DATA_DIR)/fail3.json \
+	$(TEST_DATA_DIR)/fail46.json \
+	$(TEST_DATA_DIR)/fail47.json \
+	$(TEST_DATA_DIR)/fail48.json \
+	$(TEST_DATA_DIR)/fail49.json \
 	$(TEST_DATA_DIR)/fail4.json \
+	$(TEST_DATA_DIR)/fail50.json \
+	$(TEST_DATA_DIR)/fail51.json \
+	$(TEST_DATA_DIR)/fail52.json \
 	$(TEST_DATA_DIR)/fail5.json \
 	$(TEST_DATA_DIR)/fail6.json \
 	$(TEST_DATA_DIR)/fail7.json \
@@ -107,6 +114,7 @@ TEST_FILES = \
 	$(TEST_DATA_DIR)/pass2.json \
 	$(TEST_DATA_DIR)/pass3.json \
 	$(TEST_DATA_DIR)/pass4.json \
+	$(TEST_DATA_DIR)/pass5.json \
 	$(TEST_DATA_DIR)/round1.json \
 	$(TEST_DATA_DIR)/round2.json \
 	$(TEST_DATA_DIR)/round3.json \
