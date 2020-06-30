@@ -1,32 +1,5 @@
 #!/usr/bin/make -f
 # -*- mode: makefile; coding: utf-8 -*-
 
-#DEB_MAKE_CHECK_TARGET = test_bitcoin
-#build/bitcoind::
-#	$(if $(filter nocheck,$(DEB_BUILD_OPTIONS)),,src/test_bitcoin)
-
 %:
-	dh $@ --with bash-completion
-
-override_dh_auto_clean:
-	if [ -f Makefile ]; then $(MAKE) distclean; fi
-	rm -rf Makefile.in aclocal.m4 configure src/Makefile.in src/bitcoin-config.h.in src/build-aux src/qt/Makefile.in src/qt/test/Makefile.in src/test/Makefile.in
-
-QT=$(shell dpkg-vendor --derives-from Ubuntu && echo qt4 || echo qt5)
-
-# qt4 is very broken on arm
-ifeq ($(findstring arm,$(shell uname -m)),arm)
-	QT=qt5
-endif
-ifeq ($(findstring aarch64,$(shell uname -m)),aarch64)
-	QT=qt5
-endif
-
-# Yea, autogen should be run on the source archive, but I like doing git archive
-# TODO: mv to cmake / ninja
-override_dh_auto_configure:
-	./autogen.sh
-        LIBS="-lboost_atomic" ./configure --with-gui=$(QT) --disable-tests
-
-override_dh_auto_test:
-	echo "disable make check"
+	dh $@ --buildsystem=cmake

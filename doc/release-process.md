@@ -53,7 +53,10 @@ Bitcoin Cash Node Release Process
 10. Create a [release](https://github.com/bitcoin-cash-node/bitcoin-cash-node) on our GitHub mirror:
     `contrib/release/github-release.sh -a <path to release binaries> -t <release tag> -o <file containing your Github OAuth token>`
 
-11. Notify maintainers of Ubuntu PPA, AUR, and Docker images to build their packages.
+11. Create [Ubuntu PPA packages](https://launchpad.net/~bitcoin-cash-node/+archive/ubuntu/ppa):
+    `contrib/release/debian-packages.sh <name-or-email-for-gpg-signing>`
+
+12. Notify maintainers of AUR and Docker images to build their packages.
     They should be given 1-day advance notice if possible.
 
 ## After Release
