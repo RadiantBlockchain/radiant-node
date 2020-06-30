@@ -5,6 +5,9 @@
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 export LC_ALL=C
+
+set -euxo pipefail
+
 TOPDIR=${TOPDIR:-$(git rev-parse --show-toplevel)}
 BUILDDIR=${BUILDDIR:-$TOPDIR}
 
@@ -24,6 +27,10 @@ read -r -a BTCVER <<< "$($BITCOINCLI --version | head -n1 | awk -F'[ -]' '{ prin
 # Create a footer file with copyright content.
 # This gets autodetected fine for bitcoind if --version-string is not set,
 # but has different outcomes for bitcoin-qt and bitcoin-cli.
+cleanup() {
+  rm -f footer.h2m
+}
+trap "cleanup" EXIT
 echo "[COPYRIGHT]" > footer.h2m
 "$BITCOIND" --version | sed -n '1!p' >> footer.h2m
 
@@ -42,8 +49,6 @@ for cmd in "$BITCOINCLI" "$BITCOINTX" "$BITCOINSEEDER"; do
   help2man -N --version-string=${BTCVER[0]} --include=footer.h2m -o "$TOPDIR/doc/man/$cmdname.1" "$cmd"
   sed -i "s/\\\-${BTCVER[1]}\(\\\-dirty\)\?//g" "$TOPDIR/doc/man/$cmdname.1"
 done
-
-rm -f footer.h2m
 
 # Generate JSON-RPC API documentation.
 # Start a regtest node in a temporary data directory.
