@@ -367,7 +367,11 @@ void SetupServerArgs() {
         // GUI args. These will be overwritten by SetupUIArgs for the GUI
         "-allowselfsignedrootcertificates", "-choosedatadir", "-lang=<lang>",
         "-min", "-resetguisettings", "-rootcertificates=<file>", "-splash",
-        "-uiplatform"};
+        "-uiplatform",
+        // TODO remove after the May 2020 upgrade
+        "-phononactivationtime",
+        // TODO remove after the November 2020 upgrade
+        "-axionactivationtime"};
 
     // Set all of the args and their help
     // When adding new options to the categories, please keep and ensure alphabetical ordering.
