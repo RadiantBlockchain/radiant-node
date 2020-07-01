@@ -885,11 +885,6 @@ void SetupServerArgs() {
                  true, OptionsCategory::DEBUG_TEST);
 
     gArgs.AddArg(
-        "-phononactivationtime=<n>",
-        strprintf("Activation time of the May 2020 Bitcoin Cash Network Upgrade (<n> seconds since epoch, default: %d)",
-                  defaultChainParams->GetConsensus().phononActivationTime),
-        true, OptionsCategory::DEBUG_TEST);
-    gArgs.AddArg(
         "-axionactivationtime=<n>",
         strprintf("Activation time of the November 2020 Bitcoin Cash Network Upgrade (<n> seconds since epoch, default: %d)",
                   defaultChainParams->GetConsensus().axionActivationTime),
