@@ -34,8 +34,6 @@ MINER_FUND_ELECTRON_CASH_ADDR = 'bchreg:pp8d685l8kecnmtyy52ndvq625arz2qwmutyjlcy
 class MinerFundTest(BitcoinTestFramework):
     def set_test_params(self):
         self.num_nodes = 1
-        self.extra_args = [
-            ["-phononactivationtime={}".format(PHONON_ACTIVATION_TIME)]]
 
     def check_bip9_state(self, name, status):
         assert_equal(False, 'softforks' in self.nodes[0].getblockchaininfo())
@@ -113,8 +111,13 @@ class MinerFundTest(BitcoinTestFramework):
         version = VERSION_BASE | (1 << bit)
 
         self.stop_node(0)
+<<<<<<< HEAD:test/functional/bchn-no-miner-fund-activation.py
         self.start_node(0,
                         ["-blockversion={}".format(version), "-phononactivationtime={}".format(PHONON_ACTIVATION_TIME)])
+=======
+        self.start_node(
+            0, ['-enableminerfund', "-blockversion={}".format(version)])
+>>>>>>> 9bbe4cd78... Cleanup phonon activation in functional tests:test/functional/abc-miner-fund.py
 
         node = self.nodes[0]
         node.setmocktime(1580000000)
