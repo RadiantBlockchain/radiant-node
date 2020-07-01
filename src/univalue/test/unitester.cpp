@@ -110,13 +110,20 @@ static const char *filenames[] = {
         "fail37.json",
         "fail38.json",               // invalid unicode: only first half of surrogate pair
         "fail39.json",               // invalid unicode: only second half of surrogate pair
+        "fail3.json",
         "fail40.json",               // invalid unicode: broken UTF-8
         "fail41.json",               // invalid unicode: unfinished UTF-8
         "fail42.json",               // valid json with garbage following a nul byte
         "fail44.json",               // unterminated string
         "fail45.json",               // nested beyond max depth
-        "fail3.json",
+        "fail46.json",               // nested beyond max depth, with whitespace
+        "fail47.json",               // buffer consisting of only a hyphen (chars: {'-', '\0'})
+        "fail48.json",               // -00 is not a valid JSON number
+        "fail49.json",               // 0123 is not a valid JSON number
         "fail4.json",                // extra comma
+        "fail50.json",               // -1. is not a valid JSON number (no ending in decimals)
+        "fail51.json",               // 1.3e+ is not valid (must have a number after the "e+" part)
+        "fail52.json",               // reject -[non-digit]
         "fail5.json",
         "fail6.json",
         "fail7.json",
@@ -126,6 +133,7 @@ static const char *filenames[] = {
         "pass2.json",
         "pass3.json",
         "pass4.json",
+        "pass5.json",               // accept bare buffer containing only "-0"
         "round1.json",              // round-trip test
         "round2.json",              // unicode
         "round3.json",              // bare string
