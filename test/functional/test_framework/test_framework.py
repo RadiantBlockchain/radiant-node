@@ -130,8 +130,6 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
                             help="Attach a python debugger if test fails")
         parser.add_argument("--usecli", dest="usecli", default=False, action="store_true",
                             help="use bitcoin-cli instead of RPC for all commands")
-        parser.add_argument("--with-phononactivation", dest="phononactivation", default=False, action="store_true",
-                            help="Activate phonon update on timestamp {}".format(TIMESTAMP_IN_THE_PAST))
         parser.add_argument("--with-axionactivation", dest="axionactivation", default=False, action="store_true",
                             help="Activate axion update on timestamp {}".format(TIMESTAMP_IN_THE_PAST))
         self.add_options(parser)
@@ -334,9 +332,6 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
                 use_cli=self.options.usecli,
                 emulator=self.options.emulator,
             ))
-            if self.options.phononactivation:
-                self.nodes[i].extend_default_args(
-                    ["-phononactivationtime={}".format(TIMESTAMP_IN_THE_PAST)])
             if self.options.axionactivation:
                 self.nodes[i].extend_default_args(
                     ["-axionactivationtime={}".format(TIMESTAMP_IN_THE_PAST)])
@@ -501,9 +496,6 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
                 if i > 0:
                     self.nodes[i].extend_default_args(
                         ["-connect=127.0.0.1:" + str(p2p_port(0))])
-                if self.options.phononactivation:
-                    self.nodes[i].extend_default_args(
-                        ["-phononactivationtime={}".format(TIMESTAMP_IN_THE_PAST)])
                 if self.options.axionactivation:
                     self.nodes[i].extend_default_args(
                         ["-axionactivationtime={}".format(TIMESTAMP_IN_THE_PAST)])
