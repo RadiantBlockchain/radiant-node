@@ -244,6 +244,9 @@ test-debian-functional:
     stage: test
     extends: .cache-debian
     needs: ["build-debian"]
+    rules:
+        # These tests are included in the extended run
+        - if: $CI_COMMIT_BRANCH != "master"
     script:
         - (cd build; ninja -t restat)
         - (cd build; ninja check-functional)
@@ -258,15 +261,17 @@ test-debian-functional:
         reports:
             junit: build/test/tmp/*/junit_results.xml
 
-test-debian-functional-longeronly:
+test-debian-functional-extended:
     stage: test
     extends: .cache-debian
     needs: ["build-debian"]
+    variables:
+        TEST_RUNNER_EXTRA: --coverage
     rules:
         - if: $CI_COMMIT_BRANCH == "master"
     script:
         - (cd build; ninja -t restat)
-        - (cd build; ninja check-functional-longeronly)
+        - (cd build; ninja check-functional-extended)
         - ccache --show-stats
     dependencies:
         - build-debian
@@ -337,6 +342,9 @@ test-debian-nowallet-functional:
     stage: test
     extends: .cache-debian
     needs: ["build-debian-nowallet"]
+    rules:
+        # These tests are included in the extended run
+        - if: $CI_COMMIT_BRANCH != "master"
     script:
         - (cd build; ninja -t restat)
         - (cd build; ninja check-functional)
@@ -351,10 +359,12 @@ test-debian-nowallet-functional:
         reports:
             junit: build/test/tmp/*/junit_results.xml
 
-test-debian-nowallet-functional-longeronly:
+test-debian-nowallet-functional-extended:
     stage: test
     extends: .cache-debian
     needs: ["build-debian-nowallet"]
+    variables:
+        TEST_RUNNER_EXTRA: --coverage
     rules:
         - if: $CI_COMMIT_BRANCH == "master"
     script:
