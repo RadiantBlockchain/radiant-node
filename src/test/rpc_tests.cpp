@@ -289,7 +289,8 @@ BOOST_AUTO_TEST_CASE(rpc_format_monetary_values) {
 
 static UniValue ValueFromString(const std::string &str) {
     UniValue value;
-    BOOST_CHECK(value.setNumStr(str));
+    value.setNumStr(str);
+    BOOST_CHECK(value.isNum());
     return value;
 }
 

@@ -27,19 +27,17 @@ void UniValue::clear() noexcept
     values.clear();
 }
 
-bool UniValue::setNull() noexcept
+void UniValue::setNull() noexcept
 {
     clear();
-    return true;
 }
 
-bool UniValue::setBool(bool val_)
+void UniValue::setBool(bool val_)
 {
     clear();
     typ = VBOOL;
     if (val_)
         val = boolTrueVal;
-    return true;
 }
 
 static bool validNumStr(const std::string& s)
@@ -50,29 +48,27 @@ static bool validNumStr(const std::string& s)
     return (tt == JTOK_NUMBER);
 }
 
-bool UniValue::setNumStr(const std::string& val_)
+void UniValue::setNumStr(const std::string& val_)
 {
     if (!validNumStr(val_))
-        return false;
+        return;
 
     clear();
     typ = VNUM;
     val = val_;
-    return true;
 }
-bool UniValue::setNumStr(std::string&& val_) noexcept
+void UniValue::setNumStr(std::string&& val_) noexcept
 {
     if (!validNumStr(val_))
-        return false;
+        return;
 
     clear();
     typ = VNUM;
     val = std::move(val_);
-    return true;
 }
 
 template<typename Num>
-bool UniValue::setIntOrFloat(Num num)
+void UniValue::setIntOrFloat(Num num)
 {
     constexpr int bufSize = std::is_integral<Num>::value ? 32 : 64; // use 32 byte buffer for ints, 64 for double
     constexpr auto fmt =
@@ -87,100 +83,89 @@ bool UniValue::setIntOrFloat(Num num)
     if (std::is_floating_point<Num>::value) {
         // ensure not NaN or inf, which are not representable by the JSON Number type
         if (!std::isfinite(num))
-            return false;
+            return;
     }
     std::array<char, bufSize> buf;
     int n = std::snprintf(buf.data(), size_t(bufSize), fmt, num); // C++11 snprintf always NUL terminates
     if (n <= 0 || n >= bufSize) // should never happen
-        return false;
+        return;
     clear();
     typ = VNUM;
     val.assign(buf.data(), std::string::size_type(n));
-    return true;
 }
 
-bool UniValue::setInt(uint64_t val_)
+void UniValue::setInt(uint64_t val_)
 {
-    return setIntOrFloat(val_);
+    setIntOrFloat(val_);
 }
 
-bool UniValue::setInt(int64_t val_)
+void UniValue::setInt(int64_t val_)
 {
-    return setIntOrFloat(val_);
+    setIntOrFloat(val_);
 }
 
-bool UniValue::setFloat(double val_)
+void UniValue::setFloat(double val_)
 {
-    return setIntOrFloat(val_);
+    setIntOrFloat(val_);
 }
 
-bool UniValue::setStr(const std::string& val_)
+void UniValue::setStr(const std::string& val_)
 {
     clear();
     typ = VSTR;
     val = val_;
-    return true;
 }
-bool UniValue::setStr(std::string&& val_) noexcept
+void UniValue::setStr(std::string&& val_) noexcept
 {
     clear();
     typ = VSTR;
     val = std::move(val_);
-    return true;
 }
 
-bool UniValue::setArray() noexcept
+void UniValue::setArray() noexcept
 {
     clear();
     typ = VARR;
-    return true;
 }
 
-bool UniValue::setObject() noexcept
+void UniValue::setObject() noexcept
 {
     clear();
     typ = VOBJ;
-    return true;
 }
 
-bool UniValue::push_back(const UniValue& val_)
+void UniValue::push_back(const UniValue& val_)
 {
     if (typ != VARR)
-        return false;
+        return;
 
     values.push_back(val_);
-    return true;
 }
 
-bool UniValue::push_back(UniValue&& val_)
+void UniValue::push_back(UniValue&& val_)
 {
     if (typ != VARR)
-        return false;
+        return;
 
     values.emplace_back(std::move(val_));
-    return true;
 }
 
-bool UniValue::push_backV(const std::vector<UniValue>& vec)
+void UniValue::push_backV(const std::vector<UniValue>& vec)
 {
     if (typ != VARR)
-        return false;
+        return;
 
     values.insert(values.end(), vec.begin(), vec.end());
-
-    return true;
 }
-bool UniValue::push_backV(std::vector<UniValue>&& vec)
+void UniValue::push_backV(std::vector<UniValue>&& vec)
 {
     if (typ != VARR)
-        return false;
+        return;
 
     values.reserve(std::max(values.size() + vec.size(), values.capacity()));
     for (auto & item : vec)
         values.emplace_back(std::move(item));
     vec.clear(); // clear vector now to be tidy with memory
-
-    return true;
 }
 
 void UniValue::__pushKV(const std::string& key, UniValue&& val_)
@@ -203,79 +188,71 @@ void UniValue::__pushKV(const std::string& key, const UniValue& val_)
     entries.emplace_back(key, val_);
 }
 
-bool UniValue::pushKV(const std::string& key, const UniValue& val_, bool check)
+void UniValue::pushKV(const std::string& key, const UniValue& val_, bool check)
 {
     if (typ != VOBJ)
-        return false;
+        return;
     if (check) {
         if (auto found = find(key)) {
             *found = val_;
-            return true;
+            return;
         }
     }
     __pushKV(key, val_);
-    return true;
 }
-bool UniValue::pushKV(const std::string& key, UniValue&& val_, bool check)
+void UniValue::pushKV(const std::string& key, UniValue&& val_, bool check)
 {
     if (typ != VOBJ)
-        return false;
+        return;
     if (check) {
         if (auto found = find(key)) {
             *found = std::move(val_);
-            return true;
+            return;
         }
     }
     __pushKV(key, std::move(val_));
-    return true;
 }
-bool UniValue::pushKV(std::string&& key, const UniValue& val_, bool check)
+void UniValue::pushKV(std::string&& key, const UniValue& val_, bool check)
 {
     if (typ != VOBJ)
-        return false;
+        return;
     if (check) {
         if (auto found = find(key)) {
             *found = val_;
-            return true;
+            return;
         }
     }
     __pushKV(std::move(key), val_);
-    return true;
 }
-bool UniValue::pushKV(std::string&& key, UniValue&& val_, bool check)
+void UniValue::pushKV(std::string&& key, UniValue&& val_, bool check)
 {
     if (typ != VOBJ)
-        return false;
+        return;
     if (check) {
         if (auto found = find(key)) {
             *found = std::move(val_);
-            return true;
+            return;
         }
     }
     __pushKV(std::move(key), std::move(val_));
-    return true;
 }
 
-bool UniValue::pushKVs(const UniValue& obj)
+void UniValue::pushKVs(const UniValue& obj)
 {
     if (typ != VOBJ || obj.typ != VOBJ)
-        return false;
+        return;
 
     for (auto& entry : obj.entries)
         entries.emplace_back(entry);
-
-    return true;
 }
-bool UniValue::pushKVs(UniValue&& obj)
+void UniValue::pushKVs(UniValue&& obj)
 {
     if (typ != VOBJ || obj.typ != VOBJ)
-        return false;
+        return;
 
     for (auto& entry : obj.entries)
         entries.emplace_back(std::move(entry));
     obj.setObject(); // reset moved obj now to be tidy with memory.
-
-    return true;
 }
 
 const UniValue& UniValue::operator[](const std::string& key) const noexcept

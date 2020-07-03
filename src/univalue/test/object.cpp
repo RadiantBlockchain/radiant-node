@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(univalue_constructor)
     BOOST_CHECK_EQUAL(v3.getValStr(), "foo");
 
     UniValue numTest;
-    BOOST_CHECK(numTest.setNumStr("82"));
+    numTest.setNumStr("82");
     BOOST_CHECK(numTest.isNum());
     BOOST_CHECK_EQUAL(numTest.getValStr(), "82");
 
@@ -88,26 +88,26 @@ BOOST_AUTO_TEST_CASE(univalue_constructor)
 BOOST_AUTO_TEST_CASE(univalue_typecheck)
 {
     UniValue v1;
-    BOOST_CHECK(v1.setNumStr("1"));
+    v1.setNumStr("1");
     BOOST_CHECK(v1.isNum());
     BOOST_CHECK_THROW(v1.get_bool(), std::runtime_error);
 
     UniValue v2;
-    BOOST_CHECK(v2.setBool(true));
+    v2.setBool(true);
     BOOST_CHECK_EQUAL(v2.get_bool(), true);
     BOOST_CHECK_THROW(v2.get_int(), std::runtime_error);
 
     UniValue v3;
-    BOOST_CHECK(v3.setNumStr("32482348723847471234"));
+    v3.setNumStr("32482348723847471234");
     BOOST_CHECK_THROW(v3.get_int64(), std::runtime_error);
-    BOOST_CHECK(v3.setNumStr("1000"));
+    v3.setNumStr("1000");
     BOOST_CHECK_EQUAL(v3.get_int64(), 1000);
 
     UniValue v4;
-    BOOST_CHECK(v4.setNumStr("2147483648"));
+    v4.setNumStr("2147483648");
     BOOST_CHECK_EQUAL(v4.get_int64(), 2147483648);
     BOOST_CHECK_THROW(v4.get_int(), std::runtime_error);
-    BOOST_CHECK(v4.setNumStr("1000"));
+    v4.setNumStr("1000");
     BOOST_CHECK_EQUAL(v4.get_int(), 1000);
     BOOST_CHECK_THROW(v4.get_str(), std::runtime_error);
     BOOST_CHECK_EQUAL(v4.get_real(), 1000);
@@ -133,203 +133,215 @@ BOOST_AUTO_TEST_CASE(univalue_set)
     BOOST_CHECK(v.isNull());
     BOOST_CHECK_EQUAL(v.getValStr(), "");
 
-    BOOST_CHECK(v.setObject());
+    v.setObject();
     BOOST_CHECK(v.isObject());
     BOOST_CHECK_EQUAL(v.size(), 0);
     BOOST_CHECK_EQUAL(v.getType(), UniValue::VOBJ);
     BOOST_CHECK(v.empty());
 
-    BOOST_CHECK(v.setArray());
+    v.setArray();
     BOOST_CHECK(v.isArray());
     BOOST_CHECK_EQUAL(v.size(), 0);
 
-    BOOST_CHECK(v.setStr("zum"));
+    v.setStr("zum");
     BOOST_CHECK(v.isStr());
     BOOST_CHECK_EQUAL(v.getValStr(), "zum");
 
-    BOOST_CHECK(!v.setFloat(std::numeric_limits<double>::quiet_NaN()));
+    v.setFloat(std::numeric_limits<double>::quiet_NaN());
     BOOST_CHECK(v.isStr());
     BOOST_CHECK_EQUAL(v.getValStr(), "zum");
 
-    BOOST_CHECK(!v.setFloat(std::numeric_limits<double>::signaling_NaN()));
+    v.setFloat(std::numeric_limits<double>::signaling_NaN());
     BOOST_CHECK(v.isStr());
     BOOST_CHECK_EQUAL(v.getValStr(), "zum");
 
-    BOOST_CHECK(!v.setFloat(std::numeric_limits<double>::infinity()));
+    v.setFloat(std::numeric_limits<double>::infinity());
     BOOST_CHECK(v.isStr());
     BOOST_CHECK_EQUAL(v.getValStr(), "zum");
 
-    BOOST_CHECK(!v.setFloat(-std::numeric_limits<double>::infinity()));
+    v.setFloat(-std::numeric_limits<double>::infinity());
     BOOST_CHECK(v.isStr());
     BOOST_CHECK_EQUAL(v.getValStr(), "zum");
 
-    BOOST_CHECK(v.setFloat(-1.01));
+    v.setFloat(-1.01);
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "-1.01");
 
-    BOOST_CHECK(v.setFloat(-std::numeric_limits<double>::max()));
+    v.setNull();
+    BOOST_CHECK(v.isNull());
+    v.setFloat(-std::numeric_limits<double>::max());
     BOOST_CHECK(v.isNum());
 
-    BOOST_CHECK(v.setFloat(-1.79769313486231570e+308));
+    v.setFloat(-1.79769313486231570e+308);
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "-1.797693134862316e+308");
 
-    BOOST_CHECK(v.setFloat(-100000000000000000. / 3.));
+    v.setFloat(-100000000000000000. / 3.);
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "-3.333333333333333e+16");
 
-    BOOST_CHECK(v.setFloat(-10000000000000000. / 3.));
+    v.setFloat(-10000000000000000. / 3.);
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "-3333333333333334");
 
-    BOOST_CHECK(v.setFloat(-1000000000000000. / 3.));
+    v.setFloat(-1000000000000000. / 3.);
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "-333333333333333.3");
 
-    BOOST_CHECK(v.setFloat(-10. / 3.));
+    v.setFloat(-10. / 3.);
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "-3.333333333333333");
 
-    BOOST_CHECK(v.setFloat(-1.));
+    v.setFloat(-1.);
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "-1");
 
-    BOOST_CHECK(v.setFloat(-1. / 3.));
+    v.setFloat(-1. / 3.);
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "-0.3333333333333333");
 
-    BOOST_CHECK(v.setFloat(-1. / 3000.));
+    v.setFloat(-1. / 3000.);
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "-0.0003333333333333333");
 
-    BOOST_CHECK(v.setFloat(-1. / 30000.));
+    v.setFloat(-1. / 30000.);
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "-3.333333333333333e-05");
 
-    BOOST_CHECK(v.setFloat(-4.94065645841246544e-324));
+    v.setFloat(-4.94065645841246544e-324);
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "-4.940656458412465e-324");
 
-    BOOST_CHECK(v.setFloat(-std::numeric_limits<double>::min()));
+    v.setNull();
+    BOOST_CHECK(v.isNull());
+    v.setFloat(-std::numeric_limits<double>::min());
     BOOST_CHECK(v.isNum());
 
-    BOOST_CHECK(v.setFloat(-1. / std::numeric_limits<double>::infinity()));
+    v.setFloat(-1. / std::numeric_limits<double>::infinity());
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "-0");
 
-    BOOST_CHECK(v.setFloat(1. / std::numeric_limits<double>::infinity()));
+    v.setFloat(1. / std::numeric_limits<double>::infinity());
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "0");
 
-    BOOST_CHECK(v.setFloat(std::numeric_limits<double>::min()));
+    v.setNull();
+    BOOST_CHECK(v.isNull());
+    v.setFloat(std::numeric_limits<double>::min());
     BOOST_CHECK(v.isNum());
 
-    BOOST_CHECK(v.setFloat(4.94065645841246544e-324));
+    v.setFloat(4.94065645841246544e-324);
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "4.940656458412465e-324");
 
-    BOOST_CHECK(v.setFloat(1. / 30000.));
+    v.setFloat(1. / 30000.);
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "3.333333333333333e-05");
 
-    BOOST_CHECK(v.setFloat(1. / 3000.));
+    v.setFloat(1. / 3000.);
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "0.0003333333333333333");
 
-    BOOST_CHECK(v.setFloat(1. / 3.));
+    v.setFloat(1. / 3.);
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "0.3333333333333333");
 
-    BOOST_CHECK(v.setFloat(1.));
+    v.setFloat(1.);
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "1");
 
-    BOOST_CHECK(v.setFloat(10. / 3.));
+    v.setFloat(10. / 3.);
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "3.333333333333333");
 
-    BOOST_CHECK(v.setFloat(1000000000000000. / 3.));
+    v.setFloat(1000000000000000. / 3.);
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "333333333333333.3");
 
-    BOOST_CHECK(v.setFloat(10000000000000000. / 3.));
+    v.setFloat(10000000000000000. / 3.);
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "3333333333333334");
 
-    BOOST_CHECK(v.setFloat(100000000000000000. / 3.));
+    v.setFloat(100000000000000000. / 3.);
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "3.333333333333333e+16");
 
-    BOOST_CHECK(v.setFloat(1.79769313486231570e+308));
+    v.setFloat(1.79769313486231570e+308);
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "1.797693134862316e+308");
 
-    BOOST_CHECK(v.setFloat(std::numeric_limits<double>::max()));
+    v.setNull();
+    BOOST_CHECK(v.isNull());
+    v.setFloat(std::numeric_limits<double>::max());
     BOOST_CHECK(v.isNum());
 
-    BOOST_CHECK(v.setInt(1023));
+    v.setInt(1023);
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "1023");
 
-    BOOST_CHECK(v.setInt(0));
+    v.setInt(0);
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "0");
 
-    BOOST_CHECK(v.setInt(std::numeric_limits<int>::min()));
+    v.setInt(std::numeric_limits<int>::min());
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), std::to_string(std::numeric_limits<int>::min()));
 
-    BOOST_CHECK(v.setInt(std::numeric_limits<int>::max()));
+    v.setInt(std::numeric_limits<int>::max());
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), std::to_string(std::numeric_limits<int>::max()));
 
-    BOOST_CHECK(v.setInt(int64_t(-1023)));
+    v.setInt(int64_t(-1023));
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "-1023");
 
-    BOOST_CHECK(v.setInt(int64_t(0)));
+    v.setInt(int64_t(0));
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "0");
 
-    BOOST_CHECK(v.setInt(std::numeric_limits<int64_t>::min()));
+    v.setInt(std::numeric_limits<int64_t>::min());
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "-9223372036854775808");
 
-    BOOST_CHECK(v.setInt(std::numeric_limits<int64_t>::max()));
+    v.setInt(std::numeric_limits<int64_t>::max());
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "9223372036854775807");
 
-    BOOST_CHECK(v.setInt(uint64_t(1023)));
+    v.setInt(uint64_t(1023));
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "1023");
 
-    BOOST_CHECK(v.setInt(uint64_t(0)));
+    v.setInt(uint64_t(0));
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "0");
 
-    BOOST_CHECK(v.setInt(std::numeric_limits<uint64_t>::max()));
+    v.setInt(std::numeric_limits<uint64_t>::max());
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "18446744073709551615");
 
-    BOOST_CHECK(v.setNumStr("-688"));
+    v.setNumStr("-688");
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "-688");
 
-    BOOST_CHECK(v.setBool(false));
+    v.setBool(false);
     BOOST_CHECK_EQUAL(v.isBool(), true);
     BOOST_CHECK_EQUAL(v.isTrue(), false);
     BOOST_CHECK_EQUAL(v.isFalse(), true);
     BOOST_CHECK_EQUAL(v.getBool(), false);
 
-    BOOST_CHECK(v.setBool(true));
+    v.setBool(true);
     BOOST_CHECK_EQUAL(v.isBool(), true);
     BOOST_CHECK_EQUAL(v.isTrue(), true);
     BOOST_CHECK_EQUAL(v.isFalse(), false);
     BOOST_CHECK_EQUAL(v.getBool(), true);
 
-    BOOST_CHECK(!v.setNumStr("zombocom"));
+    v.setNumStr("zombocom");
+    BOOST_CHECK_EQUAL(v.isBool(), true);
+    BOOST_CHECK_EQUAL(v.isTrue(), true);
+    BOOST_CHECK_EQUAL(v.isFalse(), false);
+    BOOST_CHECK_EQUAL(v.getBool(), true);
 
-    BOOST_CHECK(v.setNull());
+    v.setNull();
     BOOST_CHECK(v.isNull());
 }
 
@@ -338,13 +350,13 @@ BOOST_AUTO_TEST_CASE(univalue_array)
     UniValue arr(UniValue::VARR);
 
     UniValue v((int64_t)1023LL);
-    BOOST_CHECK(arr.push_back(v));
+    arr.push_back(v);
 
     std::string vStr("zippy");
-    BOOST_CHECK(arr.push_back(vStr));
+    arr.push_back(vStr);
 
     const char *s = "pippy";
-    BOOST_CHECK(arr.push_back(s));
+    arr.push_back(s);
 
     std::vector<UniValue> vec;
     v.setStr("boing");
@@ -353,12 +365,12 @@ BOOST_AUTO_TEST_CASE(univalue_array)
     v.setStr("going");
     vec.push_back(v);
 
-    BOOST_CHECK(arr.push_backV(vec));
+    arr.push_backV(vec);
 
-    BOOST_CHECK(arr.push_back((uint64_t) 400ULL));
-    BOOST_CHECK(arr.push_back((int64_t) -400LL));
-    BOOST_CHECK(arr.push_back((int) -401));
-    BOOST_CHECK(arr.push_back(-40.1));
+    arr.push_back((uint64_t) 400ULL);
+    arr.push_back((int64_t) -400LL);
+    arr.push_back((int) -401);
+    arr.push_back(-40.1);
 
     BOOST_CHECK_EQUAL(arr.empty(), false);
     BOOST_CHECK_EQUAL(arr.size(), 9);
@@ -388,39 +400,39 @@ BOOST_AUTO_TEST_CASE(univalue_object)
 
     strKey = "age";
     v.setInt(100);
-    BOOST_CHECK(obj.pushKV(strKey, v));
+    obj.pushKV(strKey, v);
 
     strKey = "first";
     strVal = "John";
-    BOOST_CHECK(obj.pushKV(strKey, strVal));
+    obj.pushKV(strKey, strVal);
 
     strKey = "last";
     const char *cVal = "Smith";
-    BOOST_CHECK(obj.pushKV(strKey, cVal));
+    obj.pushKV(strKey, cVal);
 
     strKey = "distance";
-    BOOST_CHECK(obj.pushKV(strKey, (int64_t) 25));
+    obj.pushKV(strKey, (int64_t) 25);
 
     strKey = "time";
-    BOOST_CHECK(obj.pushKV(strKey, (uint64_t) 3600));
+    obj.pushKV(strKey, (uint64_t) 3600);
 
     strKey = "calories";
-    BOOST_CHECK(obj.pushKV(strKey, (int) 12));
+    obj.pushKV(strKey, (int) 12);
 
     strKey = "temperature";
-    BOOST_CHECK(obj.pushKV(strKey, (double) 90.012));
+    obj.pushKV(strKey, (double) 90.012);
 
     strKey = "moon";
-    BOOST_CHECK(obj.pushKV(strKey, true));
+    obj.pushKV(strKey, true);
 
     strKey = "spoon";
-    BOOST_CHECK(obj.pushKV(strKey, false));
+    obj.pushKV(strKey, false);
 
     UniValue obj2(UniValue::VOBJ);
-    BOOST_CHECK(obj2.pushKV("cat1", 9000));
-    BOOST_CHECK(obj2.pushKV("cat2", 12345));
+    obj2.pushKV("cat1", 9000);
+    obj2.pushKV("cat2", 12345);
 
-    BOOST_CHECK(obj.pushKVs(obj2));
+    obj.pushKVs(obj2);
 
     BOOST_CHECK_EQUAL(obj.empty(), false);
     BOOST_CHECK_EQUAL(obj.size(), 11);
@@ -472,7 +484,7 @@ BOOST_AUTO_TEST_CASE(univalue_object)
     BOOST_CHECK_EQUAL(obj.size(), 0);
     BOOST_CHECK_EQUAL(obj.getType(), UniValue::VNULL);
 
-    BOOST_CHECK_EQUAL(obj.setObject(), true);
+    obj.setObject();
     UniValue uv;
     uv.setInt(42);
     obj.pushKV("age", uv);
