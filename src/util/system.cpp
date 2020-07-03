@@ -393,18 +393,19 @@ std::set<std::string> ArgsManager::GetUnsuitableSectionOnlyArgs() const {
     return unsuitables;
 }
 
-std::set<std::string> ArgsManager::GetUnrecognizedSections() const {
+const std::list<SectionInfo> ArgsManager::GetUnrecognizedSections() const {
     // Section names to be recognized in the config file.
     static const std::set<std::string> available_sections{
         CBaseChainParams::REGTEST, CBaseChainParams::TESTNET,
         CBaseChainParams::MAIN};
-    std::set<std::string> diff;
 
     LOCK(cs_args);
-    std::set_difference(m_config_sections.begin(), m_config_sections.end(),
-                        available_sections.begin(), available_sections.end(),
-                        std::inserter(diff, diff.end()));
-    return diff;
+    std::list<SectionInfo> unrecognized = m_config_sections;
+    unrecognized.remove_if([](const SectionInfo &appeared) {
+        return available_sections.find(appeared.m_name) !=
+               available_sections.end();
+    });
+    return unrecognized;
 }
 
 void ArgsManager::SelectConfigNetwork(const std::string &network) {
@@ -906,9 +907,10 @@ static std::string TrimString(const std::string &str,
 }
 
 static bool
-GetConfigOptions(std::istream &stream, std::string &error,
+GetConfigOptions(std::istream &stream, const std::string &filepath,
+                 std::string &error,
                  std::vector<std::pair<std::string, std::string>> &options,
-                 std::set<std::string> &sections) {
+                 std::list<SectionInfo> &sections) {
     std::string str, prefix;
     std::string::size_type pos;
     int linenr = 1;
@@ -923,7 +925,7 @@ GetConfigOptions(std::istream &stream, std::string &error,
         if (!str.empty()) {
             if (*str.begin() == '[' && *str.rbegin() == ']') {
                 const std::string section = str.substr(1, str.size() - 2);
-                sections.insert(section);
+                sections.emplace_back(SectionInfo{section, filepath, linenr});
                 prefix = section + '.';
             } else if (*str.begin() == '-') {
                 error = strprintf(
@@ -944,8 +946,10 @@ GetConfigOptions(std::istream &stream, std::string &error,
                     return false;
                 }
                 options.emplace_back(name, value);
-                if ((pos = name.rfind('.')) != std::string::npos) {
-                    sections.insert(name.substr(0, pos));
+                if ((pos = name.rfind('.')) != std::string::npos &&
+                    prefix.length() <= pos) {
+                    sections.emplace_back(
+                        SectionInfo{name.substr(0, pos), filepath, linenr});
                 }
             } else {
                 error = strprintf("parse error on line %i: %s", linenr, str);
@@ -962,12 +966,14 @@ GetConfigOptions(std::istream &stream, std::string &error,
     return true;
 }
 
-bool ArgsManager::ReadConfigStream(std::istream &stream, std::string &error,
+bool ArgsManager::ReadConfigStream(std::istream &stream,
+                                   const std::string &filepath,
+                                   std::string &error,
                                    bool ignore_invalid_keys) {
     LOCK(cs_args);
     std::vector<std::pair<std::string, std::string>> options;
-    m_config_sections.clear();
-    if (!GetConfigOptions(stream, error, options, m_config_sections)) {
+    if (!GetConfigOptions(stream, filepath, error, options,
+                          m_config_sections)) {
         return false;
     }
     for (const std::pair<std::string, std::string> &option : options) {
@@ -1000,6 +1006,7 @@ bool ArgsManager::ReadConfigFiles(std::string &error,
     {
         LOCK(cs_args);
         m_config_args.clear();
+        m_config_sections.clear();
     }
 
     const std::string confPath = GetArg("-conf", BITCOIN_CONF_FILENAME);
@@ -1007,7 +1014,7 @@ bool ArgsManager::ReadConfigFiles(std::string &error,
 
     // ok to not have a config file
     if (stream.good()) {
-        if (!ReadConfigStream(stream, error, ignore_invalid_keys)) {
+        if (!ReadConfigStream(stream, confPath, error, ignore_invalid_keys)) {
             return false;
         }
         // `-includeconf` cannot be included in the command line arguments
@@ -1049,7 +1056,7 @@ bool ArgsManager::ReadConfigFiles(std::string &error,
             for (const std::string &to_include : includeconf) {
                 fs::ifstream include_config(GetConfigFile(to_include));
                 if (include_config.good()) {
-                    if (!ReadConfigStream(include_config, error,
+                    if (!ReadConfigStream(include_config, to_include, error,
                                           ignore_invalid_keys)) {
                         return false;
                     }
