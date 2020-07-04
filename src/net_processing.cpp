@@ -3606,10 +3606,6 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         std::vector<CAddress> vAddr = connman->GetAddresses();
         FastRandomContext insecure_rand;
         for (const CAddress &addr : vAddr) {
-            if (g_banman && (g_banman->IsDiscouraged(addr) || g_banman->IsBanned(addr))) {
-                // Do not gossip about discouraged or banned addresses
-                continue;
-            }
             pfrom->PushAddress(addr, insecure_rand);
         }
         return true;
