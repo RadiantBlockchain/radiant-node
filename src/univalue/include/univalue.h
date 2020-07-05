@@ -36,18 +36,18 @@ public:
 
     void clear() noexcept;
 
-    bool setNull() noexcept;
-    bool setBool(bool val);
-    bool setNumStr(const std::string& val);
-    bool setNumStr(std::string&& val) noexcept;
-    bool setInt(uint64_t val);
-    bool setInt(int64_t val);
-    bool setInt(int val_) { return setInt(int64_t(val_)); }
-    bool setFloat(double val);
-    bool setStr(const std::string& val);
-    bool setStr(std::string&& val) noexcept;
-    bool setArray() noexcept;
-    bool setObject() noexcept;
+    void setNull() noexcept;
+    void setBool(bool val);
+    void setNumStr(const std::string& val);
+    void setNumStr(std::string&& val) noexcept;
+    void setInt(uint64_t val);
+    void setInt(int64_t val);
+    void setInt(int val_) { setInt(int64_t(val_)); }
+    void setFloat(double val);
+    void setStr(const std::string& val);
+    void setStr(std::string&& val) noexcept;
+    void setArray() noexcept;
+    void setObject() noexcept;
 
     constexpr enum VType getType() const noexcept { return typ; }
     constexpr const std::string& getValStr() const noexcept { return val; }
@@ -201,23 +201,23 @@ public:
     constexpr bool isArray() const noexcept { return typ == VARR; }
     constexpr bool isObject() const noexcept { return typ == VOBJ; }
 
-    bool push_back(UniValue&& val);
-    bool push_back(const UniValue& val);
-    bool push_backV(const std::vector<UniValue>& vec);
-    bool push_backV(std::vector<UniValue>&& vec);
+    void push_back(UniValue&& val);
+    void push_back(const UniValue& val);
+    void push_backV(const std::vector<UniValue>& vec);
+    void push_backV(std::vector<UniValue>&& vec);
 
     // checkForDupes=true is slower, but does a linear search through the keys to overwrite existing keys.
     // checkForDupes=false is faster, and will always append the new entry at the end (even if `key` exists).
-    bool pushKV(const std::string& key, const UniValue& val, bool checkForDupes = true);
-    bool pushKV(const std::string& key, UniValue&& val, bool checkForDupes = true);
-    bool pushKV(std::string&& key, const UniValue& val, bool checkForDupes = true);
-    bool pushKV(std::string&& key, UniValue&& val, bool checkForDupes = true);
+    void pushKV(const std::string& key, const UniValue& val, bool checkForDupes = true);
+    void pushKV(const std::string& key, UniValue&& val, bool checkForDupes = true);
+    void pushKV(std::string&& key, const UniValue& val, bool checkForDupes = true);
+    void pushKV(std::string&& key, UniValue&& val, bool checkForDupes = true);
     // Inserts all key/value pairs from `obj` into `this`.
     // Caveat: For performance, `this` is not checked for duplicate keys coming in from `obj`.
     // As a result, `this` may end up with duplicate keys if `obj` contains keys already
     // present in `this`.
-    bool pushKVs(const UniValue& obj);
-    bool pushKVs(UniValue&& obj);
+    void pushKVs(const UniValue& obj);
+    void pushKVs(UniValue&& obj);
 
     std::string write(unsigned int prettyIndent = 0,
                       unsigned int indentLevel = 0) const;
@@ -249,7 +249,7 @@ private:
 
     // Used by the various setInt() and setFloat() overloads
     template<typename Num>
-    bool setIntOrFloat(Num numVal);
+    void setIntOrFloat(Num numVal);
 
 public:
     // Strict type-specific getters, these throw std::runtime_error if the
