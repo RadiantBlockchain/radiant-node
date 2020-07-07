@@ -29,6 +29,10 @@ If you want to build the disk image with `ninja osx-dmg` (.dmg / optional), you 
 
     brew install librsvg
 
+If you want to run ZMQ tests with the test framework, you need the zmq python module:
+
+    pip3 install pyzmq
+
 Build Bitcoin Cash Node
 ------------------------
 
