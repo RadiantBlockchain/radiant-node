@@ -9,6 +9,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <algorithm>
+#include <primitives/txid.h>
 #include <random>
 
 BOOST_FIXTURE_TEST_SUITE(random_tests, BasicTestingSetup)
@@ -35,6 +36,18 @@ BOOST_AUTO_TEST_CASE(fastrandom_tests) {
     BOOST_CHECK_EQUAL(ctx1.randbits(3), ctx2.randbits(3));
     BOOST_CHECK(ctx1.randbytes(17) == ctx2.randbytes(17));
     BOOST_CHECK(ctx1.rand256() == ctx2.rand256());
+
+    uint256 blob1, blob2;
+    // check alternate in-place API for uint256
+    ctx1.rand256(blob1);
+    ctx2.rand256(blob2);
+    BOOST_CHECK(blob1 == blob2);
+    // check alternate in-place API for uint256-derived type TxId
+    TxId txid1, txid2;
+    ctx1.rand256(txid1);
+    ctx2.rand256(txid2);
+    BOOST_CHECK(txid1 == txid2);
+
     BOOST_CHECK_EQUAL(ctx1.randbits(7), ctx2.randbits(7));
     BOOST_CHECK(ctx1.randbytes(128) == ctx2.randbytes(128));
     BOOST_CHECK_EQUAL(ctx1.rand32(), ctx2.rand32());

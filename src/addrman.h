@@ -492,7 +492,7 @@ public:
     void Clear() {
         LOCK(cs);
         std::vector<int>().swap(vRandom);
-        nKey = insecure_rand.rand256();
+        insecure_rand.rand256(nKey);
         for (size_t bucket = 0; bucket < ADDRMAN_NEW_BUCKET_COUNT; bucket++) {
             for (size_t entry = 0; entry < ADDRMAN_BUCKET_SIZE; entry++) {
                 vvNew[bucket][entry] = -1;
