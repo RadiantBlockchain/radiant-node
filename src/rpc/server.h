@@ -264,7 +264,7 @@ public:
                        const ContextFreeRPCCommand *pcmd);
 };
 
-bool IsDeprecatedRPCEnabled(ArgsManager &args, const std::string &method);
+bool IsDeprecatedRPCEnabled(const ArgsManager &args, const std::string &method);
 
 extern CRPCTable tableRPC;
 
