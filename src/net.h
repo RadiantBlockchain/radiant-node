@@ -70,6 +70,9 @@ static_assert(MAX_PROTOCOL_MESSAGE_LENGTH > MAX_INV_SZ * sizeof(CInv),
 static const unsigned int MAX_LOCATOR_SZ = 101;
 /** The maximum number of new addresses to accumulate before announcing. */
 static const unsigned int MAX_ADDR_TO_SEND = 1000;
+// TODO: remove ADDRMAN_GETADDR_MAX and let the caller specify this limit with MAX_ADDR_TO_SEND.
+static_assert(MAX_ADDR_TO_SEND == ADDRMAN_GETADDR_MAX,
+    "Max allowed ADDR message size should be equal to the max number of records returned from AddrMan.");
 /** Maximum length of the user agent string in `version` message */
 static const unsigned int MAX_SUBVERSION_LENGTH = 256;
 /** Maximum number of automatic outgoing nodes */

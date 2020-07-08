@@ -2478,7 +2478,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
 
         s >> vAddr;
 
-        if (vAddr.size() > 1000) {
+        if (vAddr.size() > MAX_ADDR_TO_SEND) {
             LOCK(cs_main);
             Misbehaving(pfrom, 20, "oversized-addr");
             return error("%s message size = %u", msg_type, vAddr.size());
@@ -4352,8 +4352,8 @@ bool PeerLogicValidation::SendMessages(const Config &config, CNode *pto,
             if (!pto->addrKnown.contains(addr.GetKey())) {
                 pto->addrKnown.insert(addr.GetKey());
                 vAddr.push_back(addr);
-                // receiver rejects addr messages larger than 1000
-                if (vAddr.size() >= 1000) {
+                // receiver rejects addr messages larger than MAX_ADDR_TO_SEND
+                if (vAddr.size() >= MAX_ADDR_TO_SEND) {
                     connman->PushMessage(pto, msgMaker.Make(make_flags, msg_type, vAddr));
                     vAddr.clear();
                 }
