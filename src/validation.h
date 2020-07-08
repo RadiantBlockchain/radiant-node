@@ -39,6 +39,7 @@ class arith_uint256;
 
 class CBlockIndex;
 class CBlockTreeDB;
+class CBlockUndo;
 class CChainParams;
 class CChain;
 class CCoinsViewDB;
@@ -641,6 +642,8 @@ bool ReadBlockFromDisk(CBlock &block, const FlatFilePos &pos,
                        const Consensus::Params &params);
 bool ReadBlockFromDisk(CBlock &block, const CBlockIndex *pindex,
                        const Consensus::Params &params);
+
+bool UndoReadFromDisk(CBlockUndo &blockundo, const CBlockIndex *pindex);
 
 /** Functions for validating blocks and updating the block tree */
 
