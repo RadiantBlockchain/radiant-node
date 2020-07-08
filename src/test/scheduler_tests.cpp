@@ -5,12 +5,14 @@
 #include <scheduler.h>
 
 #include <random.h>
+#include <sync.h>
 
 #include <test/setup_common.h>
 
 #include <boost/test/unit_test.hpp>
 
 #include <atomic>
+#include <condition_variable>
 #include <thread>
 
 BOOST_AUTO_TEST_SUITE(scheduler_tests)
@@ -135,7 +137,7 @@ BOOST_AUTO_TEST_CASE(manythreads) {
 BOOST_AUTO_TEST_CASE(schedule_every) {
     CScheduler scheduler;
 
-    boost::condition_variable cvar;
+    std::condition_variable cvar;
     std::atomic<int> counter{15};
     std::atomic<bool> keepRunning{true};
 
@@ -167,8 +169,8 @@ BOOST_AUTO_TEST_CASE(schedule_every) {
     std::thread schedulerThread(
         std::bind(&CScheduler::serviceQueue, &scheduler));
 
-    boost::mutex mutex;
-    boost::unique_lock<boost::mutex> lock(mutex);
+    Mutex mutex;
+    WAIT_LOCK(mutex, lock);
     while (keepRunning) {
         cvar.wait(lock);
         BOOST_CHECK(counter >= 0);
