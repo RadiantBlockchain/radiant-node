@@ -1663,8 +1663,8 @@ static void ProcessGetBlockData(const Config &config, CNode *pfrom,
             // want it right after the last block so they don't wait for other
             // stuff first.
             std::vector<CInv> vInv;
-            vInv.push_back(
-                CInv(MSG_BLOCK, ::ChainActive().Tip()->GetBlockHash()));
+            vInv.emplace_back(
+                MSG_BLOCK, ::ChainActive().Tip()->GetBlockHash());
             connman->PushMessage(pfrom, msgMaker.Make(NetMsgType::INV, vInv));
             pfrom->hashContinue = BlockHash();
         }
@@ -1972,7 +1972,7 @@ static bool ProcessHeadersMessage(const Config &config, CNode *pfrom,
                         // Can't download any more from this peer
                         break;
                     }
-                    vGetData.push_back(CInv(MSG_BLOCK, pindex->GetBlockHash()));
+                    vGetData.emplace_back(MSG_BLOCK, pindex->GetBlockHash());
                     MarkBlockAsInFlight(config, pfrom->GetId(),
                                         pindex->GetBlockHash(),
                                         chainparams.GetConsensus(), pindex);
@@ -2652,10 +2652,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
             LogPrint(BCLog::NET,
                      "Peer %d sent us a getblocktxn for a block > %i deep\n",
                      pfrom->GetId(), MAX_BLOCKTXN_DEPTH);
-            CInv inv;
-            inv.type = MSG_BLOCK;
-            inv.hash = req.blockhash;
-            pfrom->vRecvGetData.push_back(inv);
+            pfrom->vRecvGetData.emplace_back(MSG_BLOCK, req.blockhash);
             // The message processing loop will go around again (without
             // pausing) and we'll respond then (without cs_main)
             return true;
@@ -3316,7 +3313,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
             } else if (status == READ_STATUS_FAILED) {
                 // Might have collided, fall back to getdata now :(
                 std::vector<CInv> invs;
-                invs.push_back(CInv(MSG_BLOCK, resp.blockhash));
+                invs.emplace_back(MSG_BLOCK, resp.blockhash);
                 connman->PushMessage(pfrom,
                                      msgMaker.Make(NetMsgType::GETDATA, invs));
             } else {
@@ -4426,7 +4423,7 @@ bool PeerLogicValidation::SendMessages(const Config &config, CNode *pto,
 
         // Add blocks
         for (const BlockHash &hash : pto->vInventoryBlockToSend) {
-            vInv.push_back(CInv(MSG_BLOCK, hash));
+            vInv.emplace_back(MSG_BLOCK, hash);
             if (vInv.size() == MAX_INV_SZ) {
                 connman->PushMessage(pto, msgMaker.Make(NetMsgType::INV, vInv));
                 vInv.clear();
@@ -4471,7 +4468,6 @@ bool PeerLogicValidation::SendMessages(const Config &config, CNode *pto,
 
             for (const auto &txinfo : vtxinfo) {
                 const TxId &txid = txinfo.tx->GetId();
-                CInv inv(MSG_TX, txid);
                 pto->setInventoryTxToSend.erase(txid);
                 if (filterrate != Amount::zero() &&
                     txinfo.feeRate.GetFeePerK() < filterrate) {
@@ -4482,7 +4478,7 @@ bool PeerLogicValidation::SendMessages(const Config &config, CNode *pto,
                     continue;
                 }
                 pto->filterInventoryKnown.insert(txid);
-                vInv.push_back(inv);
+                vInv.emplace_back(MSG_TX, txid);
                 if (vInv.size() == MAX_INV_SZ) {
                     connman->PushMessage(pto,
                                          msgMaker.Make(NetMsgType::INV, vInv));
@@ -4548,7 +4544,7 @@ bool PeerLogicValidation::SendMessages(const Config &config, CNode *pto,
                     continue;
                 }
                 // Send
-                vInv.push_back(CInv(MSG_TX, txid));
+                vInv.emplace_back(MSG_TX, txid);
                 nRelayedTransactions++;
                 {
                     // Expire old relay messages
@@ -4561,8 +4557,8 @@ bool PeerLogicValidation::SendMessages(const Config &config, CNode *pto,
                     auto ret = mapRelay.insert(
                         std::make_pair(txid, std::move(txinfo.tx)));
                     if (ret.second) {
-                        vRelayExpiration.push_back(std::make_pair(
-                            nNow + 15 * 60 * 1000000, ret.first));
+                        vRelayExpiration.emplace_back(
+                            nNow + 15 * 60 * 1000000, ret.first);
                     }
                 }
                 if (vInv.size() == MAX_INV_SZ) {
@@ -4673,7 +4669,7 @@ bool PeerLogicValidation::SendMessages(const Config &config, CNode *pto,
                                      state.nBlocksInFlight,
                                  vToDownload, staller, consensusParams);
         for (const CBlockIndex *pindex : vToDownload) {
-            vGetData.push_back(CInv(MSG_BLOCK, pindex->GetBlockHash()));
+            vGetData.emplace_back(MSG_BLOCK, pindex->GetBlockHash());
             MarkBlockAsInFlight(config, pto->GetId(), pindex->GetBlockHash(),
                                 consensusParams, pindex);
             LogPrint(BCLog::NET, "Requesting block %s (%d) peer=%d\n",
@@ -4721,7 +4717,7 @@ bool PeerLogicValidation::SendMessages(const Config &config, CNode *pto,
         // Erase this entry from tx_process_time (it may be added back for
         // processing at a later time, see below)
         tx_process_time.erase(tx_process_time.begin());
-        CInv inv(MSG_TX, txid);
+        const CInv inv(MSG_TX, txid);
         if (!AlreadyHave(inv)) {
             // If this transaction was last requested more than 1 minute ago,
             // then request.
