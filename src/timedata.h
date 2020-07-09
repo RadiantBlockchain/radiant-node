@@ -56,9 +56,12 @@ public:
         }
     }
 
-    int size() const { return vValues.size(); }
+    int size() const { return int(vValues.size()); }
 
-    std::vector<T> sorted() const { return vSorted; }
+    /// Returns a reference to the internal "sorted" vector.
+    /// It is an error to iterate over this reference's data while also
+    /// mixing-in calls to input(). If you need to do that, take a copy.
+    const std::vector<T> & sorted() const { return vSorted; }
 };
 
 /** Functions to keep track of adjusted P2P time */

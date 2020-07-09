@@ -10,13 +10,14 @@
 
 #include <netaddress.h>
 #include <sync.h>
+#include <threadsafety.h>
 #include <ui_interface.h>
 #include <util/strencodings.h>
 #include <util/system.h>
 #include <warnings.h>
 
 static RecursiveMutex cs_nTimeOffset;
-static int64_t nTimeOffset = 0;
+static int64_t nTimeOffset GUARDED_BY(cs_nTimeOffset) = 0;
 
 /**
  * "Never go to sea with two chronometers; take one or three."
@@ -45,7 +46,7 @@ static uint64_t abs64(int64_t n) {
 void AddTimeData(const CNetAddr &ip, int64_t nOffsetSample) {
     LOCK(cs_nTimeOffset);
     // Ignore duplicates
-    static std::set<CNetAddr> setKnown;
+    static std::set<CNetAddr> setKnown GUARDED_BY(cs_nTimeOffset);
     if (setKnown.size() == BITCOIN_TIMEDATA_MAX_SAMPLES) {
         return;
     }
@@ -54,7 +55,7 @@ void AddTimeData(const CNetAddr &ip, int64_t nOffsetSample) {
     }
 
     // Add data
-    static CMedianFilter<int64_t> vTimeOffsets(BITCOIN_TIMEDATA_MAX_SAMPLES, 0);
+    static CMedianFilter<int64_t> vTimeOffsets GUARDED_BY(cs_nTimeOffset) {BITCOIN_TIMEDATA_MAX_SAMPLES, 0};
     vTimeOffsets.input(nOffsetSample);
     LogPrint(BCLog::NET,
              "added time data, samples %d, offset %+d (%+d minutes)\n",
@@ -78,8 +79,8 @@ void AddTimeData(const CNetAddr &ip, int64_t nOffsetSample) {
     // cleanup that strengthens it in a number of other ways.
     //
     if (vTimeOffsets.size() >= 5 && vTimeOffsets.size() % 2 == 1) {
-        int64_t nMedian = vTimeOffsets.median();
-        std::vector<int64_t> vSorted = vTimeOffsets.sorted();
+        const int64_t nMedian = vTimeOffsets.median();
+        const auto & vSorted = vTimeOffsets.sorted();
         // Only let other nodes change our time by so much
         if (abs64(nMedian) <=
             uint64_t(std::max<int64_t>(

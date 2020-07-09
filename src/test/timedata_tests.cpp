@@ -38,6 +38,10 @@ BOOST_AUTO_TEST_CASE(util_MedianFilter) {
 
     filter.input(0); // [0 3 7 18 30]
     BOOST_CHECK_EQUAL(filter.median(), 7);
+
+    // lastly, check the .sorted() array matches what we expect
+    const auto expectedSorted = decltype(filter.sorted()) {{0, 3, 7, 18, 30}};
+    BOOST_CHECK(filter.sorted() == expectedSorted);
 }
 
 static void MultiAddTimeData(int n, int64_t offset) {
