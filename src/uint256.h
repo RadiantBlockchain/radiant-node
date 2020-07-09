@@ -22,6 +22,15 @@ protected:
 public:
     constexpr base_blob() noexcept : data{0} {}
 
+    /// type tag + convenience member for uninitialized c'tor
+    static constexpr struct Uninitialized_t {} Uninitialized{};
+
+    /// Uninitialized data constructor -- to be used when we want to avoid a
+    /// redundant zero-initialization in cases where we know we will fill-in
+    /// the data immediately anyway (e.g. for random generators, etc).
+    /// Select this c'tor with e.g.: uint256 foo{uint256::Uninitialized}
+    explicit constexpr base_blob(Uninitialized_t /* type tag to select this c'tor */) noexcept {}
+
     explicit base_blob(const std::vector<uint8_t> &vch) noexcept;
 
     bool IsNull() const {
@@ -128,7 +137,7 @@ public:
  * result in dangerously catching uint256(0).
  */
 inline uint256 uint256S(const char *str) {
-    uint256 rv;
+    uint256 rv{uint256::Uninitialized};
     rv.SetHex(str);
     return rv;
 }
@@ -140,18 +149,18 @@ inline uint256 uint256S(const char *str) {
  * char*).
  */
 inline uint256 uint256S(const std::string &str) {
-    uint256 rv;
+    uint256 rv{uint256::Uninitialized};
     rv.SetHex(str);
     return rv;
 }
 
 inline uint160 uint160S(const char *str) {
-    uint160 rv;
+    uint160 rv{uint160::Uninitialized};
     rv.SetHex(str);
     return rv;
 }
 inline uint160 uint160S(const std::string &str) {
-    uint160 rv;
+    uint160 rv{uint160::Uninitialized};
     rv.SetHex(str);
     return rv;
 }
