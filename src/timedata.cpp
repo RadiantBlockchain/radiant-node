@@ -97,6 +97,7 @@ void AddTimeData(const CNetAddr &ip, int64_t nOffsetSample) {
                 for (const int64_t nOffset : vSorted) {
                     if (nOffset != 0 && abs64(nOffset) < 5 * 60) {
                         fMatch = true;
+                        break;
                     }
                 }
 
