@@ -2725,7 +2725,6 @@ CNode::CNode(NodeId idIn, ServiceFlags nLocalServicesIn,
       nMyStartingHeight(nMyStartingHeightIn) {
     hSocket = hSocketIn;
     addrName = addrNameIn == "" ? addr.ToStringIPPort() : addrNameIn;
-    strSubVer = "";
     hashContinue = BlockHash();
     filterInventoryKnown.reset();
     pfilter = std::make_unique<CBloomFilter>();
