@@ -55,6 +55,12 @@ look at the documentation for the build instructions. To continue using the
 autotools build system, pass the --enable-deprecated-build-system flag to
 `configure`.
 
+Deprecation note regarding Windows 32-bit build
+-----------------------------------------------
+
+Support for 32-bit Windows builds will cease after BCHN version 0.21.3,
+and build support for 32-bit Windows will be removed.
+
 Regtest network now requires standard transactions by default
 -------------------------------------------------------------
 
