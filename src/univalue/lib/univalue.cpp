@@ -9,6 +9,7 @@
 #include <cinttypes>
 #include <cmath>
 #include <cstdio>
+#include <stdexcept>
 #include <stdint.h>
 #include <stdlib.h>
 #include <type_traits>
