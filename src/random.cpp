@@ -664,24 +664,25 @@ int GetRandInt(int nMax) noexcept {
 }
 
 uint256 GetRandHash() noexcept {
-    uint256 hash;
-    GetRandBytes((uint8_t *)&hash, sizeof(hash));
+    uint256 hash{uint256::Uninitialized};
+    GetRandBytes(hash.begin(), hash.size());
     return hash;
 }
 
 void FastRandomContext::RandomSeed() {
     uint256 seed = GetRandHash();
-    rng.SetKey(seed.begin(), 32);
+    rng.SetKey(seed.begin(), seed.size());
     requires_seed = false;
 }
 
 uint256 FastRandomContext::rand256() noexcept {
+    static_assert (uint256::size() == 32, "Assumption here is that uint256 data size is 32 bytes");
     if (bytebuf_size < 32) {
         FillByteBuffer();
     }
-    uint256 ret;
-    memcpy(ret.begin(), bytebuf + 64 - bytebuf_size, 32);
-    bytebuf_size -= 32;
+    uint256 ret{uint256::Uninitialized};
+    memcpy(ret.begin(), bytebuf + 64 - bytebuf_size, ret.size());
+    bytebuf_size -= ret.size();
     return ret;
 }
 
@@ -698,7 +699,7 @@ std::vector<uint8_t> FastRandomContext::randbytes(size_t len) {
 
 FastRandomContext::FastRandomContext(const uint256 &seed) noexcept
     : requires_seed(false), bytebuf_size(0), bitbuf_size(0) {
-    rng.SetKey(seed.begin(), 32);
+    rng.SetKey(seed.begin(), seed.size());
 }
 
 bool Random_SanityCheck() {
@@ -763,7 +764,7 @@ FastRandomContext::FastRandomContext(bool fDeterministic) noexcept
         return;
     }
     uint256 seed;
-    rng.SetKey(seed.begin(), 32);
+    rng.SetKey(seed.begin(), seed.size());
 }
 
 FastRandomContext &FastRandomContext::

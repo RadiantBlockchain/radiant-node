@@ -11,6 +11,8 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
@@ -275,6 +277,55 @@ BOOST_AUTO_TEST_CASE(methods) {
 
     BOOST_CHECK(baseHexstring == hexstringWithCharactersToSkip);
     BOOST_CHECK(baseHexstring != wrongHexstringWithCharactersToSkip);
+
+    // check the uninitilized vs initialized constructor
+    constexpr size_t wordSize = sizeof(void *);
+    constexpr size_t dataSize = sizeof(uint256) + wordSize;
+    std::array<uint8_t, dataSize> rawBuf;
+    uint8_t *alignedPtr = rawBuf.data();
+    // ensure aligned data pointer
+    if (std::size_t(alignedPtr) % wordSize) {
+        // not aligned, move forward by wordSize bytes, then back by the unaligned bytes
+        const auto unaligned = std::size_t(alignedPtr) + wordSize;
+        alignedPtr = reinterpret_cast<uint8_t *>(unaligned - unaligned % wordSize);
+    }
+    // check sanity of align code above
+    const bool alignedOk = std::size_t(alignedPtr) % wordSize == 0
+                           && rawBuf.end() - alignedPtr >= std::ptrdiff_t(sizeof(uint256))
+                           && alignedPtr >= rawBuf.begin();
+    BOOST_CHECK(alignedOk);
+    if (alignedOk) {
+        constexpr uint8_t uninitializedByte = 0xfa;
+        const auto end = alignedPtr + sizeof(uint256);
+        // 1. check that the Uninitialized constructor in fact does not initialize memory
+        std::fill(alignedPtr, end, uninitializedByte); // set memory area to clearly uninitialized data
+        // the below line prevents the above std::fill from being optimized away
+        BOOST_CHECK(end > alignedPtr && *alignedPtr == uninitializedByte && end[-1] == uninitializedByte);
+        {
+            // Note: this pointer is to data on the stack and should not be freed!
+            uint256 *uninitialized = new (alignedPtr) uint256(uint256::Uninitialized); // explicitly does not initialize the data
+            unsigned uninitializedCtr = 0;
+            // ensure the uninitialized c'tor left the data buffer unmolested
+            for (const auto ch : *uninitialized) {
+                uninitializedCtr += unsigned(ch == uninitializedByte); // false = 0, true = 1
+            }
+            BOOST_CHECK(uninitializedCtr == uint256::size());
+        }
+        // 2. while we are here, check the default constructor zeroes out data
+        std::fill(alignedPtr, end, uninitializedByte); // set memory area to clearly uninitialized data
+        // the below line prevents the above std::fill from being optimized away
+        BOOST_CHECK(end > alignedPtr && *alignedPtr == uninitializedByte && end[-1] == uninitializedByte);
+        {
+            // Note: this pointer is to data on the stack and should not be freed!
+            uint256 *initialized = new (alignedPtr) uint256(); // implicitly zero-initializes the data
+            unsigned initializedCtr = 0;
+            // ensure the regular default c'tor zero-initialized the very same buffer
+            for (const auto ch : *initialized) {
+                initializedCtr += unsigned(ch == 0x0); // false = 0, true = 1
+            }
+            BOOST_CHECK(initializedCtr == uint256::size());
+        }
+    }
 }
 
 BOOST_AUTO_TEST_CASE(conversion) {

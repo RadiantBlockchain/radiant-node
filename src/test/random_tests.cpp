@@ -63,6 +63,9 @@ BOOST_AUTO_TEST_CASE(fastrandom_tests) {
         FastRandomContext ctx3, ctx4;
         BOOST_CHECK(ctx3.randbytes(7) != ctx4.randbytes(7));
     }
+
+    // check GetRandHash
+    BOOST_CHECK(GetRandHash() != GetRandHash());
 }
 
 BOOST_AUTO_TEST_CASE(fastrandom_randbits) {
