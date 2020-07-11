@@ -1,11 +1,9 @@
-Bitcoin Cash Node
-=====================
+Bitcoin Cash Node Setup
+=======================
 
-Setup
----------------------
-Bitcoin Cash Node is a fork of Bitcoin ABC, which is an original Bitcoin Cash client and builds the backbone of the network. It downloads and, by default, stores the entire history of Bitcoin transactions, which requires a few hundred gigabytes of disk space. Depending on the speed of your computer and network connection, the synchronization process can take anywhere from a few hours to a day or more.
+Bitcoin Cash Node is a fork of Bitcoin ABC, which is an original Bitcoin Cash client and builds the backbone of the network. It downloads and, by default, stores the entire history of Bitcoin Cash transactions, which requires a few hundred gigabytes of disk space. Depending on the speed of your computer and network connection, the synchronization process can take anywhere from a few hours to a day or more.
 
-To download Bitcoin Cash Node, (visit [bitcoincashnode.org](https://bitcoincashnode.org/)).
+To download Bitcoin Cash Node, visit [bitcoincashnode.org](https://bitcoincashnode.org/).
 
 Verify
 ---------------------
@@ -55,53 +53,17 @@ Unpack the files into a directory and run:
 
 ### Windows
 
-Unpack the files into a directory, and then run bitcoin-qt.exe.
+Unpack the files into a directory, and then run `bitcoin-qt.exe`.
 
 ### macOS
 
-Drag bitcoin-cash-node to your applications folder, and then run bitcoin-cash-node.
+Drag `bitcoin-cash-node` to your applications folder, and then run `bitcoin-cash-node`.
 
 ### Need Help?
 
 * See the documentation at the [Bitcoin Wiki](https://en.bitcoin.it/wiki/Main_Page)
   for help and more information.
 * Ask for help on the [Bitcoin Cash Node Subreddit](https://www.reddit.com/r/bitcoincashnode/).
-
-Building
----------------------
-The following are developer notes on how to build Bitcoin Cash Node on your native platform. They are not complete guides, but include notes on the necessary libraries, compile flags, etc.
-
-- [Dependencies](dependencies.md)
-- [macOS Build Notes](build-osx.md)
-- [Unix Build Notes](build-unix.md)
-- [Windows Build Notes](build-windows.md)
-- [Gitian Building Guide](gitian-building.md)
-
-Development
----------------------
-The Bitcoin Cash Node repo's [root README](../README.md) contains relevant information on the development process and automated testing.
-
-- [Developer Notes](developer-notes.md)
-- [Release Notes](release-notes.md)
-- [Release Process](release-process.md)
-- [Source Code Documentation (External Link)](https://bitcoindoxygen.art/BitcoinCashNode/)
-- [Translation Process](translation_process.md)
-- [Translation Strings Policy](translation_strings_policy.md)
-- [Unauthenticated REST Interface](REST-interface.md)
-- [Shared Libraries](shared-libraries.md)
-- [BIPS](bips.md)
-- [Dnsseed Policy](dnsseed-policy.md)
-- [Benchmarking](benchmarking.md)
-
-### Miscellaneous
-
-- [Assets Attribution](assets-attribution.md)
-- [Files](files.md)
-- [Fuzz-testing](fuzzing.md)
-- [Reduce Traffic](reduce-traffic.md)
-- [Tor Support](tor.md)
-- [Init Scripts (systemd/upstart/openrc)](init.md)
-- [ZMQ](zmq.md)
 
 License
 ---------------------

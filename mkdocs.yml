@@ -19,11 +19,150 @@ extra_css:
 plugins:
     - exclude:
         glob:
-            release-notes.md
+            doc/release-notes.md
 
 nav:
-    - Home: doc/README.md
-    - API:
+    - Home: README.md
+    - Setup instructions: doc/README.md
+    - Release notes:
+        - doc/release-notes/release-notes-0.21.2.md
+        - doc/release-notes/release-notes-0.21.1.md
+        - doc/release-notes/release-notes-0.21.0.md
+        - Bitcoin ABC 0.14.1-0.20:
+            - doc/release-notes/release-notes-0.20.12.md
+            - doc/release-notes/release-notes-0.20.11.md
+            - doc/release-notes/release-notes-0.20.10.md
+            - doc/release-notes/release-notes-0.20.9.md
+            - doc/release-notes/release-notes-0.20.8.md
+            - doc/release-notes/release-notes-0.20.7.md
+            - doc/release-notes/release-notes-0.20.6.md
+            - doc/release-notes/release-notes-0.20.5.md
+            - doc/release-notes/release-notes-0.20.4.md
+            - doc/release-notes/release-notes-0.20.3.md
+            - doc/release-notes/release-notes-0.20.2.md
+            - doc/release-notes/release-notes-0.20.1.md
+            - doc/release-notes/release-notes-0.20.0.md
+            - doc/release-notes/release-notes-0.19.12.md
+            - doc/release-notes/release-notes-0.19.11.md
+            - doc/release-notes/release-notes-0.19.10.md
+            - doc/release-notes/release-notes-0.19.9.md
+            - doc/release-notes/release-notes-0.19.8.md
+            - doc/release-notes/release-notes-0.19.7.md
+            - doc/release-notes/release-notes-0.19.6.md
+            - doc/release-notes/release-notes-0.19.5.md
+            - doc/release-notes/release-notes-0.19.4.md
+            - doc/release-notes/release-notes-0.19.3.md
+            - doc/release-notes/release-notes-0.19.2.md
+            - doc/release-notes/release-notes-0.19.1.md
+            - doc/release-notes/release-notes-0.19.0.md
+            - doc/release-notes/release-notes-0.18.8.md
+            - doc/release-notes/release-notes-0.18.7.md
+            - doc/release-notes/release-notes-0.18.6.md
+            - doc/release-notes/release-notes-0.18.5.md
+            - doc/release-notes/release-notes-0.18.4.md
+            - doc/release-notes/release-notes-0.18.3.md
+            - doc/release-notes/release-notes-0.18.2.md
+            - doc/release-notes/release-notes-0.18.1.md
+            - doc/release-notes/release-notes-0.18.0.md
+            - doc/release-notes/release-notes-0.17.2.md
+            - doc/release-notes/release-notes-0.17.1.md
+            - doc/release-notes/release-notes-0.17.0.md
+            - doc/release-notes/release-notes-0.16.2.md
+            - doc/release-notes/release-notes-0.16.1.md
+            - doc/release-notes/release-notes-0.16.0.md
+            - doc/release-notes/release-notes-0.15.1.md
+            - doc/release-notes/release-notes-0.15.0.md
+            - doc/release-notes/release-notes-0.14.6.md
+            - doc/release-notes/release-notes-0.14.5.md
+            - doc/release-notes/release-notes-0.14.4.md
+            - doc/release-notes/release-notes-0.14.3.md
+            - doc/release-notes/release-notes-0.14.2.md
+            - doc/release-notes/release-notes-0.14.1.md
+        - Bitcoin Core 0.9-0.14.0:
+            - doc/release-notes/release-notes-0.14.0.md
+            - doc/release-notes/release-notes-0.13.2.md
+            - doc/release-notes/release-notes-0.13.1.md
+            - doc/release-notes/release-notes-0.13.0.md
+            - doc/release-notes/release-notes-0.12.1.md
+            - doc/release-notes/release-notes-0.12.0.md
+            - doc/release-notes/release-notes-0.11.2.md
+            - doc/release-notes/release-notes-0.11.1.md
+            - doc/release-notes/release-notes-0.11.0.md
+            - doc/release-notes/release-notes-0.10.4.md
+            - doc/release-notes/release-notes-0.10.3.md
+            - doc/release-notes/release-notes-0.10.2.md
+            - doc/release-notes/release-notes-0.10.1.md
+            - doc/release-notes/release-notes-0.10.0.md
+            - doc/release-notes/release-notes-0.9.5.md
+            - doc/release-notes/release-notes-0.9.4.md
+            - doc/release-notes/release-notes-0.9.3.md
+            - doc/release-notes/release-notes-0.9.2.1.md
+            - doc/release-notes/release-notes-0.9.2.md
+            - doc/release-notes/release-notes-0.9.1.md
+            - doc/release-notes/release-notes-0.9.0.md
+        - Bitcoin-Qt 0.5-0.8:
+            - doc/release-notes/release-notes-0.8.6.md
+            - doc/release-notes/release-notes-0.8.5.md
+            - doc/release-notes/release-notes-0.8.4.md
+            - doc/release-notes/release-notes-0.8.3.md
+            - doc/release-notes/release-notes-0.8.2.md
+            - doc/release-notes/release-notes-0.8.1.md
+            - doc/release-notes/release-notes-0.8.0.md
+            - doc/release-notes/release-notes-0.7.2.md
+            - doc/release-notes/release-notes-0.7.1.md
+            - doc/release-notes/release-notes-0.7.0.md
+            - doc/release-notes/release-notes-0.6.3.md
+            - doc/release-notes/release-notes-0.6.2.md
+            - doc/release-notes/release-notes-0.6.1.md
+            - doc/release-notes/release-notes-0.6.0.md
+            - doc/release-notes/release-notes-0.5.5.md
+            - doc/release-notes/release-notes-0.5.4.md
+            - doc/release-notes/release-notes-0.5.3.md
+            - doc/release-notes/release-notes-0.5.2.md
+            - doc/release-notes/release-notes-0.5.1.md
+            - doc/release-notes/release-notes-0.5.0.md
+        - Bitcoin 0.1-0.4:
+            - doc/release-notes/release-notes-0.4.6.md
+            - doc/release-notes/release-notes-0.4.5.md
+            - doc/release-notes/release-notes-0.4.4.md
+            - doc/release-notes/release-notes-0.4.3.md
+            - doc/release-notes/release-notes-0.4.2.md
+            - doc/release-notes/release-notes-0.4.1.md
+            - doc/release-notes/release-notes-0.4.0.md
+            - doc/release-notes/release-notes-0.3.24.md
+            - doc/release-notes/release-notes-0.3.23.md
+            - doc/release-notes/release-notes-0.3.22.md
+            - doc/release-notes/release-notes-0.3.21.md
+            - doc/release-notes/release-notes-0.3.20.2.md
+            - doc/release-notes/release-notes-0.3.20.1.md
+            - doc/release-notes/release-notes-0.3.20.md
+            - doc/release-notes/release-notes-0.3.19.md
+            - doc/release-notes/release-notes-0.3.18.md
+            - doc/release-notes/release-notes-0.3.17.md
+            - doc/release-notes/release-notes-0.3.16.md
+            - doc/release-notes/release-notes-0.3.15.md
+            - doc/release-notes/release-notes-0.3.14.md
+            - doc/release-notes/release-notes-0.3.13.md
+            - doc/release-notes/release-notes-0.3.12.md
+    - Build guides:
+        - doc/dependencies.md
+        - Linux build guides:
+            - Ubuntu/Debian build guide: doc/build-unix-deb.md
+            - Arch Linux build guide: doc/build-unix-arch.md
+            - Fedora/CentOS build guide: doc/build-unix-rpm.md
+        - FreeBSD build guide: doc/build-freebsd.md
+        - macOS build guide: doc/build-osx.md
+        - Unix build guide: doc/build-unix.md
+        - Windows build guide: doc/build-windows.md
+        - Gitian deterministic builds:
+            - doc/gitian-building.md
+            - doc/gitian-signing.md
+            - doc/gitian-building/gitian-building-create-vm-debian.md
+            - doc/gitian-building/gitian-building-manual.md
+            - doc/gitian-building/gitian-building-setup-gitian-debian.md
+            - doc/gitian-building/gitian-building-vagrant.md
+            - Deterministic macOS DMGs: doc/README_osx.md
+    - API documentation:
         - Command-line interfaces:
             - bitcoind: doc/cli/bitcoind.md
             - bitcoin-qt: doc/cli/bitcoin-qt.md
@@ -173,175 +312,39 @@ nav:
                 - getzmqnotifications: doc/json-rpc/getzmqnotifications.md
         - doc/REST-interface.md
         - Output descriptors: doc/descriptors.md
-        - getblocktemplatelight: doc/getblocktemplatelight.md
         - ZeroMQ: doc/zmq.md
-    - Release notes:
-        - doc/release-notes/release-notes-0.21.2.md
-        - doc/release-notes/release-notes-0.21.1.md
-        - doc/release-notes/release-notes-0.21.0.md
-        - Bitcoin ABC 0.14.1-0.20:
-            - doc/release-notes/release-notes-0.20.12.md
-            - doc/release-notes/release-notes-0.20.11.md
-            - doc/release-notes/release-notes-0.20.10.md
-            - doc/release-notes/release-notes-0.20.9.md
-            - doc/release-notes/release-notes-0.20.8.md
-            - doc/release-notes/release-notes-0.20.7.md
-            - doc/release-notes/release-notes-0.20.6.md
-            - doc/release-notes/release-notes-0.20.5.md
-            - doc/release-notes/release-notes-0.20.4.md
-            - doc/release-notes/release-notes-0.20.3.md
-            - doc/release-notes/release-notes-0.20.2.md
-            - doc/release-notes/release-notes-0.20.1.md
-            - doc/release-notes/release-notes-0.20.0.md
-            - doc/release-notes/release-notes-0.19.12.md
-            - doc/release-notes/release-notes-0.19.11.md
-            - doc/release-notes/release-notes-0.19.10.md
-            - doc/release-notes/release-notes-0.19.9.md
-            - doc/release-notes/release-notes-0.19.8.md
-            - doc/release-notes/release-notes-0.19.7.md
-            - doc/release-notes/release-notes-0.19.6.md
-            - doc/release-notes/release-notes-0.19.5.md
-            - doc/release-notes/release-notes-0.19.4.md
-            - doc/release-notes/release-notes-0.19.3.md
-            - doc/release-notes/release-notes-0.19.2.md
-            - doc/release-notes/release-notes-0.19.1.md
-            - doc/release-notes/release-notes-0.19.0.md
-            - doc/release-notes/release-notes-0.18.8.md
-            - doc/release-notes/release-notes-0.18.7.md
-            - doc/release-notes/release-notes-0.18.6.md
-            - doc/release-notes/release-notes-0.18.5.md
-            - doc/release-notes/release-notes-0.18.4.md
-            - doc/release-notes/release-notes-0.18.3.md
-            - doc/release-notes/release-notes-0.18.2.md
-            - doc/release-notes/release-notes-0.18.1.md
-            - doc/release-notes/release-notes-0.18.0.md
-            - doc/release-notes/release-notes-0.17.2.md
-            - doc/release-notes/release-notes-0.17.1.md
-            - doc/release-notes/release-notes-0.17.0.md
-            - doc/release-notes/release-notes-0.16.2.md
-            - doc/release-notes/release-notes-0.16.1.md
-            - doc/release-notes/release-notes-0.16.0.md
-            - doc/release-notes/release-notes-0.15.1.md
-            - doc/release-notes/release-notes-0.15.0.md
-            - doc/release-notes/release-notes-0.14.6.md
-            - doc/release-notes/release-notes-0.14.5.md
-            - doc/release-notes/release-notes-0.14.4.md
-            - doc/release-notes/release-notes-0.14.3.md
-            - doc/release-notes/release-notes-0.14.2.md
-            - doc/release-notes/release-notes-0.14.1.md
-        - Bitcoin Core 0.9-0.14.0:
-            - doc/release-notes/release-notes-0.14.0.md
-            - doc/release-notes/release-notes-0.13.2.md
-            - doc/release-notes/release-notes-0.13.1.md
-            - doc/release-notes/release-notes-0.13.0.md
-            - doc/release-notes/release-notes-0.12.1.md
-            - doc/release-notes/release-notes-0.12.0.md
-            - doc/release-notes/release-notes-0.11.2.md
-            - doc/release-notes/release-notes-0.11.1.md
-            - doc/release-notes/release-notes-0.11.0.md
-            - doc/release-notes/release-notes-0.10.4.md
-            - doc/release-notes/release-notes-0.10.3.md
-            - doc/release-notes/release-notes-0.10.2.md
-            - doc/release-notes/release-notes-0.10.1.md
-            - doc/release-notes/release-notes-0.10.0.md
-            - doc/release-notes/release-notes-0.9.5.md
-            - doc/release-notes/release-notes-0.9.4.md
-            - doc/release-notes/release-notes-0.9.3.md
-            - doc/release-notes/release-notes-0.9.2.1.md
-            - doc/release-notes/release-notes-0.9.2.md
-            - doc/release-notes/release-notes-0.9.1.md
-            - doc/release-notes/release-notes-0.9.0.md
-        - Bitcoin-Qt 0.5-0.8:
-            - doc/release-notes/release-notes-0.8.6.md
-            - doc/release-notes/release-notes-0.8.5.md
-            - doc/release-notes/release-notes-0.8.4.md
-            - doc/release-notes/release-notes-0.8.3.md
-            - doc/release-notes/release-notes-0.8.2.md
-            - doc/release-notes/release-notes-0.8.1.md
-            - doc/release-notes/release-notes-0.8.0.md
-            - doc/release-notes/release-notes-0.7.2.md
-            - doc/release-notes/release-notes-0.7.1.md
-            - doc/release-notes/release-notes-0.7.0.md
-            - doc/release-notes/release-notes-0.6.3.md
-            - doc/release-notes/release-notes-0.6.2.md
-            - doc/release-notes/release-notes-0.6.1.md
-            - doc/release-notes/release-notes-0.6.0.md
-            - doc/release-notes/release-notes-0.5.5.md
-            - doc/release-notes/release-notes-0.5.4.md
-            - doc/release-notes/release-notes-0.5.3.md
-            - doc/release-notes/release-notes-0.5.2.md
-            - doc/release-notes/release-notes-0.5.1.md
-            - doc/release-notes/release-notes-0.5.0.md
-        - Bitcoin 0.1-0.4:
-            - doc/release-notes/release-notes-0.4.6.md
-            - doc/release-notes/release-notes-0.4.5.md
-            - doc/release-notes/release-notes-0.4.4.md
-            - doc/release-notes/release-notes-0.4.3.md
-            - doc/release-notes/release-notes-0.4.2.md
-            - doc/release-notes/release-notes-0.4.1.md
-            - doc/release-notes/release-notes-0.4.0.md
-            - doc/release-notes/release-notes-0.3.24.md
-            - doc/release-notes/release-notes-0.3.23.md
-            - doc/release-notes/release-notes-0.3.22.md
-            - doc/release-notes/release-notes-0.3.21.md
-            - doc/release-notes/release-notes-0.3.20.2.md
-            - doc/release-notes/release-notes-0.3.20.1.md
-            - doc/release-notes/release-notes-0.3.20.md
-            - doc/release-notes/release-notes-0.3.19.md
-            - doc/release-notes/release-notes-0.3.18.md
-            - doc/release-notes/release-notes-0.3.17.md
-            - doc/release-notes/release-notes-0.3.16.md
-            - doc/release-notes/release-notes-0.3.15.md
-            - doc/release-notes/release-notes-0.3.14.md
-            - doc/release-notes/release-notes-0.3.13.md
-            - doc/release-notes/release-notes-0.3.12.md
-    - Deployment:
-        - doc/build-freebsd.md
-        - doc/build-osx.md
-        - doc/build-unix.md
-        - doc/build-windows.md
-        - doc/dependencies.md
-        - doc/dnsseed-policy.md
-        - doc/files.md
-        - doc/init.md
-        - doc/publishing-documentation.md
-        - Packaging:
-            - doc/README_osx.md
-            - doc/build-unix-arch.md
-            - doc/build-unix-deb.md
-            - doc/build-unix-rpm.md
-        - Gitian:
-            - doc/gitian-building.md
-            - doc/gitian-signing.md
-            - doc/gitian-building/gitian-building-create-vm-debian.md
-            - doc/gitian-building/gitian-building-manual.md
-            - doc/gitian-building/gitian-building-setup-gitian-debian.md
-            - doc/gitian-building/gitian-building-vagrant.md
+    - Technical standards:
+        - BIPs: doc/bips.md
+        - UAHF:
+            - doc/abc/uahf-technical-spec.md
+            - doc/abc/replay-protected-sighash.md
+            - doc/abc/uahf-test-plan.md
+        - getblocktemplatelight: doc/getblocktemplatelight.md
+        - XVersionMessage: doc/xversionmessage.md
     - Development:
-        - CONTRIBUTING.md
-        - doc/backporting.md
-        - doc/bchn-gitlab-usage-rules-and-guidelines.md
-        - doc/coverage.md
-        - doc/benchmarking.md
+        - Contributing: CONTRIBUTING.md
+        - GitLab rules & guidelines: doc/bchn-gitlab-usage-rules-and-guidelines.md
         - doc/developer-notes.md
-        - doc/functional-tests.md
-        - doc/fuzzing.md
         - doc/ninja_targets.md
-        - doc/rapidcheck.md
-        - doc/release-process.md
+        - Internationalization: doc/translation_strings_policy.md
         - doc/shared-libraries.md
-        - doc/translation_process.md
-        - doc/translation_strings_policy.md
-        - doc/unit-tests.md
-    - Protocol:
-        - doc/abc/replay-protected-sighash.md
-        - doc/abc/uahf-technical-spec.md
-        - doc/abc/uahf-test-plan.md
-        - doc/bips.md
-        - doc/xversionmessage.md
+        - doc/backporting.md
+        - Testing:
+            - doc/unit-tests.md
+            - Unit test coverage: doc/coverage.md
+            - doc/functional-tests.md
+            - RapidCheck: doc/rapidcheck.md
+            - doc/fuzzing.md
+            - doc/benchmarking.md
+        - Translation: doc/translation_process.md
+        - doc/release-process.md
+        - Responsible disclosure: DISCLOSURE_POLICY.md
     - Miscellaneous:
-        - DISCLOSURE_POLICY.md
+        - List of files: doc/files.md
+        - Init scripts: doc/init.md
+        - Tor support: doc/tor.md
+        - Traffic reduction: doc/reduce-traffic.md
+        - Publishing documentation: doc/publishing-documentation.md
+        - DNS seed policy: doc/dnsseed-policy.md
         - doc/assets-attribution.md
-        - doc/reduce-traffic.md
-        - doc/tor.md
 
