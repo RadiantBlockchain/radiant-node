@@ -74,7 +74,7 @@ set(TEST_SUITE_NAME_UPGRADE_ACTIVATED "Bitcoin Cash Node functional tests with t
 
 add_functional_test_check(check-functional-upgrade-activated
 	"Run the functional tests with the upgrade activated"
-	--with-phononactivation
+	--with-axionactivation
 	-n "${TEST_SUITE_NAME_UPGRADE_ACTIVATED}"
 )
 add_dependencies(check-upgrade-activated check-functional-upgrade-activated)
@@ -82,7 +82,7 @@ add_dependencies(check-upgrade-activated check-functional-upgrade-activated)
 add_functional_test_check(check-functional-upgrade-activated-extended
 	"Run the extended functional tests with the upgrade activated"
 	--extended
-	--with-phononactivation
+	--with-axionactivation
 	-n "${TEST_SUITE_NAME_UPGRADE_ACTIVATED}"
 )
 add_dependencies(check-upgrade-activated-extended check-functional-upgrade-activated-extended)

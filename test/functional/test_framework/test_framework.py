@@ -132,6 +132,8 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
                             help="use bitcoin-cli instead of RPC for all commands")
         parser.add_argument("--with-phononactivation", dest="phononactivation", default=False, action="store_true",
                             help="Activate phonon update on timestamp {}".format(TIMESTAMP_IN_THE_PAST))
+        parser.add_argument("--with-axionactivation", dest="axionactivation", default=False, action="store_true",
+                            help="Activate axion update on timestamp {}".format(TIMESTAMP_IN_THE_PAST))
         self.add_options(parser)
         self.options = parser.parse_args()
 
@@ -333,6 +335,9 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
             if self.options.phononactivation:
                 self.nodes[i].extend_default_args(
                     ["-phononactivationtime={}".format(TIMESTAMP_IN_THE_PAST)])
+            if self.options.axionactivation:
+                self.nodes[i].extend_default_args(
+                    ["-axionactivationtime={}".format(TIMESTAMP_IN_THE_PAST)])
 
     def start_node(self, i, *args, **kwargs):
         """Start a bitcoind"""
@@ -496,6 +501,9 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
                 if self.options.phononactivation:
                     self.nodes[i].extend_default_args(
                         ["-phononactivationtime={}".format(TIMESTAMP_IN_THE_PAST)])
+                if self.options.axionactivation:
+                    self.nodes[i].extend_default_args(
+                        ["-axionactivationtime={}".format(TIMESTAMP_IN_THE_PAST)])
                 self.start_node(i)
 
             # Wait for RPC connections to be ready
