@@ -20,6 +20,9 @@ class UniValue {
 public:
     enum VType { VNULL, VOBJ, VARR, VSTR, VNUM, VBOOL, };
 
+    using ObjectEntries = std::vector<std::pair<std::string, UniValue>>;
+    using ArrayValues = std::vector<UniValue>;
+
     UniValue(UniValue::VType initialType = VNULL) noexcept : typ(initialType) {}
     UniValue(UniValue::VType initialType, const std::string& initialStr)
         : typ(initialType), val(initialStr) {}
@@ -47,6 +50,8 @@ public:
     void setStr(const std::string& val);
     void setStr(std::string&& val) noexcept;
     void setArray() noexcept;
+    void setArray(const ArrayValues& vec);
+    void setArray(ArrayValues&& vec) noexcept;
     void setObject() noexcept;
 
     constexpr enum VType getType() const noexcept { return typ; }
@@ -203,8 +208,6 @@ public:
 
     void push_back(UniValue&& val);
     void push_back(const UniValue& val);
-    void push_backV(const std::vector<UniValue>& vec);
-    void push_backV(std::vector<UniValue>&& vec);
 
     // checkForDupes=true is slower, but does a linear search through the keys to overwrite existing keys.
     // checkForDupes=false is faster, and will always append the new entry at the end (even if `key` exists).
@@ -212,12 +215,6 @@ public:
     void pushKV(const std::string& key, UniValue&& val, bool checkForDupes = true);
     void pushKV(std::string&& key, const UniValue& val, bool checkForDupes = true);
     void pushKV(std::string&& key, UniValue&& val, bool checkForDupes = true);
-    // Inserts all key/value pairs from `obj` into `this`.
-    // Caveat: For performance, `this` is not checked for duplicate keys coming in from `obj`.
-    // As a result, `this` may end up with duplicate keys if `obj` contains keys already
-    // present in `this`.
-    void pushKVs(const UniValue& obj);
-    void pushKVs(UniValue&& obj);
 
     std::string write(unsigned int prettyIndent = 0,
                       unsigned int indentLevel = 0) const;
@@ -229,8 +226,8 @@ public:
 private:
     UniValue::VType typ;
     std::string val;                       // numbers are stored as C++ strings
-    std::vector<std::pair<std::string, UniValue>> entries;
-    std::vector<UniValue> values;
+    ObjectEntries entries;
+    ArrayValues values;
     static const std::string boolTrueVal; // = "1"
 
     // __pushKV does not check for duplicate keys and simply appends at the end
@@ -265,7 +262,8 @@ public:
      *
      * This is a Bitcoin Cash Node extension of the UniValue API.
      */
-    const std::vector<std::pair<std::string, UniValue>>& getObjectEntries() const;
+    const ObjectEntries& getObjectEntries() const;
+    ObjectEntries& getObjectEntries();
 
     /**
      * VARR: Returns a reference to the underlying vector of values.
@@ -279,7 +277,8 @@ public:
      *
      * If you want to clear the array after using this method, consider using takeArrayValues() instead.
      */
-    const std::vector<UniValue>& getArrayValues() const;
+    const ArrayValues& getArrayValues() const;
+    ArrayValues& getArrayValues();
 
     /**
      * VARR: Changes the UniValue into an empty array and returns the old array contents as a vector.
@@ -291,7 +290,7 @@ public:
      *
      * If you do not want to make the array empty, please use getArrayValues() instead.
      */
-    std::vector<UniValue> takeArrayValues();
+    ArrayValues takeArrayValues();
 
     bool get_bool() const;
     const std::string& get_str() const;

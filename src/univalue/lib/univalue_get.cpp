@@ -75,21 +75,33 @@ bool ParseDouble(const std::string& str, double *out)
 }
 } // end anonymous namespace
 
-const std::vector<std::pair<std::string, UniValue>>& UniValue::getObjectEntries() const
+const UniValue::ObjectEntries& UniValue::getObjectEntries() const
+{
+    if (!isObject())
+        throw std::runtime_error("JSON value is not an object as expected");
+    return entries;
+}
+UniValue::ObjectEntries& UniValue::getObjectEntries()
 {
     if (!isObject())
         throw std::runtime_error("JSON value is not an object as expected");
     return entries;
 }
 
-const std::vector<UniValue>& UniValue::getArrayValues() const
+const UniValue::ArrayValues& UniValue::getArrayValues() const
+{
+    if (!isArray())
+        throw std::runtime_error("JSON value is not an array as expected");
+    return values;
+}
+UniValue::ArrayValues& UniValue::getArrayValues()
 {
     if (!isArray())
         throw std::runtime_error("JSON value is not an array as expected");
     return values;
 }
 
-std::vector<UniValue> UniValue::takeArrayValues()
+UniValue::ArrayValues UniValue::takeArrayValues()
 {
     if (!isArray())
         throw std::runtime_error("JSON value is not an array as expected");

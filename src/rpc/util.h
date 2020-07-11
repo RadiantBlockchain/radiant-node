@@ -28,7 +28,11 @@ CPubKey AddrToPubKey(const CChainParams &chainparams, CKeyStore *const keystore,
 CScript CreateMultisigRedeemscript(const int required,
                                    const std::vector<CPubKey> &pubkeys);
 
-UniValue DescribeAddress(const CTxDestination &dest);
+/**
+ * Appends key-value pairs to entries describing the address dest.
+ * entries is the non-const getObjectEntries() of the UniValue object to append to.
+ */
+void DescribeAddress(const CTxDestination &dest, UniValue::ObjectEntries& entries);
 
 struct RPCArg {
     enum class Type {

@@ -68,7 +68,7 @@ static UniValue validateaddress(const Config &config,
         CScript scriptPubKey = GetScriptForDestination(dest);
         ret.pushKV("scriptPubKey", HexStr(scriptPubKey.begin(), scriptPubKey.end()), false);
 
-        ret.pushKVs( DescribeAddress(dest) );
+        DescribeAddress(dest, ret.getObjectEntries());
     }
     return ret;
 }
