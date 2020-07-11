@@ -1708,7 +1708,7 @@ UniValue listtransactions(const Config &config, const JSONRPCRequest &request) {
         nCount = ret.size() - nFrom;
     }
 
-    std::vector<UniValue> arrTmp = ret.getArrayValues();
+    std::vector<UniValue> arrTmp = ret.takeArrayValues();
 
     std::vector<UniValue>::iterator first = arrTmp.begin();
     std::advance(first, nFrom);
@@ -1725,9 +1725,7 @@ UniValue listtransactions(const Config &config, const JSONRPCRequest &request) {
     // Return oldest to newest
     std::reverse(arrTmp.begin(), arrTmp.end());
 
-    ret.clear();
-    ret.setArray();
-    ret.push_backV(std::move(arrTmp));
+    ret.setArray(std::move(arrTmp));
 
     return ret;
 }
@@ -3912,33 +3910,39 @@ UniValue rescanblockchain(const Config &config, const JSONRPCRequest &request) {
     return response;
 }
 
-class DescribeWalletAddressVisitor : public boost::static_visitor<UniValue> {
-public:
-    CWallet *const pwallet;
+/**
+ * Appends key-value pairs to entries describing the address dest.
+ * Includes additional information if the address is in wallet pwallet (can be nullptr).
+ * entries is the non-const getObjectEntries() of the UniValue object to append to.
+ */
+static void DescribeWalletAddress(CWallet *pwallet, const CTxDestination &dest, UniValue::ObjectEntries& entries);
 
-    void ProcessSubScript(const CScript &subscript, UniValue &obj,
+class DescribeWalletAddressVisitor : public boost::static_visitor<void> {
+    CWallet *const pwallet;
+    UniValue::ObjectEntries& entries;
+
+    void ProcessSubScript(const CScript &subscript,
                           bool include_addresses = false) const {
         // Always present: script type and redeemscript
         std::vector<std::vector<uint8_t>> solutions_data;
         txnouttype which_type = Solver(subscript, solutions_data);
-        obj.pushKV("script", GetTxnOutputType(which_type));
-        obj.pushKV("hex", HexStr(subscript.begin(), subscript.end()));
+        entries.emplace_back("script", GetTxnOutputType(which_type));
+        entries.emplace_back("hex", HexStr(subscript.begin(), subscript.end()));
 
         CTxDestination embedded;
         UniValue a(UniValue::VARR);
         if (ExtractDestination(subscript, embedded)) {
             // Only when the script corresponds to an address.
             UniValue subobj(UniValue::VOBJ);
-            subobj.pushKVs( DescribeAddress(embedded) );
-            subobj.pushKVs( boost::apply_visitor(*this, embedded) );
-            subobj.pushKV("address", EncodeDestination(embedded, GetConfig()));
-            subobj.pushKV("scriptPubKey", HexStr(subscript.begin(), subscript.end()));
+            DescribeWalletAddress(pwallet, embedded, subobj.getObjectEntries());
+            subobj.pushKV("address", EncodeDestination(embedded, GetConfig()), false);
+            subobj.pushKV("scriptPubKey", HexStr(subscript.begin(), subscript.end()), false);
             // Always report the pubkey at the top level, so that
             // `getnewaddress()['pubkey']` always works.
             if (auto pubkeyUV = subobj.find("pubkey")) {
-                obj.pushKV("pubkey", *pubkeyUV);
+                entries.emplace_back("pubkey", *pubkeyUV);
             }
-            obj.pushKV("embedded", std::move(subobj));
+            entries.emplace_back("embedded", std::move(subobj));
             if (include_addresses) {
                 a.push_back(EncodeDestination(embedded, GetConfig()));
             }
@@ -3947,7 +3951,7 @@ public:
             // have a corresponding address).
             // TODO: abstract out the common functionality between this logic
             // and ExtractDestinations.
-            obj.pushKV("sigsrequired", solutions_data[0][0]);
+            entries.emplace_back("sigsrequired", solutions_data[0][0]);
             UniValue pubkeys(UniValue::VARR);
             for (size_t i = 1; i < solutions_data.size() - 1; ++i) {
                 CPubKey key(solutions_data[i].begin(), solutions_data[i].end());
@@ -3956,7 +3960,7 @@ public:
                 }
                 pubkeys.push_back(HexStr(key.begin(), key.end()));
             }
-            obj.pushKV("pubkeys", std::move(pubkeys));
+            entries.emplace_back("pubkeys", std::move(pubkeys));
         }
 
         // The "addresses" field is confusing because it refers to public keys
@@ -3964,43 +3968,39 @@ public:
         // field when needed for backward compatibility. New applications can
         // use the 'pubkeys' field for inspecting multisig participants.
         if (include_addresses) {
-            obj.pushKV("addresses", std::move(a));
+            entries.emplace_back("addresses", std::move(a));
         }
     }
 
-    explicit DescribeWalletAddressVisitor(CWallet *_pwallet)
-        : pwallet(_pwallet) {}
+public:
 
-    UniValue operator()(const CNoDestination &dest) const {
-        return UniValue(UniValue::VOBJ);
+    explicit DescribeWalletAddressVisitor(CWallet *_pwallet, UniValue::ObjectEntries& _entries)
+        : pwallet(_pwallet), entries(_entries) {}
+
+    void operator()(const CNoDestination &dest) const {
     }
 
-    UniValue operator()(const CKeyID &keyID) const {
-        UniValue obj(UniValue::VOBJ);
+    void operator()(const CKeyID &keyID) const {
         CPubKey vchPubKey;
         if (pwallet && pwallet->GetPubKey(keyID, vchPubKey)) {
-            obj.pushKV("pubkey", HexStr(vchPubKey));
-            obj.pushKV("iscompressed", vchPubKey.IsCompressed());
+            entries.emplace_back("pubkey", HexStr(vchPubKey));
+            entries.emplace_back("iscompressed", vchPubKey.IsCompressed());
         }
-        return obj;
     }
 
-    UniValue operator()(const CScriptID &scriptID) const {
-        UniValue obj(UniValue::VOBJ);
+    void operator()(const CScriptID &scriptID) const {
         CScript subscript;
         if (pwallet && pwallet->GetCScript(scriptID, subscript)) {
-            ProcessSubScript(subscript, obj, true);
+            ProcessSubScript(subscript, true);
         }
-        return obj;
     }
 };
 
-static UniValue DescribeWalletAddress(CWallet *pwallet,
-                                      const CTxDestination &dest) {
-    UniValue ret(UniValue::VOBJ);
-    ret.pushKVs( DescribeAddress(dest) );
-    ret.pushKVs( boost::apply_visitor(DescribeWalletAddressVisitor(pwallet), dest) );
-    return ret;
+// Upstream version of this function has only two arguments and returns an intermediate UniValue object.
+// Instead, our version directly appends the new key-value pairs to the target UniValue object.
+static void DescribeWalletAddress(CWallet *pwallet, const CTxDestination &dest, UniValue::ObjectEntries& entries) {
+    DescribeAddress(dest, entries);
+    boost::apply_visitor(DescribeWalletAddressVisitor(pwallet, entries), dest);
 }
 
 /** Convert CAddressBookData to JSON record.  */
@@ -4123,7 +4123,7 @@ UniValue getaddressinfo(const Config &config, const JSONRPCRequest &request) {
     isminetype mine = IsMine(*pwallet, dest);
     ret.pushKV("ismine", bool(mine & ISMINE_SPENDABLE));
     ret.pushKV("iswatchonly", bool(mine & ISMINE_WATCH_ONLY));
-    ret.pushKVs( DescribeWalletAddress(pwallet, dest) );
+    DescribeWalletAddress(pwallet, dest, ret.getObjectEntries());
     if (pwallet->mapAddressBook.count(dest)) {
         ret.pushKV("label", pwallet->mapAddressBook[dest].name);
     }

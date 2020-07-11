@@ -365,7 +365,9 @@ BOOST_AUTO_TEST_CASE(univalue_array)
     v.setStr("going");
     vec.push_back(v);
 
-    arr.push_backV(vec);
+    for (UniValue& thing : vec) {
+        arr.push_back(std::move(thing));
+    }
 
     arr.push_back((uint64_t) 400ULL);
     arr.push_back((int64_t) -400LL);
@@ -432,7 +434,9 @@ BOOST_AUTO_TEST_CASE(univalue_object)
     obj2.pushKV("cat1", 9000);
     obj2.pushKV("cat2", 12345);
 
-    obj.pushKVs(obj2);
+    for (auto& pair : obj2.getObjectEntries()) {
+        obj.pushKV(std::move(pair.first), std::move(pair.second));
+    }
 
     BOOST_CHECK_EQUAL(obj.empty(), false);
     BOOST_CHECK_EQUAL(obj.size(), 11);
@@ -503,15 +507,14 @@ BOOST_AUTO_TEST_CASE(univalue_object)
     UniValue arr{UniValue::VNUM}; // this is intentional.
     BOOST_CHECK_THROW(arr.takeArrayValues(), std::runtime_error); // should throw if !array
     BOOST_CHECK_EQUAL(&arr.front(), &NullUniValue); // should return the NullUniValue if !array
-    arr.setArray(); // reset to array
     std::vector<UniValue> vals = {{
         "foo", "bar", UniValue::VOBJ, "baz", "bat", false, {}, 1.2, true, 10, -42, -12345678.11234678,
         UniValue{UniValue::VARR}
     }};
     vals[2].pushKV("akey", "this is a value");
-    vals.back().push_backV(vals); // vals recursively contains a partial copy of vals!
+    vals.back().setArray(vals); // vals recursively contains a partial copy of vals!
     const auto valsExpected = vals; // save a copy
-    arr.push_backV(std::move(vals)); // assign to array via move
+    arr.setArray(std::move(vals)); // assign to array via move
     BOOST_CHECK(vals.empty()); // vector should be empty after move
     BOOST_CHECK(!arr.empty()); // but our array should not be
     BOOST_CHECK(arr != UniValue{UniValue::VARR}); // check that UniValue::operator== is not a yes-man

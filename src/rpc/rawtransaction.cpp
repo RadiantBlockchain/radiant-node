@@ -488,9 +488,10 @@ CMutableTransaction ConstructTransaction(const CChainParams &params,
     std::set<CTxDestination> destinations;
     if (!outputs_is_obj) {
         // Translate array of key-value pairs into dict
-        UniValue outputs_dict = UniValue(UniValue::VOBJ);
-        for (size_t i = 0; i < outputs.size(); ++i) {
-            const UniValue &output = outputs[i];
+        auto outputsArray = outputs.takeArrayValues();
+        outputs.setObject();
+        outputs.reserve(outputsArray.size());
+        for (UniValue& output : outputsArray) {
             if (!output.isObject()) {
                 throw JSONRPCError(RPC_INVALID_PARAMETER,
                                    "Invalid parameter, key-value pair not an "
@@ -501,9 +502,11 @@ CMutableTransaction ConstructTransaction(const CChainParams &params,
                                    "Invalid parameter, key-value pair must "
                                    "contain exactly one key");
             }
-            outputs_dict.pushKVs(output);
+            auto& outputKV = output.getObjectEntries().front();
+            // Allowing duplicate key insertions here is intentional.
+            // Checking for duplicate keys would break functionality, constructing a transaction with missing outputs.
+            outputs.pushKV(std::move(outputKV.first), std::move(outputKV.second), false);
         }
-        outputs = std::move(outputs_dict);
     }
     for (auto &entry : outputs.getObjectEntries()) {
         if (entry.first == "data") {

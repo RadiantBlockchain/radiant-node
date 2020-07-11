@@ -128,6 +128,18 @@ void UniValue::setArray() noexcept
     clear();
     typ = VARR;
 }
+void UniValue::setArray(const ArrayValues& vec)
+{
+    clear();
+    typ = VARR;
+    values = vec;
+}
+void UniValue::setArray(ArrayValues&& vec) noexcept
+{
+    clear();
+    typ = VARR;
+    values = std::move(vec);
+}
 
 void UniValue::setObject() noexcept
 {
@@ -149,24 +161,6 @@ void UniValue::push_back(UniValue&& val_)
         return;
 
     values.emplace_back(std::move(val_));
-}
-
-void UniValue::push_backV(const std::vector<UniValue>& vec)
-{
-    if (typ != VARR)
-        return;
-
-    values.insert(values.end(), vec.begin(), vec.end());
-}
-void UniValue::push_backV(std::vector<UniValue>&& vec)
-{
-    if (typ != VARR)
-        return;
-
-    values.reserve(std::max(values.size() + vec.size(), values.capacity()));
-    for (auto & item : vec)
-        values.emplace_back(std::move(item));
-    vec.clear(); // clear vector now to be tidy with memory
 }
 
 void UniValue::__pushKV(const std::string& key, UniValue&& val_)
@@ -236,24 +230,6 @@ void UniValue::pushKV(std::string&& key, UniValue&& val_, bool check)
         }
     }
     __pushKV(std::move(key), std::move(val_));
-}
-
-void UniValue::pushKVs(const UniValue& obj)
-{
-    if (typ != VOBJ || obj.typ != VOBJ)
-        return;
-
-    for (auto& entry : obj.entries)
-        entries.emplace_back(entry);
-}
-void UniValue::pushKVs(UniValue&& obj)
-{
-    if (typ != VOBJ || obj.typ != VOBJ)
-        return;
-
-    for (auto& entry : obj.entries)
-        entries.emplace_back(std::move(entry));
-    obj.setObject(); // reset moved obj now to be tidy with memory.
 }
 
 const UniValue& UniValue::operator[](const std::string& key) const noexcept
