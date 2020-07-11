@@ -245,12 +245,6 @@ private:
     Array values;
     static const std::string boolTrueVal; // = "1"
 
-    // __pushKV does not check for duplicate keys and simply appends at the end
-    void __pushKV(const std::string& key, const UniValue& val);
-    void __pushKV(const std::string& key, UniValue&& val);
-    void __pushKV(std::string&& key, UniValue&& val);
-    void __pushKV(std::string&& key, const UniValue& val);
-
     // Opaque type used for writing. This can be further optimized later.
     struct Stream {
         std::string & str; // this is a reference for RVO to always work in UniValue::stringify()

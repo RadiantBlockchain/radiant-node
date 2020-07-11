@@ -177,26 +177,6 @@ void UniValue::push_back(UniValue&& val_)
     values.emplace_back(std::move(val_));
 }
 
-void UniValue::__pushKV(const std::string& key, UniValue&& val_)
-{
-    entries.emplace_back(key, std::move(val_));
-}
-
-void UniValue::__pushKV(std::string&& key, UniValue&& val_)
-{
-    entries.emplace_back(std::move(key), std::move(val_));
-}
-
-void UniValue::__pushKV(std::string&& key, const UniValue& val_)
-{
-    entries.emplace_back(std::move(key), val_);
-}
-
-void UniValue::__pushKV(const std::string& key, const UniValue& val_)
-{
-    entries.emplace_back(key, val_);
-}
-
 void UniValue::pushKV(const std::string& key, const UniValue& val_, bool check)
 {
     if (typ != VOBJ)
@@ -207,7 +187,7 @@ void UniValue::pushKV(const std::string& key, const UniValue& val_, bool check)
             return;
         }
     }
-    __pushKV(key, val_);
+    entries.emplace_back(key, val_);
 }
 void UniValue::pushKV(const std::string& key, UniValue&& val_, bool check)
 {
@@ -219,7 +199,7 @@ void UniValue::pushKV(const std::string& key, UniValue&& val_, bool check)
             return;
         }
     }
-    __pushKV(key, std::move(val_));
+    entries.emplace_back(key, std::move(val_));
 }
 void UniValue::pushKV(std::string&& key, const UniValue& val_, bool check)
 {
@@ -231,7 +211,7 @@ void UniValue::pushKV(std::string&& key, const UniValue& val_, bool check)
             return;
         }
     }
-    __pushKV(std::move(key), val_);
+    entries.emplace_back(std::move(key), val_);
 }
 void UniValue::pushKV(std::string&& key, UniValue&& val_, bool check)
 {
@@ -243,7 +223,7 @@ void UniValue::pushKV(std::string&& key, UniValue&& val_, bool check)
             return;
         }
     }
-    __pushKV(std::move(key), std::move(val_));
+    entries.emplace_back(std::move(key), std::move(val_));
 }
 
 const UniValue& UniValue::operator[](const std::string& key) const noexcept
