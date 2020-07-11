@@ -367,11 +367,7 @@ void SetupServerArgs() {
         // GUI args. These will be overwritten by SetupUIArgs for the GUI
         "-allowselfsignedrootcertificates", "-choosedatadir", "-lang=<lang>",
         "-min", "-resetguisettings", "-rootcertificates=<file>", "-splash",
-        "-uiplatform",
-        // TODO remove after the May 2020 upgrade
-        "-phononactivationtime",
-        // TODO remove after the November 2020 upgrade
-        "-axionactivationtime"};
+        "-uiplatform"};
 
     // Set all of the args and their help
     // When adding new options to the categories, please keep and ensure alphabetical ordering.
@@ -882,6 +878,11 @@ void SetupServerArgs() {
         "-phononactivationtime=<n>",
         strprintf("Activation time of the May 2020 Bitcoin Cash Network Upgrade (<n> seconds since epoch, default: %d)",
                   defaultChainParams->GetConsensus().phononActivationTime),
+        true, OptionsCategory::DEBUG_TEST);
+    gArgs.AddArg(
+        "-axionactivationtime=<n>",
+        strprintf("Activation time of the November 2020 Bitcoin Cash Network Upgrade (<n> seconds since epoch, default: %d)",
+                  defaultChainParams->GetConsensus().axionActivationTime),
         true, OptionsCategory::DEBUG_TEST);
     gArgs.AddArg(
         "-printtoconsole",
