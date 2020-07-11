@@ -366,7 +366,7 @@ static UniValue gettxoutproof(const Config &config,
     return strHex;
 }
 
-static UniValue verifytxoutproof(const Config &config,
+static UniValue verifytxoutproof(const Config &,
                                  const JSONRPCRequest &request) {
     if (request.fHelp || request.params.size() != 1) {
         throw std::runtime_error(
@@ -602,7 +602,7 @@ static UniValue createrawtransaction(const Config &config,
     return EncodeHexTx(CTransaction(rawTx));
 }
 
-static UniValue decoderawtransaction(const Config &config,
+static UniValue decoderawtransaction(const Config &,
                                      const JSONRPCRequest &request) {
     if (request.fHelp || request.params.size() != 1) {
         throw std::runtime_error(
@@ -741,7 +741,7 @@ static void TxInErrorToJSON(const CTxIn &txin, UniValue &vErrorsRet,
     vErrorsRet.push_back(std::move(entry));
 }
 
-static UniValue combinerawtransaction(const Config &config,
+static UniValue combinerawtransaction(const Config &,
                                       const JSONRPCRequest &request) {
     if (request.fHelp || request.params.size() != 1) {
         throw std::runtime_error(
@@ -848,7 +848,7 @@ static UniValue combinerawtransaction(const Config &config,
     return EncodeHexTx(CTransaction(mergedTx));
 }
 
-UniValue SignTransaction(interfaces::Chain &chain, CMutableTransaction &mtx,
+UniValue SignTransaction(interfaces::Chain &, CMutableTransaction &mtx,
                          const UniValue &prevTxsUnival,
                          CBasicKeyStore *keystore, bool is_temp_keystore,
                          const UniValue &hashType) {
@@ -1016,7 +1016,7 @@ UniValue SignTransaction(interfaces::Chain &chain, CMutableTransaction &mtx,
     return result;
 }
 
-static UniValue signrawtransactionwithkey(const Config &config,
+static UniValue signrawtransactionwithkey(const Config &,
                                           const JSONRPCRequest &request) {
     if (request.fHelp || request.params.size() < 2 ||
         request.params.size() > 4) {
@@ -1300,7 +1300,7 @@ static std::string WriteHDKeypath(std::vector<uint32_t> &keypath) {
     return keypath_str;
 }
 
-static UniValue decodepsbt(const Config &config,
+static UniValue decodepsbt(const Config &,
                            const JSONRPCRequest &request) {
     if (request.fHelp || request.params.size() != 1) {
         throw std::runtime_error(
@@ -1577,7 +1577,7 @@ static UniValue decodepsbt(const Config &config,
     return result;
 }
 
-static UniValue combinepsbt(const Config &config,
+static UniValue combinepsbt(const Config &,
                             const JSONRPCRequest &request) {
     if (request.fHelp || request.params.size() != 1) {
         throw std::runtime_error(
@@ -1614,11 +1614,12 @@ static UniValue combinepsbt(const Config &config,
 
     // Unserialize the transactions
     std::vector<PartiallySignedTransaction> psbtxs;
-    UniValue txs = request.params[0].get_array();
+    const UniValue &txs = request.params[0].get_array();
     if (txs.empty()) {
         throw JSONRPCError(RPC_INVALID_PARAMETER,
                            "Parameter 'txs' cannot be empty");
     }
+    psbtxs.reserve(txs.size());
     for (size_t i = 0; i < txs.size(); ++i) {
         PartiallySignedTransaction psbtx;
         std::string error;
@@ -1626,7 +1627,7 @@ static UniValue combinepsbt(const Config &config,
             throw JSONRPCError(RPC_DESERIALIZATION_ERROR,
                                strprintf("TX decode failed %s", error));
         }
-        psbtxs.push_back(psbtx);
+        psbtxs.push_back(std::move(psbtx));
     }
 
     // Copy the first one
@@ -1644,13 +1645,12 @@ static UniValue combinepsbt(const Config &config,
                            "Merged PSBT is inconsistent");
     }
 
-    UniValue result(UniValue::VOBJ);
     CDataStream ssTx(SER_NETWORK, PROTOCOL_VERSION);
     ssTx << merged_psbt;
-    return EncodeBase64((uint8_t *)ssTx.data(), ssTx.size());
+    return EncodeBase64(reinterpret_cast<uint8_t *>(ssTx.data()), ssTx.size());
 }
 
-static UniValue finalizepsbt(const Config &config,
+static UniValue finalizepsbt(const Config &,
                              const JSONRPCRequest &request) {
     if (request.fHelp || request.params.size() < 1 ||
         request.params.size() > 2) {
@@ -1718,7 +1718,7 @@ static UniValue finalizepsbt(const Config &config,
         result.pushKV("hex", HexStr(ssTx.begin(), ssTx.end()), false);
     } else {
         ssTx << psbtx;
-        result.pushKV("psbt", EncodeBase64((uint8_t *)ssTx.data(), ssTx.size()), false);
+        result.pushKV("psbt", EncodeBase64(reinterpret_cast<uint8_t *>(ssTx.data()), ssTx.size()), false);
     }
     result.pushKV("complete", complete, false);
 
@@ -1827,9 +1827,11 @@ static UniValue createpsbt(const Config &config,
     // Make a blank psbt
     PartiallySignedTransaction psbtx;
     psbtx.tx = rawTx;
+    psbtx.inputs.reserve(rawTx.vin.size());
     for (size_t i = 0; i < rawTx.vin.size(); ++i) {
         psbtx.inputs.push_back(PSBTInput());
     }
+    psbtx.outputs.reserve(rawTx.vout.size());
     for (size_t i = 0; i < rawTx.vout.size(); ++i) {
         psbtx.outputs.push_back(PSBTOutput());
     }
@@ -1838,10 +1840,10 @@ static UniValue createpsbt(const Config &config,
     CDataStream ssTx(SER_NETWORK, PROTOCOL_VERSION);
     ssTx << psbtx;
 
-    return EncodeBase64((uint8_t *)ssTx.data(), ssTx.size());
+    return EncodeBase64(reinterpret_cast<uint8_t *>(ssTx.data()), ssTx.size());
 }
 
-static UniValue converttopsbt(const Config &config,
+static UniValue converttopsbt(const Config &,
                               const JSONRPCRequest &request) {
     if (request.fHelp || request.params.size() < 1 ||
         request.params.size() > 2) {
@@ -1904,7 +1906,7 @@ static UniValue converttopsbt(const Config &config,
     CDataStream ssTx(SER_NETWORK, PROTOCOL_VERSION);
     ssTx << psbtx;
 
-    return EncodeBase64((uint8_t *)ssTx.data(), ssTx.size());
+    return EncodeBase64(reinterpret_cast<uint8_t *>(ssTx.data()), ssTx.size());
 }
 
 // clang-format off
