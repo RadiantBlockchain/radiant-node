@@ -254,7 +254,7 @@ enum expect_bits {
 
 bool UniValue::read(const char *raw, size_t size)
 {
-    clear();
+    setNull();
 
     uint32_t expectMask = 0;
     std::vector<UniValue*> stack;

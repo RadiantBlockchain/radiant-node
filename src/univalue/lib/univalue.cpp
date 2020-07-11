@@ -20,7 +20,7 @@ const UniValue NullUniValue;
 
 const std::string UniValue::boolTrueVal{"1"};
 
-void UniValue::clear() noexcept
+void UniValue::setNull() noexcept
 {
     typ = VNULL;
     val.clear();
@@ -28,14 +28,9 @@ void UniValue::clear() noexcept
     values.clear();
 }
 
-void UniValue::setNull() noexcept
-{
-    clear();
-}
-
 void UniValue::setBool(bool val_)
 {
-    clear();
+    setNull();
     typ = VBOOL;
     if (val_)
         val = boolTrueVal;
@@ -54,7 +49,7 @@ void UniValue::setNumStr(const std::string& val_)
     if (!validNumStr(val_))
         return;
 
-    clear();
+    setNull();
     typ = VNUM;
     val = val_;
 }
@@ -63,7 +58,7 @@ void UniValue::setNumStr(std::string&& val_) noexcept
     if (!validNumStr(val_))
         return;
 
-    clear();
+    setNull();
     typ = VNUM;
     val = std::move(val_);
 }
@@ -90,7 +85,7 @@ void UniValue::setIntOrFloat(Num num)
     int n = std::snprintf(buf.data(), size_t(bufSize), fmt, num); // C++11 snprintf always NUL terminates
     if (n <= 0 || n >= bufSize) // should never happen
         return;
-    clear();
+    setNull();
     typ = VNUM;
     val.assign(buf.data(), std::string::size_type(n));
 }
@@ -112,38 +107,38 @@ void UniValue::setFloat(double val_)
 
 void UniValue::setStr(const std::string& val_)
 {
-    clear();
+    setNull();
     typ = VSTR;
     val = val_;
 }
 void UniValue::setStr(std::string&& val_) noexcept
 {
-    clear();
+    setNull();
     typ = VSTR;
     val = std::move(val_);
 }
 
 void UniValue::setArray() noexcept
 {
-    clear();
+    setNull();
     typ = VARR;
 }
 void UniValue::setArray(const ArrayValues& vec)
 {
-    clear();
+    setNull();
     typ = VARR;
     values = vec;
 }
 void UniValue::setArray(ArrayValues&& vec) noexcept
 {
-    clear();
+    setNull();
     typ = VARR;
     values = std::move(vec);
 }
 
 void UniValue::setObject() noexcept
 {
-    clear();
+    setNull();
     typ = VOBJ;
 }
 
