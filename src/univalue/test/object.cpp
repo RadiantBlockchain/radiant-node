@@ -129,7 +129,7 @@ BOOST_AUTO_TEST_CASE(univalue_typecheck)
 BOOST_AUTO_TEST_CASE(univalue_set)
 {
     UniValue v(UniValue::VSTR, "foo");
-    v.clear();
+    v.setNull();
     BOOST_CHECK(v.isNull());
     BOOST_CHECK_EQUAL(v.getValStr(), "");
 
@@ -389,7 +389,7 @@ BOOST_AUTO_TEST_CASE(univalue_array)
 
     BOOST_CHECK_EQUAL(arr[999].getValStr(), "");
 
-    arr.clear();
+    arr.setNull();
     BOOST_CHECK(arr.empty());
     BOOST_CHECK_EQUAL(arr.size(), 0);
 }
@@ -483,7 +483,7 @@ BOOST_AUTO_TEST_CASE(univalue_object)
 
     BOOST_CHECK_EQUAL(obj["nyuknyuknyuk"].getType(), UniValue::VNULL);
 
-    obj.clear();
+    obj.setNull();
     BOOST_CHECK(obj.empty());
     BOOST_CHECK_EQUAL(obj.size(), 0);
     BOOST_CHECK_EQUAL(obj.getType(), UniValue::VNULL);
@@ -580,13 +580,13 @@ BOOST_AUTO_TEST_CASE(univalue_readwrite)
     v.push_back(json1);
     const auto vcopy = v;
     BOOST_CHECK(!vcopy.empty());
-    v.clear();
+    v.setNull();
     BOOST_CHECK(v.empty());
     BOOST_CHECK(v.read(vcopy.write(2, 4)));
     BOOST_CHECK(!v.empty());
     BOOST_CHECK_EQUAL(v, vcopy);
     BOOST_CHECK_EQUAL(v[0], json1);
-    v.clear();
+    v.setNull();
     BOOST_CHECK(v.empty());
     BOOST_CHECK(v.read(vcopy[0].get_str())); // now deserialize the embedded json string
     BOOST_CHECK(!v.empty());

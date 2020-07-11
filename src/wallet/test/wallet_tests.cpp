@@ -100,7 +100,6 @@ BOOST_FIXTURE_TEST_CASE(rescan, TestChain100Setup) {
         key.pushKV("timestamp", 0);
         key.pushKV("internal", UniValue(true));
         keys.push_back(key);
-        key.clear();
         key.setObject();
         CKey futureKey;
         futureKey.MakeNewKey(true);

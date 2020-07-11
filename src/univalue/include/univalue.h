@@ -37,8 +37,6 @@ public:
     UniValue(std::string&& val_) noexcept : typ(VSTR), val(std::move(val_)) {}
     UniValue(const char *val_) : typ(VSTR), val(val_) {}
 
-    void clear() noexcept;
-
     void setNull() noexcept;
     void setBool(bool val);
     void setNumStr(const std::string& val);
