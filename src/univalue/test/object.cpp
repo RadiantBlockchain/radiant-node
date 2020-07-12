@@ -4,13 +4,16 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
-#include <cstdint>
-#include <vector>
-#include <limits>
-#include <string>
-#include <map>
 #include <cassert>
+#include <clocale>
+#include <cstdint>
+#include <limits>
+#include <locale>
+#include <map>
 #include <stdexcept>
+#include <string>
+#include <vector>
+
 #include <univalue.h>
 
 #define BOOST_FIXTURE_TEST_SUITE(a, b)
@@ -597,6 +600,21 @@ BOOST_AUTO_TEST_SUITE_END()
 
 int main()
 {
+    try {
+        // First, we try to set the locale from the "user preferences" (typical env vars LC_ALL and/or LANG).
+        // We do this for CI/testing setups that want to run this test on one of the breaking locales
+        // such as "de_DE.UTF-8".
+        std::setlocale(LC_ALL, "");
+        std::locale loc("");
+        std::locale::global(loc);
+    } catch (...) {
+        // If the env var specified a locale that does not exist or was installed, we can end up here.
+        // Just fallback to the standard "C" locale in that case.
+        std::setlocale(LC_ALL, "C");
+        std::locale loc("C");
+        std::locale::global(loc);
+    }
+
     univalue_constructor();
     univalue_typecheck();
     univalue_set();
