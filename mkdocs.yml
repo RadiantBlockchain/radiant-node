@@ -1,6 +1,5 @@
 # Remember to copy relevant files to files-for-mkdocs before running
 site_name: Bitcoin Cash Node documentation
-site_url: https://docs.bitcoincashnode.org
 site_description: Documentation for the Bitcoin Cash Node project
 site_author: The Bitcoin Developers
 
@@ -15,11 +14,6 @@ theme:
 
 extra_css:
   - doc/stylesheets/custom.css
-
-plugins:
-    - exclude:
-        glob:
-            doc/release-notes.md
 
 nav:
     - Home: README.md
