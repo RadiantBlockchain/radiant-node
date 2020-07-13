@@ -1097,13 +1097,12 @@ class FullBlockTest(BitcoinTestFramework):
 
     # save the current tip so it can be spent by a later block
     def save_spendable_output(self):
-        self.log.debug("saving spendable output {}".format(self.tip.vtx[0]))
+        self.log.debug(f"saving spendable output {self.tip.vtx[0]}")
         self.spendable_outputs.append(self.tip)
 
     # get an output that we previously marked as spendable
     def get_spendable_output(self):
-        self.log.debug("getting spendable output {}".format(
-            self.spendable_outputs[0].vtx[0]))
+        self.log.debug(f"getting spendable output {self.spendable_outputs[0].vtx[0]}")
         return self.spendable_outputs.pop(0).vtx[0]
 
     # move the tip back to a previous block
