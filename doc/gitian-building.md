@@ -18,15 +18,6 @@ VM image to avoid 'contaminating' the build.
 
 The instructions below use the automated script [gitian-build.py](https://github.com/bitcoin-cash-node/bitcoin-cash-node/blob/master/contrib/gitian-build.py) which only works in Debian/Ubuntu. For manual steps and instructions for fully offline signing, see [this guide](./gitian-building/gitian-building-manual.md).
 
-## Table of Contents
-
-* [Gitian building](gitian-building.md#gitian-building)
-  * [Table of Contents](gitian-building.md#table-of-contents)
-  * [Preparing the Gitian builder host](gitian-building.md#preparing-the-gitian-builder-host)
-  * [MacOS code signing](gitian-building.md#macos-code-signing)
-  * [Initial Gitian Setup](gitian-building.md#initial-gitian-setup)
-  * [Build binaries](gitian-building.md#build-binaries)
-
 ## Preparing the Gitian builder host
 
 The first step is to prepare the host environment that will be used to perform the Gitian builds.

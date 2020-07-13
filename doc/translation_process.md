@@ -12,7 +12,7 @@ licenses until a specific process is established.
 
 
 Translations in Bitcoin Core
-============================
+----------------------------
 
 The Bitcoin-Core project has been designed to support multiple localisations. This makes adding new phrases, and completely new languages easily achievable. For managing all application translations, Bitcoin-Core makes use of the Transifex online translation management tool.
 

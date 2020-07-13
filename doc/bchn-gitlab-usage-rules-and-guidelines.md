@@ -2,7 +2,7 @@
 
 This document describes the working rules, workflow, terminology and guidelines that developers and testers should be familiar with while working on the Bitcoin Cash Node repository and issue tracker at
 
-https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/
+[https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/)
 
 
 ## BCHN GitLab workflow
@@ -101,7 +101,6 @@ Anyone can set labels (add new, change, remove) at any time, the GitLab system r
 Committers can add prefix tags to their commit messages and MR titles to provide brief visual summary of their committed or proposed changes.
 
 These tags have no special meaning to GitLab (at least not yet) and are simply for human consumption at this stage.They are not well standardized, but below you will find a section documenting some better known commit tags.
-
 
 **WIP**
 

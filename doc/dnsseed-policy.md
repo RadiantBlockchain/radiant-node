@@ -11,7 +11,7 @@ to connect to BCH compatible peers.
 
 
 General expectations for DNS Seed operators
-===========================================
+-------------------------------------------
 
 Bitcoin attempts to minimize the level of trust in DNS seeds,
 but DNS seeds still pose a small amount of risk for the network.

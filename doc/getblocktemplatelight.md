@@ -13,6 +13,8 @@ Comments-URI: https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/merge_req
 Comments-Summary: BCHN internal review comments.
 ```
 
+# getblocktemplatelight
+
 
 ## Abstract
 
@@ -309,17 +311,17 @@ merkle_root = hashes[0]
 
 ## References
 
-- [1] BIP 22: getblocktemplate - Fundamentals
-- [2] BIP 23: getblocktemplate - Pooled Mining
-- [3] https://github.com/btccom/bitcoin-abc-1/commit/e87774c8ee724a0e9ecbc289236920ea1aa04a83
-- [4] src/rpc/mining.cpp, see `MakeMerkleBranch` function
-- [5] https://reference.cash/protocol/blockchain/block/block-header
-- [6] https://reference.cash/protocol/p2p/compact__int/
-- [7] https://reference.cash/protocol/blockchain/block/#coinbase-transaction
-- [8] https://reference.cash/protocol/blockchain/transaction/
-- [9] https://github.com/BitcoinUnlimited/BitcoinUnlimited/blob/release/doc/miner.md#getminingcandidate-and-submitminingsolution
+- [1] [BIP22: getblocktemplate - Fundamentals](https://github.com/bitcoin/bips/blob/master/bip-0022.mediawiki/)
+- [2] [BIP23: getblocktemplate - Pooled Mining](https://github.com/bitcoin/bips/blob/master/bip-0023.mediawiki/)
+- [3] [https://github.com/btccom/bitcoin-abc-1/commit/e87774c8ee724a0e9ecbc289236920ea1aa04a83](https://github.com/btccom/bitcoin-abc-1/commit/e87774c8ee724a0e9ecbc289236920ea1aa04a83)
+- [4] [src/rpc/mining.cpp](../src/rpc/mining.cpp), see `MakeMerkleBranch` function
+- [5] [https://reference.cash/protocol/blockchain/block/block-header](https://reference.cash/protocol/blockchain/block/block-header)
+- [6] [https://reference.cash/protocol/p2p/compact__int/](https://reference.cash/protocol/p2p/compact__int/)
+- [7] [https://reference.cash/protocol/blockchain/block/#coinbase-transaction](https://reference.cash/protocol/blockchain/block/#coinbase-transaction)
+- [8] [https://reference.cash/protocol/blockchain/transaction/](https://reference.cash/protocol/blockchain/transaction/)
+- [9] [https://github.com/BitcoinUnlimited/BitcoinUnlimited/blob/release/doc/miner.md#getminingcandidate-and-submitminingsolution](https://github.com/BitcoinUnlimited/BitcoinUnlimited/blob/release/doc/miner.md#getminingcandidate-and-submitminingsolution)
 
 
-# Copyright
+## Copyright
 
 This document is licensed under the Creative Commons CC0 1.0 Universal license.

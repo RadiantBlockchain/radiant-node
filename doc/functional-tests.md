@@ -16,7 +16,7 @@ The util tests are run as part of `make check` target. The functional
 tests are run by the Teamcity continuous build process whenever a diff is
 created or updated on Phabricator. Both sets of tests can also be run locally.
 
-# Running functional tests locally
+## Running functional tests locally
 
 Build for your system first. Be sure to enable wallet, utils and daemon when
 you configure. Tests will not run otherwise.
@@ -195,7 +195,7 @@ The warning message will now be printed to the `sys.stderr` output.
 Util tests can be run locally by running `test/util/bitcoin-util-test.py`.
 Use the `-v` option for verbose output.
 
-# Writing functional tests
+## Writing functional tests
 
 #### Example test
 

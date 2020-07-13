@@ -15,7 +15,7 @@ of resources.
 
 Our main development repository is currently located at
 
-https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node
+[https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node)
 
 This features the project code, an issue tracker and facilities to see
 project progress and activities, even in detailed form such as individual
@@ -34,7 +34,7 @@ our main development and interactive support for users of our node.
 Other social media resources such as our Telegram and Twitter are linked
 from the project website at
 
-https://bitcoincashnode.org
+[https://bitcoincashnode.org](https://bitcoincashnode.org)
 
 On all our channels, we seek to facilitate development of Bitcoin Cash Node,
 and to welcome and support people who wish to participate.
@@ -103,11 +103,11 @@ Here are some handy links for development practices aligned with Bitcoin Cash No
 Getting set up with the Bitcoin Cash Node Repository
 ----------------------------------------------
 
-1. Create an account at https://gitlab.com/ if you don't have one yet
+1. Create an account at [https://gitlab.com](https://gitlab.com) if you don't have one yet
 
 2. Install Git on your machine
 
-Git documentation can be found at: https://git-scm.com/
+Git documentation can be found at: [https://git-scm.com](https://git-scm.com)
 
 To install these packages on Debian or Ubuntu, type: `sudo apt-get install git`
 
@@ -121,7 +121,7 @@ Enter a file in which to save the key (/home/*username*/.ssh/id_rsa): [Press ent
 
 4. Upload your SSH public key to GitLab
 
-  - Go to: `https://gitlab.com, log in
+  - Go to: [https://gitlab.com](https://gitlab.com), log in
 
   - Under "User Settings", "SSH Keys", add your public key
 
@@ -129,7 +129,7 @@ Paste contents from: `$HOME/.ssh/id_rsa.pub`
 
 5. Create a personal fork of the Bitcoin Cash Node repository for your work
 
-  - Sign into GitLab under your account, then visit the project at https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node
+  - Sign into GitLab under your account, then visit the project at [https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node)
 
   - Click the 'Fork' button on the top right, and choose to fork the project to your personal GitLab space.
 
@@ -182,7 +182,7 @@ sudo apt-get install clang-format-8 clang-tidy-8 clang-tools-8
 
 
 If not available in the distribution, `clang-format-8` and `clang-tidy` can be
-installed from https://releases.llvm.org/download.html or https://apt.llvm.org.
+installed from [https://releases.llvm.org/download.html](https://releases.llvm.org/download.html) or [https://apt.llvm.org](https://apt.llvm.org).
 
 For example, for macOS:
 ```
@@ -246,7 +246,7 @@ What to work on
 ---------------
 
 If you are looking for a useful task to contribute to the project, a good place
-to start is the list of issues at https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/issues
+to start is the list of issues at [https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/issues](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/issues)
 
 Look for issues marked with a label 'good-first-issue'.
 

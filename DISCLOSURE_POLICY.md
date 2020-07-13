@@ -81,23 +81,23 @@ contact at imaginary dot username dot btc at gmail dot com
 Neighboring projects that may be affected by bugs, potential exploits, or other security vulnerabilities that are disclosed to Bitcoin Cash Node will be passed along information regarding disclosures that we believe could impact them.  As per the standard referenced above, we are disclosing these relationships here:
 
 * [Bitcoin Unlimited](https://www.bitcoinunlimited.info)
-  * Security Contacts: security at bitcoinunlimited dot info
-  * Disclosure Policy: https://github.com/BitcoinUnlimited/BitcoinUnlimited/blob/release/SECURITY.md
+    * Security Contacts: security at bitcoinunlimited dot info
+    * Disclosure Policy: [https://github.com/BitcoinUnlimited/BitcoinUnlimited/blob/release/SECURITY.md](https://github.com/BitcoinUnlimited/BitcoinUnlimited/blob/release/SECURITY.md)
 
 * [BCHD](https://bchd.cash)
-  * Security Contacts: Chris Pacia (ctpacia at gmail dot com) and Josh Ellithorpe (quest at mac dot com)
-  * Disclosure Policy: see README information at https://github.com/gcash/bchd/
+    * Security Contacts: Chris Pacia (ctpacia at gmail dot com) and Josh Ellithorpe (quest at mac dot com)
+    * Disclosure Policy: see README information at [https://github.com/gcash/bchd/](https://github.com/gcash/bchd/)
 
 * [Flowee](https://flowee.org)
-  * Security Contact: tomz at freedommail dot ch
-  * Disclosure Policy: see https://gitlab.com/FloweeTheHub/thehub
+    * Security Contact: tomz at freedommail dot ch
+    * Disclosure Policy: see [https://gitlab.com/FloweeTheHub/thehub](https://gitlab.com/FloweeTheHub/thehub)
 
 * [Knuth](https://github.com/k-nuth/kth/)
-  * Security Contact: fpelliccioni at gmail dot com
-  * Disclosure Policy: see https://github.com/k-nuth/kth/blob/master/README.md#security-disclosures
+    * Security Contact: fpelliccioni at gmail dot com
+    * Disclosure Policy: see [https://github.com/k-nuth/kth/blob/master/README.md#security-disclosures](https://github.com/k-nuth/kth/blob/master/README.md#security-disclosures)
 
 * [Bitcoin Verde](https://github.com/SoftwareVerde/bitcoin-verde/)
-  * Security Contact: josh at softwareverde dot com
+    * Security Contact: josh at softwareverde dot com
 
 We have approached several other projects and are waiting for responses from them.
 

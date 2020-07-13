@@ -1,11 +1,5 @@
 # Setup Debian virtual machine on VirtualBox
 
-Table of Contents
------------------
-
-- [Create a new VirtualBox VM](#create-a-new-virtualbox-vm)
-- [Connecting to the VM](#connecting-to-the-vm)
-
 Create a new VirtualBox VM
 --------------------------
 In the VirtualBox GUI click "New" and choose the following parameters in the wizard:
