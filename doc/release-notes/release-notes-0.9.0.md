@@ -1,13 +1,16 @@
+Bitcoin Core 0.9.0
+==================
+
 Bitcoin Core version 0.9.0 is now available from:
 
-  https://bitcoin.org/bin/0.9.0/
+  <https://bitcoin.org/bin/0.9.0/>
 
 This is a new major version release, bringing both new features and
 bug fixes.
 
 Please report bugs using the issue tracker at github:
 
-  https://github.com/bitcoin/bitcoin/issues
+  <https://github.com/bitcoin/bitcoin/issues>
 
 How to Upgrade
 --------------
@@ -25,7 +28,7 @@ On Windows, do not forget to uninstall all earlier versions of the Bitcoin
 client first, especially if you are switching to the 64-bit version.
 
 Windows 64-bit installer
--------------------------
+------------------------
 
 New in 0.9.0 is the Windows 64-bit version of the client. There have been
 frequent reports of users running out of virtual memory on 32-bit systems
@@ -40,6 +43,7 @@ OSX 10.5 / 32-bit no longer supported
 -------------------------------------
 
 0.9.0 drops support for older Macs. The minimum requirements are now:
+
 * A 64-bit-capable CPU (see http://support.apple.com/kb/ht3696);
 * Mac OS 10.6 or later (see https://support.apple.com/kb/ht1633).
 
@@ -65,7 +69,6 @@ Rebranding to Bitcoin Core
 To reduce confusion between Bitcoin-the-network and Bitcoin-the-software we
 have renamed the reference client to Bitcoin Core.
 
-
 OP_RETURN and data in the block chain
 -------------------------------------
 On OP_RETURN:  There was been some confusion and misunderstanding in
@@ -80,7 +83,7 @@ Storing arbitrary data in the blockchain is still a bad idea; it is less
 costly and far more efficient to store non-currency data elsewhere.
 
 Autotools build system
------------------------
+----------------------
 
 For 0.9.0 we switched to an autotools-based build system instead of individual
 (q)makefiles.
@@ -92,7 +95,7 @@ to the project.
 Be sure to check doc/build-*.md for your platform before building from source.
 
 Bitcoin-cli
--------------
+-----------
 
 Another change in the 0.9 release is moving away from the bitcoind executable
 functioning both as a server and as a RPC client. The RPC client functionality
@@ -161,9 +164,9 @@ fee may not be enough to get transactions confirmed quickly; the mintxfee
 option may be used to override the default.
 
 0.9.0 Release notes
-=======================
+-------------------
 
-RPC:
+### RPC
 
 - New notion of 'conflicted' transactions, reported as confirmations: -1
 - 'listreceivedbyaddress' now provides tx ids
@@ -192,7 +195,7 @@ RPC:
 - Explicitly ensure that wallet is unlocked in `importprivkey`
 - Add check for valid keys in `importprivkey`
 
-Command-line options:
+### Command-line options
 
 - New option: -nospendzeroconfchange to never spend unconfirmed change outputs
 - New option: -zapwallettxes to rebuild the wallet's transaction information
@@ -205,7 +208,7 @@ Command-line options:
 - Remove '-logtodebugger'
 - Allow `-noserver` with bitcoind
 
-Block-chain handling and storage:
+### Block-chain handling and storage
 
 - Update leveldb to 1.15
 - Check for correct genesis (prevent cases where a datadir from the wrong
@@ -217,7 +220,7 @@ Block-chain handling and storage:
 - Fix non-standard disconnected transactions causing mempool orphans
 - Add a new checkpoint at block 279,000
 
-Wallet:
+### Wallet
 
 - Bug fixes and new regression tests to correctly compute
   the balance of wallets containing double-spent (or mutated) transactions
@@ -231,13 +234,13 @@ Wallet:
 - Fix rescan to start from beginning after importprivkey
 - Only create signatures with low S values
 
-Mining:
+### Mining
 
 - Increase default -blockmaxsize/prioritysize to 750K/50K
 - 'getblocktemplate' does not require a key to create a block template
 - Mining code fee policy now matches relay fee policy
 
-Protocol and network:
+### Protocol and network
 
 - Drop the fee required to relay a transaction to 0.01mBTC per kilobyte
 - Send tx relay flag with version
@@ -256,7 +259,7 @@ Protocol and network:
 - Add some additional logging to give extra network insight
 - Added new DNS seed from bitcoinstats.com
 
-Validation:
+### Validation
 
 - Log reason for non-standard transaction rejection
 - Prune provably-unspendable outputs, and adapt consistency check for it.
@@ -267,7 +270,7 @@ Validation:
 - Reject dust amounts during validation
 - Accept nLockTime transactions that finalize in the next block
 
-Build system:
+### Build system
 
 - Switch to autotools-based build system
 - Build without wallet by passing `--disable-wallet` to configure, this
@@ -279,7 +282,7 @@ Build system:
 - Check integrity of gitian input source tarballs
 - Enable full GCC Stack-smashing protection for all OSes
 
-GUI:
+### GUI
 
 - Switch to Qt 5.2.0 for Windows build
 - Add payment request (BIP 0070) support
@@ -308,7 +311,7 @@ GUI:
 - OS X: Fix bitcoin-qt startup crash when clicking dock icon
 - Linux: Fix Gnome bitcoin: URI handler
 
-Miscellaneous:
+### Miscellaneous
 
 - Add Linux script (contrib/qos/tc.sh) to limit outgoing bandwidth
 - Add '-regtest' mode, similar to testnet but private with instant block
@@ -317,7 +320,7 @@ Miscellaneous:
 - Add separate bitcoin-cli client
 
 Credits
---------
+-------
 
 Thanks to everyone who contributed to this release:
 

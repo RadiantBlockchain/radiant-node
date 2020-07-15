@@ -1,6 +1,9 @@
+Bitcoin Core 0.9.2.1
+====================
+
 Bitcoin Core version 0.9.2.1 is now available from:
 
-  https://bitcoin.org/bin/0.9.2.1/
+  <https://bitcoin.org/bin/0.9.2.1/>
 
 This is a new minor version release, bringing mostly bug fixes and some minor
 improvements. OpenSSL has been updated because of a security issue (CVE-2014-0224).
@@ -8,7 +11,7 @@ Upgrading to this release is recommended.
 
 Please report bugs using the issue tracker at github:
 
-  https://github.com/bitcoin/bitcoin/issues
+  <https://github.com/bitcoin/bitcoin/issues>
 
 How to Upgrade
 --------------
@@ -39,18 +42,16 @@ the blockchain for missing spent coins, which will take a long time (tens
 of minutes on a typical machine).
 
 Important changes
-==================
-
-Gitian OSX build
 -----------------
+
+### Gitian OSX build
 
 The deterministic build system that was already used for Windows and Linux
 builds is now used for OSX as well. Although the resulting executables have
 been tested quite a bit, there could be possible regressions. Be sure to report
 these on the Github bug tracker mentioned above.
 
-Compatibility of Linux build
------------------------------
+### Compatibility of Linux build
 
 For Linux we now build against Qt 4.6, and filter the symbols for libstdc++ and glibc.
 This brings back compatibility with
@@ -60,11 +61,11 @@ This brings back compatibility with
 - CentOS 6.5
 
 0.9.2 - 0.9.2.1 Release notes
-=======================
+-----------------------------
 
 The OpenSSL dependency in the gitian builds has been upgraded to 1.0.1h because of CVE-2014-0224.
 
-RPC:
+### RPC
 
 - Add `getwalletinfo`, `getblockchaininfo` and `getnetworkinfo` calls (will replace hodge-podge `getinfo` at some point)
 - Add a `relayfee` field to `getnetworkinfo`
@@ -73,24 +74,24 @@ RPC:
 - `sendrawtransaction`: report the reject code and reason, and make it possible to re-send transactions that are already in the mempool
 - `getmininginfo` show right genproclimit
 
-Command-line options:
+### Command-line options
 
 - Fix `-printblocktree` output
 - Show error message if ReadConfigFile fails
 
-Block-chain handling and storage:
+### Block-chain handling and storage
 
 - Fix for GetBlockValue() after block 13,440,000 (BIP42)
 - Upgrade leveldb to 1.17
 
-Protocol and network code:
+### Protocol and network code
 
 - Per-peer block download tracking and stalled download detection
 - Add new DNS seed from bitnodes.io
 - Prevent socket leak in ThreadSocketHandler and correct some proxy related socket leaks
 - Use pnode->nLastRecv as sync score (was the wrong way around)
 
-Wallet:
+### Wallet
 
 - Make GetAvailableCredit run GetHash() only once per transaction (performance improvement)
 - Lower paytxfee warning threshold from 0.25 BTC to 0.01 BTC
@@ -98,7 +99,7 @@ Wallet:
 - Log BerkeleyDB version at startup
 - CWallet init fix
 
-Build system:
+### Build system
 
 - Add OSX build descriptors to gitian
 - Fix explicit --disable-qt-dbus
@@ -111,7 +112,7 @@ Build system:
 - devtools: add script to check symbols from Linux gitian executables
 - Remove build-time no-IPv6 setting
 
-GUI:
+### GUI
 
 - Fix various coin control visual issues
 - Show number of in/out connections in debug console
@@ -132,7 +133,7 @@ GUI:
 - Check for !pixmap() before trying to export QR code (avoids crashes when no QR code could be generated)
 - Fix "Start bitcoin on system login"
 
-Miscellaneous:
+### Miscellaneous
 
 - Replace non-threadsafe C functions (gmtime, strerror and setlocale)
 - Add missing cs_main and wallet locks
@@ -141,7 +142,7 @@ Miscellaneous:
 - devtools: add a script to fetch and postprocess translations
 
 Credits
---------
+-------
 
 Thanks to everyone who contributed to this release:
 

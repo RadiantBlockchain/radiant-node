@@ -1,8 +1,12 @@
+Bitcoin ABC 0.18.2
+==================
+
 Bitcoin ABC version 0.18.2 is now available from:
 
   <https://download.bitcoinabc.org/0.18.2/>
 
 This release includes the following features and fixes:
+
  - Backport abortrescan RPC call from bitcoin core.
  - Backport fix to importmulti to return rescan errors.
  - Backport ability to abort wallet transaction rescans.

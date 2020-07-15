@@ -1,11 +1,14 @@
+Bitcoin-Qt 0.8.0
+================
+
 Bitcoin-Qt version 0.8.0 is now available from:
-  http://sourceforge.net/projects/bitcoin/files/Bitcoin/bitcoin-0.8.0/
+  <http://sourceforge.net/projects/bitcoin/files/Bitcoin/bitcoin-0.8.0/>
 
 This is a major release designed to improve performance and handle the
 increasing volume of transactions on the network.
 
 Please report bugs using the issue tracker at github:
-  https://github.com/bitcoin/bitcoin/issues
+  <https://github.com/bitcoin/bitcoin/issues>
 
 How to Upgrade
 --------------
@@ -105,35 +108,35 @@ Dependency Changes
 Qt 4.8.3 (compiling against older versions of Qt 4 should continue to work)
 
 
-Thanks to everybody who contributed to this release:
-----------------------------------------------------
+Thanks to everybody who contributed to this release
+---------------------------------------------------
 
-Alexander Kjeldaas
-Andrey Alekseenko
-Arnav Singh
-Christian von Roques
-Eric Lombrozo
-Forrest Voight
-Gavin Andresen
-Gregory Maxwell
-Jeff Garzik
-Luke Dashjr
-Matt Corallo
-Mike Cassano
-Mike Hearn
-Peter Todd
-Philip Kaufmann
-Pieter Wuille
-Richard Schwab
-Robert Backhaus
-Rune K. Svendsen
-Sergio Demian Lerner
-Wladimir J. van der Laan
-burger2
-default
-fanquake
-grimd34th
-justmoon
-redshark1802
-tucenaber
-xanatos
+* Alexander Kjeldaas
+* Andrey Alekseenko
+* Arnav Singh
+* Christian von Roques
+* Eric Lombrozo
+* Forrest Voight
+* Gavin Andresen
+* Gregory Maxwell
+* Jeff Garzik
+* Luke Dashjr
+* Matt Corallo
+* Mike Cassano
+* Mike Hearn
+* Peter Todd
+* Philip Kaufmann
+* Pieter Wuille
+* Richard Schwab
+* Robert Backhaus
+* Rune K. Svendsen
+* Sergio Demian Lerner
+* Wladimir J. van der Laan
+* burger2
+* default
+* fanquake
+* grimd34th
+* justmoon
+* redshark1802
+* tucenaber
+* xanatos

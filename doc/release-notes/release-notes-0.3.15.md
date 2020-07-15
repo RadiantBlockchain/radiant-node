@@ -1,3 +1,6 @@
+Bitcoin 0.3.15
+==============
+
 * paytxfee switch is now per KB, so it adds the correct fee for large transactions
 * sending avoids using coins with less than 6 confirmations if it can
 * BitcoinMiner processes transactions in priority order based on age of dependencies

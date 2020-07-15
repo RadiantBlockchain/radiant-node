@@ -1,8 +1,12 @@
+Bitcoin ABC 0.20.8
+==================
+
 Bitcoin ABC version 0.20.8 is now available from:
 
   <https://download.bitcoinabc.org/0.20.8/>
 
 This release includes the following features and fixes:
+
  - When running bitcoind without `-daemon`, logging to stdout is now the
    default behavior. Setting `-printtoconsole=1` no longer implicitly disables
    logging to debug.log. Instead, logging to file can be explicitly disabled by
@@ -14,6 +18,7 @@ This release includes the following features and fixes:
 
 Network
 -------
+
  - When fetching a transaction announced by multiple peers, previous versions of
    Bitcoin ABC would sequentially attempt to download the transaction from each
    announcing peer until the transaction is received, in the order that those
@@ -24,6 +29,7 @@ Network
 
 Seeder
 ------
+
  - `bitcoin-seeder` no longer takes single letter parameter names.  Please use
    the full length parameter names.  See `bitcoin-seeder -?` for more
    information.

@@ -1,10 +1,13 @@
+Bitcoin-Qt 0.7.2
+================
+
 Bitcoin version 0.7.2 is now available from:
-  http://sourceforge.net/projects/bitcoin/files/Bitcoin/bitcoin-0.7.2
+  <http://sourceforge.net/projects/bitcoin/files/Bitcoin/bitcoin-0.7.2>
 
 This is a bug-fix minor release.
 
 Please report bugs using the issue tracker at github:
-  https://github.com/bitcoin/bitcoin/issues
+  <https://github.com/bitcoin/bitcoin/issues>
 
 How to Upgrade
 --------------
@@ -53,16 +56,16 @@ Bug fixes
 
 * OSX 10.5 supported again
 
-----------------------------------------------------
-Thanks to everybody who contributed to this release:
+Thanks to everybody who contributed to this release
+---------------------------------------------------
 
-Alex
-dansmith
-Gavin Andresen
-Gregory Maxwell
-Jeff Garzik
-Luke Dashjr
-Philip Kaufmann
-Pieter Wuille
-Wladimir J. van der Laan
-grimd34th
+* Alex
+* dansmith
+* Gavin Andresen
+* Gregory Maxwell
+* Jeff Garzik
+* Luke Dashjr
+* Philip Kaufmann
+* Pieter Wuille
+* Wladimir J. van der Laan
+* grimd34th

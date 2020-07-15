@@ -1,27 +1,28 @@
+Bitcoin Core 0.10.0
+===================
+
 Bitcoin Core version 0.10.0 is now available from:
 
-  https://bitcoin.org/bin/0.10.0/
+  <https://bitcoin.org/bin/0.10.0/>
 
 This is a new major version release, bringing both new features and
 bug fixes.
 
 Please report bugs using the issue tracker at github:
 
-  https://github.com/bitcoin/bitcoin/issues
+  <https://github.com/bitcoin/bitcoin/issues>
 
 Upgrading and downgrading
-=========================
+-------------------------
 
-How to Upgrade
---------------
+### How to Upgrade
 
 If you are running an older version, shut it down. Wait until it has completely
 shut down (which might take a few minutes for older versions), then run the
 installer (on Windows) or just copy over /Applications/Bitcoin-Qt (on Mac) or
 bitcoind/bitcoin-qt (on Linux).
 
-Downgrading warning
----------------------
+### Downgrading warning
 
 Because release 0.10.0 makes use of headers-first synchronization and parallel
 block download (see further), the block files and databases are not
@@ -45,10 +46,9 @@ This does not affect wallet forward or backward compatibility.
 
 
 Notable changes
-===============
+---------------
 
-Faster synchronization
-----------------------
+### Faster synchronization
 
 Bitcoin Core now uses 'headers-first synchronization'. This means that we first
 ask peers for block headers (a total of 27 megabytes, as of December 2014) and
@@ -63,6 +63,7 @@ very first few minutes, when headers are still being fetched and verified, but
 it should gain speed afterwards.
 
 A few RPCs were added/updated as a result of this:
+
 - `getblockchaininfo` now returns the number of validated headers in addition to
 the number of validated blocks.
 - `getpeerinfo` lists both the number of blocks and headers we know we have in
@@ -72,8 +73,7 @@ have requested from peers (but haven't received yet) are also listed as
 - A new RPC `getchaintips` lists all known branches of the block chain,
 including those we only have headers for.
 
-Transaction fee changes
------------------------
+### Transaction fee changes
 
 This release automatically estimates how high a transaction fee (or how
 high a priority) transactions require to be confirmed quickly. The default
@@ -90,6 +90,7 @@ data directory in the `fee_estimates.dat` file just before
 program shutdown, and are read in at startup.
 
 New command line options for transaction fee changes:
+
 - `-txconfirmtarget=n` : create transactions that have enough fees (or priority)
 so they are likely to begin confirmation within n blocks (default: 1). This setting
 is over-ridden by the -paytxfee option.
@@ -97,6 +98,7 @@ is over-ridden by the -paytxfee option.
 (default: 0)
 
 New RPC commands for fee estimation:
+
 - `estimatefee nblocks` : Returns approximate fee-per-1,000-bytes needed for
 a transaction to begin confirmation within nblocks. Returns -1 if not enough
 transactions have been observed to compute a good estimate.
@@ -105,8 +107,7 @@ a zero-fee transaction to begin confirmation within nblocks. Returns -1 if not
 enough free transactions have been observed to compute a good
 estimate.
 
-RPC access control changes
---------------------------
+### RPC access control changes
 
 Subnet matching for the purpose of access control is now done
 by matching the binary network address, instead of with string wildcard matching.
@@ -133,8 +134,7 @@ Using wildcards will result in the rule being rejected with the following error 
     Error: Invalid -rpcallowip subnet specification: *. Valid are a single IP (e.g. 1.2.3.4), a network/netmask (e.g. 1.2.3.4/255.255.255.0) or a network/CIDR (e.g. 1.2.3.4/24).
 
 
-REST interface
---------------
+### REST interface
 
 A new HTTP API is exposed when running with the `-rest` flag, which allows
 unauthenticated access to public node data.
@@ -143,6 +143,7 @@ It is served on the same port as RPC, but does not need a password, and uses
 plain HTTP instead of JSON-RPC.
 
 Assuming a local RPC server running on port 8332, it is possible to request:
+
 - Blocks: http://localhost:8332/rest/block/*HASH*.*EXT*
 - Blocks without transactions: http://localhost:8332/rest/block/notxdetails/*HASH*.*EXT*
 - Transactions (requires `-txindex`): http://localhost:8332/rest/tx/*HASH*.*EXT*
@@ -152,8 +153,7 @@ binary) or `json`.
 
 For more details, see the `doc/REST-interface.md` document in the repository.
 
-RPC Server "Warm-Up" Mode
--------------------------
+### RPC Server "Warm-Up" Mode
 
 The RPC server is started earlier now, before most of the expensive
 intialisations like loading the block index.  It is available now almost
@@ -164,8 +164,7 @@ This new behaviour can be useful for clients to know that a server is already
 started and will be available soon (for instance, so that they do not
 have to start it themselves).
 
-Improved signing security
--------------------------
+### Improved signing security
 
 For 0.10 the security of signing against unusual attacks has been
 improved by making the signatures constant time and deterministic.
@@ -191,10 +190,9 @@ the curve Bitcoin uses and we have reason to believe that
 libsecp256k1 is better tested and more thoroughly reviewed
 than the implementation in OpenSSL.
 
-[1] https://eprint.iacr.org/2014/161.pdf
+[1] <https://eprint.iacr.org/2014/161.pdf>
 
-Watch-only wallet support
--------------------------
+### Watch-only wallet support
 
 The wallet can now track transactions to and from wallets for which you know
 all addresses (or scripts), even without the private keys.
@@ -219,8 +217,7 @@ Compared to using `getrawtransaction`, this mechanism does not require
 with future block chain pruning functionality. It does mean that all relevant
 addresses need to added to the wallet before the payment, though.
 
-Consensus library
------------------
+### Consensus library
 
 Starting from 0.10.0, the Bitcoin Core distribution includes a consensus library.
 
@@ -241,8 +238,7 @@ correctly spends the passed scriptPubKey under additional constraints indicated 
 The functionality is planned to be extended to e.g. UTXO management in upcoming releases, but the interface
 for existing methods should remain stable.
 
-Standard script rules relaxed for P2SH addresses
-------------------------------------------------
+### Standard script rules relaxed for P2SH addresses
 
 The IsStandard() rules have been almost completely removed for P2SH
 redemption scripts, allowing applications to make use of any valid
@@ -252,8 +248,7 @@ actually using them on mainnet has been previously inconvenient as
 standard Bitcoin Core nodes wouldn't relay them to miners, nor would
 most miners include them in blocks they mined.
 
-bitcoin-tx
-----------
+### bitcoin-tx
 
 It has been observed that many of the RPC functions offered by bitcoind are
 "pure functions", and operate independently of the bitcoind wallet. This
@@ -276,8 +271,7 @@ server round-trip to execute.
 Other utilities "bitcoin-key" and "bitcoin-script" have been proposed, making
 key and script operations easily accessible via command line.
 
-Mining and relay policy enhancements
-------------------------------------
+### Mining and relay policy enhancements
 
 Bitcoin Core's block templates are now for version 3 blocks only, and any mining
 software relying on its `getblocktemplate` must be updated in parallel to use
@@ -301,6 +295,7 @@ their next block before expending work on it, reducing risks of accidental
 hardforks or mining invalid blocks.
 
 Two new options to control mining policy:
+
 - `-datacarrier=0/1` : Relay and mine "data carrier" (OP_RETURN) transactions
 if this is 1.
 - `-datacarriersize=n` : Maximum size, in bytes, we consider acceptable for
@@ -310,8 +305,7 @@ The relay policy has changed to more properly implement the desired behavior of 
 relaying free (or very low fee) transactions unless they have a priority above the
 AllowFreeThreshold(), in which case they are relayed subject to the rate limiter.
 
-BIP 66: strict DER encoding for signatures
-------------------------------------------
+### BIP 66: strict DER encoding for signatures
 
 Bitcoin Core 0.10 implements BIP 66, which introduces block version 3, and a new
 consensus rule, which prohibits non-DER signatures. Such transactions have been
@@ -331,12 +325,13 @@ Backward compatibility with current mining software is NOT provided, thus miners
 should read the first paragraph of "Mining and relay policy enhancements" above.
 
 0.10.0 Change log
-=================
+-----------------
 
 Detailed release notes follow. This overview includes changes that affect external
 behavior, not code moves, refactors or string updates.
 
-RPC:
+### RPC
+
 - `f923c07` Support IPv6 lookup in bitcoin-cli even when IPv6 only bound on localhost
 - `b641c9c` Fix addnode "onetry": Connect with OpenNetworkConnection
 - `171ca77` estimatefee / estimatepriority RPC methods
@@ -380,7 +375,8 @@ RPC:
 - `9765a50` Implement BIP 23 Block Proposal
 - `f9de17e` Add warning comment to getinfo
 
-Command-line options:
+### Command-line options
+
 - `ee21912` Use netmasks instead of wildcards for IP address matching
 - `deb3572` Add `-rpcbind` option to allow binding RPC port on a specific interface
 - `96b733e` Add `-version` option to get just the version
@@ -401,7 +397,8 @@ Command-line options:
 - `57be955` Remove -printblock, -printblocktree, and -printblockindex
 - `ad3d208` remove -maxorphanblocks config parameter since it is no longer functional
 
-Block and transaction handling:
+### Block and transaction handling
+
 - `7a0e84d` ProcessGetData(): abort if a block file is missing from disk
 - `8c93bf4` LoadBlockIndexDB(): Require block db reindex if any `blk*.dat` files are missing
 - `77339e5` Get rid of the static chainMostWork (optimization)
@@ -437,7 +434,8 @@ Block and transaction handling:
 - `8446262` Reject headers that build on an invalid parent
 - `008138c` Bugfix: only track UTXO modification after lookup
 
-P2P protocol and network code:
+### P2P protocol and network code
+
 - `f80cffa` Do not trigger a DoS ban if SCRIPT_VERIFY_NULLDUMMY fails
 - `c30329a` Add testnet DNS seed of Alex Kotenko
 - `45a4baf` Add testnet DNS seed of Andreas Schildbach
@@ -468,7 +466,8 @@ P2P protocol and network code:
 - `58fda4d` Update seed IPs, based on bitcoin.sipa.be crawler data
 - `18021d0` Remove bitnodes.io from dnsseeds.
 
-Validation:
+### Validation
+
 - `6fd7ef2` Also switch the (unused) verification code to low-s instead of even-s
 - `584a358` Do merkle root and txid duplicates check simultaneously
 - `217a5c9` When transaction outputs exceed inputs, show the offending amounts so as to aid debugging
@@ -485,7 +484,8 @@ Validation:
 - `12b7c44` Improve robustness of DER recoding code
 - `76ce5c8` fail immediately on an empty signature
 
-Build system:
+### Build system
+
 - `f25e3ad` Fix build in OS X 10.9
 - `65e8ba4` build: Switch to non-recursive make
 - `460b32d` build: fix broken boost chrono check on some platforms
@@ -503,7 +503,8 @@ Build system:
 - `2d375fe` depends: bump openssl to 1.0.1k
 - `b7a4ecc` Build: Only check for boost when building code that requires it
 
-Wallet:
+### Wallet
+
 - `b33d1f5` Use fee/priority estimates in wallet CreateTransaction
 - `4b7b1bb` Sanity checks for estimates
 - `c898846` Add support for watch-only addresses
@@ -519,7 +520,8 @@ Wallet:
 - `15ad0b5` Apply AreSane() checks to the fees from the network
 - `11855c1` Enforce minRelayTxFee on wallet created tx and add a maxtxfee option
 
-GUI:
+### GUI
+
 - `c21c74b` osx: Fix missing dock menu with qt5
 - `b90711c` Fix Transaction details shows wrong To:
 - `516053c` Make links in 'About Bitcoin Core' clickable
@@ -561,7 +563,8 @@ GUI:
 - `b790d13` English translation update
 - `8543b0d` Correct tooltip on address book page
 
-Tests:
+### Tests
+
 - `b41e594` Fix script test handling of empty scripts
 - `d3a33fc` Test CHECKMULTISIG with m == 0 and n == 0
 - `29c1749` Let tx (in)valid tests use any SCRIPT_VERIFY flag
@@ -621,7 +624,8 @@ Tests:
 - `e2677d7` Fix smartfees test for change to relay policy
 - `263b65e` tests: run sanity checks in tests too
 
-Miscellaneous:
+### Miscellaneous
+
 - `122549f` Fix incorrect checkpoint data for testnet3
 - `5bd02cf` Log used config file to debug.log on startup
 - `68ba85f` Updated Debian example bitcoin.conf with config from wiki + removed some cruft and updated comments
@@ -653,7 +657,7 @@ Miscellaneous:
 - `06ca065` Fix CScriptID(const CScript& in) in empty script case
 
 Credits
-=======
+-------
 
 Thanks to everyone who contributed to this release:
 

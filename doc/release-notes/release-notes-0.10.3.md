@@ -1,3 +1,6 @@
+Bitcoin Core 0.10.3
+===================
+
 Bitcoin Core version 0.10.3 is now available from:
 
   <https://bitcoin.org/bin/bitcoin-core-0.10.3/>
@@ -10,18 +13,16 @@ Please report bugs using the issue tracker at github:
   <https://github.com/bitcoin/bitcoin/issues>
 
 Upgrading and downgrading
-=========================
+-------------------------
 
-How to Upgrade
---------------
+### How to Upgrade
 
 If you are running an older version, shut it down. Wait until it has completely
 shut down (which might take a few minutes for older versions), then run the
 installer (on Windows) or just copy over /Applications/Bitcoin-Qt (on Mac) or
 bitcoind/bitcoin-qt (on Linux).
 
-Downgrade warning
-------------------
+### Downgrade warning
 
 Because release 0.10.0 and later makes use of headers-first synchronization and
 parallel block download (see further), the block files and databases are not
@@ -44,10 +45,9 @@ supported and may break as soon as the older version attempts to reindex.
 This does not affect wallet forward or backward compatibility.
 
 Notable changes
-===============
+---------------
 
-Fix buffer overflow in bundled upnp
-------------------------------------
+### Fix buffer overflow in bundled upnp
 
 Bundled miniupnpc was updated to 1.9.20151008. This fixes a buffer overflow in
 the XML parser during initial network discovery.
@@ -62,8 +62,7 @@ number of reachable nodes on IPv4, however this prevents future libupnpc
 vulnerabilities from being a structural risk to the network
 (see https://github.com/bitcoin/bitcoin/pull/6795).
 
-Test for LowS signatures before relaying
------------------------------------------
+### Test for LowS signatures before relaying
 
 Make the node require the canonical 'low-s' encoding for ECDSA signatures when
 relaying or mining.  This removes a nuisance malleability vector.
@@ -96,8 +95,7 @@ only eliminates the cheap and irritating DOS attack.
 Marcin Andrychowicz, Stefan Dziembowski, Daniel Malinowski, Łukasz Mazurek
 http://fc15.ifca.ai/preproceedings/bitcoin/paper_9.pdf
 
-Minimum relay fee default increase
------------------------------------
+### Minimum relay fee default increase
 
 The default for the `-minrelaytxfee` setting has been increased from `0.00001`
 to `0.00005`.
@@ -110,33 +108,32 @@ this fee is merged (which will be in 0.12).
 (see https://github.com/bitcoin/bitcoin/pull/6793, as well as the 0.11.0
 release notes, in which this value was suggested)
 
-0.10.3 Change log
-=================
+### 0.10.3 Change log
 
 Detailed release notes follow. This overview includes changes that affect external
 behavior, not code moves, refactors or string updates.
 
-- #6186 `e4a7d51` Fix two problems in CSubnet parsing
-- #6153 `ebd7d8d` Parameter interaction: disable upnp if -proxy set
-- #6203 `ecc96f5` Remove P2SH coinbase flag, no longer interesting
-- #6226 `181771b` json: fail read_string if string contains trailing garbage
-- #6244 `09334e0` configure: Detect (and reject) LibreSSL
-- #6276 `0fd8464` Fix getbalance * 0
-- #6274 `be64204` Add option `-alerts` to opt out of alert system
-- #6319 `3f55638` doc: update mailing list address
-- #6438 `7e66e9c` openssl: avoid config file load/race
-- #6439 `255eced` Updated URL location of netinstall for Debian
-- #6412 `0739e6e` Test whether created sockets are select()able
-- #6694 `f696ea1` [QT] fix thin space word wrap line brake issue
-- #6704 `743cc9e` Backport bugfixes to 0.10
-- #6769 `1cea6b0` Test LowS in standardness, removes nuisance malleability vector.
-- #6789 `093d7b5` Update miniupnpc to 1.9.20151008
-- #6795 `f2778e0` net: Disable upnp by default
-- #6797 `91ef4d9` Do not store more than 200 timedata samples
-- #6793 `842c48d` Bump minrelaytxfee default
+- \#6186 `e4a7d51` Fix two problems in CSubnet parsing
+- \#6153 `ebd7d8d` Parameter interaction: disable upnp if -proxy set
+- \#6203 `ecc96f5` Remove P2SH coinbase flag, no longer interesting
+- \#6226 `181771b` json: fail read_string if string contains trailing garbage
+- \#6244 `09334e0` configure: Detect (and reject) LibreSSL
+- \#6276 `0fd8464` Fix getbalance * 0
+- \#6274 `be64204` Add option `-alerts` to opt out of alert system
+- \#6319 `3f55638` doc: update mailing list address
+- \#6438 `7e66e9c` openssl: avoid config file load/race
+- \#6439 `255eced` Updated URL location of netinstall for Debian
+- \#6412 `0739e6e` Test whether created sockets are select()able
+- \#6694 `f696ea1` [QT] fix thin space word wrap line brake issue
+- \#6704 `743cc9e` Backport bugfixes to 0.10
+- \#6769 `1cea6b0` Test LowS in standardness, removes nuisance malleability vector.
+- \#6789 `093d7b5` Update miniupnpc to 1.9.20151008
+- \#6795 `f2778e0` net: Disable upnp by default
+- \#6797 `91ef4d9` Do not store more than 200 timedata samples
+- \#6793 `842c48d` Bump minrelaytxfee default
 
 Credits
-=======
+-------
 
 Thanks to everyone who directly contributed to this release:
 

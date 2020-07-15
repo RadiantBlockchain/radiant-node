@@ -1,11 +1,14 @@
+Bitcoin-Qt 0.8.5
+================
+
 Bitcoin-Qt version 0.8.5 is now available from:
-  http://sourceforge.net/projects/bitcoin/files/Bitcoin/bitcoin-0.8.5/
+  <http://sourceforge.net/projects/bitcoin/files/Bitcoin/bitcoin-0.8.5/>
 
 This is a maintenance release to fix a critical bug;
 we urge all users to upgrade.
 
 Please report bugs using the issue tracker at github:
-  https://github.com/bitcoin/bitcoin/issues
+  <https://github.com/bitcoin/bitcoin/issues>
 
 
 How to Upgrade
@@ -22,10 +25,9 @@ anywhere from 30 minutes to several hours, depending on the speed of
 your machine.
 
 0.8.5 Release notes
-===================
+-------------------
 
-Bugs fixed
-----------
+### Bugs fixed
 
 Transactions with version numbers larger than 0x7fffffff were
 incorrectly being relayed and included in blocks.
@@ -38,7 +40,7 @@ corruption and suggest that you reindex your database.
 This release also contains a non-critical fix to the code that
 enforces BIP 34 (block height in the coinbase transaction).
 
---
+---
 
 Thanks to Gregory Maxwell and Pieter Wuille for quickly
 identifying and fixing the transaction version number bug.

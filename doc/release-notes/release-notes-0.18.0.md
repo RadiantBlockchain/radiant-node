@@ -1,8 +1,12 @@
+Bitcoin ABC 0.18.0
+==================
+
 Bitcoin ABC version 0.18.0 is now available from:
 
   <https://download.bitcoinabc.org/0.18.0/>
 
 This release includes the following features and fixes:
+
  - Remove the bip9params configuration.
  - Remove the bip9_softforks result from the getblockchaininfo RPC call.
  - Remove the rules, vbavailable and vbrequired result from the

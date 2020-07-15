@@ -1,8 +1,12 @@
+Bitcoin ABC 0.20.7
+==================
+
 Bitcoin ABC version 0.20.7 is now available from:
 
   <https://download.bitcoinabc.org/0.20.7/>
 
 This release includes the following features and fixes:
+
  - The new RPC `scantxoutset` can be used to scan the UTXO set for entries
    that match certain output descriptors. Refer to the [output descriptors
    reference documentation](/doc/descriptors.md) for more details. This call

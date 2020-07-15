@@ -1,23 +1,34 @@
+Bitcoin-Qt 0.7.1
+================
+
 Bitcoin version 0.7.1 is now available from:
-  http://sourceforge.net/projects/bitcoin/files/Bitcoin/bitcoin-0.7.1/
+  <http://sourceforge.net/projects/bitcoin/files/Bitcoin/bitcoin-0.7.1/>
 
 This is a bug-fix minor release.
 
 Please report bugs using the issue tracker at github:
-  https://github.com/bitcoin/bitcoin/issues
+  <https://github.com/bitcoin/bitcoin/issues>
 
 Project source code is hosted at github; you can get
 source-only tarballs/zipballs directly from there:
-  https://github.com/bitcoin/bitcoin/tarball/v0.7.1  # .tar.gz
-  https://github.com/bitcoin/bitcoin/zipball/v0.7.1  # .zip
+
+* <https://github.com/bitcoin/bitcoin/tarball/v0.7.1>  # .tar.gz
+* <https://github.com/bitcoin/bitcoin/zipball/v0.7.1>  # .zip
 
 Ubuntu Linux users can use the "Personal Package Archive" (PPA)
 maintained by Matt Corallo to automatically keep
-up-to-date.  Just type:
+up-to-date. Just type:
+
+```
   sudo apt-add-repository ppa:bitcoin/bitcoin
   sudo apt-get update
+```
+
 in your terminal, then install the bitcoin-qt package:
+
+```
   sudo apt-get install bitcoin-qt
+```
 
 KNOWN ISSUES
 ------------
@@ -92,19 +103,19 @@ Bug fixes
 * Warn the user that they need to create fresh wallet backups after they
   encrypt their wallet.
 
-----------------------------------------------------
-Thanks to everybody who contributed to this release:
+Thanks to everybody who contributed to this release
+---------------------------------------------------
 
-Gavin Andresen
-Jeff Garzik
-Luke Dashjr
-Mark Friedenbach
-Matt Corallo
-Philip Kaufmann
-Pieter Wuille
-Rune K. Svendsen
-Virgil Dupras
-Wladimir J. van der Laan
-fanquake
-kjj2
-xanatos
+* Gavin Andresen
+* Jeff Garzik
+* Luke Dashjr
+* Mark Friedenbach
+* Matt Corallo
+* Philip Kaufmann
+* Pieter Wuille
+* Rune K. Svendsen
+* Virgil Dupras
+* Wladimir J. van der Laan
+* fanquake
+* kjj2
+* xanatos

@@ -1,3 +1,6 @@
+Bitcoin Core 0.10.1
+===================
+
 Bitcoin Core version 0.10.1 is now available from:
 
   <https://bitcoin.org/bin/bitcoin-core-0.10.1/>
@@ -10,18 +13,16 @@ Please report bugs using the issue tracker at github:
   <https://github.com/bitcoin/bitcoin/issues>
 
 Upgrading and downgrading
-=========================
+-------------------------
 
-How to Upgrade
---------------
+### How to Upgrade
 
 If you are running an older version, shut it down. Wait until it has completely
 shut down (which might take a few minutes for older versions), then run the
 installer (on Windows) or just copy over /Applications/Bitcoin-Qt (on Mac) or
 bitcoind/bitcoin-qt (on Linux).
 
-Downgrade warning
-------------------
+### Downgrade warning
 
 Because release 0.10.0 and later makes use of headers-first synchronization and
 parallel block download (see further), the block files and databases are not
@@ -44,23 +45,25 @@ supported and may break as soon as the older version attempts to reindex.
 This does not affect wallet forward or backward compatibility.
 
 Notable changes
-===============
+---------------
 
 This is a minor release and hence there are no notable changes.
 For the notable changes in 0.10, refer to the release notes for the
 0.10.0 release at https://github.com/bitcoin/bitcoin/blob/v0.10.0/doc/release-notes.md
 
 0.10.1 Change log
-=================
+-----------------
 
 Detailed release notes follow. This overview includes changes that affect external
 behavior, not code moves, refactors or string updates.
 
-RPC:
+### RPC
+
 - `7f502be` fix crash: createmultisig and addmultisigaddress
 - `eae305f` Fix missing lock in submitblock
 
-Block (database) and transaction handling:
+### Block (database) and transaction handling
+
 - `1d2cdd2` Fix InvalidateBlock to add chainActive.Tip to setBlockIndexCandidates
 - `c91c660` fix InvalidateBlock to repopulate setBlockIndexCandidates
 - `002c8a2` fix possible block db breakage during re-index
@@ -69,7 +72,8 @@ Block (database) and transaction handling:
 - `57d1f46` Fix CheckBlockIndex for reindex
 - `bac6fca` Set nSequenceId when a block is fully linked
 
-P2P protocol and network code:
+### P2P protocol and network code
+
 - `78f64ef` don't trickle for whitelisted nodes
 - `ca301bf` Reduce fingerprinting through timestamps in 'addr' messages.
 - `200f293` Ignore getaddr messages on Outbound connections.
@@ -81,24 +85,30 @@ P2P protocol and network code:
 - `aa587d4` Scale up addrman (countermeasure 6 against eclipse attacks)
 - `139cd81` Cap nAttempts penalty at 8 and switch to pow instead of a division loop
 
-Validation:
+### Validation
+
 - `d148f62` Acquire CCheckQueue's lock to avoid race condition
 
-Build system:
+### Build system
+
 - `8752b5c` 0.10 fix for crashes on OSX 10.6
 
-Wallet:
+### Wallet
+
 - N/A
 
-GUI:
+### GUI
+
 - `2c08406` some mac specifiy cleanup (memory handling, unnecessary code)
 - `81145a6` fix OSX dock icon window reopening
 - `786cf72` fix a issue where "command line options"-action overwrite "Preference"-action (on OSX)
 
-Tests:
+### Tests
+
 - `1117378` add RPC test for InvalidateBlock
 
-Miscellaneous:
+### Miscellaneous
+
 - `c9e022b` Initialization: set Boost path locale in main thread
 - `23126a0` Sanitize command strings before logging them.
 - `323de27` Initialization: setup environment before starting Qt tests
@@ -106,7 +116,7 @@ Miscellaneous:
 - `df45564` Initialization: set fallback locale as environment variable
 
 Credits
-=======
+-------
 
 Thanks to everyone who directly contributed to this release:
 
@@ -126,6 +136,7 @@ Thanks to everyone who directly contributed to this release:
 - Wladimir J. van der Laan
 
 And all those who contributed additional code review and/or security research:
+
 - 21E14
 - Alison Kendler
 - Aviv Zohar

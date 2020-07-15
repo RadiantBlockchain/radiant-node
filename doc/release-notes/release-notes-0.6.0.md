@@ -1,28 +1,37 @@
+Bitcoin-Qt 0.6.0
+================
+
 Bitcoin version 0.6.0 is now available for download at:
-http://sourceforge.net/projects/bitcoin/files/Bitcoin/bitcoin-0.6.0/test/
+<http://sourceforge.net/projects/bitcoin/files/Bitcoin/bitcoin-0.6.0/test/>
 
 This release includes more than 20 language localizations.
 More translations are welcome; join the
 project at Transifex to help:
-https://www.transifex.net/projects/p/bitcoin/
+<https://www.transifex.net/projects/p/bitcoin/>
 
 Please report bugs using the issue tracker at github:
-https://github.com/bitcoin/bitcoin/issues
+<https://github.com/bitcoin/bitcoin/issues>
 
 Project source code is hosted at github; we are no longer
 distributing .tar.gz files here, you can get them
 directly from github:
-https://github.com/bitcoin/bitcoin/tarball/v0.6.0  # .tar.gz
-https://github.com/bitcoin/bitcoin/zipball/v0.6.0  # .zip
+
+* <https://github.com/bitcoin/bitcoin/tarball/v0.6.0>  # .tar.gz
+* <https://github.com/bitcoin/bitcoin/zipball/v0.6.0>  # .zip
 
 For Ubuntu users, there is a ppa maintained by Matt Corallo which
 you can add to your system so that it will automatically keep
 bitcoin up-to-date.  Just type
+
+```
 sudo apt-add-repository ppa:bitcoin/bitcoin
+```
+
 in your terminal, then install the bitcoin-qt package.
 
 
 KNOWN ISSUES
+------------
 
 Shutting down while synchronizing with the network
 (downloading the blockchain) can take more than a minute,
@@ -31,6 +40,7 @@ time.
 
 
 NEW FEATURES SINCE BITCOIN VERSION 0.5
+--------------------------------------
 
 Initial network synchronization should be much faster
 (one or two hours on a typical machine instead of ten or more
@@ -82,6 +92,7 @@ information (generate/genproclimit/hashespersec).
 
 
 NOTABLE CHANGES
+---------------
 
 BIP30 implemented (security fix for an attack involving
 duplicate "coinbase transactions").
@@ -103,6 +114,7 @@ attacks were fixed.
 
 
 NOT YET IMPLEMENTED FEATURES
+----------------------------
 
 Support for clicking on bitcoin: URIs and
 opening/launching Bitcoin-Qt is available only on Linux,
@@ -113,6 +125,7 @@ payment.
 
 
 PRELIMINARY SUPPORT FOR MULTISIGNATURE TRANSACTIONS
+---------------------------------------------------
 
 This release has preliminary support for multisignature
 transactions-- transactions that require authorization

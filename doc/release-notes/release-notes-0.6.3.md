@@ -1,12 +1,16 @@
+Bitcoin-Qt 0.6.3
+================
+
 Bitcoin version 0.6.3 is now available for download at:
-  http://sourceforge.net/projects/bitcoin/files/Bitcoin/bitcoin-0.6.3/
+  <http://sourceforge.net/projects/bitcoin/files/Bitcoin/bitcoin-0.6.3/>
 
 This is a bug-fix release, with no new features.
 
 Please report bugs using the issue tracker at github:
-  https://github.com/bitcoin/bitcoin/issues
+  <https://github.com/bitcoin/bitcoin/issues>
 
 CHANGE SUMMARY
+--------------
 
 Fixed a serious denial-of-service attack that could cause the
 bitcoin process to become unresponsive. Thanks to Sergio Lerner

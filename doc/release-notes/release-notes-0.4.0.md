@@ -1,5 +1,8 @@
+Bitcoin 0.4.0
+=============
+
 Bitcoin version 0.4.0 is now available for download at:
-http://sourceforge.net/projects/bitcoin/files/Bitcoin/bitcoin-0.4.0/
+<http://sourceforge.net/projects/bitcoin/files/Bitcoin/bitcoin-0.4.0/>
 
 The main feature in this release is wallet private key encryption;
 you can set a passphrase that must be entered before sending coins.
@@ -16,7 +19,8 @@ the it may be unable to start because bdb 4.7 cannot read bdb 4.8
 "log" files.
 
 
-Notable bug fixes from version 0.3.24:
+Notable bug fixes from version 0.3.24
+-------------------------------------
 
 Fix several bitcoin-becomes-unresponsive bugs due to multithreading
 deadlocks.
@@ -26,6 +30,7 @@ Optimize database writes for large (lots of inputs) transactions
 
 
 Wallet Encryption
+-----------------
 
 Bitcoin supports native wallet encryption so that people who steal your
 wallet file don't automatically get access to all of your Bitcoins.
