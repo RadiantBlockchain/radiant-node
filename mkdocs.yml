@@ -309,10 +309,7 @@ nav:
         - ZeroMQ: doc/zmq.md
     - Technical standards:
         - BIPs: doc/bips.md
-        - UAHF:
-            - doc/abc/uahf-technical-spec.md
-            - doc/abc/replay-protected-sighash.md
-            - doc/abc/uahf-test-plan.md
+        - Bitcoin Cash upgrades: doc/bch-upgrades.md
         - getblocktemplatelight: doc/getblocktemplatelight.md
         - XVersionMessage: doc/xversionmessage.md
     - Development:
