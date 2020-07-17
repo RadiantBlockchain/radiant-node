@@ -42,5 +42,8 @@ if(BUILD_BITCOIN_WALLET)
 	target_link_libraries(bench_bitcoin wallet)
 endif()
 
-add_custom_target(bench-bitcoin COMMAND bench_bitcoin USES_TERMINAL)
+include(InstallationHelper)
+install_target(bench_bitcoin EXCLUDE_FROM_ALL)
+
+add_custom_target(bench-bitcoin COMMAND bitcoin-bench USES_TERMINAL)
 add_custom_target(bitcoin-bench DEPENDS bench_bitcoin)
