@@ -19,7 +19,7 @@ from typing import Callable
 from .authproxy import JSONRPCException
 from . import coverage
 from .test_node import TestNode
-from .mininode import NetworkThread
+from .p2p import NetworkThread
 from .util import (
     assert_equal,
     check_json_precision,

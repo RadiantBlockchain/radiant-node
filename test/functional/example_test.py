@@ -16,7 +16,7 @@ from collections import defaultdict
 # Avoid wildcard * imports if possible
 from test_framework.blocktools import (create_block, create_coinbase)
 from test_framework.messages import (CInv, MSG_BLOCK, msg_block, msg_getdata)
-from test_framework.mininode import (
+from test_framework.p2p import (
     P2PInterface,
     p2p_lock,
 )

@@ -11,7 +11,7 @@ from test_framework.address import base58_to_byte
 from test_framework.blocktools import create_raw_transaction, create_tx_with_script
 from test_framework.key import ECKey
 from test_framework.messages import CTransaction, FromHex, ToHex, COIN
-from test_framework.mininode import P2PInterface, p2p_lock
+from test_framework.p2p import P2PInterface, p2p_lock
 from test_framework.script import CScript, OP_TRUE, OP_FALSE, SignatureHashForkIdFromValues
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import (

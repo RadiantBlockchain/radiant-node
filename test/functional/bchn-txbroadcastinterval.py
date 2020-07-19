@@ -11,7 +11,7 @@ The outbound interval should be half of the inbound
 import time
 
 from test_framework.cdefs import MAX_INV_BROADCAST_INTERVAL
-from test_framework.mininode import P2PInterface, p2p_lock
+from test_framework.p2p import P2PInterface, p2p_lock
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import wait_until, connect_nodes, disconnect_nodes
 from scipy import stats

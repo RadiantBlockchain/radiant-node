@@ -5,7 +5,7 @@
 """ Test for the -rejectsubversion CLI arg """
 
 from test_framework.messages import MY_SUBVERSION
-from test_framework.mininode import P2PInterface
+from test_framework.p2p import P2PInterface
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import wait_until
 
