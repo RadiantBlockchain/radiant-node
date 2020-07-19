@@ -11,7 +11,7 @@ The outbound interval should be half of the inbound
 import time
 
 from test_framework.cdefs import MAX_INV_BROADCAST_INTERVAL
-from test_framework.mininode import P2PInterface, mininode_lock
+from test_framework.mininode import P2PInterface, p2p_lock
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import wait_until, connect_nodes, disconnect_nodes
 from scipy import stats
@@ -121,11 +121,11 @@ class TxBroadcastIntervalTest(BitcoinTestFramework):
 
         wait_until(
             lambda: len(inboundReceiver.invTimes) == self.options.samplesize,
-            lock=mininode_lock,
+            lock=p2p_lock,
             timeout=self.options.samplesize * self.options.interval / 1000 * 2)
         wait_until(
             lambda: len(outboundReceiver.invTimes) == self.options.samplesize,
-            lock=mininode_lock,
+            lock=p2p_lock,
             timeout=self.options.samplesize * self.options.interval / 1000)
 
         inboundkstestresult = stats.kstest(inboundReceiver.invDelays, stats.expon(scale=self.scale).cdf)

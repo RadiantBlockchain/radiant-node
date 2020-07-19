@@ -10,7 +10,7 @@ Test that the DERSIG soft-fork activates at (regtest) height 1251.
 from test_framework.blocktools import create_block, create_coinbase, create_transaction
 from test_framework.messages import msg_block, ToHex
 from test_framework.mininode import (
-    mininode_lock,
+    p2p_lock,
     P2PInterface,
 )
 from test_framework.script import CScript
@@ -105,8 +105,8 @@ class BIP66Test(BitcoinTestFramework):
             self.nodes[0].p2p.sync_with_ping()
 
         wait_until(lambda: "reject" in self.nodes[0].p2p.last_message.keys(),
-                   lock=mininode_lock)
-        with mininode_lock:
+                   lock=p2p_lock)
+        with p2p_lock:
             assert self.nodes[0].p2p.last_message["reject"].code in [
                 REJECT_INVALID, REJECT_NONSTANDARD]
             assert_equal(

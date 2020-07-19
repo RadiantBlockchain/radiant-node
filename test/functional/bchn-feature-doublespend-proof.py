@@ -11,7 +11,7 @@ from test_framework.address import base58_to_byte
 from test_framework.blocktools import create_raw_transaction, create_tx_with_script
 from test_framework.key import ECKey
 from test_framework.messages import CTransaction, FromHex, ToHex, COIN
-from test_framework.mininode import P2PInterface, mininode_lock
+from test_framework.mininode import P2PInterface, p2p_lock
 from test_framework.script import CScript, OP_TRUE, OP_FALSE, SignatureHashForkIdFromValues
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import (
@@ -90,7 +90,7 @@ class DoubleSpendProofTest(BitcoinTestFramework):
         self.nodes[1].call_rpc('sendrawtransaction', secondDSTx, ignore_error='txn-mempool-conflict')
         wait_until(
             lambda: dspReceiver.message_count["dsproof-beta"] == 1,
-            lock=mininode_lock,
+            lock=p2p_lock,
             timeout=25
         )
 
@@ -137,7 +137,7 @@ class DoubleSpendProofTest(BitcoinTestFramework):
             AssertionError,
             wait_until,
             lambda: dspReceiver.message_count["dsproof-beta"] == 2 or dspReceiver.message_count["tx"] == 2,
-            lock=mininode_lock,
+            lock=p2p_lock,
             timeout=5
         )
 
@@ -165,7 +165,7 @@ class DoubleSpendProofTest(BitcoinTestFramework):
             AssertionError,
             wait_until,
             lambda: dspReceiver.message_count["dsproof-beta"] == 2,
-            lock=mininode_lock,
+            lock=p2p_lock,
             timeout=5
         )
 
@@ -182,7 +182,7 @@ class DoubleSpendProofTest(BitcoinTestFramework):
 
         wait_until(
             lambda: dspReceiver.message_count["dsproof-beta"] == 2,
-            lock=mininode_lock,
+            lock=p2p_lock,
             timeout=5
         )
         dsp2 = dspReceiver.last_message["dsproof-beta"].dsproof
@@ -223,7 +223,7 @@ class DoubleSpendProofTest(BitcoinTestFramework):
         # to be P2PKH.
         wait_until(
             lambda: dspReceiver.message_count["dsproof-beta"] == 3,
-            lock=mininode_lock,
+            lock=p2p_lock,
             timeout=5
         )
         dsp3 = dspReceiver.last_message["dsproof-beta"].dsproof
@@ -262,7 +262,7 @@ class DoubleSpendProofTest(BitcoinTestFramework):
         # We get a dsproof.
         wait_until(
             lambda: dspReceiver.message_count["dsproof-beta"] == 4,
-            lock=mininode_lock,
+            lock=p2p_lock,
             timeout=5
         )
         dsp4 = dspReceiver.last_message["dsproof-beta"].dsproof
@@ -288,7 +288,7 @@ class DoubleSpendProofTest(BitcoinTestFramework):
             AssertionError,
             wait_until,
             lambda: dspReceiver.message_count["dsproof-beta"] == 5,
-            lock=mininode_lock,
+            lock=p2p_lock,
             timeout=5
         )
 
@@ -319,7 +319,7 @@ class DoubleSpendProofTest(BitcoinTestFramework):
         )
         wait_until(
             lambda: dspReceiver.message_count["dsproof-beta"] == 5,
-            lock=mininode_lock,
+            lock=p2p_lock,
             timeout=5
         )
 

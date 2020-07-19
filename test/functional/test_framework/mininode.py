@@ -187,7 +187,7 @@ class P2PConnection(asyncio.Protocol):
         if len(t) < 1:
             return
 
-        with mininode_lock:
+        with p2p_lock:
             self.recvbuf.extend(t)
 
         while True:
@@ -203,7 +203,7 @@ class P2PConnection(asyncio.Protocol):
         parses and verifies the P2P header, then passes the P2P payload to
         the on_message callback for processing."""
         try:
-            with mininode_lock:
+            with p2p_lock:
                 if len(self.recvbuf) < 4:
                     return None
                 if self.recvbuf[:4] != self.magic_bytes:
@@ -344,7 +344,7 @@ class P2PInterface(P2PConnection):
 
         We keep a count of how many of each message type has been received
         and the most recent message of each type."""
-        with mininode_lock:
+        with p2p_lock:
             try:
                 msgtype = message.msgtype.decode('ascii')
                 self.message_count[msgtype] += 1
@@ -435,7 +435,7 @@ class P2PInterface(P2PConnection):
 
     def wait_for_disconnect(self, timeout=60):
         def test_function(): return not self.is_connected
-        wait_until(test_function, timeout=timeout, lock=mininode_lock)
+        wait_until(test_function, timeout=timeout, lock=p2p_lock)
 
     # Message receiving helper methods
 
@@ -445,12 +445,12 @@ class P2PInterface(P2PConnection):
                 return False
             return self.last_message['tx'].tx.rehash() == txid
 
-        wait_until(test_function, timeout=timeout, lock=mininode_lock)
+        wait_until(test_function, timeout=timeout, lock=p2p_lock)
 
     def wait_for_block(self, blockhash, timeout=60):
         def test_function(): return self.last_message.get(
             "block") and self.last_message["block"].block.rehash() == blockhash
-        wait_until(test_function, timeout=timeout, lock=mininode_lock)
+        wait_until(test_function, timeout=timeout, lock=p2p_lock)
 
     def wait_for_header(self, blockhash, timeout=60):
         def test_function():
@@ -459,7 +459,7 @@ class P2PInterface(P2PConnection):
                 return False
             return last_headers.headers[0].rehash() == int(blockhash, 16)
 
-        wait_until(test_function, timeout=timeout, lock=mininode_lock)
+        wait_until(test_function, timeout=timeout, lock=p2p_lock)
 
     def wait_for_merkleblock(self, blockhash, timeout=60):
         def test_function():
@@ -469,7 +469,7 @@ class P2PInterface(P2PConnection):
                 return False
             return last_filtered_block.merkleblock.header.rehash() == int(blockhash, 16)
 
-        wait_until(test_function, timeout=timeout, lock=mininode_lock)
+        wait_until(test_function, timeout=timeout, lock=p2p_lock)
 
     def wait_for_getdata(self, timeout=60):
         """Waits for a getdata message.
@@ -479,7 +479,7 @@ class P2PInterface(P2PConnection):
         immediately with success. TODO: change this method to take a hash value and only
         return true if the correct block/tx has been requested."""
         def test_function(): return self.last_message.get("getdata")
-        wait_until(test_function, timeout=timeout, lock=mininode_lock)
+        wait_until(test_function, timeout=timeout, lock=p2p_lock)
 
     def wait_for_getheaders(self, timeout=60):
         """Waits for a getheaders message.
@@ -489,7 +489,7 @@ class P2PInterface(P2PConnection):
         immediately with success. TODO: change this method to take a hash value and only
         return true if the correct block header has been requested."""
         def test_function(): return self.last_message.get("getheaders")
-        wait_until(test_function, timeout=timeout, lock=mininode_lock)
+        wait_until(test_function, timeout=timeout, lock=p2p_lock)
 
     def wait_for_inv(self, expected_inv, timeout=60):
         """Waits for an INV message and checks that the first inv object in the message was as expected."""
@@ -500,11 +500,11 @@ class P2PInterface(P2PConnection):
         def test_function(): return self.last_message.get("inv") and \
             self.last_message["inv"].inv[0].type == expected_inv[0].type and \
             self.last_message["inv"].inv[0].hash == expected_inv[0].hash
-        wait_until(test_function, timeout=timeout, lock=mininode_lock)
+        wait_until(test_function, timeout=timeout, lock=p2p_lock)
 
     def wait_for_verack(self, timeout=60):
         def test_function(): return self.message_count["verack"]
-        wait_until(test_function, timeout=timeout, lock=mininode_lock)
+        wait_until(test_function, timeout=timeout, lock=p2p_lock)
 
     # Message sending helper functions
 
@@ -520,7 +520,7 @@ class P2PInterface(P2PConnection):
             if not self.last_message.get("pong"):
                 return False
             return self.last_message["pong"].nonce == self.ping_counter
-        wait_until(test_function, timeout=timeout, lock=mininode_lock)
+        wait_until(test_function, timeout=timeout, lock=p2p_lock)
         self.ping_counter += 1
 
 
@@ -529,7 +529,7 @@ class P2PInterface(P2PConnection):
 # P2PConnection acquires this lock whenever delivering a message to a P2PInterface.
 # This lock should be acquired in the thread running the test logic to synchronize
 # access to any data shared with the P2PInterface or P2PConnection.
-mininode_lock = threading.RLock()
+p2p_lock = threading.RLock()
 
 
 class NetworkThread(threading.Thread):
@@ -629,7 +629,7 @@ class P2PDataStore(P2PInterface):
          - if success is False: assert that the node's tip doesn't advance
          - if reject_reason is set: assert that the correct reject message is logged"""
 
-        with mininode_lock:
+        with p2p_lock:
             for block in blocks:
                 self.block_store[block.sha256] = block
                 self.last_block_hash = block.sha256
@@ -640,7 +640,7 @@ class P2PDataStore(P2PInterface):
 
             if request_block:
                 wait_until(
-                    lambda: blocks[-1].sha256 in self.getdata_requests, timeout=timeout, lock=mininode_lock)
+                    lambda: blocks[-1].sha256 in self.getdata_requests, timeout=timeout, lock=p2p_lock)
 
             if expect_disconnect:
                 self.wait_for_disconnect(timeout=timeout)
@@ -663,7 +663,7 @@ class P2PDataStore(P2PInterface):
          - if expect_disconnect is True: Skip the sync with ping
          - if reject_reason is set: assert that the correct reject message is logged."""
 
-        with mininode_lock:
+        with p2p_lock:
             for tx in txs:
                 self.tx_store[tx.sha256] = tx
 
