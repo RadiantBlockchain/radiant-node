@@ -19,7 +19,7 @@ don't intend to run the benchmark tool.
 BerkeleyDB 5.3 or later is required for the wallet. This can be installed with:
 
 ```bash
-    sudo dnf libdb-cxx-devel libdb-devel
+    sudo dnf install libdb-cxx-devel libdb-devel
 ```
 
 If you also want to build the GUI client `bitcoin-qt` Qt 5 is necessary.
