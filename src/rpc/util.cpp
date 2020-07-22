@@ -91,26 +91,26 @@ CScript CreateMultisigRedeemscript(const int required,
 }
 
 class DescribeAddressVisitor : public boost::static_visitor<void> {
-    UniValue::ObjectEntries& entries;
+    UniValue::Object& obj;
 public:
-    explicit DescribeAddressVisitor(UniValue::ObjectEntries& _entries) : entries(_entries) {}
+    explicit DescribeAddressVisitor(UniValue::Object& _obj) : obj(_obj) {}
 
     void operator()(const CNoDestination &dest) const {
     }
 
     void operator()(const CKeyID &keyID) const {
-        entries.emplace_back("isscript", false);
+        obj.emplace_back("isscript", false);
     }
 
     void operator()(const CScriptID &scriptID) const {
-        entries.emplace_back("isscript", true);
+        obj.emplace_back("isscript", true);
     }
 };
 
 // Upstream version of this function has only one argument and returns an intermediate UniValue object.
 // Instead, our version directly appends the new key-value pairs to the target UniValue object.
-void DescribeAddress(const CTxDestination &dest, UniValue::ObjectEntries& entries) {
-    boost::apply_visitor(DescribeAddressVisitor(entries), dest);
+void DescribeAddress(const CTxDestination &dest, UniValue::Object& obj) {
+    boost::apply_visitor(DescribeAddressVisitor(obj), dest);
 }
 
 std::string RPCHelpMan::ToString() const {

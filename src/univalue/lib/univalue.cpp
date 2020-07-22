@@ -139,13 +139,13 @@ void UniValue::setArray() noexcept
     setNull();
     typ = VARR;
 }
-void UniValue::setArray(const ArrayValues& vec)
+void UniValue::setArray(const Array& vec)
 {
     setNull();
     typ = VARR;
     values = vec;
 }
-void UniValue::setArray(ArrayValues&& vec) noexcept
+void UniValue::setArray(Array&& vec) noexcept
 {
     setNull();
     typ = VARR;

@@ -30,9 +30,9 @@ CScript CreateMultisigRedeemscript(const int required,
 
 /**
  * Appends key-value pairs to entries describing the address dest.
- * entries is the non-const getObjectEntries() of the UniValue object to append to.
+ * obj is the UniValue object to append to.
  */
-void DescribeAddress(const CTxDestination &dest, UniValue::ObjectEntries& entries);
+void DescribeAddress(const CTxDestination &dest, UniValue::Object& obj);
 
 struct RPCArg {
     enum class Type {
