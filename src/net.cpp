@@ -2577,9 +2577,8 @@ void CConnman::MarkAddressGood(const CAddress &addr) {
     addrman.Good(addr);
 }
 
-void CConnman::AddNewAddresses(const std::vector<CAddress> &vAddr,
-                               const CAddress &addrFrom, int64_t nTimePenalty) {
-    addrman.Add(vAddr, addrFrom, nTimePenalty);
+bool CConnman::AddNewAddresses(const std::vector<CAddress> &vAddr, const CAddress &addrFrom, int64_t nTimePenalty) {
+    return addrman.Add(vAddr, addrFrom, nTimePenalty);
 }
 
 std::vector<CAddress> CConnman::GetAddresses(size_t max_addresses, size_t max_pct) {

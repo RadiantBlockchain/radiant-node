@@ -170,6 +170,7 @@ static const CRPCConvertParam vRPCConvertParams[] = {
     {"createwallet", 1, "disable_private_keys"},
     {"createwallet", 2, "blank"},
     {"getnodeaddresses", 0, "count"},
+    { "addpeeraddress", 1, "port"},
     {"stop", 0, "wait"},
     // ABC specific RPC
     {"setexcessiveblock", 0, "maxBlockSize"},
