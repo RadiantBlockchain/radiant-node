@@ -156,6 +156,11 @@ static constexpr unsigned int AVG_FEEFILTER_BROADCAST_INTERVAL = 10 * 60 * 1000;
  */
 static constexpr unsigned int MAX_FEEFILTER_CHANGE_DELAY = 5 * 60;
 
+/**
+ * The maximum percentage of addresses from our addrman to return in response to a getaddr message.
+ */
+static constexpr size_t MAX_PCT_ADDR_TO_SEND = 23;
+
 // Internal stuff
 namespace {
 /** Number of nodes with fSyncStarted. */
@@ -3605,10 +3610,10 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         pfrom->vAddrToSend.clear();
         std::vector<CAddress> vAddr;
         if (pfrom->HasPermission(PF_ADDR)) {
-            vAddr = connman->GetAddresses();
+            vAddr = connman->GetAddresses(MAX_ADDR_TO_SEND, MAX_PCT_ADDR_TO_SEND);
         } else {
             // send a cached set of addresses so as to prevent topology leaks
-            vAddr = connman->GetAddressesUntrusted(pfrom->addr.GetNetwork());
+            vAddr = connman->GetAddressesUntrusted(pfrom->addr.GetNetwork(), MAX_ADDR_TO_SEND, MAX_PCT_ADDR_TO_SEND);
         }
         FastRandomContext insecure_rand;
         for (const CAddress &addr : vAddr) {

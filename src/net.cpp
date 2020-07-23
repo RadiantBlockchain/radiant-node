@@ -2582,8 +2582,8 @@ void CConnman::AddNewAddresses(const std::vector<CAddress> &vAddr,
     addrman.Add(vAddr, addrFrom, nTimePenalty);
 }
 
-std::vector<CAddress> CConnman::GetAddresses() {
-    auto addresses = addrman.GetAddr();
+std::vector<CAddress> CConnman::GetAddresses(size_t max_addresses, size_t max_pct) {
+    auto addresses = addrman.GetAddr(max_addresses, max_pct);
     if (m_banman) {
         auto toBeRemoved = [this](const CAddress &addr) {
             return m_banman->IsDiscouraged(addr) || m_banman->IsBanned(addr);
@@ -2593,7 +2593,8 @@ std::vector<CAddress> CConnman::GetAddresses() {
     return addresses;
 }
 
-std::vector<CAddress> CConnman::GetAddressesUntrusted(Network requestor_network) {
+std::vector<CAddress> CConnman::GetAddressesUntrusted(Network requestor_network, size_t max_addresses,
+                                                      size_t max_pct) {
     LOCK(cs_addr_response_caches);
     const auto current_time = GetTime<std::chrono::microseconds>();
 
@@ -2602,10 +2603,14 @@ std::vector<CAddress> CConnman::GetAddressesUntrusted(Network requestor_network)
     CachedAddrResponse & cached = m_addr_response_caches.try_emplace(requestor_network).first->second;
 
     if (cached.m_update_addr_response < current_time || cached.m_addrs_response_cache.empty()) {
-        cached.m_addrs_response_cache = GetAddresses();
+        cached.m_addrs_response_cache = GetAddresses(max_addresses, max_pct);
         cached.m_update_addr_response = current_time + std::chrono::hours(21) + GetRandMillis(std::chrono::hours(6));
     }
-    return cached.m_addrs_response_cache;
+
+    std::vector<CAddress> ret{cached.m_addrs_response_cache};
+    // Truncate results if they are larger than specified.
+    if (max_addresses > 0 && ret.size() > max_addresses) ret.resize(max_addresses);
+    return ret;
 }
 
 bool CConnman::AddNode(const std::string &strNode) {
