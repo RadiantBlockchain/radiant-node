@@ -1,6 +1,9 @@
+Bitcoin Core 0.9.5
+==================
+
 Bitcoin Core version 0.9.5 is now available from:
 
-  https://bitcoin.org/bin/0.9.5/
+  <https://bitcoin.org/bin/0.9.5/>
 
 This is a new minor version release, with the goal of backporting BIP66. There
 are also a few bug fixes and updated translations. Upgrading to this release is
@@ -8,10 +11,10 @@ recommended.
 
 Please report bugs using the issue tracker at github:
 
-  https://github.com/bitcoin/bitcoin/issues
+  <https://github.com/bitcoin/bitcoin/issues>
 
 How to Upgrade
-===============
+--------------
 
 If you are running an older version, shut it down. Wait until it has completely
 shut down (which might take a few minutes for older versions), then run the
@@ -19,10 +22,9 @@ installer (on Windows) or just copy over /Applications/Bitcoin-Qt (on Mac) or
 bitcoind/bitcoin-qt (on Linux).
 
 Notable changes
-================
+---------------
 
-Mining and relay policy enhancements
-------------------------------------
+### Mining and relay policy enhancements
 
 Bitcoin Core's block templates are now for version 3 blocks only, and any mining
 software relying on its `getblocktemplate` must be updated in parallel to use
@@ -35,7 +37,7 @@ you at the pool operator's discretion, which must be no later than BIP66
 achieving its 951/1001 status.
 
 0.9.5 changelog
-================
+---------------
 
 - `74f29c2` Check pindexBestForkBase for null
 - `9cd1dd9` Fix priority calculation in CreateTransaction
@@ -46,7 +48,7 @@ achieving its 951/1001 status.
 - `8438074` build: fix dynamic boost check when --with-boost= is used
 
 Credits
---------
+-------
 
 Thanks to who contributed to this release, at least:
 

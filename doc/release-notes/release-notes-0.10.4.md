@@ -1,3 +1,6 @@
+Bitcoin Core 0.10.4
+===================
+
 Bitcoin Core version 0.10.4 is now available from:
 
   <https://bitcoin.org/bin/bitcoin-core-0.10.4/>
@@ -11,18 +14,16 @@ Please report bugs using the issue tracker at github:
   <https://github.com/bitcoin/bitcoin/issues>
 
 Upgrading and downgrading
-=========================
+-------------------------
 
-How to Upgrade
---------------
+### How to Upgrade
 
 If you are running an older version, shut it down. Wait until it has completely
 shut down (which might take a few minutes for older versions), then run the
 installer (on Windows) or just copy over /Applications/Bitcoin-Qt (on Mac) or
 bitcoind/bitcoin-qt (on Linux).
 
-Downgrade warning
-------------------
+### Downgrade warning
 
 Because release 0.10.0 and later makes use of headers-first synchronization and
 parallel block download (see further), the block files and databases are not
@@ -46,10 +47,9 @@ This does not affect wallet forward or backward compatibility. There are no
 known problems when downgrading from 0.11.x to 0.10.x.
 
 Notable changes since 0.10.3
-============================
+----------------------------
 
-BIP65 soft fork to enforce OP_CHECKLOCKTIMEVERIFY opcode
---------------------------------------------------------
+### BIP65 soft fork to enforce OP_CHECKLOCKTIMEVERIFY opcode
 
 This release includes several changes related to the [BIP65][] soft fork
 which redefines the existing OP_NOP2 opcode as OP_CHECKLOCKTIMEVERIFY
@@ -97,8 +97,7 @@ version FIXME or any version from FIXME onward.
 
 [BIP65]: https://github.com/bitcoin/bips/blob/master/bip-0065.mediawiki
 
-Windows bug fix for corrupted UTXO database on unclean shutdowns
-----------------------------------------------------------------
+### Windows bug fix for corrupted UTXO database on unclean shutdowns
 
 Several Windows users reported that they often need to reindex the
 entire blockchain after an unclean shutdown of Bitcoin Core on Windows
@@ -113,41 +112,41 @@ Other fixes for database corruption on Windows are expected in the
 next major release.
 
 0.10.4 Change log
-=================
+-----------------
 
 Detailed release notes follow. This overview includes changes that affect
 behavior, not code moves, refactors and string updates. For convenience in locating
 the code changes and accompanying discussion, both the pull request and
 git merge commit are mentioned.
 
-- #6953 `8b3311f` alias -h for --help
-- #6953 `97546fc` Change URLs to https in debian/control
-- #6953 `38671bf` Update debian/changelog and slight tweak to debian/control
-- #6953 `256321e` Correct spelling mistakes in doc folder
-- #6953 `eae0350` Clarification of unit test build instructions
-- #6953 `90897ab` Update bluematt-key, the old one is long-since revoked
-- #6953 `a2f2fb6` build: disable -Wself-assign
-- #6953 `cf67d8b` Bugfix: Allow mining on top of old tip blocks for testnet (fixes testnet-in-a-box use case)
-- #6953 `b3964e3` Drop "with minimal dependencies" from description
-- #6953 `43c2789` Split bitcoin-tx into its own package
-- #6953 `dfe0d4d` Include bitcoin-tx binary on Debian/Ubuntu
-- #6953 `612efe8` [Qt] Raise debug window when requested
-- #6953 `3ad96bd` Fix locking in GetTransaction
-- #6953 `9c81005` Fix spelling of Qt
-- #6946 `94b67e5` Update LevelDB
-- #6706 `5dc72f8` CLTV: Add more tests to improve coverage
-- #6706 `6a1343b` Add RPC tests for the CHECKLOCKTIMEVERIFY (BIP65) soft-fork
-- #6706 `4137248` Add CHECKLOCKTIMEVERIFY (BIP65) soft-fork logic
-- #6706 `0e01d0f` Enable CHECKLOCKTIMEVERIFY as a standard script verify flag
-- #6706 `6d01325` Replace NOP2 with CHECKLOCKTIMEVERIFY (BIP65)
-- #6706 `750d54f` Move LOCKTIME_THRESHOLD to src/script/script.h
-- #6706 `6897468` Make CScriptNum() take nMaxNumSize as an argument
-- #6867 `5297194` Set TCP_NODELAY on P2P sockets
-- #6836 `fb818b6` Bring historical release notes up to date
-- #6852 `0b3fd07` build: make sure OpenSSL heeds noexecstack
+- \#6953 `8b3311f` alias -h for --help
+- \#6953 `97546fc` Change URLs to https in debian/control
+- \#6953 `38671bf` Update debian/changelog and slight tweak to debian/control
+- \#6953 `256321e` Correct spelling mistakes in doc folder
+- \#6953 `eae0350` Clarification of unit test build instructions
+- \#6953 `90897ab` Update bluematt-key, the old one is long-since revoked
+- \#6953 `a2f2fb6` build: disable -Wself-assign
+- \#6953 `cf67d8b` Bugfix: Allow mining on top of old tip blocks for testnet (fixes testnet-in-a-box use case)
+- \#6953 `b3964e3` Drop "with minimal dependencies" from description
+- \#6953 `43c2789` Split bitcoin-tx into its own package
+- \#6953 `dfe0d4d` Include bitcoin-tx binary on Debian/Ubuntu
+- \#6953 `612efe8` [Qt] Raise debug window when requested
+- \#6953 `3ad96bd` Fix locking in GetTransaction
+- \#6953 `9c81005` Fix spelling of Qt
+- \#6946 `94b67e5` Update LevelDB
+- \#6706 `5dc72f8` CLTV: Add more tests to improve coverage
+- \#6706 `6a1343b` Add RPC tests for the CHECKLOCKTIMEVERIFY (BIP65) soft-fork
+- \#6706 `4137248` Add CHECKLOCKTIMEVERIFY (BIP65) soft-fork logic
+- \#6706 `0e01d0f` Enable CHECKLOCKTIMEVERIFY as a standard script verify flag
+- \#6706 `6d01325` Replace NOP2 with CHECKLOCKTIMEVERIFY (BIP65)
+- \#6706 `750d54f` Move LOCKTIME_THRESHOLD to src/script/script.h
+- \#6706 `6897468` Make CScriptNum() take nMaxNumSize as an argument
+- \#6867 `5297194` Set TCP_NODELAY on P2P sockets
+- \#6836 `fb818b6` Bring historical release notes up to date
+- \#6852 `0b3fd07` build: make sure OpenSSL heeds noexecstack
 
 Credits
-=======
+-------
 
 Thanks to everyone who directly contributed to this release:
 

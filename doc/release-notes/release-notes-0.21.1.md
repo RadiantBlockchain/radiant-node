@@ -126,7 +126,7 @@ all of them on our GitLab repository.
 Changes since Bitcoin Cash Node 0.21.0
 --------------------------------------
 
-**New documents:**
+### New documents
 
 - [xversionmessage.md](../xversionmessage.md) : (protocol) xversion / extversion draft specification
 - [ninja_targets.md](../ninja_targets.md) : (development) describes build system targets
@@ -136,31 +136,31 @@ Changes since Bitcoin Cash Node 0.21.0
 - [build-unix-deb.md](../build-unix-deb.md) : (build, refactor) split out from [build-unix.md](../build-unix.md)
 - [build-unix-rpm.md](../build-unix-rpm.md) : (build, refactor) split out from [build-unix.md](../build-unix.md)
 
-**Removed documents:**
+### Removed documents
 
 - gitian-building/gitian-building-mac-os-sdk.md : obsoleted instructions
 
-**Notable commits grouped by functionality:**
+### Notable commits grouped by functionality
 
-Security or consensus relevant fixes
+#### Security or consensus relevant fixes
 
 - 83252d0 [CVE-2019-18936] Pull UniValue subtree from Bitcoin Core
 - 5a761db [validation.cpp] update 'cousins' during UpdateFlags (Bitcoin ABC)
 
-Interfaces / RPC
+#### Interfaces / RPC
 
 - 0c019c5 Add help text for -parkdeepreorg and -automaticunparking
 - 9d36ab1 Make hidden reorg protection RPC commands visible
 - d0ed11f `getblocktemplate` RPC help fixes
 
-Peformance optimizations
+#### Peformance optimizations
 
 - 54d94d1 Don't park blocks when there is no actual reorg
 - 4e9a173 The parked block marker, pindexBestParked, is set to null if it is about to be cleared.
 - 3be2000 UniValue & RPC Interface: Significant performance improvements
 - 472118a UniValue performance speedups for .write()
 
-GUI
+#### GUI
 
 - 6ce344f Qt: Fix #47; quirk when switching versions after selecting Satoshi (sats)
 - 9f1598b Qt: Set AA_EnableHighDpiScaling before QApplication instance creation
@@ -171,7 +171,7 @@ GUI
 - d0c078b Reorganise main window title (#38)
 - b2bf997 Modify Bitcoin Qt desktop file to reflect we are Bitcoin Cash Node
 
-Code quality
+#### Code quality
 
 - 6786e42 Fix many PVS static analyzer warnings and/or errors
 - 38e9fde13 Fix two compiler warnings (clang 11.0.0)
@@ -182,7 +182,7 @@ Code quality
 - 185b3a6 Restore the arcanist configs (revert of 767c5720)
 - 6c139ae [CMAKE] Factorize the test suite target name construction
 
-Documentation updates
+#### Documentation updates
 
 - ff23d72 [doc] Add revised xversion spec (draft) - provided by Greg Griffith (Bitcoin Unlimited)
 - 41f2204 d50e0f2 939f729 f67fa40 ae737a6 335cdc0 Update contributing, build, developer and gitian docs
@@ -202,21 +202,21 @@ Documentation updates
 - f2deacb Add description new GitLab label: "needs-testing"
 - f187c05d0 Update man pages as per release process
 
-Build / general:
+#### Build / general
 
 - 6d3f9c6 fix inconsistency in benchmark binary name between ninja / autotools build
 - 4493b2a [SECP256K1] Fix ability to compile tests without -DVERIFY.
 - 245c7d14a Exclude gitian-building documents from Windows installer package (NSIS)
 
-Build / Linux:
+#### Build / Linux
 
 - d559b10 Needed changes to get Ubuntu PPA services to buid deb packages
 
-Build / MacOSX:
+#### Build / MacOSX
 
 - 5f22c42 Update to using MacOSX10.11.sdk.tar.xz from Github for gitian building
 
-Tests / test framework
+#### Tests / test framework
 
 - 3d5b166 Add `startfrom` parameter to test_runner
 - 6930a54 [QA] Add extra column in Python Test runner to show order in which tests were run
@@ -226,30 +226,30 @@ Tests / test framework
 - 43b45cb Fix a race condition in abc-finalize-block
 - 2653ef7 [backport] Add test to check that transactions expire from mempool
 
-Benchmarks
+#### Benchmarks
 
 - d8cf0f9 Bench: Added a more complex test to rpc_mempool.cpp
 - 2ece470 Add an additional test, "JsonReadWrite1MBBlockData"
 - dcd0859 Make BlockToJsonVerbose benchmark more challenging
 - 822e0ff bench: Benchmark blockToJSON
 
-Seeds / seeder software
+#### Seeds / seeder software
 
 - 419fa06fe update of static IP seeds
 - 01e8356 Replace BTCfork DNS seeders which are moving to new domain names
 - 254a6a4 Add unit tests for CSeederNode::ProcessMessage()
 
-Maintainer tools
+#### Maintainer tools
 
 - c05d7074d Restore git-subtree-check.sh script
 - fea33a6 Bring univalue back into the subtree list
 - d76918e Move github-release to appropriate contrib sub-directory
 
-Infrastructure
+#### Infrastructure
 
 - dcf4337 Use BCHN download server as fallback for dependencies (depends/)
 
-Cleanup
+#### Cleanup
 
 - dd7e62f Remove GitHub issue template; add Gitlab issue template 'Bug_report' in its place
 - 5f1d605 Use consistent copyright notices
@@ -258,7 +258,7 @@ Cleanup
 - 0e18d69 Remove SegWit references from RPC help
 - c5bbcbd Remove BIP9 and BIP145 references from getblocktemplate RPC help
 
-Continuous Integration (GitLab CI)
+#### Continuous Integration (GitLab CI)
 
 - 290de1a [ci] Add clang build
 - 21e830e ac29dbe [ci] Add 1-eval benchmark execution to test stage
@@ -268,7 +268,7 @@ Continuous Integration (GitLab CI)
 - c00421f [ci] fix functional test runner junit output
 - a9472d8 [ci] Added jobs for remaining qa tests
 
-Backports
+#### Backports
 
 - a693072 Core: #11269: [Mempool] CTxMemPoolEntry::UpdateAncestorState: modifySigOps param type
 - e915394 Core: #12035: [qt] change µBTC to bits

@@ -1,3 +1,6 @@
+Bitcoin Core 0.11.1
+===================
+
 Bitcoin Core version 0.11.1 is now available from:
 
   <https://bitcoin.org/bin/bitcoin-core-0.11.1/>
@@ -10,18 +13,16 @@ Please report bugs using the issue tracker at github:
   <https://github.com/bitcoin/bitcoin/issues>
 
 Upgrading and downgrading
-=========================
+-------------------------
 
-How to Upgrade
---------------
+### How to Upgrade
 
 If you are running an older version, shut it down. Wait until it has completely
 shut down (which might take a few minutes for older versions), then run the
 installer (on Windows) or just copy over /Applications/Bitcoin-Qt (on Mac) or
 bitcoind/bitcoin-qt (on Linux).
 
-Downgrade warning
-------------------
+### Downgrade warning
 
 Because release 0.10.0 and later makes use of headers-first synchronization and
 parallel block download (see further), the block files and databases are not
@@ -45,10 +46,9 @@ This does not affect wallet forward or backward compatibility. There are no
 known problems when downgrading from 0.11.x to 0.10.x.
 
 Notable changes
-===============
+---------------
 
-Fix buffer overflow in bundled upnp
-------------------------------------
+### Fix buffer overflow in bundled upnp
 
 Bundled miniupnpc was updated to 1.9.20151008. This fixes a buffer overflow in
 the XML parser during initial network discovery.
@@ -63,8 +63,7 @@ number of reachable nodes on IPv4, however this prevents future libupnpc
 vulnerabilities from being a structural risk to the network
 (see https://github.com/bitcoin/bitcoin/pull/6795).
 
-Test for LowS signatures before relaying
------------------------------------------
+### Test for LowS signatures before relaying
 
 Make the node require the canonical 'low-s' encoding for ECDSA signatures when
 relaying or mining.  This removes a nuisance malleability vector.
@@ -97,8 +96,7 @@ only eliminates the cheap and irritating DOS attack.
 Marcin Andrychowicz, Stefan Dziembowski, Daniel Malinowski, Łukasz Mazurek
 http://fc15.ifca.ai/preproceedings/bitcoin/paper_9.pdf
 
-Minimum relay fee default increase
------------------------------------
+### Minimum relay fee default increase
 
 The default for the `-minrelaytxfee` setting has been increased from `0.00001`
 to `0.00005`.
@@ -112,32 +110,32 @@ this fee is merged (which will be in 0.12).
 release notes, in which this value was suggested)
 
 0.11.1 Change log
-=================
+-----------------
 
 Detailed release notes follow. This overview includes changes that affect
 behavior, not code moves, refactors and string updates. For convenience in locating
 the code changes and accompanying discussion, both the pull request and
 git merge commit are mentioned.
 
-- #6438 `2531438` openssl: avoid config file load/race
-- #6439 `980f820` Updated URL location of netinstall for Debian
-- #6384 `8e5a969` qt: Force TLS1.0+ for SSL connections
-- #6471 `92401c2` Depends: bump to qt 5.5
-- #6224 `93b606a` Be even stricter in processing unrequested blocks
-- #6571 `100ac4e` libbitcoinconsensus: avoid a crash in multi-threaded environments
-- #6545 `649f5d9` Do not store more than 200 timedata samples.
-- #6694 `834e299` [QT] fix thin space word wrap line break issue
-- #6703 `1cd7952` Backport bugfixes to 0.11
-- #6750 `5ed8d0b` Recent rejects backport to v0.11
-- #6769 `71cc9d9` Test LowS in standardness, removes nuisance malleability vector.
-- #6789 `b4ad73f` Update miniupnpc to 1.9.20151008
-- #6785 `b4dc33e` Backport to v0.11: In (strCommand == "tx"), return if AlreadyHave()
-- #6412 `0095b9a` Test whether created sockets are select()able
-- #6795 `4dbcec0` net: Disable upnp by default
-- #6793 `e7bcc4a` Bump minrelaytxfee default
+- \#6438 `2531438` openssl: avoid config file load/race
+- \#6439 `980f820` Updated URL location of netinstall for Debian
+- \#6384 `8e5a969` qt: Force TLS1.0+ for SSL connections
+- \#6471 `92401c2` Depends: bump to qt 5.5
+- \#6224 `93b606a` Be even stricter in processing unrequested blocks
+- \#6571 `100ac4e` libbitcoinconsensus: avoid a crash in multi-threaded environments
+- \#6545 `649f5d9` Do not store more than 200 timedata samples.
+- \#6694 `834e299` [QT] fix thin space word wrap line break issue
+- \#6703 `1cd7952` Backport bugfixes to 0.11
+- \#6750 `5ed8d0b` Recent rejects backport to v0.11
+- \#6769 `71cc9d9` Test LowS in standardness, removes nuisance malleability vector.
+- \#6789 `b4ad73f` Update miniupnpc to 1.9.20151008
+- \#6785 `b4dc33e` Backport to v0.11: In (strCommand == "tx"), return if AlreadyHave()
+- \#6412 `0095b9a` Test whether created sockets are select()able
+- \#6795 `4dbcec0` net: Disable upnp by default
+- \#6793 `e7bcc4a` Bump minrelaytxfee default
 
 Credits
-=======
+-------
 
 Thanks to everyone who directly contributed to this release:
 

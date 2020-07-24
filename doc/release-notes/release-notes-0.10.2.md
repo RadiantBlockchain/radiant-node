@@ -1,3 +1,6 @@
+Bitcoin Core 0.10.2
+===================
+
 Bitcoin Core version 0.10.2 is now available from:
 
   <https://bitcoin.org/bin/bitcoin-core-0.10.2/>
@@ -10,18 +13,16 @@ Please report bugs using the issue tracker at github:
   <https://github.com/bitcoin/bitcoin/issues>
 
 Upgrading and downgrading
-=========================
+-------------------------
 
-How to Upgrade
---------------
+### How to Upgrade
 
 If you are running an older version, shut it down. Wait until it has completely
 shut down (which might take a few minutes for older versions), then run the
 installer (on Windows) or just copy over /Applications/Bitcoin-Qt (on Mac) or
 bitcoind/bitcoin-qt (on Linux).
 
-Downgrade warning
-------------------
+### Downgrade warning
 
 Because release 0.10.0 and later makes use of headers-first synchronization and
 parallel block download (see further), the block files and databases are not
@@ -43,8 +44,7 @@ supported and may break as soon as the older version attempts to reindex.
 
 This does not affect wallet forward or backward compatibility.
 
-Notable changes
-===============
+### Notable changes
 
 This fixes a serious problem on Windows with data directories that have non-ASCII
 characters (https://github.com/bitcoin/bitcoin/issues/6078).
@@ -55,20 +55,22 @@ For the notable changes in 0.10, refer to the release notes
 at https://github.com/bitcoin/bitcoin/blob/v0.10.0/doc/release-notes.md
 
 0.10.2 Change log
-=================
+-----------------
 
 Detailed release notes follow. This overview includes changes that affect external
 behavior, not code moves, refactors or string updates.
 
-Wallet:
+### Wallet
+
 - `824c011` fix boost::get usage with boost 1.58
 
-Miscellaneous:
+### Miscellaneous
+
 - `da65606` Avoid crash on start in TestBlockValidity with gen=1.
 - `424ae66` don't imbue boost::filesystem::path with locale "C" on windows (fixes #6078)
 
 Credits
-=======
+-------
 
 Thanks to everyone who directly contributed to this release:
 

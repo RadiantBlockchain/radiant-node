@@ -1,6 +1,10 @@
+Bitcoin 0.3.17
+==============
+
 Version 0.3.17 is now available.
 
 Changes:
+
 * new getwork, thanks m0mchil
 * added transaction fee setting in UI options menu
 * free transaction limits

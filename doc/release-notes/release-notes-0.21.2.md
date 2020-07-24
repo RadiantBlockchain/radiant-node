@@ -193,7 +193,7 @@ all of them on our GitLab repository.
 Changes since Bitcoin Cash Node 0.21.1
 --------------------------------------
 
-**New documents:**
+### New documents
 
 - getblocktemplatelight.md
 - publishing-documentation.md
@@ -209,21 +209,21 @@ Changes since Bitcoin Cash Node 0.21.1
    - ([complete list of files](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/tree/master/doc/json-rpc) omitted for brevity)
 
 
-**Removed documents:**
+### Removed documents
 
 - gitian-building-create-vm-fedora.md
 - gitian-building-setup-gitian-fedora.md
 - translation_strings_policy.md
 
 
-**Notable commits grouped by functionality:**
+### Notable commits grouped by functionality
 
-Security or consensus relevant fixes
+#### Security or consensus relevant fixes
 
 - No changes
 
 
-Interfaces / RPC
+#### Interfaces / RPC
 
 - fdf771a7e99a3bde3e1344567555d721ba9b6ba5 New RPCs: getblocktemplatelight and submitblocklight
 - 01cec0dc7a0d51d75882977f0b0a1f7ff3b10eab Accept CashAddr prefixes in bitcoin-tx input
@@ -231,19 +231,19 @@ Interfaces / RPC
 - 0669b995fc2483ea656dff0e4cc488a5e526042c Deprecate -datacarrier CLI option
 
 
-Peformance optimizations
+#### Peformance optimizations
 
 - c7bd2aaa184ce7ff8e45f24a73bca94896590c94 RPC performance enhancement for getmininginfo
 - c0ae6e60c592bc0209b56fddf2f5ee6eaf422ac1 Minor performance fix for uint256 (base_blob) type
 - 0d1148c08b6aa001e608c37598ad3f5c79d6a032 Update default assume valid and minimum chain work (chain params) after Phonon activation
 
 
-GUI
+#### GUI
 
 - No changes
 
 
-Code quality
+#### Code quality
 
 - 2b9d92e889f1571bfa9be315a5df089b46c45aae Do not translate any CLI options
 - 5f365586a7a309722398334efd73b1b229ddbff8 Make -regtest CLI option visible
@@ -268,7 +268,7 @@ Code quality
 - 805bb697830525d5b8859c5127cc84f9d634b81d Change some CLI options to advanced debugging, and some nits
 
 
-Documentation updates
+#### Documentation updates
 
 - 564389bd7a08361db9b4bc8c036eeddcdc320249 Add CLI documentation to mkdocs
 - 74521fc057df4329ae2d1d325360e6e131a7457a [doc] Remove Fedora gitian building docs
@@ -288,7 +288,7 @@ Documentation updates
 - 62380dba23bcc090c889d077cac300292f2efbcd mkdocs navigation: group versions by brand
 
 
-Build / general
+#### Build / general
 
 - 65ef877f22188cefb273b7ed239a8a22de92303f Univalue lib: Require C++14 in autoconf
 - fab4276be5e146f52c463845fbbcb336ef3763cc Gitian build broke for linux, this fixes it.
@@ -296,57 +296,57 @@ Build / general
 - 3ac4d02419c63c0cb47e6db4f8029a2b30acc07e Disable bitcoin-qt L10n in manpage generator
 
 
-Build / Linux
+#### Build / Linux
 
 - No changes
 
 
-Build / MacOSX
+#### Build / MacOSX
 
 - c15849cfd8176c6aa72668249529359af72999b2 Follow-up: Make sure MacOS Info.plist also declares 10.12 minimum
 
 
-Tests / test framework
+#### Tests / test framework
 
 - fbaa4bc1f7d449d28207795c3fcf5251268dff12 Improve the listtransactions test for labels
 - 2057a686b81f7e4ed38f8effdb68df348bba3f05 [tests] Add explicit tests for getblocktemplate error modes and caching behaviour
 - 685a7e162a1e8fc7c184fb84445dca9c869b43b7 [test] Add test for RPC_CLIENT_NOT_CONNECTED error
 
 
-Benchmarks
+#### Benchmarks
 
 - No changes
 
 
-Seeds / seeder software
+#### Seeds / seeder software
 
 - 6f5f6cf18ae1f378ccb02f08508ba56a707194dd Update the ABC node versions which MAY remain compatible with BCHN after May (if IFP does not activate)
 - 31dee014ce371e648c09b789f2e3ba0088b43f86 Seeder nits
 
 
-Maintainer tools
+#### Maintainer tools
 
 - No changes
 
 
-Infrastructure
+#### Infrastructure
 
 - No changes
 
 
-Cleanup
+#### Cleanup
 
 - No changes
 
 
-Continuous Integration (GitLab CI)
+#### Continuous Integration (GitLab CI)
 
 - 80be5f228168bed45e055cb54c90b64a4552189d [ci] Add build step for unix makefiles
 - d2d25b32793c176a312658694d565aa765df50c3 [ci] Run functional tests for no-wallet build
 - e47dff1e4e6a07b40020aa6c0f0d58e688727d18 [CI] Add 'needs' to depends builds
 - 3298d179db64a3c17d55b34e2e4538d011a17edd [ci] Generate & deploy documentation
 
-Backports
+#### Backports
 
 - ec92ca6caeba007b6960953d5502df0fc7efd057 ABC: D5590 Turn off ASM by default on target with no ASM support
 - 602a7cd79ba342f09ce6ded8be5bf72981390d3f ABC: D5521 Fix typo in error message

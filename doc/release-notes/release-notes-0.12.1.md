@@ -1,3 +1,6 @@
+Bitcoin Core 0.12.1
+===================
+
 Bitcoin Core version 0.12.1 is now available from:
 
   <https://bitcoin.org/bin/bitcoin-core-0.12.1/>
@@ -10,20 +13,18 @@ Please report bugs using the issue tracker at github:
   <https://github.com/bitcoin/bitcoin/issues>
 
 Upgrading and downgrading
-=========================
+-------------------------
 
-How to Upgrade
---------------
+### How to Upgrade
 
 If you are running an older version, shut it down. Wait until it has completely
 shut down (which might take a few minutes for older versions), then run the
 installer (on Windows) or just copy over /Applications/Bitcoin-Qt (on Mac) or
 bitcoind/bitcoin-qt (on Linux).
 
-Downgrade warning
------------------
+### Downgrade warning
 
-### Downgrade to a version < 0.12.0
+#### Downgrade to a version < 0.12.0
 
 Because release 0.12.0 and later will obfuscate the chainstate on every
 fresh sync or reindex, the chainstate is not backwards-compatible with
@@ -34,10 +35,9 @@ you will need to reindex when you first start Bitcoin Core version 0.11 or
 earlier.
 
 Notable changes
-===============
+---------------
 
-First version bits BIP9 softfork deployment
--------------------------------------------
+### First version bits BIP9 softfork deployment
 
 This release includes a soft fork deployment to enforce [BIP68][],
 [BIP112][] and [BIP113][] using the [BIP9][] deployment mechanism.
@@ -59,8 +59,7 @@ This specific backport pull-request can be viewed at
 [BIP112]: https://github.com/bitcoin/bips/blob/master/bip-0112.mediawiki
 [BIP113]: https://github.com/bitcoin/bips/blob/master/bip-0113.mediawiki
 
-BIP68 soft fork to enforce sequence locks for relative locktime
----------------------------------------------------------------
+### BIP68 soft fork to enforce sequence locks for relative locktime
 
 [BIP68][] introduces relative lock-time consensus-enforced semantics of
 the sequence number field to enable a signed transaction input to remain
@@ -70,8 +69,7 @@ outpoint.
 For more information about the implementation, see
 <https://github.com/bitcoin/bitcoin/pull/7184>
 
-BIP112 soft fork to enforce OP_CHECKSEQUENCEVERIFY
---------------------------------------------------
+### BIP112 soft fork to enforce OP_CHECKSEQUENCEVERIFY
 
 [BIP112][] redefines the existing OP_NOP3 as OP_CHECKSEQUENCEVERIFY (CSV)
 for a new opcode in the Bitcoin scripting system that in combination with
@@ -81,8 +79,7 @@ on the age of the output being spent.
 For more information about the implementation, see
 <https://github.com/bitcoin/bitcoin/pull/7524>
 
-BIP113 locktime enforcement soft fork
--------------------------------------
+### BIP113 locktime enforcement soft fork
 
 Bitcoin Core 0.11.2 previously introduced mempool-only locktime
 enforcement using GetMedianTimePast(). This release seeks to
@@ -134,14 +131,13 @@ approximately the expected time.
 For more information about the implementation, see
 <https://github.com/bitcoin/bitcoin/pull/6566>
 
-Miscellaneous
--------------
+### Miscellaneous
 
 The p2p alert system is off by default. To turn on, use `-alert` with
 startup configuration.
 
 0.12.1 Change log
-=================
+-----------------
 
 Detailed release notes follow. This overview includes changes that affect
 behavior, not code moves, refactors and string updates. For convenience in locating
@@ -149,36 +145,43 @@ the code changes and accompanying discussion, both the pull request and
 git merge commit are mentioned.
 
 ### RPC and other APIs
-- #7739 `7ffc2bd` Add abandoned status to listtransactions (jonasschnelli)
+
+- \#7739 `7ffc2bd` Add abandoned status to listtransactions (jonasschnelli)
 
 ### Block and transaction handling
-- #7543 `834aaef` Backport BIP9, BIP68 and BIP112 with softfork (btcdrak)
+
+- \#7543 `834aaef` Backport BIP9, BIP68 and BIP112 with softfork (btcdrak)
 
 ### P2P protocol and network code
-- #7804 `90f1d24` Track block download times per individual block (sipa)
-- #7832 `4c3a00d` Reduce block timeout to 10 minutes (laanwj)
+
+- \#7804 `90f1d24` Track block download times per individual block (sipa)
+- \#7832 `4c3a00d` Reduce block timeout to 10 minutes (laanwj)
 
 ### Validation
-- #7821 `4226aac` init: allow shutdown during 'Activating best chain...' (laanwj)
-- #7835 `46898e7` Version 2 transactions remain non-standard until CSV activates (sdaftuar)
+
+- \#7821 `4226aac` init: allow shutdown during 'Activating best chain...' (laanwj)
+- \#7835 `46898e7` Version 2 transactions remain non-standard until CSV activates (sdaftuar)
 
 ### Build system
-- #7487 `00d57b4` Workaround Travis-side CI issues (luke-jr)
-- #7606 `a10da9a` No need to set -L and --location for curl (MarcoFalke)
-- #7614 `ca8f160` Add curl to packages (now needed for depends) (luke-jr)
-- #7776 `a784675` Remove unnecessary executables from gitian release (laanwj)
+
+- \#7487 `00d57b4` Workaround Travis-side CI issues (luke-jr)
+- \#7606 `a10da9a` No need to set -L and --location for curl (MarcoFalke)
+- \#7614 `ca8f160` Add curl to packages (now needed for depends) (luke-jr)
+- \#7776 `a784675` Remove unnecessary executables from gitian release (laanwj)
 
 ### Wallet
-- #7715 `19866c1` Fix calculation of balances and available coins. (morcos)
+
+- \#7715 `19866c1` Fix calculation of balances and available coins. (morcos)
 
 ### Miscellaneous
-- #7617 `f04f4fd` Fix markdown syntax and line terminate LogPrint (MarcoFalke)
-- #7747 `4d035bc` added depends cross compile info (accraze)
-- #7741 `a0cea89` Mark p2p alert system as deprecated (btcdrak)
-- #7780 `c5f94f6` Disable bad-chain alert (btcdrak)
+
+- \#7617 `f04f4fd` Fix markdown syntax and line terminate LogPrint (MarcoFalke)
+- \#7747 `4d035bc` added depends cross compile info (accraze)
+- \#7741 `a0cea89` Mark p2p alert system as deprecated (btcdrak)
+- \#7780 `c5f94f6` Disable bad-chain alert (btcdrak)
 
 Credits
-=======
+-------
 
 Thanks to everyone who directly contributed to this release:
 

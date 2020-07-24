@@ -1,6 +1,7 @@
 # XVersionMessage: BCH node extended version and configuration fields
 
 DRAFT specification
+
 Version: 0.1.0
 
 Authors: Awemany, Griffith
@@ -8,7 +9,7 @@ Authors: Awemany, Griffith
 ## Overview
 
 Using the `version` message in the Bitcoin protocol (for more details,
-see https://en.bitcoin.it/wiki/Protocol_documentation#version), peers
+see [https://en.bitcoin.it/wiki/Protocol_documentation#version](https://en.bitcoin.it/wiki/Protocol_documentation#version)), peers
 announce their capabilities and preferences to each other. The
 `version` message is limited in scope to a fixed set of well-known
 fields.
@@ -192,7 +193,7 @@ document.
 ## Implementation prefixes
 
 The list of implementations prefixes can be found here:
-https://reference.cash/protocol/p2p/xversionkeys/
+[https://reference.cash/protocol/p2p/xversionkeys/](https://reference.cash/protocol/p2p/xversionkeys/)
 
 An implementation not listed here, but wanting to extend the `xversion`
 map can pick an unused prefix but is strongly suggested to communicate
@@ -225,6 +226,6 @@ can be found in the files `src/xversionmessage.h` and
 
 ## References
 
-- [1] https://reference.cash/protocol/#command
-- [2] https://reference.cash/protocol/network/messages/
-- [3] https://reference.cash/protocol/p2p/compact__int/
+- [1] [https://reference.cash/protocol/#command](https://reference.cash/protocol/#command)
+- [2] [https://reference.cash/protocol/network/messages/](https://reference.cash/protocol/network/messages/)
+- [3] [https://reference.cash/protocol/p2p/compact__int/](https://reference.cash/protocol/p2p/compact__int/)

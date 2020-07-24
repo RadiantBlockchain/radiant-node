@@ -1,14 +1,18 @@
+Bitcoin-Qt 0.8.2
+================
+
 Bitcoin-Qt version 0.8.2 is now available from:
-  http://sourceforge.net/projects/bitcoin/files/Bitcoin/bitcoin-0.8.2/
+  <http://sourceforge.net/projects/bitcoin/files/Bitcoin/bitcoin-0.8.2/>
 
 This is a maintenance release that fixes many bugs and includes
 a few small new features.
 
 Please report bugs using the issue tracker at github:
-  https://github.com/bitcoin/bitcoin/issues
+  <https://github.com/bitcoin/bitcoin/issues>
 
 
 How to Upgrade
+--------------
 
 If you are running an older version, shut it down. Wait
 until it has completely shut down (which might take a few minutes for older
@@ -21,8 +25,9 @@ anywhere from 30 minutes to several hours, depending on the speed of
 your machine.
 
 0.8.2 Release notes
+-------------------
 
-Fee Policy changes
+### Fee Policy changes
 
 The default fee for low-priority transactions is lowered from 0.0005 BTC
 (for each 1,000 bytes in the transaction; an average transaction is
@@ -43,7 +48,7 @@ with code that automatically calculates and suggests appropriate fees in the
 0.9 release and note that if you set a fee policy significantly different from
 the rest of the network your transactions may never confirm.
 
-Bitcoin-Qt changes
+### Bitcoin-Qt changes
 
 * New icon and splash screen
 * Improve reporting of synchronization process
@@ -57,21 +62,23 @@ Bitcoin-Qt changes
   Esperanto (eo), Interlingua (la), Latvian (lv) and many improvements
   to current translations
 
-MacOSX:
+#### MacOSX
+
 * OSX support for click-to-pay (bitcoin:) links
 * Fix GUI disappearing problem on MacOSX (issue #1522)
 
-Linux/Unix:
+#### Linux/Unix
+
 * Copy addresses to middle-mouse-button clipboard
 
 
-Command-line options
+### Command-line options
 
 * -walletnotify will call a command on receiving transactions that affect the wallet.
 * -alertnotify will call a command on receiving an alert from the network.
 * -par now takes a negative number, to leave a certain amount of cores free.
 
-JSON-RPC API changes
+### JSON-RPC API changes
 
 * fixed a getblocktemplate bug that caused excessive CPU creating blocks.
 * listunspent now lists account and address information.
@@ -80,8 +87,7 @@ JSON-RPC API changes
 * gettxoutsetinfo returns statistics about the unspent transaction output database.
 * gettxout returns information about a specific unspent transaction output.
 
-
-Networking changes
+### Networking changes
 
 * Significant changes to the networking code, reducing latency and memory consumption.
 * Avoid initial block download stalling.
@@ -89,49 +95,51 @@ Networking changes
 * Performance tweaks.
 * Added testnet DNS seeds.
 
-Wallet compatibility/rescuing
+### Wallet compatibility/rescuing
 
 * Cases where wallets cannot be opened in another version/installation should be reduced.
 * -salvagewallet now works for encrypted wallets.
 
 
 Known Bugs
+----------
 
 * Entering the 'getblocktemplate' or 'getwork' RPC commands into the Bitcoin-Qt debug
 console will cause Bitcoin-Qt to crash. Run Bitcoin-Qt with the -server command-line
 option to workaround.
 
 Thanks to everybody who contributed to the 0.8.2 release!
+---------------------------------------------------------
 
-APerson241
-Andrew Poelstra
-Calvin Owens
-Chuck LeDuc Díaz
-Colin Dean
-David Griffith
-David Serrano
-Eric Lombrozo
-Gavin Andresen
-Gregory Maxwell
-Jeff Garzik
-Jonas Schnelli
-Larry Gilbert
-Luke Dashjr
-Matt Corallo
-Michael Ford
-Mike Hearn
-Patrick Brown
-Peter Todd
-Philip Kaufmann
-Pieter Wuille
-Richard Schwab
-Roman Mindalev
-Scott Howard
-Tariq Bashir
-Warren Togami
-Wladimir J. van der Laan
-freewil
-gladoscc
-kjj2
-mb300sd
-super3
+* APerson241
+* Andrew Poelstra
+* Calvin Owens
+* Chuck LeDuc Díaz
+* Colin Dean
+* David Griffith
+* David Serrano
+* Eric Lombrozo
+* Gavin Andresen
+* Gregory Maxwell
+* Jeff Garzik
+* Jonas Schnelli
+* Larry Gilbert
+* Luke Dashjr
+* Matt Corallo
+* Michael Ford
+* Mike Hearn
+* Patrick Brown
+* Peter Todd
+* Philip Kaufmann
+* Pieter Wuille
+* Richard Schwab
+* Roman Mindalev
+* Scott Howard
+* Tariq Bashir
+* Warren Togami
+* Wladimir J. van der Laan
+* freewil
+* gladoscc
+* kjj2
+* mb300sd
+* super3

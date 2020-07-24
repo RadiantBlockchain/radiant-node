@@ -1,12 +1,5 @@
 # Setting up Debian for Gitian building
 
-** Table of Contents **
-
-* [Setting up Debian for Gitian building](gitian-building-setup-gitian-debian.md#setting-up-debian-for-gitian-building)
-  * [Installing Gitian](gitian-building-setup-gitian-debian.md#installing-gitian)
-  * [Setting up the Gitian image](gitian-building-setup-gitian-debian.md#setting-up-the-gitian-image)
-  * [Downloading dependencies](gitian-building-setup-gitian-debian.md#downloading-dependencies)
-
 In this section we will be setting up the Debian installation for Gitian building.
 We assume that a user `gitianuser` with sudo privileges was previously added.
 

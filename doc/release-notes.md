@@ -119,6 +119,9 @@ to 0.21.2.
 
 
 Known Issues
+------------
+
+...
 
 Configuration
 ------------
@@ -160,98 +163,98 @@ all of them on our GitLab repository.
 Changes since Bitcoin Cash Node 0.21.2
 --------------------------------------
 
-**New documents:**
+### New documents
 
 ...
 
 
-**Removed documents:**
+### Removed documents
 
 ...
 
 
-**Notable commits grouped by functionality:**
+### Notable commits grouped by functionality
 
-Security or consensus relevant fixes
-
-...
-
-
-Interfaces / RPC
+#### Security or consensus relevant fixes
 
 ...
 
 
-Peformance optimizations
+#### Interfaces / RPC
 
 ...
 
 
-GUI
+#### Peformance optimizations
 
 ...
 
 
-Code quality
+#### GUI
 
 ...
 
 
-Documentation updates
+#### Code quality
 
 ...
 
 
-Build / general
+#### Documentation updates
 
 ...
 
 
-Build / Linux
+#### Build / general
 
 ...
 
 
-Build / MacOSX
+#### Build / Linux
 
 ...
 
 
-Tests / test framework
+#### Build / MacOSX
 
 ...
 
 
-Benchmarks
+#### Tests / test framework
 
 ...
 
 
-Seeds / seeder software
+#### Benchmarks
 
 ...
 
 
-Maintainer tools
+#### Seeds / seeder software
 
 ...
 
 
-Infrastructure
+#### Maintainer tools
 
 ...
 
 
-Cleanup
+#### Infrastructure
 
 ...
 
 
-Continuous Integration (GitLab CI)
+#### Cleanup
 
 ...
 
-Backports
+
+#### Continuous Integration (GitLab CI)
+
+...
+
+#### Backports
 
 ...
 

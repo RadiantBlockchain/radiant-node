@@ -3,7 +3,7 @@
 
 (updated for Fedora 31)
 
-# Preparation
+## Preparation
 
 Minimal build requirements:
 

@@ -1,8 +1,12 @@
+Bitcoin ABC 0.20.2
+==================
+
 Bitcoin ABC version 0.20.2 is now available from:
 
   <https://download.bitcoinabc.org/0.20.2/>
 
 This release includes the following features and fixes:
+
  - Improved initial block download performance by ~20%.
  - Improved initial block download performance during pruning.
  - `bitcoin-qt -resetguisettings` now generates a backup of the former GUI settings.
