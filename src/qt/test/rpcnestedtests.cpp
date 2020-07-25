@@ -27,7 +27,7 @@ static UniValue rpcNestedTest_rpc(const Config &config,
     if (request.fHelp) {
         return "help message";
     }
-    return request.params.write(0, 0);
+    return request.params.write();
 }
 
 static const ContextFreeRPCCommand vRPCCommands[] = {

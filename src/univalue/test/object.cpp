@@ -582,7 +582,7 @@ BOOST_AUTO_TEST_CASE(univalue_readwrite)
     BOOST_CHECK(!vcopy.empty());
     v.setNull();
     BOOST_CHECK(v.empty());
-    BOOST_CHECK(v.read(vcopy.write(2, 4)));
+    BOOST_CHECK(v.read(vcopy.write(2)));
     BOOST_CHECK(!v.empty());
     BOOST_CHECK_EQUAL(v, vcopy);
     BOOST_CHECK_EQUAL(v[0], json1);

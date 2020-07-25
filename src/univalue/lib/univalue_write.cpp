@@ -31,33 +31,31 @@ void UniValue::jsonEscape(Stream & ss, const std::string & inS)
     }
 }
 
-std::string UniValue::write(unsigned int prettyIndent, unsigned int indentLevel) const
+std::string UniValue::write(const unsigned int prettyIndent) const
 {
     std::string s; // we do it this way for RVO to work on all compilers
     Stream ss{s};
     s.reserve(1024);
-    writeStream(ss, prettyIndent, indentLevel);
+    writeStream(ss, prettyIndent, 0);
     return s;
 }
 
-void UniValue::writeStream(Stream & ss, unsigned int prettyIndent, unsigned int indentLevel) const
+void UniValue::writeStream(Stream & ss, const unsigned int prettyIndent, const unsigned int indentLevel) const
 {
-    unsigned int modIndent = indentLevel;
-    if (modIndent == 0)
-        modIndent = 1;
-
     switch (typ) {
     case VNULL:
         ss.write("null", 4); // .write() is slightly faster than operator<<
         break;
     case VOBJ:
-        writeObject(ss, prettyIndent, modIndent);
+        writeObject(ss, prettyIndent, indentLevel);
         break;
     case VARR:
-        writeArray(ss, prettyIndent, modIndent);
+        writeArray(ss, prettyIndent, indentLevel);
         break;
     case VSTR:
-        ss.put('"'); jsonEscape(ss, val); ss.put('"');
+        ss.put('"');
+        jsonEscape(ss, val);
+        ss.put('"');
         break;
     case VNUM:
         ss << val;
@@ -72,54 +70,52 @@ void UniValue::writeStream(Stream & ss, unsigned int prettyIndent, unsigned int 
 }
 
 /* static */
-inline void UniValue::indentStr(Stream & ss, unsigned int prettyIndent, unsigned int indentLevel)
+inline void UniValue::startNewLine(Stream & ss, const unsigned int prettyIndent, const unsigned int indentLevel)
 {
-    ss.put(' ', prettyIndent * indentLevel);
+    if (prettyIndent) {
+        ss.put('\n');
+        ss.put(' ', indentLevel);
+    }
 }
 
-void UniValue::writeArray(Stream & ss, unsigned int prettyIndent, unsigned int indentLevel) const
+void UniValue::writeArray(Stream & ss, const unsigned int prettyIndent, const unsigned int indentLevel) const
 {
     ss.put('[');
-    if (prettyIndent)
-        ss.put('\n');
-
-    for (size_t i = 0, nValues = values.size(); i < nValues; ++i) {
-        if (prettyIndent)
-            indentStr(ss, prettyIndent, indentLevel);
-        values[i].writeStream(ss, prettyIndent, indentLevel + 1);
-        if (i != (nValues - 1)) {
+    if (!values.empty()) {
+        const unsigned int internalIndentLevel = indentLevel + prettyIndent;
+        for (auto value = values.begin(), end = values.end();;) {
+            startNewLine(ss, prettyIndent, internalIndentLevel);
+            value->writeStream(ss, prettyIndent, internalIndentLevel);
+            if (++value == end) {
+                break;
+            }
             ss.put(',');
         }
-        if (prettyIndent)
-            ss.put('\n');
     }
-
-    if (prettyIndent)
-        indentStr(ss, prettyIndent, indentLevel - 1);
+    startNewLine(ss, prettyIndent, indentLevel);
     ss.put(']');
 }
 
-void UniValue::writeObject(Stream & ss, unsigned int prettyIndent, unsigned int indentLevel) const
+void UniValue::writeObject(Stream & ss, const unsigned int prettyIndent, const unsigned int indentLevel) const
 {
     ss.put('{');
-    if (prettyIndent)
-        ss.put('\n');
-
-    for (size_t i = 0, nEntries = entries.size(); i < nEntries; ++i) {
-        if (prettyIndent)
-            indentStr(ss, prettyIndent, indentLevel);
-        auto& entry = entries[i];
-        ss.put('"'); jsonEscape(ss, entry.first); ss.write("\":", 2);
-        if (prettyIndent)
-            ss.put(' ');
-        entry.second.writeStream(ss, prettyIndent, indentLevel + 1);
-        if (i != (nEntries - 1))
+    if (!entries.empty()) {
+        const unsigned int internalIndentLevel = indentLevel + prettyIndent;
+        for (auto entry = entries.begin(), end = entries.end();;) {
+            startNewLine(ss, prettyIndent, internalIndentLevel);
+            ss.put('"');
+            jsonEscape(ss, entry->first);
+            ss.write("\":", 2);
+            if (prettyIndent) {
+                ss.put(' ');
+            }
+            entry->second.writeStream(ss, prettyIndent, internalIndentLevel);
+            if (++entry == end) {
+                break;
+            }
             ss.put(',');
-        if (prettyIndent)
-            ss.put('\n');
+        }
     }
-
-    if (prettyIndent)
-        indentStr(ss, prettyIndent, indentLevel - 1);
+    startNewLine(ss, prettyIndent, indentLevel);
     ss.put('}');
 }
