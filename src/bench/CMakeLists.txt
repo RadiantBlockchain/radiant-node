@@ -27,6 +27,7 @@ add_executable(bench_bitcoin
 	rollingbloom.cpp
 	rpc_blockchain.cpp
 	rpc_mempool.cpp
+	json.cpp
 	util_time.cpp
 
 	# TODO: make a test library
