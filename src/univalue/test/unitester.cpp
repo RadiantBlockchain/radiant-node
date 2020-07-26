@@ -1,4 +1,5 @@
 // Copyright 2014 BitPay Inc.
+// Copyright (c) 2020 The Bitcoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
@@ -29,13 +30,15 @@ static std::string rtrim(std::string s)
     return s;
 }
 
-static void runtest(std::string filename, const std::string& jdata)
+static void runtest(const std::string& filename, const std::string& jdata)
 {
         std::string prefix = filename.substr(0, 4);
 
-        bool wantPass = (prefix == "pass") || (prefix == "roun");
-        bool wantFail = (prefix == "fail");
-        bool wantRoundTrip = (prefix == "roun");
+        bool wantPrettyRoundTrip = prefix == "pret";
+        bool wantRoundTrip = wantPrettyRoundTrip || prefix == "roun";
+        bool wantPass = wantRoundTrip || prefix == "pass";
+        bool wantFail = prefix == "fail";
+
         assert(wantPass || wantFail);
 
         UniValue val;
@@ -43,13 +46,12 @@ static void runtest(std::string filename, const std::string& jdata)
 
         if (wantPass) {
             d_assert(testResult == true);
+            if (wantRoundTrip) {
+                std::string odata = val.write(wantPrettyRoundTrip ? 4 : 0);
+                assert(odata == rtrim(jdata));
+            }
         } else {
             d_assert(testResult == false);
-        }
-
-        if (wantRoundTrip) {
-            std::string odata = val.write(0, 0);
-            assert(odata == rtrim(jdata));
         }
 }
 
@@ -78,6 +80,15 @@ static void runtest_file(const char *filename_)
 }
 
 static const char *filenames[] = {
+        "fail1.json",
+        "fail2.json",
+        "fail3.json",
+        "fail4.json",   // extra comma
+        "fail5.json",
+        "fail6.json",
+        "fail7.json",
+        "fail8.json",
+        "fail9.json",   // extra comma
         "fail10.json",
         "fail11.json",
         "fail12.json",
@@ -86,9 +97,7 @@ static const char *filenames[] = {
         "fail15.json",
         "fail16.json",
         "fail17.json",
-        //"fail18.json",             // investigate
         "fail19.json",
-        "fail1.json",
         "fail20.json",
         "fail21.json",
         "fail22.json",
@@ -99,7 +108,6 @@ static const char *filenames[] = {
         "fail27.json",
         "fail28.json",
         "fail29.json",
-        "fail2.json",
         "fail30.json",
         "fail31.json",
         "fail32.json",
@@ -108,39 +116,32 @@ static const char *filenames[] = {
         "fail35.json",
         "fail36.json",
         "fail37.json",
-        "fail38.json",               // invalid unicode: only first half of surrogate pair
-        "fail39.json",               // invalid unicode: only second half of surrogate pair
-        "fail3.json",
-        "fail40.json",               // invalid unicode: broken UTF-8
-        "fail41.json",               // invalid unicode: unfinished UTF-8
-        "fail42.json",               // valid json with garbage following a nul byte
-        "fail44.json",               // unterminated string
-        "fail45.json",               // nested beyond max depth
-        "fail46.json",               // nested beyond max depth, with whitespace
-        "fail47.json",               // buffer consisting of only a hyphen (chars: {'-', '\0'})
-        "fail48.json",               // -00 is not a valid JSON number
-        "fail49.json",               // 0123 is not a valid JSON number
-        "fail4.json",                // extra comma
-        "fail50.json",               // -1. is not a valid JSON number (no ending in decimals)
-        "fail51.json",               // 1.3e+ is not valid (must have a number after the "e+" part)
-        "fail52.json",               // reject -[non-digit]
-        "fail5.json",
-        "fail6.json",
-        "fail7.json",
-        "fail8.json",
-        "fail9.json",               // extra comma
+        "fail38.json",  // invalid unicode: only first half of surrogate pair
+        "fail39.json",  // invalid unicode: only second half of surrogate pair
+        "fail40.json",  // invalid unicode: broken UTF-8
+        "fail41.json",  // invalid unicode: unfinished UTF-8
+        "fail42.json",  // valid json with garbage following a nul byte
+        "fail44.json",  // unterminated string
+        "fail45.json",  // nested beyond max depth
+        "fail46.json",  // nested beyond max depth, with whitespace
+        "fail47.json",  // buffer consisting of only a hyphen (chars: {'-', '\0'})
+        "fail48.json",  // -00 is not a valid JSON number
+        "fail49.json",  // 0123 is not a valid JSON number
+        "fail50.json",  // -1. is not a valid JSON number (no ending in decimals)
+        "fail51.json",  // 1.3e+ is not valid (must have a number after the "e+" part)
+        "fail52.json",  // reject -[non-digit]
         "pass1.json",
-        "pass2.json",
-        "pass3.json",
-        "pass4.json",
-        "pass5.json",               // accept bare buffer containing only "-0"
-        "round1.json",              // round-trip test
-        "round2.json",              // unicode
-        "round3.json",              // bare string
-        "round4.json",              // bare number
-        "round5.json",              // bare true
-        "round6.json",              // bare false
-        "round7.json",              // bare null
+        "round1.json",  // round-trip test
+        "round2.json",  // unicode
+        "round3.json",  // bare string
+        "round4.json",  // bare number
+        "round5.json",  // bare true
+        "round6.json",  // bare false
+        "round7.json",  // bare null
+        "round8.json",  // nested at max depth
+        "round9.json",  // accept bare buffer containing only "-0"
+        "pretty1.json",
+        "pretty2.json",
 };
 
 // Test \u handling
