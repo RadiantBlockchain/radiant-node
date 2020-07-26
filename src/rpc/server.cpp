@@ -1,6 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2018 The Bitcoin Core developers
-// Copyright (c) 2018-2019 The Bitcoin developers
+// Copyright (c) 2018-2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -488,12 +488,13 @@ static UniValue JSONRPCExecOne(Config &config, RPCServer &rpcServer,
 
 std::string JSONRPCExecBatch(Config &config, RPCServer &rpcServer,
                              const JSONRPCRequest &jreq, const UniValue &vReq) {
-    UniValue ret(UniValue::VARR);
+    UniValue::Array ret;
+    ret.reserve(vReq.size());
     for (size_t i = 0; i < vReq.size(); i++) {
         ret.push_back(JSONRPCExecOne(config, rpcServer, jreq, vReq[i]));
     }
 
-    return ret.write() + "\n";
+    return UniValue::stringify(ret) + '\n';
 }
 
 /**

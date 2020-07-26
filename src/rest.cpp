@@ -197,7 +197,7 @@ static bool rest_headers(Config &config, HTTPRequest *req,
             for (const CBlockIndex *pindex : headers) {
                 jsonHeaders.push_back(blockheaderToJSON(tip, pindex));
             }
-            std::string strJSON = jsonHeaders.write() + "\n";
+            std::string strJSON = UniValue::stringify(jsonHeaders) + "\n";
             req->WriteHeader("Content-Type", "application/json");
             req->WriteReply(HTTP_OK, strJSON);
             return true;
@@ -271,7 +271,7 @@ static bool rest_block(const Config &config, HTTPRequest *req,
         case RetFormat::JSON: {
             UniValue objBlock =
                 blockToJSON(block, tip, pblockindex, showTxDetails);
-            std::string strJSON = objBlock.write() + "\n";
+            std::string strJSON = UniValue::stringify(objBlock) + "\n";
             req->WriteHeader("Content-Type", "application/json");
             req->WriteReply(HTTP_OK, strJSON);
             return true;
@@ -309,7 +309,7 @@ static bool rest_chaininfo(Config &config, HTTPRequest *req,
             JSONRPCRequest jsonRequest;
             jsonRequest.params = UniValue(UniValue::VARR);
             UniValue chainInfoObject = getblockchaininfo(config, jsonRequest);
-            std::string strJSON = chainInfoObject.write() + "\n";
+            std::string strJSON = UniValue::stringify(chainInfoObject) + "\n";
             req->WriteHeader("Content-Type", "application/json");
             req->WriteReply(HTTP_OK, strJSON);
             return true;
@@ -334,7 +334,7 @@ static bool rest_mempool_info(Config &config, HTTPRequest *req,
         case RetFormat::JSON: {
             UniValue mempoolInfoObject = MempoolInfoToJSON(::g_mempool);
 
-            std::string strJSON = mempoolInfoObject.write() + "\n";
+            std::string strJSON = UniValue::stringify(mempoolInfoObject) + "\n";
             req->WriteHeader("Content-Type", "application/json");
             req->WriteReply(HTTP_OK, strJSON);
             return true;
@@ -359,7 +359,7 @@ static bool rest_mempool_contents(Config &config, HTTPRequest *req,
         case RetFormat::JSON: {
             UniValue mempoolObject = MempoolToJSON(::g_mempool, true);
 
-            std::string strJSON = mempoolObject.write() + "\n";
+            std::string strJSON = UniValue::stringify(mempoolObject) + "\n";
             req->WriteHeader("Content-Type", "application/json");
             req->WriteReply(HTTP_OK, strJSON);
             return true;
@@ -424,7 +424,7 @@ static bool rest_tx(Config &config, HTTPRequest *req,
         case RetFormat::JSON: {
             UniValue objTx(UniValue::VOBJ);
             TxToUniv(*tx, hashBlock, objTx);
-            std::string strJSON = objTx.write() + "\n";
+            std::string strJSON = UniValue::stringify(objTx) + "\n";
             req->WriteHeader("Content-Type", "application/json");
             req->WriteReply(HTTP_OK, strJSON);
             return true;
@@ -645,7 +645,7 @@ static bool rest_getutxos(Config &config, HTTPRequest *req,
             objGetUTXOResponse.pushKV("utxos", utxos);
 
             // return json string
-            std::string strJSON = objGetUTXOResponse.write() + "\n";
+            std::string strJSON = UniValue::stringify(objGetUTXOResponse) + "\n";
             req->WriteHeader("Content-Type", "application/json");
             req->WriteReply(HTTP_OK, strJSON);
             return true;

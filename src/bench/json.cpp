@@ -34,10 +34,10 @@ static void JSONReadWriteBlock(const std::vector<uint8_t> &data, unsigned int pr
 
     if (write) {
         while (state.KeepRunning()) {
-            (void)blockuv.write(pretty);
+            (void)UniValue::stringify(blockuv, pretty);
         }
     } else {
-        std::string json = blockuv.write(pretty);
+        std::string json = UniValue::stringify(blockuv, pretty);
         while (state.KeepRunning()) {
             UniValue uv;
             if (!uv.read(json))

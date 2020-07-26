@@ -1,4 +1,5 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
+// Copyright (c) 2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -30,8 +31,8 @@ BOOST_AUTO_TEST_CASE(key_io_valid_parse) {
     SelectParams(CBaseChainParams::MAIN);
 
     for (unsigned int idx = 0; idx < tests.size(); idx++) {
-        UniValue test = tests[idx];
-        std::string strTest = test.write();
+        const UniValue& test = tests[idx];
+        std::string strTest = UniValue::stringify(test);
         // Allow for extra stuff (useful for comments)
         if (test.size() < 3) {
             BOOST_ERROR("Bad test: " << strTest);
@@ -100,8 +101,8 @@ BOOST_AUTO_TEST_CASE(key_io_valid_gen) {
         json_tests::key_io_valid + sizeof(json_tests::key_io_valid)));
 
     for (unsigned int idx = 0; idx < tests.size(); idx++) {
-        UniValue test = tests[idx];
-        std::string strTest = test.write();
+        const UniValue& test = tests[idx];
+        std::string strTest = UniValue::stringify(test);
         // Allow for extra stuff (useful for comments)
         if (test.size() < 3) {
             BOOST_ERROR("Bad test: " << strTest);
@@ -143,8 +144,8 @@ BOOST_AUTO_TEST_CASE(key_io_invalid) {
     CTxDestination destination;
 
     for (unsigned int idx = 0; idx < tests.size(); idx++) {
-        UniValue test = tests[idx];
-        std::string strTest = test.write();
+        const UniValue& test = tests[idx];
+        std::string strTest = UniValue::stringify(test);
         // Allow for extra stuff (useful for comments)
         if (test.size() < 1) {
             BOOST_ERROR("Bad test: " << strTest);

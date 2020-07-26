@@ -47,7 +47,7 @@ static void runtest(const std::string& filename, const std::string& jdata)
         if (wantPass) {
             d_assert(testResult == true);
             if (wantRoundTrip) {
-                std::string odata = val.write(wantPrettyRoundTrip ? 4 : 0);
+                std::string odata = UniValue::stringify(val, wantPrettyRoundTrip ? 4 : 0);
                 assert(odata == rtrim(jdata));
             }
         } else {

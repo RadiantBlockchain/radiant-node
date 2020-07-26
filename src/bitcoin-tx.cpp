@@ -773,7 +773,7 @@ static void OutputTxJSON(const CTransaction &tx) {
     UniValue entry(UniValue::VOBJ);
     TxToUniv(tx, uint256(), entry);
 
-    std::string jsonOutput = entry.write(4);
+    std::string jsonOutput = UniValue::stringify(entry, 4);
     fprintf(stdout, "%s\n", jsonOutput.c_str());
 }
 

@@ -214,7 +214,25 @@ public:
     void pushKV(std::string&& key, const UniValue& val, bool checkForDupes = true);
     void pushKV(std::string&& key, UniValue&& val, bool checkForDupes = true);
 
-    std::string write(unsigned int prettyIndent = 0) const;
+    /**
+     * Returns the JSON string representation of the provided value.
+     *
+     * The type of value can be the generic UniValue,
+     * or a more specific type: bool, std::string, UniValue::Array, or UniValue::Object.
+     *
+     * The optional argument indicates the number of spaces for indentation in pretty formatting.
+     * Use 0 (default) to disable pretty formatting and use compact formatting instead.
+     * Note that pretty formatting only affects arrays and objects.
+     *
+     * This is a Bitcoin Cash Node extension of the UniValue API.
+     */
+    template<typename Value> static std::string stringify(const Value& value, unsigned int prettyIndent = 0) {
+        std::string s; // we do it this way for RVO to work on all compilers
+        Stream ss{s};
+        s.reserve(1024);
+        stringify(ss, value, prettyIndent, 0);
+        return s;
+    }
 
     bool read(const char *raw, size_t len);
     bool read(const char *raw) { return read(raw, strlen(raw)); }
@@ -233,13 +251,23 @@ private:
     void __pushKV(std::string&& key, UniValue&& val);
     void __pushKV(std::string&& key, const UniValue& val);
 
-    struct Stream;
-
-    void writeStream(Stream & stream, unsigned int prettyIndent = 0, unsigned int indentLevel = 0) const;
-    void writeArray(Stream & stream, unsigned int prettyIndent, unsigned int indentLevel) const;
-    void writeObject(Stream & stream, unsigned int prettyIndent, unsigned int indentLevel) const;
-    static void jsonEscape(Stream & stream, const std::string & inString);
+    // Opaque type used for writing. This can be further optimized later.
+    struct Stream {
+        std::string & str; // this is a reference for RVO to always work in UniValue::stringify()
+        void put(char c) { str.push_back(c); }
+        void put(char c, size_t nFill) { str.append(nFill, c); }
+        void write(const char *s, size_t len) { str.append(s, len); }
+        Stream & operator<<(const char *s) { str.append(s); return *this; }
+        Stream & operator<<(const std::string &s) { str.append(s); return *this; }
+    };
     static inline void startNewLine(Stream & stream, unsigned int prettyIndent, unsigned int indentLevel);
+    static void jsonEscape(Stream & stream, const std::string & inString);
+
+    static void stringify(Stream & stream, const UniValue& value, unsigned int prettyIndent, unsigned int indentLevel);
+    static void stringify(Stream & stream, bool value, unsigned int prettyIndent, unsigned int indentLevel);
+    static void stringify(Stream & stream, const std::string& value, unsigned int prettyIndent, unsigned int indentLevel);
+    static void stringify(Stream & stream, const UniValue::Array& value, unsigned int prettyIndent, unsigned int indentLevel);
+    static void stringify(Stream & stream, const UniValue::Object& value, unsigned int prettyIndent, unsigned int indentLevel);
 
     // Used by the various setInt() and setFloat() overloads
     template<typename Num>

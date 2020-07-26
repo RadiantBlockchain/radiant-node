@@ -1,4 +1,5 @@
 // Copyright (c) 2013-2016 The Bitcoin Core developers
+// Copyright (c) 2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -221,8 +222,8 @@ BOOST_AUTO_TEST_CASE(sighash_from_data) {
                     json_tests::sighash + sizeof(json_tests::sighash)));
 
     for (size_t idx = 0; idx < tests.size(); idx++) {
-        UniValue test = tests[idx];
-        std::string strTest = test.write();
+        const UniValue& test = tests[idx];
+        std::string strTest = UniValue::stringify(test);
         // Allow for extra stuff (useful for comments)
         if (test.size() < 1) {
             BOOST_ERROR("Bad test: " << strTest);

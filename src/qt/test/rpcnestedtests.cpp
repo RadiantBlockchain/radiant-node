@@ -1,4 +1,5 @@
 // Copyright (c) 2016 The Bitcoin Core developers
+// Copyright (c) 2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -27,7 +28,7 @@ static UniValue rpcNestedTest_rpc(const Config &config,
     if (request.fHelp) {
         return "help message";
     }
-    return request.params.write();
+    return UniValue::stringify(request.params);
 }
 
 static const ContextFreeRPCCommand vRPCCommands[] = {

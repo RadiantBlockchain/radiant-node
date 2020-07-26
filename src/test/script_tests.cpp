@@ -526,7 +526,7 @@ public:
 };
 
 std::string JSONPrettyPrint(const UniValue &univalue) {
-    std::string ret = univalue.write(4);
+    std::string ret = UniValue::stringify(univalue, 4);
     // Workaround for libunivalue pretty printer, which puts a space between
     // commas and newlines
     size_t pos = 0;
@@ -2409,8 +2409,8 @@ BOOST_AUTO_TEST_CASE(script_json_test) {
         json_tests::script_tests + sizeof(json_tests::script_tests)));
 
     for (unsigned int idx = 0; idx < tests.size(); idx++) {
-        UniValue test = tests[idx];
-        std::string strTest = test.write();
+        const UniValue& test = tests[idx];
+        std::string strTest = UniValue::stringify(test);
         Amount nValue = Amount::zero();
         unsigned int pos = 0;
         if (test.size() > 0 && test[pos].isArray()) {

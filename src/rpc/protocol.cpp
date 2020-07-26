@@ -48,8 +48,7 @@ UniValue JSONRPCReplyObj(const UniValue &result, const UniValue &error,
 
 std::string JSONRPCReply(const UniValue &result, const UniValue &error,
                          const UniValue &id) {
-    UniValue reply = JSONRPCReplyObj(result, error, id);
-    return reply.write() + "\n";
+    return UniValue::stringify(JSONRPCReplyObj(result, error, id)) + '\n';
 }
 
 UniValue JSONRPCError(int code, const std::string &message) {
