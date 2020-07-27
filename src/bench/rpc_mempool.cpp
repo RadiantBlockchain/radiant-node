@@ -1,4 +1,5 @@
 // Copyright (c) 2011-2019 The Bitcoin Core developers
+// Copyright (c) 2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -21,7 +22,7 @@ static void AddTx(const CTransactionRef &tx, const Amount &fee,
                                       /* sigOpCount */ 1, lp));
 }
 
-static void RpcMempool(benchmark::State &state) {
+static void RPCMempoolVerbose(benchmark::State &state) {
     CTxMemPool pool;
     LOCK2(cs_main, pool.cs);
 
@@ -41,7 +42,7 @@ static void RpcMempool(benchmark::State &state) {
     }
 }
 
-static void RpcMempool10k(benchmark::State &state) {
+static void RPCMempoolVerbose_10k(benchmark::State &state) {
     CTxMemPool pool;
     LOCK2(cs_main, pool.cs);
 
@@ -68,5 +69,5 @@ static void RpcMempool10k(benchmark::State &state) {
     }
 }
 
-BENCHMARK(RpcMempool, 40);
-BENCHMARK(RpcMempool10k, 10);
+BENCHMARK(RPCMempoolVerbose, 112);
+BENCHMARK(RPCMempoolVerbose_10k, 10);
