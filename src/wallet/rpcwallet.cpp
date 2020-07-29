@@ -345,7 +345,7 @@ static CTransactionRef SendMoney(interfaces::Chain::Lock &locked_chain,
                                  CWallet *const pwallet,
                                  const CTxDestination &address, Amount nValue,
                                  bool fSubtractFeeFromAmount,
-                                 const CCoinControl &coin_control,
+                                 const CCoinControl &coinControl,
                                  mapValue_t mapValue) {
     Amount curBalance = pwallet->GetBalance();
 
@@ -376,7 +376,6 @@ static CTransactionRef SendMoney(interfaces::Chain::Lock &locked_chain,
     CRecipient recipient = {scriptPubKey, nValue, fSubtractFeeFromAmount};
     vecSend.push_back(recipient);
 
-    CCoinControl coinControl;
     CTransactionRef tx;
     if (!pwallet->CreateTransaction(locked_chain, vecSend, tx, reservekey,
                                     nFeeRequired, nChangePosRet, strError,
@@ -485,13 +484,13 @@ static UniValue sendtoaddress(const Config &config,
         fSubtractFeeFromAmount = request.params[4].get_bool();
     }
 
-    CCoinControl coin_control;
+    CCoinControl coinControl;
 
     EnsureWalletIsUnlocked(pwallet);
 
     CTransactionRef tx =
         SendMoney(*locked_chain, pwallet, dest, nAmount, fSubtractFeeFromAmount,
-                  coin_control, std::move(mapValue));
+                  coinControl, std::move(mapValue));
     return tx->GetId().GetHex();
 }
 
