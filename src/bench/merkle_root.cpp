@@ -13,7 +13,7 @@ static void MerkleRoot(benchmark::State &state) {
     std::vector<uint256> leaves;
     leaves.resize(9001);
     for (auto &item : leaves) {
-        item = rng.rand256();
+        rng.rand256(item);
     }
     while (state.KeepRunning()) {
         bool mutation = false;

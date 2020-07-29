@@ -666,15 +666,13 @@ void FastRandomContext::RandomSeed() {
     requires_seed = false;
 }
 
-uint256 FastRandomContext::rand256() noexcept {
+void FastRandomContext::rand256(uint256 &u) noexcept {
     static_assert (uint256::size() == 32, "Assumption here is that uint256 data size is 32 bytes");
     if (bytebuf_size < 32) {
         FillByteBuffer();
     }
-    uint256 ret{uint256::Uninitialized};
-    memcpy(ret.begin(), bytebuf + 64 - bytebuf_size, ret.size());
-    bytebuf_size -= ret.size();
-    return ret;
+    memcpy(u.begin(), bytebuf + 64 - bytebuf_size, u.size());
+    bytebuf_size -= u.size();
 }
 
 std::vector<uint8_t> FastRandomContext::randbytes(size_t len) {

@@ -1048,23 +1048,29 @@ bool AddOrphanTx(const CTransactionRef &tx, NodeId peer)
     return true;
 }
 
-static int EraseOrphanTx(const TxId id) EXCLUSIVE_LOCKS_REQUIRED(g_cs_orphans) {
+static int EraseOrphanTx(const TxId &id) EXCLUSIVE_LOCKS_REQUIRED(g_cs_orphans) {
     const auto it = mapOrphanTransactions.find(id);
     if (it == mapOrphanTransactions.end()) {
         return 0;
     }
-    for (const CTxIn &txin : it->second.tx->vin) {
-        const auto itPrev = mapOrphanTransactionsByPrev.find(txin.prevout);
-        if (itPrev == mapOrphanTransactionsByPrev.end()) {
-            continue;
+    // Note: parameter `id` may not be used beyond this point since it may point
+    // to data we will erase, potentially. So we wrap the work we do here in the
+    // lambda below, to ensure no future programmer inadvertently accesses `id`
+    // while looping below.
+    return [&it]() EXCLUSIVE_LOCKS_REQUIRED(g_cs_orphans) {
+        for (const CTxIn &txin : it->second.tx->vin) {
+            const auto itPrev = mapOrphanTransactionsByPrev.find(txin.prevout);
+            if (itPrev == mapOrphanTransactionsByPrev.end()) {
+                continue;
+            }
+            itPrev->second.erase(it);
+            if (itPrev->second.empty()) {
+                mapOrphanTransactionsByPrev.erase(itPrev);
+            }
         }
-        itPrev->second.erase(it);
-        if (itPrev->second.empty()) {
-            mapOrphanTransactionsByPrev.erase(itPrev);
-        }
-    }
-    mapOrphanTransactions.erase(it);
-    return 1;
+        mapOrphanTransactions.erase(it);
+        return 1;
+    }();
 }
 
 void EraseOrphansFor(NodeId peer) {
@@ -1116,7 +1122,10 @@ unsigned int LimitOrphanTxSize(unsigned int nMaxOrphans) {
     FastRandomContext rng;
     while (mapOrphanTransactions.size() > nMaxOrphans) {
         // Evict a random orphan:
-        const TxId randomTxId(rng.rand256());
+        TxId randomTxId{TxId::Uninitialized};
+        static_assert (sizeof(uint256) == sizeof(randomTxId),
+                       "Assumption here is that TxId and uint256 are byte-wise identical types");
+        rng.rand256(randomTxId); // generate random bytes in-place
         auto it = mapOrphanTransactions.lower_bound(randomTxId);
         if (it == mapOrphanTransactions.end()) {
             it = mapOrphanTransactions.begin();
@@ -1424,9 +1433,10 @@ static bool AlreadyHave(const CInv &inv) EXCLUSIVE_LOCKS_REQUIRED(cs_main) {
                 recentRejects->reset();
             }
 
+            const TxId txid(inv.hash);
             {
                 LOCK(g_cs_orphans);
-                if (mapOrphanTransactions.count(TxId{inv.hash})) {
+                if (mapOrphanTransactions.count(txid)) {
                     return true;
                 }
             }
@@ -1436,8 +1446,7 @@ static bool AlreadyHave(const CInv &inv) EXCLUSIVE_LOCKS_REQUIRED(cs_main) {
             // included in a block. As this is best effort, we only check for
             // output 0 and 1. This works well enough in practice and we get
             // diminishing returns with 2 onward.
-            const TxId txid(inv.hash);
-            return recentRejects->contains(inv.hash) ||
+            return recentRejects->contains(txid) ||
                    g_mempool.exists(txid) ||
                    pcoinsTip->HaveCoinInCache(COutPoint(txid, 0)) ||
                    pcoinsTip->HaveCoinInCache(COutPoint(txid, 1));

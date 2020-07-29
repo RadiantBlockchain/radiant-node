@@ -187,8 +187,16 @@ public:
     /** Generate a random 32-bit integer. */
     uint32_t rand32() noexcept { return randbits(32); }
 
+    /** generate a random uint256 in-place.
+     *  Use this to avoid copies if filling a derived type e.g. TxId, BlockHash, etc. */
+    void rand256(uint256 &u) noexcept;
+
     /** generate a random uint256. */
-    uint256 rand256() noexcept;
+    uint256 rand256() noexcept {
+        uint256 ret{uint256::Uninitialized};
+        rand256(ret);
+        return ret;
+    }
 
     /** Generate a random boolean. */
     bool randbool() noexcept { return randbits(1); }
