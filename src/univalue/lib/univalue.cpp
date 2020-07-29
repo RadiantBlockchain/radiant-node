@@ -9,6 +9,9 @@
 #include <cinttypes>
 #include <cmath>
 #include <cstdio>
+#include <iomanip>
+#include <locale>
+#include <sstream>
 #include <stdexcept>
 #include <stdint.h>
 #include <stdlib.h>
@@ -66,28 +69,41 @@ void UniValue::setNumStr(std::string&& val_) noexcept
 template<typename Num>
 void UniValue::setIntOrFloat(Num num)
 {
-    constexpr int bufSize = std::is_integral<Num>::value ? 32 : 64; // use 32 byte buffer for ints, 64 for double
-    constexpr auto fmt =
-            std::is_same<Num, double>::value
-            ? "%1.16g"
-            : (std::is_same<Num, int64_t>::value
-               ? "%" PRId64
-               : (std::is_same<Num, uint64_t>::value
-                  ? "%" PRIu64
-                    // this is here to enforce uint64_t, int64_t or double (if evaluated will fail at compile-time)
-                  : throw std::runtime_error("Unexpected type")));
-    if (std::is_floating_point<Num>::value) {
+    if (std::is_same<Num, double>::value) {
         // ensure not NaN or inf, which are not representable by the JSON Number type
         if (!std::isfinite(num))
             return;
+        // For floats and doubles, we can't use snprintf() since the C-locale may be anything,
+        // which means the decimal character may be anything. What's more, we can't touch the
+        // C-locale since it's a global object and is not thread-safe.
+        //
+        // So, for doubles we must fall-back to using the (slower) std::ostringstream.
+        // See BCHN issue #137.
+        std::ostringstream oss;
+        oss.imbue(std::locale::classic());
+        oss << std::setprecision(16) << num;
+        setNull();
+        typ = VNUM;
+        val = oss.str();
+    } else {
+        constexpr int bufSize = 32;
+        constexpr auto fmt =
+                std::is_same<Num, double>::value
+                ? "%1.16g" // <-- this branch is never taken, it's just here to allow compilation
+                : (std::is_same<Num, int64_t>::value
+                   ? "%" PRId64
+                   : (std::is_same<Num, uint64_t>::value
+                      ? "%" PRIu64
+                        // this is here to enforce uint64_t, int64_t or double (if evaluated will fail at compile-time)
+                      : throw std::runtime_error("Unexpected type")));
+        std::array<char, bufSize> buf;
+        int n = std::snprintf(buf.data(), size_t(bufSize), fmt, num); // C++11 snprintf always NUL terminates
+        if (n <= 0 || n >= bufSize) // should never happen
+            return;
+        setNull();
+        typ = VNUM;
+        val.assign(buf.data(), std::string::size_type(n));
     }
-    std::array<char, bufSize> buf;
-    int n = std::snprintf(buf.data(), size_t(bufSize), fmt, num); // C++11 snprintf always NUL terminates
-    if (n <= 0 || n >= bufSize) // should never happen
-        return;
-    setNull();
-    typ = VNUM;
-    val.assign(buf.data(), std::string::size_type(n));
 }
 
 void UniValue::setInt(uint64_t val_)
