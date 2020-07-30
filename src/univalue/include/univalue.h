@@ -214,8 +214,7 @@ public:
     void pushKV(std::string&& key, const UniValue& val, bool checkForDupes = true);
     void pushKV(std::string&& key, UniValue&& val, bool checkForDupes = true);
 
-    std::string write(unsigned int prettyIndent = 0,
-                      unsigned int indentLevel = 0) const;
+    std::string write(unsigned int prettyIndent = 0) const;
 
     bool read(const char *raw, size_t len);
     bool read(const char *raw) { return read(raw, strlen(raw)); }
@@ -240,7 +239,7 @@ private:
     void writeArray(Stream & stream, unsigned int prettyIndent, unsigned int indentLevel) const;
     void writeObject(Stream & stream, unsigned int prettyIndent, unsigned int indentLevel) const;
     static void jsonEscape(Stream & stream, const std::string & inString);
-    static inline void indentStr(Stream & stream, unsigned int prettyIndent, unsigned int indentLevel);
+    static inline void startNewLine(Stream & stream, unsigned int prettyIndent, unsigned int indentLevel);
 
     // Used by the various setInt() and setFloat() overloads
     template<typename Num>
