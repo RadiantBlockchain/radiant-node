@@ -948,17 +948,22 @@ QString formatNiceTimeOffset(qint64 secs) {
 }
 
 QString formatBytes(uint64_t bytes) {
-    if (bytes < 1024) {
+    if (bytes < 1000) {
         return QString(QObject::tr("%1 B")).arg(bytes);
     }
-    if (bytes < 1024 * 1024) {
-        return QString(QObject::tr("%1 KB")).arg(bytes / 1024);
+    if (bytes < 1000 * 1000) {
+        return QString(QObject::tr("%1 KB")).arg(bytes / 1000);
     }
-    if (bytes < 1024 * 1024 * 1024) {
-        return QString(QObject::tr("%1 MB")).arg(bytes / 1024 / 1024);
+    if (bytes < 1000 * 1000 * 1000) {
+        return QString(QObject::tr("%1 MB")).arg(bytes / 1000 / 1000);
     }
 
-    return QString(QObject::tr("%1 GB")).arg(bytes / 1024 / 1024 / 1024);
+    quint64 rest = bytes % (1000 * 1000 * 1000);
+    QString mb = QString::number(rest);
+    while (mb.length() < 9)
+        mb = QString("0") + mb;
+    return QString(QObject::tr("%1.%2 GB")).arg(bytes / 1000 / 1000 / 1000)
+            .arg(mb.left(2));
 }
 
 bool ClickableLabel::hasPixmap() const {
