@@ -38,7 +38,7 @@ class MinerFundTest(BitcoinTestFramework):
             ["-phononactivationtime={}".format(PHONON_ACTIVATION_TIME)]]
 
     def check_bip9_state(self, name, status):
-        assert_equal(False, name in self.nodes[0].getblockchaininfo()['softforks'])
+        assert_equal(False, 'softforks' in self.nodes[0].getblockchaininfo())
 
     def run_test(self):
         node = self.nodes[0]

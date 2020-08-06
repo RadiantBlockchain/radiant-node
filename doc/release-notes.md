@@ -37,12 +37,12 @@ As of version 22.0.0, Bitcoin Cash Node uses [Semantic Versioning](https://semve
 Hence our version numbers no longer start with a zero.
 
 
-Note regarding BIP9 and `getblockchaininfo`
--------------------------------------------
+BIP9 support removed
+--------------------
 
 Bitcoin Cash Node 22.0.0 removed the (incomplete) BIP9 support. In earlier
 versions, it already was inactive due to no available proposals to vote on. The
-empty `softforks` field in `getblockchaininfo` will be removed.
+empty `softforks` field in `getblockchaininfo` has been removed.
 
 
 Deprecation note regarding `medianfeerate` field in `getblockstats`

@@ -1384,9 +1384,6 @@ UniValue getblockchaininfo(const Config &config,
         }
     }
 
-    // deprecated empty softforks object for backward API compatibility
-    obj.pushKV("softforks", UniValue(UniValue::VOBJ));
-
     obj.pushKV("warnings", GetWarnings("statusbar"));
     return obj;
 }
