@@ -100,6 +100,14 @@ Automatic banning of peers for bad behavior has been slightly altered:
   node's `banlist.dat` file will be converted into "manual bans" and will expire
   within 24 hours after first running this version of BCHN.
 
+CashAddr enabled by default in bitcoin-tx
+-----------------------------------------
+
+The bitcoin-tx tool has fully supported CashAddr since v0.21.2. CashAddr in JSON
+output was disabled by default, but relying on this default was deprecated.
+Version 22.0.0 now changes the default to enabled. Specify `-usecashaddr=0` to
+retain the old behavior.
+
 New RPC methods
 ---------------
 
