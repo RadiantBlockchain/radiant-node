@@ -2,6 +2,10 @@
 
 Below are some notes on how to build Bitcoin Cash Node for Windows.
 
+Please note that from BCHN v0.21.3 onwards, building for Win32 is no longer
+officially supported (and build system capabilities related to this may
+be removed).
+
 The options known to work for building Bitcoin Cash Node on Windows are:
 
 * On Linux, using the [Mingw-w64](https://mingw-w64.org/doku.php) cross compiler
@@ -133,7 +137,7 @@ as they appear in the release `.zip` archive. This can be done in the following
 way. This will install to `c:\workspace\bitcoin-cash-node`, for example:
 
 ```bash
-    cmake -GNinja .. -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/Win32.cmake -DBUILD_BITCOIN_SEEDER=OFF -DCMAKE_INSTALL_PREFIX=/mnt/c/workspace/bitcoin-cash-node
+    cmake -GNinja .. -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/Win64.cmake -DBUILD_BITCOIN_SEEDER=OFF -DCMAKE_INSTALL_PREFIX=/mnt/c/workspace/bitcoin-cash-node
     sudo ninja install
 ```
 
@@ -262,7 +266,7 @@ as they appear in the release `.zip` archive. This can be done in the following
 way. This will install to `c:\workspace\bitcoin-cash-node`, for example:
 
 ```bash
-    cmake -GNinja .. -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/Win32.cmake -DBUILD_BITCOIN_SEEDER=OFF -DCMAKE_INSTALL_PREFIX=/mnt/c/workspace/bitcoin-cash-node
+    cmake -GNinja .. -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/Win64.cmake -DBUILD_BITCOIN_SEEDER=OFF -DCMAKE_INSTALL_PREFIX=/mnt/c/workspace/bitcoin-cash-node
     sudo ninja install
 ```
 
