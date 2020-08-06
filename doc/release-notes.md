@@ -1,7 +1,7 @@
-Release Notes for Bitcoin Cash Node version 0.21.3
+Release Notes for Bitcoin Cash Node version 22.0.0
 ==================================================
 
-Bitcoin Cash Node version 0.21.3 is now available from:
+Bitcoin Cash Node version 22.0.0 is now available from:
 
   <https://bitcoincashnode.org>
 
@@ -14,10 +14,7 @@ Overview
 Usage recommendations
 ---------------------
 
-The update to Bitcoin Cash Node 0.21.3 is optional.
-
-We recommend Bitcoin Cash Node 0.21.3 as a replacement for
-Bitcoin ABC 0.21.x
+The update to Bitcoin Cash Node 22.0.0 is required for the November 2020 Bitcoin Cash network upgrade.
 
 MacOS versions earlier than 10.12 are no longer supported.
 Additionally, Bitcoin Cash Node does not yet change appearance when macOS
@@ -32,19 +29,28 @@ Some users have encountered unit tests failures when running in WSL
 environments (e.g. WSL/Ubuntu).  At this time, WSL is not considered a
 supported environment for the software. This may change in future.
 
+
+Semantic version numbering
+--------------------------
+
+As of version 22.0.0, Bitcoin Cash Node uses [Semantic Versioning](https://semver.org/) for its version numbers.
+Hence our version numbers no longer start with a zero.
+
+
 Note regarding BIP9 and `getblockchaininfo`
 -------------------------------------------
 
-Bitcoin Cash Node 0.21.3 removed the (incomplete) BIP9 support. In earlier
+Bitcoin Cash Node 22.0.0 removed the (incomplete) BIP9 support. In earlier
 versions, it already was inactive due to no available proposals to vote on. The
-empty `softforks` field in `getblockchaininfo` will be removed in version 0.22.
+empty `softforks` field in `getblockchaininfo` will be removed.
 
 
 Deprecation note regarding `medianfeerate` field in `getblockstats`
 -----------------------------------------------------------------------
 
-The `medianfeerate` field in `getblockstats` output is deprecated, will be removed
-in v0.22. The 50th percentile from 'feerate_percentiles' array should be used instead.
+The `medianfeerate` field in `getblockstats` output is deprecated, and will be
+removed. The 50th percentile from 'feerate_percentiles' array should be used
+instead.
 
 Deprecation note regarding the autotools build system
 -----------------------------------------------------
@@ -58,7 +64,7 @@ autotools build system, pass the --enable-deprecated-build-system flag to
 Deprecation note regarding Windows 32-bit build
 -----------------------------------------------
 
-Support for 32-bit Windows builds will cease after BCHN version 0.21.3,
+Support for 32-bit Windows builds will cease after BCHN version 22.0.0,
 and build support for 32-bit Windows will be removed.
 
 Regtest network now requires standard transactions by default
@@ -120,7 +126,7 @@ Low-level RPC changes
 Regressions
 -----------
 
-Bitcoin Cash Node 0.21.3 does not introduce any known regressions compared
+Bitcoin Cash Node 22.0.0 does not introduce any known regressions compared
 to 0.21.2.
 
 
