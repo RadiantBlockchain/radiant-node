@@ -150,6 +150,17 @@ static-checks-branch:
             - depends/built
             - depends/arm-linux-gnueabihf
 
+.cache-aarch64:
+    extends: .ccache_scripts
+    cache:
+        <<: *global_cache_settings
+        key: aarch64_cache
+        paths:
+            - ccache/
+            - depends/sources
+            - depends/built
+            - depends/aarch64-linux-gnu
+
 .cache-osx:
     extends: .ccache_scripts
     cache:
@@ -512,6 +523,86 @@ build-arm:
     dependencies:
         - build-arm-depends
 
+## AArch64 build
+
+build-aarch64-depends:
+    stage: build_depends
+    extends: .cache-aarch64
+    needs: []
+    script:
+        - (cd depends; make build-linux-aarch64 -j `nproc`)
+    artifacts:
+        paths:
+            - depends/aarch64-linux-gnu
+
+build-aarch64:
+    stage: build
+    extends: .cache-aarch64
+    needs: ["build-aarch64-depends"]
+    script:
+        - mkdir build
+        - cd build
+        - cmake -GNinja .. -DBUILD_BITCOIN_ZMQ=OFF
+                           -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/LinuxAArch64.cmake
+                           -DCMAKE_CROSSCOMPILING_EMULATOR=$(command -v qemu-aarch64-static)
+        - ninja
+        - ccache --show-stats
+    dependencies:
+        - build-aarch64-depends
+    artifacts:
+        paths:
+            - build
+
+build-aarch64-tests:
+    stage: build_tests
+    extends: .cache-aarch64
+    needs: ["build-aarch64"]
+    script:
+        - (cd build; ninja -t restat)
+        - (cd build; ninja test_bitcoin)
+
+    artifacts:
+        paths:
+            - ./build/src/test/test_bitcoin
+            - ./build/src/lib*
+    dependencies:
+        - build-aarch64
+
+test-aarch64-unittests:
+    stage: test
+    cache: {}
+    needs: ["build-aarch64-tests"]
+    variables:
+        QEMU_LD_PREFIX: /usr/aarch64-linux-gnu
+    script:
+        - $(command -v qemu-aarch64-static) ./build/src/test/test_bitcoin --logger=HRF:JUNIT,message,junit_unit_tests.xml
+    dependencies:
+        - build-aarch64-tests
+    artifacts:
+        reports:
+            junit: junit_unit_tests.xml
+
+test-aarch64-functional:
+    stage: test
+    extends: .cache-aarch64
+    needs: ["build-aarch64"]
+    variables:
+        QEMU_LD_PREFIX: /usr/aarch64-linux-gnu
+    script:
+        - (cd build; ninja -t restat)
+        - (cd build; ninja check-functional)
+        - ccache --show-stats
+    dependencies:
+        - build-aarch64
+    artifacts:
+        when: on_failure
+        paths:
+            - build/test/tmp
+        expire_in: 30 days
+        reports:
+            junit: build/test/tmp/*/junit_results.xml
+
+## Fuzzers
 fuzz-libfuzzer:
     stage: test
     extends: .debian-clang-env
