@@ -153,6 +153,7 @@ public:
                uint256S("4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b"
                         "7afdeda33b"));
 
+        vSeeds.emplace_back("seed.flowee.cash");
         // Note that of those which support the service bits prefix, most only
         // support a subset of possible options. This is fine at runtime as
         // we'll fall back to using them as a oneshot if they don't support the
