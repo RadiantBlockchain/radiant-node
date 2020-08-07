@@ -84,7 +84,6 @@ class BlockchainTest(BitcoinTestFramework):
             'mediantime',
             'pruned',
             'size_on_disk',
-            'softforks',
             'verificationprogress',
             'warnings',
         ]
@@ -97,9 +96,6 @@ class BlockchainTest(BitcoinTestFramework):
 
         # size_on_disk should be > 0
         assert_greater_than(res['size_on_disk'], 0)
-
-        # softforks is deprecated and should always be an empty object
-        assert_equal(res['softforks'], {})
 
         # pruneheight should be greater or equal to 0
         assert_greater_than_or_equal(res['pruneheight'], 0)
