@@ -86,7 +86,10 @@ void UniValue::setIntOrFloat(Num num)
         typ = VNUM;
         val = oss.str();
     } else {
-        constexpr int bufSize = 32;
+        // Longest possible integers are "-9223372036854775808" and "18446744073709551615",
+        // both of which require 20 visible characters and 1 terminating null,
+        // hence buffer size 21.
+        constexpr int bufSize = 21;
         constexpr auto fmt =
                 std::is_same<Num, double>::value
                 ? "%1.16g" // <-- this branch is never taken, it's just here to allow compilation
