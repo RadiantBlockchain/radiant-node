@@ -667,7 +667,7 @@ static UniValue signmessage(const Config &config,
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Sign failed");
     }
 
-    return EncodeBase64(vchSig.data(), vchSig.size());
+    return EncodeBase64(vchSig);
 }
 
 static UniValue getreceivedbyaddress(const Config &config,
@@ -4316,7 +4316,7 @@ static UniValue walletprocesspsbt(const Config &config,
     ssTx << psbtx;
     UniValue::Object result;
     result.reserve(2);
-    result.emplace_back("psbt", EncodeBase64((uint8_t *)ssTx.data(), ssTx.size()));
+    result.emplace_back("psbt", EncodeBase64(MakeUInt8Span(ssTx)));
     result.emplace_back("complete", complete);
     return result;
 }
@@ -4434,7 +4434,7 @@ static UniValue walletcreatefundedpsbt(const Config &config,
 
     UniValue::Object result;
     result.reserve(3);
-    result.emplace_back("psbt", EncodeBase64((uint8_t *)ssTx.data(), ssTx.size()));
+    result.emplace_back("psbt", EncodeBase64(MakeUInt8Span(ssTx)));
     result.emplace_back("fee", ValueFromAmount(fee));
     result.emplace_back("changepos", change_position);
     return result;

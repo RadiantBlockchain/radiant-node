@@ -148,13 +148,13 @@ void SplitHostPort(std::string in, int &portOut, std::string &hostOut) {
     }
 }
 
-std::string EncodeBase64(const uint8_t *pch, size_t len) {
+std::string EncodeBase64(Span<const uint8_t> input) {
     static const char *pbase64 =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
     std::string str;
-    str.reserve(((len + 2) / 3) * 4);
-    ConvertBits<8, 6, true>([&](int v) { str += pbase64[v]; }, pch, pch + len);
+    str.reserve(((input.size() + 2) / 3) * 4);
+    ConvertBits<8, 6, true>([&](size_t v) { str += pbase64[v]; }, input.begin(), input.end());
     while (str.size() % 4) {
         str += '=';
     }
@@ -162,7 +162,7 @@ std::string EncodeBase64(const uint8_t *pch, size_t len) {
 }
 
 std::string EncodeBase64(const std::string &str) {
-    return EncodeBase64((const uint8_t *)str.c_str(), str.size());
+    return EncodeBase64(MakeUInt8Span(str));
 }
 
 std::vector<uint8_t> DecodeBase64(const char *p, bool *pfInvalid) {

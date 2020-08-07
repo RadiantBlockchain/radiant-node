@@ -1534,7 +1534,7 @@ static UniValue combinepsbt(const Config &,
 
     CDataStream ssTx(SER_NETWORK, PROTOCOL_VERSION);
     ssTx << merged_psbt;
-    return EncodeBase64(reinterpret_cast<uint8_t *>(ssTx.data()), ssTx.size());
+    return EncodeBase64(MakeUInt8Span(ssTx));
 }
 
 static UniValue finalizepsbt(const Config &,
@@ -1604,7 +1604,7 @@ static UniValue finalizepsbt(const Config &,
         result.emplace_back("hex", HexStr(ssTx));
     } else {
         ssTx << psbtx;
-        result.emplace_back("psbt", EncodeBase64(reinterpret_cast<uint8_t *>(ssTx.data()), ssTx.size()));
+        result.emplace_back("psbt", EncodeBase64(MakeUInt8Span(ssTx)));
     }
     result.emplace_back("complete", complete);
 
@@ -1685,7 +1685,7 @@ static UniValue createpsbt(const Config &config,
     CDataStream ssTx(SER_NETWORK, PROTOCOL_VERSION);
     ssTx << psbtx;
 
-    return EncodeBase64(reinterpret_cast<uint8_t *>(ssTx.data()), ssTx.size());
+    return EncodeBase64(MakeUInt8Span(ssTx));
 }
 
 static UniValue converttopsbt(const Config &,
@@ -1744,7 +1744,7 @@ static UniValue converttopsbt(const Config &,
     CDataStream ssTx(SER_NETWORK, PROTOCOL_VERSION);
     ssTx << psbtx;
 
-    return EncodeBase64(reinterpret_cast<uint8_t *>(ssTx.data()), ssTx.size());
+    return EncodeBase64(MakeUInt8Span(ssTx));
 }
 
 // clang-format off
