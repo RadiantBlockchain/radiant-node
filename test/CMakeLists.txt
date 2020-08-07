@@ -67,6 +67,7 @@ add_dependencies(check-all check-functional)
 add_functional_test_check(check-functional-extended
 	"Run the extended functional tests"
 	--extended
+	--coverage
 )
 add_dependencies(check-extended check-functional-extended)
 
