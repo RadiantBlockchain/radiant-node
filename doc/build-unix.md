@@ -13,6 +13,7 @@ Some notes on how to build Bitcoin Cash Node in Unix.
   * [To Build](build-unix.md#to-build)
     * [Disable-wallet mode](build-unix.md#disable-wallet-mode)
     * [ARM Cross-compilation](build-unix.md#arm-cross-compilation)
+    * [AArch64 Cross-compilation](build-unix.md#aarch64-cross-compilation)
     * [Additional cmake options](build-unix.md#additional-cmake-options)
     * [Memory Requirements](build-unix.md#memory-requirements)
     * [Strip debug symbols](build-unix.md#strip-debug-symbols)
@@ -85,6 +86,39 @@ To build executables for ARM:
 
 For further documentation on the depends system see [README.md](../depends/README.md)
 in the depends directory.
+
+### AArch64 Cross-compilation
+
+These steps can be performed on, for example, a Debian VM. The depends system
+will also work on other Linux distributions, however the commands for
+installing the toolchain will be different.
+
+Make sure you install all the build requirements mentioned above.
+Then, install the toolchain and some additional dependencies:
+
+```bash
+    sudo apt-get install autoconf automake curl gcc-aarch64-linux-gnu g++-aarch64-linux-gnu gperf pkg-config libtool
+```
+
+To build executables for AArch64:
+
+```bash
+    cd depends
+    make build-linux-aarch64
+    cd ..
+    mkdir build
+    cd build
+    cmake -GNinja .. -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/LinuxAArch64.cmake -DBUILD_BITCOIN_ZMQ=OFF
+    ninja
+```
+
+For further documentation on the depends system see [README.md](../depends/README.md)
+in the depends directory.
+
+It's recommended that you run tests for your build. For testing the cross-compiled
+binaries with an emulator, see section
+*"Running functional tests in an emulator"*
+in [functional-tests.md](functional-tests.md).
 
 ### Additional cmake options
 

@@ -257,6 +257,8 @@ All these options are passed via `-D` (defines) to the `cmake` command.
 
 - -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/LinuxARM.cmake  # select ARM Linux toolchain
 
+- -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/LinuxAArch64.cmake # select AArch64 Linux toolchain
+
 - -DCCACHE=OFF  # disable ccache
 
 - -DCMAKE_C_COMPILER=clang    # select clang as C compiler
