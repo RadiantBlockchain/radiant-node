@@ -16,12 +16,6 @@
 
 #include <cstdint>
 
-/**
- * Default for -datacarrier.
- * TODO: In next major version, remove both this definition and the -datacarrier parameter, which is redundant.
- */
-static constexpr bool DEFAULT_ACCEPT_DATACARRIER = true;
-
 class CKeyID;
 class CScript;
 
