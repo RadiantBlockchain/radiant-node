@@ -106,6 +106,14 @@ output was disabled by default, but relying on this default was deprecated.
 Version 22.0.0 now changes the default to enabled. Specify `-usecashaddr=0` to
 retain the old behavior.
 
+`-datacarrier` removed
+----------------------
+
+The bitcoind/bitcoin-qt option `-datacarrier` was deprecated in v0.21.2 and has
+now been removed in v22.0.0. Instead, use the existing option `-datacarriersize`
+to control relay and mining of OP_RETURN transactions, e.g. specify
+`-datacarriersize=0` to reject them all.
+
 New RPC methods
 ---------------
 

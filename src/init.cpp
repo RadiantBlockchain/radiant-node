@@ -930,11 +930,6 @@ void SetupServerArgs() {
                            "relay and mining (default: %u)",
                            DEFAULT_BYTES_PER_SIGOP),
                  true, OptionsCategory::NODE_RELAY);
-    gArgs.AddArg(
-        "-datacarrier",
-        strprintf("Relay and mine OP_RETURN transactions (deprecated, will be removed in v0.22, "
-                  "use -datacarriersize instead; default: %d)", DEFAULT_ACCEPT_DATACARRIER),
-        true, OptionsCategory::NODE_RELAY);
     gArgs.AddArg("-datacarriersize=<n>",
                  strprintf("Maximum size of data script in OP_RETURN transactions "
                            "we relay and mine (in bytes, 0 to reject all OP_RETURN transactions, default: %u)",
@@ -1835,8 +1830,7 @@ bool AppInitParameterInteraction(Config &config) {
     }
 
     fIsBareMultisigStd = gArgs.GetBoolArg("-permitbaremultisig", DEFAULT_PERMIT_BAREMULTISIG);
-    nMaxDatacarrierBytes = gArgs.GetBoolArg("-datacarrier", DEFAULT_ACCEPT_DATACARRIER)
-        ? gArgs.GetArg("-datacarriersize", MAX_OP_RETURN_RELAY) : 0;
+    nMaxDatacarrierBytes = gArgs.GetArg("-datacarriersize", MAX_OP_RETURN_RELAY);
 
     // Option to startup with mocktime set (used for regression testing):
     SetMockTime(gArgs.GetArg("-mocktime", 0)); // SetMockTime(0) is a no-op
