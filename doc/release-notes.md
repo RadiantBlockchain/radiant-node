@@ -44,13 +44,11 @@ Bitcoin Cash Node 22.0.0 removed the (incomplete) BIP9 support. In earlier
 versions, it already was inactive due to no available proposals to vote on. The
 empty `softforks` field in `getblockchaininfo` has been removed.
 
+`medianfeerate` field removed from `getblockstats`
+--------------------------------------------------
 
-Deprecation note regarding `medianfeerate` field in `getblockstats`
------------------------------------------------------------------------
-
-The `medianfeerate` field in `getblockstats` output is deprecated, and will be
-removed. The 50th percentile from 'feerate_percentiles' array should be used
-instead.
+The `medianfeerate` field in `getblockstats` output has been removed. The 50th
+percentile from the `feerate_percentiles` array should be used instead.
 
 Deprecation note regarding the autotools build system
 -----------------------------------------------------

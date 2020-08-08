@@ -2010,12 +2010,6 @@ static UniValue getblockstats(const Config &config,
             "  \"maxtxsize\": xxxxx,       (numeric) Maximum transaction size\n"
             "  \"medianfee\": x.xxx,       (numeric) Truncated median fee in "
             "the block\n"
-            "  \"medianfeerate\": x.xxx,   (numeric) Truncated median feerate "
-            "(in " +
-            CURRENCY_UNIT +
-            " per byte)\n"
-            " (deprecated, will be removed in v0.22, use 50th percentile "
-            " from 'feerate_percentiles')\n"
             "  \"mediantime\": xxxxx,      (numeric) The block median time "
             "past\n"
             "  \"mediantxsize\": xxxxx,    (numeric) Truncated median "
@@ -2097,7 +2091,7 @@ static UniValue getblockstats(const Config &config,
     const bool do_all = stats.size() == 0;
     const bool do_mediantxsize = do_all || stats.count("mediantxsize") != 0;
     const bool do_medianfee = do_all || stats.count("medianfee") != 0;
-    const bool do_feerate_percentiles = do_all || stats.count("feerate_percentiles") != 0 || stats.count("medianfeerate") !=0;
+    const bool do_feerate_percentiles = do_all || stats.count("feerate_percentiles") != 0;
     const bool loop_inputs =
         do_all || do_medianfee || do_feerate_percentiles ||
         SetHasKeys(stats, "utxo_size_inc", "totalfee", "avgfee", "avgfeerate",
@@ -2229,7 +2223,6 @@ static UniValue getblockstats(const Config &config,
     ret_all.pushKV("maxtxsize", maxtxsize);
     ret_all.pushKV("medianfee",
                    ValueFromAmount(CalculateTruncatedMedian(fee_array)));
-    ret_all.pushKV("medianfeerate", ValueFromAmount(feerate_percentiles[2]));
     ret_all.pushKV("mediantime", pindex->GetMedianTimePast());
     ret_all.pushKV("mediantxsize", CalculateTruncatedMedian(txsize_array));
     ret_all.pushKV(
