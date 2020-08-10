@@ -885,6 +885,11 @@ void SetupServerArgs() {
                   defaultChainParams->GetConsensus().axionActivationTime),
         true, OptionsCategory::DEBUG_TEST);
     gArgs.AddArg(
+        "-tachyonactivationtime=<n>",
+        strprintf("Tentative activation time of the May 2021 Bitcoin Cash Network Upgrade (<n> seconds since epoch, default: %d)",
+                  defaultChainParams->GetConsensus().tachyonActivationTime),
+        true, OptionsCategory::DEBUG_TEST);
+    gArgs.AddArg(
         "-printtoconsole",
         "Send trace/debug info to console instead of debug.log file (default: "
         "1 when no -daemon. To disable logging to file, set debuglogfile=0)",
