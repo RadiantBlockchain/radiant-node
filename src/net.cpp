@@ -89,6 +89,8 @@ const static std::string NET_MESSAGE_TYPE_OTHER = "*other*";
 static const uint64_t RANDOMIZER_ID_NETGROUP = 0x6c0edd8036ef4036ULL;
 // SHA256("localhostnonce")[0:8]
 static const uint64_t RANDOMIZER_ID_LOCALHOSTNONCE = 0xd93e69e2bbfa5735ULL;
+// SHA256("addrcache")[0:8]
+static const uint64_t RANDOMIZER_ID_ADDRCACHE = 0x1cf2e4ddd306dda9ULL;
 //
 // Global state variables
 //
@@ -2601,14 +2603,21 @@ std::vector<CAddress> CConnman::GetAddresses(size_t max_addresses, size_t max_pc
     return addresses;
 }
 
-std::vector<CAddress> CConnman::GetAddressesUntrusted(Network requestor_network, size_t max_addresses,
-                                                      size_t max_pct) {
-    LOCK(cs_addr_response_caches);
+std::vector<CAddress> CConnman::GetAddressesUntrusted(CNode &requestor, size_t max_addresses, size_t max_pct) {
+    SOCKET socket;
+    WITH_LOCK(requestor.cs_hSocket, socket = requestor.hSocket);
+    auto local_socket_bytes = GetBindAddress(socket).GetAddrBytes();
+    uint64_t cache_id = GetDeterministicRandomizer(RANDOMIZER_ID_ADDRCACHE)
+                            .Write(requestor.addr.GetNetwork())
+                            .Write(local_socket_bytes.data(), local_socket_bytes.size())
+                            .Finalize();
     const auto current_time = GetTime<std::chrono::microseconds>();
+
+    LOCK(cs_addr_response_caches);
 
     // Either emplace a new default-constructed CachedAddrResponse (with m_update_addr_response == 0),
     // or lookup an existing one.
-    CachedAddrResponse & cached = m_addr_response_caches.try_emplace(requestor_network).first->second;
+    CachedAddrResponse & cached = m_addr_response_caches.try_emplace(cache_id).first->second;
 
     if (cached.m_update_addr_response < current_time || cached.m_addrs_response_cache.empty()) {
         cached.m_addrs_response_cache = GetAddresses(max_addresses, max_pct);
