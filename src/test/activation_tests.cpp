@@ -93,4 +93,30 @@ BOOST_AUTO_TEST_CASE(isaxionenabled) {
     BOOST_CHECK(IsAxionEnabled(params, &blocks.back()));
 }
 
+BOOST_AUTO_TEST_CASE(istachyonenabled) {
+    CBlockIndex prev;
+
+    const Consensus::Params &params = Params().GetConsensus();
+    const auto activation =
+        gArgs.GetArg("-tachyonctivationtime", params.tachyonActivationTime);
+    SetMockTime(activation - 1000000);
+
+    BOOST_CHECK(!IsTachyonEnabled(params, nullptr));
+
+    std::array<CBlockIndex, 12> blocks;
+    for (size_t i = 1; i < blocks.size(); ++i) {
+        blocks[i].pprev = &blocks[i - 1];
+    }
+    BOOST_CHECK(!IsTachyonEnabled(params, &blocks.back()));
+
+    SetMTP(blocks, activation - 1);
+    BOOST_CHECK(!IsTachyonEnabled(params, &blocks.back()));
+
+    SetMTP(blocks, activation);
+    BOOST_CHECK(IsTachyonEnabled(params, &blocks.back()));
+
+    SetMTP(blocks, activation + 1);
+    BOOST_CHECK(IsTachyonEnabled(params, &blocks.back()));
+}
+
 BOOST_AUTO_TEST_SUITE_END()

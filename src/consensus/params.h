@@ -42,6 +42,8 @@ struct Params {
     int phononActivationTime;
     /** Unix time used for MTP activation of 15 Nov 2020 12:00:00 UTC upgrade */
     int axionActivationTime;
+    /** Unix time used for tentative MTP activation of 15 May 2021 12:00:00 UTC upgrade */
+    int tachyonActivationTime;
 
     /** Proof of work parameters */
     uint256 powLimit;

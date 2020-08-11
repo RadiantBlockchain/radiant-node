@@ -24,6 +24,7 @@ struct CustomArgumentsFixture {
             testsuitename,
             "-phononactivationtime",
             "-axionactivationtime",
+            "-tachyonactivationtime",
         };
 
         for (const auto &arg : testArgs) {
