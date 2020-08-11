@@ -2617,10 +2617,11 @@ std::vector<CAddress> CConnman::GetAddressesUntrusted(CNode &requestor, size_t m
 
     // Either emplace a new default-constructed CachedAddrResponse (with m_update_addr_response == 0),
     // or lookup an existing one.
-    CachedAddrResponse & cached = m_addr_response_caches.try_emplace(cache_id).first->second;
+    CachedAddrResponse & cache_entry = m_addr_response_caches.try_emplace(cache_id).first->second;
 
-    if (cached.m_update_addr_response < current_time || cached.m_addrs_response_cache.empty()) {
-        cached.m_addrs_response_cache = GetAddresses(max_addresses, max_pct);
+    // If emplace() added new one it has expiration 0.
+    if (cache_entry.m_cache_entry_expiration < current_time || cache_entry.m_addrs_response_cache.empty()) {
+        cache_entry.m_addrs_response_cache = GetAddresses(max_addresses, max_pct);
 
         // Choosing a proper cache lifetime is a trade-off between the privacy leak minimization and the usefulness of
         // ADDR responses to honest users.
@@ -2641,10 +2642,11 @@ std::vector<CAddress> CConnman::GetAddressesUntrusted(CNode &requestor, size_t m
         // However, the churn in the network is known to be rather low. Since we consider nodes to be "terrible" (see
         // IsTerrible()) if the timestamps are older than 30 days, max. 24 hours of "penalty" due to cache shouldn't
         // make any meaningful difference in terms of the freshness of the response.
-        cached.m_update_addr_response = current_time + std::chrono::hours(21) + GetRandMillis(std::chrono::hours(6));
+        cache_entry.m_cache_entry_expiration =
+            current_time + std::chrono::hours(21) + GetRandMillis(std::chrono::hours(6));
     }
 
-    std::vector<CAddress> ret{cached.m_addrs_response_cache};
+    std::vector<CAddress> ret{cache_entry.m_addrs_response_cache};
     // Truncate results if they are larger than specified.
     if (max_addresses > 0 && ret.size() > max_addresses) ret.resize(max_addresses);
     return ret;
