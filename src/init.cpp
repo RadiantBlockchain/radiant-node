@@ -886,7 +886,8 @@ void SetupServerArgs() {
         true, OptionsCategory::DEBUG_TEST);
     gArgs.AddArg(
         "-tachyonactivationtime=<n>",
-        strprintf("Tentative activation time of the May 2021 Bitcoin Cash Network Upgrade (<n> seconds since epoch, default: %d)",
+        strprintf("Tentative activation time of the first Bitcoin Cash Network Upgrade after November 2020 "
+                  "(<n> seconds since epoch, default: %d)",
                   defaultChainParams->GetConsensus().tachyonActivationTime),
         true, OptionsCategory::DEBUG_TEST);
     gArgs.AddArg(
@@ -903,8 +904,8 @@ void SetupServerArgs() {
         "-replayprotectionactivationtime=<n>",
         strprintf("Activation time of the automatic replay protection mechanism that will fork this node off the Bitcoin Cash "
                   "network, intended to coincide with the activation of the first Bitcoin Cash Network Upgrade not yet implemented "
-                  "in this version of the node, which is scheduled for November 2020 (<n> seconds since epoch, default: %d)",
-                  defaultChainParams->GetConsensus().axionActivationTime),
+                  "in this version of the node (<n> seconds since epoch, default: %d)",
+                  defaultChainParams->GetConsensus().tachyonActivationTime),
         true, OptionsCategory::DEBUG_TEST);
     gArgs.AddArg(
         "-shrinkdebugfile",
