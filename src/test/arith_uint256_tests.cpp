@@ -638,6 +638,14 @@ BOOST_AUTO_TEST_CASE(bignum_SetCompact) {
     num.SetCompact(0xff123456, &fNegative, &fOverflow);
     BOOST_CHECK_EQUAL(fNegative, false);
     BOOST_CHECK_EQUAL(fOverflow, true);
+
+    BOOST_CHECK_EQUAL(0, ZeroL.bits());
+    BOOST_CHECK_EQUAL(1, OneL.bits());
+    BOOST_CHECK_EQUAL(2, (OneL << 1).bits());
+    BOOST_CHECK_EQUAL(3, (OneL << 2).bits());
+    BOOST_CHECK_EQUAL(255, (HalfL >> 1).bits());
+    BOOST_CHECK_EQUAL(256, HalfL.bits());
+    BOOST_CHECK_EQUAL(256, MaxL.bits());
 }
 
 // some more tests just to get 100% coverage
