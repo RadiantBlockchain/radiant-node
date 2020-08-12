@@ -1,4 +1,5 @@
 // Copyright (c) 2013-2016 The Bitcoin Core developers
+// Copyright (c) 2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -164,32 +165,31 @@ BOOST_AUTO_TEST_CASE(sighash_test) {
         // Make sure replay protection works as expected.
         uint256 shrep = SignatureHash(scriptCode, CTransaction(txTo), nIn,
                                       sigHashType, Amount::zero(), nullptr,
-                                      SCRIPT_ENABLE_SIGHASH_FORKID |
-                                          SCRIPT_ENABLE_REPLAY_PROTECTION);
+                                      SCRIPT_ENABLE_SIGHASH_FORKID);
         uint32_t newForValue = 0xff0000 | ((nHashType >> 8) ^ 0xdead);
         uint256 manualshrep = SignatureHash(
             scriptCode, CTransaction(txTo), nIn,
             sigHashType.withForkValue(newForValue), Amount::zero());
-        BOOST_CHECK(shrep == manualshrep);
+        BOOST_CHECK(shrep != manualshrep);
 
         // Replay protection works even if the hash is of the form 0xffxxxx
         uint256 shrepff = SignatureHash(
             scriptCode, CTransaction(txTo), nIn,
             sigHashType.withForkValue(newForValue), Amount::zero(), nullptr,
-            SCRIPT_ENABLE_SIGHASH_FORKID | SCRIPT_ENABLE_REPLAY_PROTECTION);
+            SCRIPT_ENABLE_SIGHASH_FORKID);
         uint256 manualshrepff = SignatureHash(
             scriptCode, CTransaction(txTo), nIn,
             sigHashType.withForkValue(newForValue ^ 0xdead), Amount::zero());
-        BOOST_CHECK(shrepff == manualshrepff);
+        BOOST_CHECK(shrepff != manualshrepff);
 
         uint256 shrepabcdef = SignatureHash(
             scriptCode, CTransaction(txTo), nIn,
             sigHashType.withForkValue(0xabcdef), Amount::zero(), nullptr,
-            SCRIPT_ENABLE_SIGHASH_FORKID | SCRIPT_ENABLE_REPLAY_PROTECTION);
+            SCRIPT_ENABLE_SIGHASH_FORKID);
         uint256 manualshrepabcdef =
             SignatureHash(scriptCode, CTransaction(txTo), nIn,
                           sigHashType.withForkValue(0xff1342), Amount::zero());
-        BOOST_CHECK(shrepabcdef == manualshrepabcdef);
+        BOOST_CHECK(shrepabcdef != manualshrepabcdef);
 
 #if defined(PRINT_SIGHASH_JSON)
         CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
@@ -272,8 +272,8 @@ BOOST_AUTO_TEST_CASE(sighash_from_data) {
         BOOST_CHECK_MESSAGE(shold.GetHex() == sigHashOldHex, strTest);
 
         uint256 shrep = SignatureHash(
-            scriptCode, *tx, nIn, sigHashType, Amount::zero(), nullptr,
-            SCRIPT_ENABLE_SIGHASH_FORKID | SCRIPT_ENABLE_REPLAY_PROTECTION);
+            scriptCode, *tx, nIn, sigHashType.withForkValue(0xff0000 | (sigHashType.getForkValue() ^ 0xdead)),
+            Amount::zero(), nullptr, SCRIPT_ENABLE_SIGHASH_FORKID);
         BOOST_CHECK_MESSAGE(shrep.GetHex() == sigHashRepHex, strTest);
     }
 }

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Copyright (c) 2015-2016 The Bitcoin Core developers
-# Copyright (c) 2017 The Bitcoin developers
+# Copyright (c) 2017-2020 The Bitcoin developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -49,10 +49,7 @@ from test_framework.util import assert_equal, assert_raises_rpc_error
 
 # ---Code specific to the activation used for this test---
 
-# It might change depending on the activation code currently existing in the
-# client software. We use the replay protection activation for this test.
 ACTIVATION_TIME = 2000000000
-EXTRA_ARG = "-replayprotectionactivationtime={}".format(ACTIVATION_TIME)
 
 # simulation starts before activation
 FIRST_BLOCK_TIME = ACTIVATION_TIME - 86400
@@ -131,7 +128,6 @@ class MempoolCoherenceOnActivationsTest(BitcoinTestFramework):
         self.tip = None
         self.blocks = {}
         self.extra_args = [['-whitelist=127.0.0.1',
-                            EXTRA_ARG,
                             '-acceptnonstdtxn=1']]
 
     def next_block(self, number):
@@ -284,35 +280,34 @@ class MempoolCoherenceOnActivationsTest(BitcoinTestFramework):
                      ACTIVATION_TIME)
 
         # Check mempool coherence when activating the fork. Pre-fork-only txns
-        # were evicted from the mempool, while always-valid txns remain.
-        # Evicted: tx_pre1
-        check_mempool_equal([tx_chain1])
+        # were not evicted from the mempool, always-valid txns also remain.
+        # Evicted: NONE
+        check_mempool_equal([tx_chain1, tx_pre1])
 
-        # Post-fork-only and always-valid txns are accepted, pre-fork-only txn
-        # are rejected.
-        send_transaction_to_mempool(tx_post0)
-        send_transaction_to_mempool(tx_post1)
+        # Always-valid txns are accepted, pre-fork-only txn
+        # Post-fork-only are rejected
+        # pre-fork-only txn are accepted
+        assert_raises_rpc_error(-26, RPC_EXPECTED_ERROR,
+                                node.sendrawtransaction, ToHex(tx_post0))
+        assert_raises_rpc_error(-26, RPC_EXPECTED_ERROR,
+                                node.sendrawtransaction, ToHex(tx_post1))
         tx_chain2, _ = create_always_valid_chained_tx(last_chained_output)
         send_transaction_to_mempool(tx_chain2)
-        assert_raises_rpc_error(-26, RPC_EXPECTED_ERROR,
-                                node.sendrawtransaction, ToHex(tx_pre1))
-        check_mempool_equal([tx_chain1, tx_chain2, tx_post0, tx_post1])
+        check_mempool_equal([tx_chain1, tx_pre1, tx_chain2])
 
-        # Mine the 2nd always-valid chained txn and a post-fork-only txn.
+        # Mine the 2nd always-valid chained txn.
         block(5557)
-        update_block(5557, [tx_chain1, tx_post0])
+        update_block(5557, [tx_chain1])
         node.p2p.send_blocks_and_test([self.tip], node)
         postforkblockid = node.getbestblockhash()
-        # The mempool contains the 3rd chained txn and a post-fork-only txn.
-        check_mempool_equal([tx_chain2, tx_post1])
+        # The mempool contains the 3rd chained txn and a pre-fork-only txn.
+        check_mempool_equal([tx_chain2, tx_pre1])
 
         # In the following we will testing block disconnections and reorgs.
         # - tx_chain2 will always be retained in the mempool since it is always
         #   valid. Its continued presence shows that we are never simply
         #   clearing the entire mempool.
-        # - tx_post1 may be evicted from mempool if we land before the fork.
-        # - tx_post0 is in a block and if 'de-mined', it will either be evicted
-        #   or end up in mempool depending if we land before/after the fork.
+        # - tx_post0 and tx_post1 are never accepted into the mempool.
         # - tx_pre0 is in a block and if 'de-mined', it will either be evicted
         #   or end up in mempool depending if we land after/before the fork.
 
@@ -320,36 +315,35 @@ class MempoolCoherenceOnActivationsTest(BitcoinTestFramework):
         # normal disconnection that merely returns the block contents into
         # the mempool -- nothing is lost.
         node.invalidateblock(postforkblockid)
-        # In old mempool: tx_chain2, tx_post1
-        # Recovered from blocks: tx_chain1 and tx_post0.
+        # In old mempool: tx_chain2, tx_pre1
+        # Recovered from blocks: tx_chain1.
         # Lost from blocks: NONE
-        # Retained from old mempool: tx_chain2, tx_post1
+        # Retained from old mempool: tx_chain2
         # Evicted from old mempool: NONE
-        check_mempool_equal([tx_chain1, tx_chain2, tx_post0, tx_post1])
+        check_mempool_equal([tx_chain1, tx_chain2, tx_pre1])
 
         # Now, disconnect the fork block. This is a special disconnection
         # that requires reprocessing the mempool due to change in rules.
         node.invalidateblock(forkblockid)
-        # In old mempool: tx_chain1, tx_chain2, tx_post0, tx_post1
+        # In old mempool: tx_chain1, tx_chain2, tx_pre1
         # Recovered from blocks: tx_chain0, tx_pre0
         # Lost from blocks: NONE
         # Retained from old mempool: tx_chain1, tx_chain2
-        # Evicted from old mempool: tx_post0, tx_post1
-        check_mempool_equal([tx_chain0, tx_chain1, tx_chain2, tx_pre0])
+        # Evicted from old mempool: NONE
+        check_mempool_equal([tx_chain0, tx_chain1, tx_chain2, tx_pre0, tx_pre1])
 
         # Restore state
         node.reconsiderblock(postforkblockid)
         node.reconsiderblock(forkblockid)
-        send_transaction_to_mempool(tx_post1)
-        check_mempool_equal([tx_chain2, tx_post1])
+        assert_raises_rpc_error(-26, RPC_EXPECTED_ERROR,
+                                node.sendrawtransaction, ToHex(tx_post1))
+        check_mempool_equal([tx_pre1, tx_chain2])
 
         # Test a reorg that crosses the fork.
 
         # If such a reorg happens, most likely it will both start *and end*
-        # after the fork. We will test such a case here and make sure that
-        # post-fork-only transactions are not unnecessarily discarded from
-        # the mempool in such a reorg. Pre-fork-only transactions however can
-        # get lost.
+        # after the fork. We will test such a case here.
+        # Pre-fork-only transactions however can get lost.
 
         # Set up a longer competing chain that doesn't confirm any of our txns.
         # This starts after 5204, so it contains neither the forkblockid nor
@@ -365,13 +359,12 @@ class MempoolCoherenceOnActivationsTest(BitcoinTestFramework):
         assert_equal(
             node.getblockchaininfo()['mediantime'],
             ACTIVATION_TIME + 2)
-        # In old mempool: tx_chain2, tx_post1
-        # Recovered from blocks: tx_chain0, tx_chain1, tx_post0
-        # Lost from blocks: tx_pre0
-        # Retained from old mempool: tx_chain2, tx_post1
+        # In old mempool: tx_chain2
+        # Recovered from blocks: tx_chain0, tx_chain1, tx_pre0
+        # Lost from blocks: NONE
+        # Retained from old mempool: tx_chain2, tx_pre1
         # Evicted from old mempool: NONE
-        check_mempool_equal(
-            [tx_chain0, tx_chain1, tx_chain2, tx_post0, tx_post1])
+        check_mempool_equal([tx_pre1, tx_chain0, tx_chain1, tx_pre0, tx_chain2])
 
 
 if __name__ == '__main__':

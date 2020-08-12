@@ -34,9 +34,6 @@ from test_framework.util import assert_equal, assert_raises_rpc_error
 # Phonon dummy activation time
 PHONON_START_TIME = 2000000000
 
-# Replay protection time needs to be moved beyond phonon activation
-REPLAY_PROTECTION_TIME = PHONON_START_TIME * 2
-
 PREFORK_MAX_ANCESTORS = 25
 PREFORK_MAX_DESCENDANTS = 25
 POSTFORK_MAX_ANCESTORS = 50
@@ -52,8 +49,6 @@ class PhononPolicyChangeTest(BitcoinTestFramework):
         self.block_heights = {}
         self.extra_args = [[
             "-phononactivationtime={}".format(PHONON_START_TIME),
-            "-replayprotectionactivationtime={}".format(
-                REPLAY_PROTECTION_TIME),
             "-acceptnonstdtxn=1"]]
 
     def bootstrap_p2p(self):

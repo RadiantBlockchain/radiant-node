@@ -39,10 +39,6 @@ from collections import deque
 # Set test to run with sigops deactivation far in the future.
 SIGCHECKS_ACTIVATION_TIME = 2000000000
 
-# If we don't do this, autoreplay protection will activate before graviton and
-# all our sigs will mysteriously fail.
-REPLAY_PROTECTION_START_TIME = SIGCHECKS_ACTIVATION_TIME * 2
-
 # We are going to use a tiny block size so we don't need to waste too much
 # time with making transactions. (note -- minimum block size is 1000000)
 # (just below a multiple, to test edge case)
@@ -120,8 +116,6 @@ class BlockSigChecksActivationTest(BitcoinTestFramework):
         self.block_heights = {}
         self.extra_args = [["-phononactivationtime={}".format(
             SIGCHECKS_ACTIVATION_TIME),
-            "-replayprotectionactivationtime={}".format(
-            REPLAY_PROTECTION_START_TIME),
             "-excessiveblocksize={}".format(MAXBLOCKSIZE),
             "-blockmaxsize={}".format(MAXBLOCKSIZE),
             "-acceptnonstdtxn=1"]]

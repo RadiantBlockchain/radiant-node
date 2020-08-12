@@ -1497,14 +1497,6 @@ uint256 SignatureHash(const CScript &scriptCode, const T &txTo,
                       const PrecomputedTransactionData *cache, uint32_t flags) {
     assert(nIn < txTo.vin.size());
 
-    if (flags & SCRIPT_ENABLE_REPLAY_PROTECTION) {
-        // Legacy chain's value for fork id must be of the form 0xffxxxx.
-        // By xoring with 0xdead, we ensure that the value will be different
-        // from the original one, even if it already starts with 0xff.
-        uint32_t newForkValue = sigHashType.getForkValue() ^ 0xdead;
-        sigHashType = sigHashType.withForkValue(0xff0000 | newForkValue);
-    }
-
     if (sigHashType.hasForkId() && (flags & SCRIPT_ENABLE_SIGHASH_FORKID)) {
         uint256 hashPrevouts;
         uint256 hashSequence;

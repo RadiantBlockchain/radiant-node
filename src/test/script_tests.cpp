@@ -151,7 +151,7 @@ static void DoTest(const CScript &scriptPubKey, const CScript &scriptSig,
         // Some flags are not purely-restrictive and thus we can't assume
         // anything about what happens when they are flipped. Keep them as-is.
         extra_flags &=
-            ~(SCRIPT_ENABLE_SIGHASH_FORKID | SCRIPT_ENABLE_REPLAY_PROTECTION |
+            ~(SCRIPT_ENABLE_SIGHASH_FORKID |
               SCRIPT_ENABLE_SCHNORR_MULTISIG | SCRIPT_ENABLE_OP_REVERSEBYTES);
         uint32_t combined_flags =
             expect ? (flags & ~extra_flags) : (flags | extra_flags);
@@ -1193,28 +1193,6 @@ BOOST_AUTO_TEST_CASE(script_build) {
             .PushSigECDSA(keys.key0, SigHashType().withForkId(), 32, 32,
                           TEST_AMOUNT)
             .SetScriptError(ScriptError::ILLEGAL_FORKID));
-
-    // Test replay protection
-    tests.push_back(
-        TestBuilder(CScript() << ToByteVector(keys.pubkey0) << OP_CHECKSIG,
-                    "P2PK REPLAY PROTECTED",
-                    SCRIPT_ENABLE_SIGHASH_FORKID |
-                        SCRIPT_ENABLE_REPLAY_PROTECTION,
-                    false, TEST_AMOUNT)
-            .PushSigECDSA(keys.key0, SigHashType().withForkId(), 32, 32,
-                          TEST_AMOUNT,
-                          SCRIPT_ENABLE_SIGHASH_FORKID |
-                              SCRIPT_ENABLE_REPLAY_PROTECTION));
-
-    tests.push_back(
-        TestBuilder(CScript() << ToByteVector(keys.pubkey0) << OP_CHECKSIG,
-                    "P2PK REPLAY PROTECTED",
-                    SCRIPT_ENABLE_SIGHASH_FORKID |
-                        SCRIPT_ENABLE_REPLAY_PROTECTION,
-                    false, TEST_AMOUNT)
-            .PushSigECDSA(keys.key0, SigHashType().withForkId(), 32, 32,
-                          TEST_AMOUNT, SCRIPT_ENABLE_SIGHASH_FORKID)
-            .SetScriptError(ScriptError::EVAL_FALSE));
 
     // Test OP_CHECKDATASIG
     const uint32_t checkdatasigflags =

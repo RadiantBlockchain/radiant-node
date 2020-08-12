@@ -84,10 +84,6 @@ enum {
     //
     SCRIPT_ENABLE_SIGHASH_FORKID = (1U << 16),
 
-    // Do we accept activate replay protection using a different fork id.
-    //
-    SCRIPT_ENABLE_REPLAY_PROTECTION = (1U << 17),
-
     // Count sigops for OP_CHECKDATASIG and variant. The interpreter treats
     // OP_CHECKDATASIG(VERIFY) as always valid. This flag only affects sigops
     // counting, and will be removed during cleanup of the SigChecks upgrade.
