@@ -62,4 +62,9 @@ uint32_t GetNextASERTWorkRequired(const CBlockIndex *pindexPrev,
  */
 void ResetASERTAnchorBlockCache() noexcept;
 
+/**
+ * For testing purposes - get the current ASERT cache block.
+ */
+const CBlockIndex *GetASERTAnchorBlockCache() noexcept;
+
 #endif // BITCOIN_POW_H
