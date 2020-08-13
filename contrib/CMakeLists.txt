@@ -3,6 +3,11 @@ if(BUILD_SOURCE_CONTROL_TOOLS)
 	add_subdirectory(source-control-tools)
 endif()
 
+option(BUILD_ASERT_TEST_VECTORS "Create ASERT test vector targets" OFF)
+if (BUILD_ASERT_TEST_VECTORS)
+	add_subdirectory(testgen)
+endif()
+
 add_subdirectory(devtools)
 
 include(PackageHelper)

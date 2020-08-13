@@ -5068,6 +5068,7 @@ void UnloadBlockIndex() {
     pindexBestHeader = nullptr;
     pindexBestForkTip = nullptr;
     pindexBestForkBase = nullptr;
+    ResetASERTAnchorBlockCache();
     g_mempool.clear();
     mapBlocksUnlinked.clear();
     vinfoBlockFile.clear();

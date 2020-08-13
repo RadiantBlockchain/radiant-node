@@ -240,6 +240,12 @@ Builds application fuzz testing executables.
 
 See [the fuzzing instructions](fuzzing.md) for more information.
 
+## Other targets
+
+### asert-testgen
+
+Creates test vectors for ASERT difficulty adjustment algorithms. Requires
+define `BUILD_ASERT_TEST_VECTORS=ON`
 
 ## Ninja build configuration options
 
