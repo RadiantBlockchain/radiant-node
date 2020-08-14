@@ -50,6 +50,10 @@ static bool GetCScript(const SigningProvider &provider,
     return false;
 }
 
+/*
+// This function is currently unused but has been left in place, yet
+// commented-out, to prevent compile-time warnings. It is anticipated to be
+// needed again in the future.
 static bool GetPubKey(const SigningProvider &provider, SignatureData &sigdata,
                       const CKeyID &address, CPubKey &pubkey) {
     // Look for pubkey in all partial sigs
@@ -75,6 +79,7 @@ static bool GetPubKey(const SigningProvider &provider, SignatureData &sigdata,
     }
     return false;
 }
+*/
 
 static bool CreateSig(const BaseSignatureCreator &creator,
                       SignatureData &sigdata, const SigningProvider &provider,
