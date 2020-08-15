@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2019 The Bitcoin Core developers
+// Copyright (c) 2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -754,15 +755,13 @@ static const int optIndent = 2;
 static const int msgIndent = 7;
 
 std::string HelpMessageGroup(const std::string &message) {
-    return std::string(message) + std::string("\n\n");
+    return message + "\n\n";
 }
 
 std::string HelpMessageOpt(const std::string &option,
                            const std::string &message) {
-    return std::string(optIndent, ' ') + std::string(option) +
-           std::string("\n") + std::string(msgIndent, ' ') +
-           FormatParagraph(message, screenWidth - msgIndent, msgIndent) +
-           std::string("\n\n");
+    return std::string(optIndent, ' ') + option + '\n' +
+           FormatParagraph(message, screenWidth, msgIndent) + "\n\n";
 }
 
 static std::string FormatException(const std::exception *pex,
