@@ -66,12 +66,15 @@ def target_to_bits(target):
     assert size < 256
     return compact | size << 24
 
+
 def bits_to_work(bits):
     return (2 << 255) // (bits_to_target(bits) + 1)
+
 
 def target_to_hex(target):
     h = hex(target)[2:]
     return '0' * (64 - len(h)) + h
+
 
 def next_bits_aserti3_2d(anchor_bits, time_diff, height_diff):
     ''' Integer ASERTI algorithm, based on Jonathan Toomim's `next_bits_aserti`
@@ -83,16 +86,16 @@ def next_bits_aserti3_2d(anchor_bits, time_diff, height_diff):
     #     new_target = old_target * 2^((time_diff - IDEAL_BLOCK_TIME*(height_diff+1)) / HALFLIFE)
 
     # First, we'll calculate the exponent, using floor division.
-    exponent = int(((time_diff - IDEAL_BLOCK_TIME*(height_diff+1)) * RADIX) / HALFLIFE)
+    exponent = int(((time_diff - IDEAL_BLOCK_TIME * (height_diff + 1)) * RADIX) / HALFLIFE)
 
     # Next, we use the 2^x = 2 * 2^(x-1) identity to shift our exponent into the (0, 1] interval.
     shifts = exponent >> RBITS
-    exponent -= shifts*RADIX
+    exponent -= shifts * RADIX
     assert(exponent >= 0 and exponent < 65536)
 
     # Now we compute an approximated target * 2^(fractional part) * 65536
     # target * 2^x ~= target * (1 + 0.695502049*x + 0.2262698*x**2 + 0.0782318*x**3)
-    target *= RADIX + ((195766423245049*exponent + 971821376*exponent**2 + 5127*exponent**3 + 2**47)>>(RBITS*3))
+    target *= RADIX + ((195766423245049 * exponent + 971821376 * exponent**2 + 5127 * exponent**3 + 2**47) >> (RBITS * 3))
 
     # Next, we shift to multiply by 2^(integer part). Python doesn't allow shifting by negative integers, so:
     if shifts < 0:
@@ -113,7 +116,7 @@ def next_bits_aserti3_2d(anchor_bits, time_diff, height_diff):
 def check_run_file(run_file_path):
     '''Reads and validates a single run file.'''
 
-    run = open(run_file_path, 'r')
+    run = open(run_file_path, 'r', encoding='utf-8')
 
     # Initialize these to invalid values to catch their absence
     anchor_height = 0
@@ -121,45 +124,48 @@ def check_run_file(run_file_path):
     iterations = 0
 
     iteration_counter = 1
-    for l in run:
-        l = l.strip()
-        if l.startswith('## description:'):
-            print(l)
-        elif l == '':
+    for line in run:
+        line = line.strip()
+        if line.startswith('## description:'):
+            print(line)
+        elif line == '':
             pass
-        elif l.startswith('##   anchor height: '):  # height of anchor block
-            anchor_height = int(l[19:])
-            assert anchor_height > 0, "Unexpected anchor height value '{}' is <= 0 in header of {}".format(anchor_height, run_file_path)
-        elif l.startswith('##   anchor parent time: '):    # timestamp of anchor block's parent, in seconds
-            anchor_time = int(l[24:])
+        elif line.startswith('##   anchor height: '):  # height of anchor block
+            anchor_height = int(line[19:])
+            assert anchor_height > 0, "Unexpected anchor height value '{}' is <= 0 in header of {}".format(
+                anchor_height, run_file_path)
+        elif line.startswith('##   anchor parent time: '):    # timestamp of anchor block's parent, in seconds
+            anchor_time = int(line[24:])
             assert anchor_time >= 0, "Unexpected anchor time value '{}' is < 0 in header of {}".format(anchor_time, run_file_path)
-        elif l.startswith('##   iterations: '):  # number of iterations expected in this run file
-            iterations = int(l[17:])
+        elif line.startswith('##   iterations: '):  # number of iterations expected in this run file
+            iterations = int(line[17:])
             assert iterations > 0, "Unexpected iterations value '{}' is <= 0 in header of {}".format(iterations, run_file_path)
-        elif l.startswith('##   anchor nBits: '):   # anchor block nBits (next target) value
-            anchor_nbits = l[19:]
+        elif line.startswith('##   anchor nBits: '):   # anchor block nBits (next target) value
+            anchor_nbits = line[19:]
             # Sanity check: convert to integer target and back to bits and assert that it remains unchanged
             anchor_nbits_int = int(anchor_nbits, 16)
             target = bits_to_target(anchor_nbits_int)
             bits = target_to_bits(target)
             bits_str = "0x{:08x}".format(bits)
-            assert bits_str == anchor_nbits, "Unexpected anchor nBits that did not convert to target and back identically: {}".format(anchor_nbits)
-        elif not l.startswith('#'):              # this should be an iteration
+            assert bits_str == anchor_nbits, "Unexpected anchor nBits that did not convert to target and back identically: {}".format(
+                anchor_nbits)
+        elif not line.startswith('#'):              # this should be an iteration
             # Check we have the basic necessities from header
             assert anchor_height > 0, "Something is wrong in {} - no valid anchor height".format(run_file_path)
             assert anchor_time > -1, "Something is wrong in {} - no valid anchor time".format(run_file_path)
             assert iterations > 0, "Something is wrong in {} - no valid number of iterations".format(run_file_path)
 
-            split_l = l.split(' ')
-            #print(split_l)
-            (it, height, time_secs, next_nbits_from_file) = [int(split_l[0]), int(split_l[1]), int(split_l[2]), split_l[3]] 
+            split_l = line.split(' ')
+            # print(split_l)
+            (it, height, time_secs, next_nbits_from_file) = [int(split_l[0]), int(split_l[1]), int(split_l[2]), split_l[3]]
             assert it == iteration_counter, "Unexpected iteration counter '{}' in {}".format(it, run_file_path)
             assert it <= iterations, "Number of iterations in {} exceeds header specifications".format(run_file_path)
 
             print("next_bits_aserti3_2d({}, {}, {})".format(int(anchor_nbits, 16), time_secs - anchor_time, height - anchor_height))
             calculated_nbits = next_bits_aserti3_2d(int(anchor_nbits, 16), time_secs - anchor_time, height - anchor_height)
             calculated_nbits_str = "0x{:08x}".format(calculated_nbits)
-            assert calculated_nbits_str == next_nbits_from_file, "Target mismatch ({} instead of {} in iteration {} in {}".format(calculated_nbits_str, next_nbits_from_file, it, run_file_path)
+            assert calculated_nbits_str == next_nbits_from_file, "Target mismatch ({} instead of {} in iteration {} in {}".format(
+                calculated_nbits_str, next_nbits_from_file, it, run_file_path)
             iteration_counter += 1
     run.close()
     # Assert that no iterations were missing from the file
@@ -188,6 +194,7 @@ def main():
     print("\nAll OK.")
     print("This does not mean the Python aserti3_2d implementation is 100% conformant -\n"
           "it means the test vectors do not show up a difference.")
+
 
 if __name__ == '__main__':
     main()
