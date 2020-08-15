@@ -37,10 +37,6 @@ from collections import deque
 # Set test to run with sigchecks activation far in the future.
 SIGCHECKS_ACTIVATION_TIME = 2000000000
 
-# If we don't do this, autoreplay protection will activate before graviton and
-# all our sigs will mysteriously fail.
-REPLAY_PROTECTION_START_TIME = SIGCHECKS_ACTIVATION_TIME * 2
-
 TX_INPUT_SIGCHECKS_ERROR = "non-mandatory-script-verify-flag (Input SigChecks limit exceeded) (code 64)"
 
 
@@ -82,8 +78,6 @@ class InputSigChecksActivationTest(BitcoinTestFramework):
         self.block_heights = {}
         self.extra_args = [["-phononactivationtime={}".format(
             SIGCHECKS_ACTIVATION_TIME),
-            "-replayprotectionactivationtime={}".format(
-            REPLAY_PROTECTION_START_TIME),
             "-acceptnonstdtxn=1"]]
 
     def getbestblock(self, node):

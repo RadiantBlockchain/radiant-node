@@ -56,10 +56,6 @@ SATOSHI = Decimal('0.00000001')
 # Set test to run with sigops deactivation far in the future.
 SIGOPS_DEACTIVATION_TIME = 2000000000
 
-# If we don't do this, autoreplay protection will activate before graviton and
-# all our sigs will mysteriously fail.
-REPLAY_PROTECTION_START_TIME = SIGOPS_DEACTIVATION_TIME * 2
-
 # Transactions for mempool with too many sigops give this error:
 MEMPOOL_TXSIGOPS_ERROR = 'bad-txns-too-many-sigops'
 MEMPOOL_P2SH_SIGOPS_ERROR = 'bad-txns-nonstandard-inputs'
@@ -130,9 +126,7 @@ class SigopsDeactivationTest(BitcoinTestFramework):
         self.num_nodes = 2
         self.block_heights = {}
         timeargs = ["-phononactivationtime={}".format(
-            SIGOPS_DEACTIVATION_TIME),
-            "-replayprotectionactivationtime={}".format(
-            REPLAY_PROTECTION_START_TIME)]
+            SIGOPS_DEACTIVATION_TIME)]
         # many standardness rules are actually enforced on regtest, except for
         # P2SH sigops.
         self.extra_args = [timeargs + ['-acceptnonstdtxn=1'], timeargs]

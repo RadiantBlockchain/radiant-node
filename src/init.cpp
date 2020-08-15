@@ -911,13 +911,6 @@ void SetupServerArgs() {
                            DEFAULT_PRINTPRIORITY),
                  true, OptionsCategory::DEBUG_TEST);
     gArgs.AddArg(
-        "-replayprotectionactivationtime=<n>",
-        strprintf("Activation time of the automatic replay protection mechanism that will fork this node off the Bitcoin Cash "
-                  "network, intended to coincide with the activation of the first Bitcoin Cash Network Upgrade not yet implemented "
-                  "in this version of the node (<n> seconds since epoch, default: %d)",
-                  defaultChainParams->GetConsensus().tachyonActivationTime),
-        true, OptionsCategory::DEBUG_TEST);
-    gArgs.AddArg(
         "-shrinkdebugfile",
         "Shrink debug.log file on client startup (default: 1 when no -debug)",
         false, OptionsCategory::DEBUG_TEST);

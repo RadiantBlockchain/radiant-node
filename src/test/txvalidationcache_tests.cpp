@@ -1,4 +1,5 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
+// Copyright (c) 2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -343,8 +344,7 @@ BOOST_FIXTURE_TEST_CASE(checkinputs_test, TestChain100Setup) {
         invalid_with_cltv_tx.vin[0].scriptSig = CScript() << vchSig << 101;
 
         ValidateCheckInputsForAllFlags(CTransaction(invalid_with_cltv_tx),
-                                       SCRIPT_VERIFY_CHECKLOCKTIMEVERIFY |
-                                           SCRIPT_ENABLE_REPLAY_PROTECTION,
+                                       SCRIPT_VERIFY_CHECKLOCKTIMEVERIFY,
                                        SCRIPT_ENABLE_SIGHASH_FORKID, true, 1);
 
         // Make it valid, and check again
@@ -383,8 +383,7 @@ BOOST_FIXTURE_TEST_CASE(checkinputs_test, TestChain100Setup) {
         invalid_with_csv_tx.vin[0].scriptSig = CScript() << vchSig << 101;
 
         ValidateCheckInputsForAllFlags(CTransaction(invalid_with_csv_tx),
-                                       SCRIPT_VERIFY_CHECKSEQUENCEVERIFY |
-                                           SCRIPT_ENABLE_REPLAY_PROTECTION,
+                                       SCRIPT_VERIFY_CHECKSEQUENCEVERIFY,
                                        SCRIPT_ENABLE_SIGHASH_FORKID, true, 1);
 
         // Make it valid, and check again
@@ -439,7 +438,7 @@ BOOST_FIXTURE_TEST_CASE(checkinputs_test, TestChain100Setup) {
         // This should be valid under all script flags that support our sighash
         // convention.
         ValidateCheckInputsForAllFlags(
-            CTransaction(tx), SCRIPT_ENABLE_REPLAY_PROTECTION,
+            CTransaction(tx), 0,
             SCRIPT_ENABLE_SIGHASH_FORKID | SCRIPT_VERIFY_P2SH, true, 2);
 
         {

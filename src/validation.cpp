@@ -455,25 +455,6 @@ std::string FormatStateMessage(const CValidationState &state) {
         state.GetRejectCode());
 }
 
-// Command-line argument "-replayprotectionactivationtime=<timestamp>" will
-// cause the node to switch to replay protected SigHash ForkID value when the
-// median timestamp of the previous 11 blocks is greater than or equal to
-// <timestamp>. Defaults to the pre-defined timestamp when not set.
-static bool IsReplayProtectionEnabled(const Consensus::Params &params,
-                                      int64_t nMedianTimePast) {
-    return nMedianTimePast >= gArgs.GetArg("-replayprotectionactivationtime",
-                                           params.tachyonActivationTime);
-}
-
-static bool IsReplayProtectionEnabled(const Consensus::Params &params,
-                                      const CBlockIndex *pindexPrev) {
-    if (pindexPrev == nullptr) {
-        return false;
-    }
-
-    return IsReplayProtectionEnabled(params, pindexPrev->GetMedianTimePast());
-}
-
 // Returns the script flags which should be checked for mempool admission when
 // the tip is at the given block.
 static uint32_t GetStandardScriptFlags(const Consensus::Params &params,
@@ -1679,12 +1660,6 @@ static uint32_t GetNextBlockScriptFlags(const Consensus::Params &params,
         flags |= SCRIPT_ENABLE_OP_REVERSEBYTES;
         flags |= SCRIPT_REPORT_SIGCHECKS;
         flags |= SCRIPT_ZERO_SIGOPS;
-    }
-
-    // We make sure this node will have replay protection during the next hard
-    // fork.
-    if (IsReplayProtectionEnabled(params, pindex)) {
-        flags |= SCRIPT_ENABLE_REPLAY_PROTECTION;
     }
 
     return flags;
