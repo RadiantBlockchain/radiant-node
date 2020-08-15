@@ -1,11 +1,13 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <warnings.h>
 
 #include <clientversion.h>
+#include <software_outdated.h>
 #include <sync.h>
 #include <util/system.h>
 
@@ -54,6 +56,8 @@ std::string GetWarnings(const std::string &strFor) {
         strGUI += (strGUI.empty() ? "" : uiAlertSeperator) + strMiscWarning;
     }
 
+    const bool fOutDated = software_outdated::IsOutdated();
+
     if (fLargeWorkForkFound) {
         strStatusBar = "Warning: The network does not appear to fully agree! "
                        "Some miners appear to be experiencing issues.";
@@ -68,6 +72,14 @@ std::string GetWarnings(const std::string &strFor) {
             (strGUI.empty() ? "" : uiAlertSeperator) +
             _("Warning: We do not appear to fully agree with our peers! You "
               "may need to upgrade, or other nodes may need to upgrade.");
+    } else if (fOutDated) {
+        strStatusBar = software_outdated::GetWarnString(false /* translated */);
+    }
+
+    if (fOutDated) {
+        // Unconditionally add this warning to the GUI if we are outdated
+        strGUI += (strGUI.empty() ? "" : uiAlertSeperator)
+                  + software_outdated::GetWarnString(true /* translated */);
     }
 
     if (strFor == "gui") {

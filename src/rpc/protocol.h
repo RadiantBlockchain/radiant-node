@@ -67,6 +67,8 @@ enum RPCErrorCode {
     RPC_IN_WARMUP = -28,
     //! RPC method is deprecated
     RPC_METHOD_DEPRECATED = -32,
+    //! RPC is disabled due to blockchain conditions (see software_outdated.cpp)
+    RPC_DISABLED = -100,
 
     //! Aliases for backward compatibility
     RPC_TRANSACTION_ERROR = RPC_VERIFY_ERROR,
