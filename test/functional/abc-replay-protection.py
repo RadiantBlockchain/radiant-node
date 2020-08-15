@@ -265,16 +265,13 @@ class ReplayProtectionTest(BitcoinTestFramework):
         tmpl = node.getblocktemplate()
 
         found_id0 = False
-        found_id1 = False
 
         for txn in tmpl['transactions']:
             txid = txn['txid']
             if txid == replay_tx0_id:
                 found_id0 = True
-            elif txid == replay_tx1_id:
-                found_id1 = True
 
-        assert found_id0 and not found_id1
+        assert found_id0
 
         # And the mempool is still in good shape.
         assert replay_tx0_id in set(node.getrawmempool())
