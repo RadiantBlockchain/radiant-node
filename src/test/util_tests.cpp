@@ -1,4 +1,5 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
+// Copyright (c) 2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -1131,12 +1132,12 @@ BOOST_AUTO_TEST_CASE(test_FormatParagraph) {
     BOOST_CHECK_EQUAL(FormatParagraph("test test", 79, 0), "test test");
     BOOST_CHECK_EQUAL(FormatParagraph("test test", 4, 0), "test\ntest");
     BOOST_CHECK_EQUAL(FormatParagraph("testerde test", 4, 0), "testerde\ntest");
-    BOOST_CHECK_EQUAL(FormatParagraph("test test", 4, 4), "test\n    test");
+    BOOST_CHECK_EQUAL(FormatParagraph("test test", 4, 4), "    test\n    test");
 
     // Make sure we don't indent a fully-new line following a too-long line
     // ending
     BOOST_CHECK_EQUAL(FormatParagraph("test test\nabc", 4, 4),
-                      "test\n    test\nabc");
+                      "    test\n    test\n    abc");
 
     BOOST_CHECK_EQUAL(
         FormatParagraph("This_is_a_very_long_test_string_without_any_spaces_so_"
@@ -1166,9 +1167,9 @@ BOOST_AUTO_TEST_CASE(test_FormatParagraph) {
                         "r s t u v w x y z 0 1 2 3 4 5 6 7 8 9 a b c d e fg h "
                         "i j k",
                         79, 4),
-        "x\na b c d e f g h i j k l m n o p q r s t u v w x y z 1 2 3 4 5 6 7 "
-        "8 9 a b c de\n    f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 "
-        "5 6 7 8 9 a b c d e fg\n    h i j k");
+        "    x\n    a b c d e f g h i j k l m n o p q r s t u v w x y z 1 2 3 4 5 6 7 "
+        "8 9 a b c\n    de f g h i j k l m n o p q r s t u v w x y z 0 1 2 3 4 "
+        "5 6 7 8 9 a b c d e\n    fg h i j k");
 
     BOOST_CHECK_EQUAL(
         FormatParagraph("This is a very long test string. This is a second "
