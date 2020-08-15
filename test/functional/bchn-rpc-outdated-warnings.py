@@ -19,6 +19,7 @@ WARNING_TEXT_EXPIRED = "Warning: This version of Bitcoin Cash Node is old and ma
 # use mocktime -- so we must actually wait for it to expire.
 FUZZ_TIME = 10.0
 
+
 class WarnOnOutdatedTest(BitcoinTestFramework):
 
     def set_test_params(self):
@@ -40,10 +41,10 @@ class WarnOnOutdatedTest(BitcoinTestFramework):
         ]
 
         self.extra_args = [
-            [ "-tachyonactivationtime={}".format(time.time() + OUTDATED_WARN_START + FUZZ_TIME), "-noexpirerpc" ],
-            common + ["-mocktime={}".format(warningTime),],
+            ["-tachyonactivationtime={}".format(time.time() + OUTDATED_WARN_START + FUZZ_TIME), "-noexpirerpc"],
+            common + ["-mocktime={}".format(warningTime), ],
             common + ["-mocktime={}".format(warningTime), "-noexpire"],
-            common + ["-mocktime={}".format(afterUpgradeTime),],
+            common + ["-mocktime={}".format(afterUpgradeTime), ],
         ]
         self.num_nodes = 4
 
@@ -53,7 +54,7 @@ class WarnOnOutdatedTest(BitcoinTestFramework):
         supressingNode = self.nodes[2]
         afterUpgradeNode = self.nodes[3]
 
-        waitTime = FUZZ_TIME*2
+        waitTime = FUZZ_TIME * 2
         # The following RPC calls show the warning.
         calls = ["getmininginfo", "getnetworkinfo", "getblockchaininfo"]
 
@@ -80,7 +81,6 @@ class WarnOnOutdatedTest(BitcoinTestFramework):
         debug_log = os.path.join(afterUpgradeNode.datadir, 'regtest', 'debug.log')
         with open(debug_log, encoding='utf-8') as dl:
             assert WARNING_TEXT_EXPIRED in dl.read()
-
 
 
 if __name__ == '__main__':
