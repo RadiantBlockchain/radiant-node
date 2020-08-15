@@ -114,6 +114,40 @@ now been removed in v22.0.0. Instead, use the existing option `-datacarriersize`
 to control relay and mining of OP_RETURN transactions, e.g. specify
 `-datacarriersize=0` to reject them all.
 
+
+May 15th, 2021 - Graceful expiration mechanism was added
+--------------------------------------------------------
+
+A mechanism has been added to this version such that it will gracefully
+expire on May 15th, 2021, at the time of the network upgrade which is
+tentatively scheduled to occur then. Once this software expires, the RPC
+subsystem will disallow RPC commands. This feature can be disabled with
+the `-expire=0` option. Furthermore, the date of expiration can be altered
+with the `-tachyonactivationtime=<n>` option.
+
+This feature has been added as a safety measure to prevent this version of
+the node software from mining or otherwise transacting on an incompatible
+chain, should an upgrade take place on May 15th, 2021. This version will begin
+to warn via RPC "warnings", via a GUI message, and via periodic messages to the
+log starting 30 days prior to May 15th, 2021.
+
+Once the future consensus rules of the May 15th, 2021 upgrade to the Bitcoin
+Cash network have been determined, a new version of Bitcoin Cash Node will be
+made available well in advance of May 15th, 2021. It is recommended that all
+users of Bitcoin Cash Node update their nodes at that time so as to ensure
+uninterrupted operation.
+
+*Related configuration options:*
+
+- `-expire`: Specify `expire=0` in the configuration file or `-expire=0`
+on the CLI to disable the aforementioned graceful expiration mechanism
+(default: 1).
+
+- `-tachyonactivationtime=<n>`: This option controls when the expiration
+mechanism (if enabled) will expire the node and disable RPC (<n> seconds since
+epoch, default: 1621080000).
+
+
 New RPC methods
 ---------------
 

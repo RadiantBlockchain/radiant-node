@@ -12,6 +12,7 @@
 #include <random.h>
 #include <rpc/util.h>
 #include <shutdown.h>
+#include <software_outdated.h>
 #include <sync.h>
 #include <ui_interface.h>
 #include <util/strencodings.h>
@@ -76,7 +77,15 @@ UniValue RPCServer::ExecuteCommand(Config &config,
         }
     }
 
-    std::string commandName = request.strMethod;
+    const auto &commandName = request.strMethod;
+
+    // Software expired check. If this flag is set we return an error. We do
+    // allow the "stop" command (so that we may shut down the daemon).
+    if (software_outdated::fRPCDisabled.load(std::memory_order_relaxed)
+            && commandName != "stop") {
+        throw JSONRPCError(RPC_DISABLED, software_outdated::GetRPCDisabledString());
+    }
+
     {
         auto commandsReadView = commands.getReadView();
         auto iter = commandsReadView->find(commandName);

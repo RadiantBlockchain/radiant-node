@@ -410,6 +410,7 @@ add_library(common
 	protocol.cpp
 	psbt.cpp
 	scheduler.cpp
+	software_outdated.cpp
 	warnings.cpp
 )
 

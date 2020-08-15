@@ -43,6 +43,7 @@
 #include <script/sigcache.h>
 #include <script/standard.h>
 #include <shutdown.h>
+#include <software_outdated.h>
 #include <timedata.h>
 #include <torcontrol.h>
 #include <txdb.h>
@@ -363,7 +364,7 @@ void SetupServerArgs() {
 
     // Hidden Options
     std::vector<std::string> hidden_args = {
-        "-dbcrashratio", "-forcecompactdb",
+        "-dbcrashratio", "-forcecompactdb", "-expirerpc",
         // GUI args. These will be overwritten by SetupUIArgs for the GUI
         "-allowselfsignedrootcertificates", "-choosedatadir", "-lang=<lang>",
         "-min", "-resetguisettings", "-rootcertificates=<file>", "-splash",
@@ -488,6 +489,15 @@ void SetupServerArgs() {
             defaultChainParams->GetConsensus().nMinimumChainWork.GetHex(),
             testnetChainParams->GetConsensus().nMinimumChainWork.GetHex()),
         true, OptionsCategory::OPTIONS);
+    gArgs.AddArg(
+        "-expire",
+        strprintf(
+            "Limit functionality of this node after the tentative upgrade "
+            "date of May 15, 2021 (date can be set with "
+            "-tachyonactivationtime=<n>). To avoid inadvertently using the "
+            "wrong chain, the RPC interface will be disabled at that time. "
+            "(default: %d)", software_outdated::DEFAULT_EXPIRE),
+        false, OptionsCategory::OPTIONS);
     gArgs.AddArg(
         "-par=<n>",
         strprintf("Set the number of script verification threads (up to %d, 0 "
@@ -2010,6 +2020,29 @@ bool AppInitMain(Config &config, RPCServer &rpcServer,
 #if ENABLE_ZMQ
     RegisterZMQRPCCommands(tableRPC);
 #endif
+
+    /**
+     * Set up the "software outdated" mechanism.
+     */
+    if (gArgs.GetBoolArg("-expire", software_outdated::DEFAULT_EXPIRE)) {
+        // The software outdated warning will start to happen 30 days before
+        // tachyon activates which by default is 30 days before May 15th, 2021.
+        software_outdated::nTime = gArgs.GetArg("-tachyonactivationtime",
+                                                chainparams.GetConsensus().tachyonActivationTime);
+        if (software_outdated::nTime > 0) {
+            software_outdated::fDisableRPCOnExpiry =
+                    gArgs.GetBoolArg("-expirerpc", software_outdated::DEFAULT_EXPIRE_RPC);
+            // Setup hooks for expiring the software. As we near the expiry date,
+            // this will periodically print warnings to the log before expiry.
+            // After the software expires, we will also disable the RPC service
+            // if software_outdated::fDisableRPCOnExpiry is true.
+            software_outdated::SetupExpiryHooks(scheduler);
+        }
+    } else {
+        // -expire=0 - software outdated warning is disabled
+        software_outdated::nTime = 0;
+    }
+
 
     /**
      * Start the RPC server.  It will be started in "warmup" mode and not

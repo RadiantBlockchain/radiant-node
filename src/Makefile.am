@@ -205,6 +205,7 @@ BITCOIN_CORE_H = \
   script/standard.h \
   shutdown.h \
   streams.h \
+  software_outdated.h \
   support/allocators/secure.h \
   support/allocators/zeroafterfree.h \
   support/cleanse.h \
@@ -468,6 +469,7 @@ libbitcoin_common_a_SOURCES = \
   script/ismine.cpp \
   script/sign.cpp \
   script/standard.cpp \
+  software_outdated.cpp \
   warnings.cpp \
   $(BITCOIN_CORE_H)
 
