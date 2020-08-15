@@ -7,7 +7,7 @@
 Test derived from the corresponding abc-miner-fund test in Bitcoin ABC 0.21.
 Assertions added/modified from the original test in Bitcoin ABC:
 * -enableminerfund is not a valid configuration option.
-* By default we do not enable the lowest four version bits prior to phonon activation.
+* By default we do not enable the lowest four version bits prior to axion activation.
 * We do not track BIP9 voting on the IFP.
 * We still mine without miner fund contributions after the IFP activated in ABC.
 * We still accept non-contributing blocks after the IFP activated in ABC.
@@ -20,7 +20,7 @@ from test_framework.util import (
     assert_equal,
 )
 
-PHONON_ACTIVATION_TIME = 1589544000
+AXION_ACTIVATION_TIME = 1605441600
 VERSION_BASE = 536870912
 
 MINER_FUND_RATIO = 20
@@ -34,8 +34,6 @@ MINER_FUND_ELECTRON_CASH_ADDR = 'bchreg:pp8d685l8kecnmtyy52ndvq625arz2qwmutyjlcy
 class MinerFundTest(BitcoinTestFramework):
     def set_test_params(self):
         self.num_nodes = 1
-        self.extra_args = [
-            ["-phononactivationtime={}".format(PHONON_ACTIVATION_TIME)]]
 
     def check_bip9_state(self, name, status):
         assert_equal(False, 'softforks' in self.nodes[0].getblockchaininfo())
@@ -79,7 +77,7 @@ class MinerFundTest(BitcoinTestFramework):
         # MAKE SURE THE MINER FUND CANNOT BE ENABLED.
         self.stop_node(0)
         node.assert_start_raises_init_error(
-            ['-enableminerfund', "-phononactivationtime={}".format(PHONON_ACTIVATION_TIME)], 'Error parsing command line arguments: Invalid parameter -enableminerfund')
+            ['-enableminerfund', "-axionactivationtime={}".format(AXION_ACTIVATION_TIME)], 'Error parsing command line arguments: Invalid parameter -enableminerfund')
 
     def run_no_miner_fund_test(self):
         node = self.nodes[0]
@@ -88,14 +86,14 @@ class MinerFundTest(BitcoinTestFramework):
         def get_best_vote():
             return node.getblockheader(node.getbestblockhash())['version'] & 0xF
 
-        # Move MTP forward to phonon activation WITHOUT VOTING FOR IFP.
-        node.setmocktime(PHONON_ACTIVATION_TIME)
+        # Move MTP forward to axion activation WITHOUT VOTING FOR IFP.
+        node.setmocktime(AXION_ACTIVATION_TIME)
         for i in range(6):
             node.generatetoaddress(1, address)
             assert_equal(get_best_vote(), 0)
         assert_equal(
             node.getblockchaininfo()['mediantime'],
-            PHONON_ACTIVATION_TIME)
+            AXION_ACTIVATION_TIME)
 
         # First block with the new rules.
         node.generatetoaddress(1, address)
@@ -114,7 +112,7 @@ class MinerFundTest(BitcoinTestFramework):
 
         self.stop_node(0)
         self.start_node(0,
-                        ["-blockversion={}".format(version), "-phononactivationtime={}".format(PHONON_ACTIVATION_TIME)])
+                        ["-blockversion={}".format(version), "-axionactivationtime={}".format(AXION_ACTIVATION_TIME)])
 
         node = self.nodes[0]
         node.setmocktime(1580000000)
@@ -161,14 +159,14 @@ class MinerFundTest(BitcoinTestFramework):
             'since': 576,
         })
 
-        # Move MTP forward to phonon activation.
-        node.setmocktime(PHONON_ACTIVATION_TIME)
+        # Move MTP forward to axion activation.
+        node.setmocktime(AXION_ACTIVATION_TIME)
         for i in range(6):
             node.generatetoaddress(1, address)
             assert_equal(get_best_vote(), 1 << bit)
         assert_equal(
             node.getblockchaininfo()['mediantime'],
-            PHONON_ACTIVATION_TIME)
+            AXION_ACTIVATION_TIME)
 
         self.check_bip9_state(name, {
             'status': 'active',
@@ -200,7 +198,7 @@ class MinerFundTest(BitcoinTestFramework):
 
         block_height = node.getblockcount()
         block = create_block(
-            fork_block_hash, create_coinbase(block_height), PHONON_ACTIVATION_TIME + 99)
+            fork_block_hash, create_coinbase(block_height), AXION_ACTIVATION_TIME + 99)
         block.solve()
 
         assert_equal(node.submitblock(ToHex(block)), None)

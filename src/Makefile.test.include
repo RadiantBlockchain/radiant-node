@@ -116,7 +116,6 @@ BITCOIN_TESTS =\
   test/lcg_tests.cpp \
   test/lcg.h \
   test/limitedmap_tests.cpp \
-  test/mempool_policy_tests.cpp \
   test/mempool_tests.cpp \
   test/merkle_tests.cpp \
   test/merkleblock_tests.cpp \
@@ -154,7 +153,6 @@ BITCOIN_TESTS =\
   test/sighash_tests.cpp \
   test/sighashtype_tests.cpp \
   test/sigcheckcount_tests.cpp \
-  test/sigopcount_tests.cpp \
   test/sigutil.h \
   test/skiplist_tests.cpp \
   test/streams_tests.cpp \

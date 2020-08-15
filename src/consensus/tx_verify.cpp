@@ -152,40 +152,6 @@ bool SequenceLocks(const CTransaction &tx, int flags,
         block, CalculateSequenceLocks(tx, flags, prevHeights, block));
 }
 
-uint64_t GetSigOpCountWithoutP2SH(const CTransaction &tx, uint32_t flags) {
-    uint64_t nSigOps = 0;
-    for (const auto &txin : tx.vin) {
-        nSigOps += txin.scriptSig.GetSigOpCount(flags, false);
-    }
-    for (const auto &txout : tx.vout) {
-        nSigOps += txout.scriptPubKey.GetSigOpCount(flags, false);
-    }
-    return nSigOps;
-}
-
-uint64_t GetP2SHSigOpCount(const CTransaction &tx, const CCoinsViewCache &view,
-                           uint32_t flags) {
-    if ((flags & SCRIPT_VERIFY_P2SH) == 0 || tx.IsCoinBase()) {
-        return 0;
-    }
-
-    uint64_t nSigOps = 0;
-    for (auto &i : tx.vin) {
-        const CTxOut &prevout = view.GetOutputFor(i);
-        if (prevout.scriptPubKey.IsPayToScriptHash()) {
-            nSigOps += prevout.scriptPubKey.GetSigOpCount(flags, i.scriptSig);
-        }
-    }
-
-    return nSigOps;
-}
-
-uint64_t GetTransactionSigOpCount(const CTransaction &tx,
-                                  const CCoinsViewCache &view, uint32_t flags) {
-    return GetSigOpCountWithoutP2SH(tx, flags) +
-           GetP2SHSigOpCount(tx, view, flags);
-}
-
 namespace Consensus {
 bool CheckTxInputs(const CTransaction &tx, CValidationState &state,
                    const CCoinsViewCache &inputs, int nSpendHeight,

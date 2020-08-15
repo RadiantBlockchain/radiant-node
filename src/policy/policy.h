@@ -43,14 +43,6 @@ static constexpr unsigned int MAX_STANDARD_TX_SIZE = 100000;
 static constexpr unsigned int MAX_TX_IN_SCRIPT_SIG_SIZE = 1650;
 
 /**
- * Maximum number of signature check operations in an IsStandard() P2SH script.
- */
-static constexpr unsigned int MAX_P2SH_SIGOPS = 15;
-/**
- * The maximum number of sigops we're willing to relay/mine in a single tx.
- */
-static constexpr unsigned int MAX_STANDARD_TX_SIGOPS = MAX_TX_SIGOPS_COUNT / 5;
-/**
  * Default for -maxmempool, maximum megabytes of mempool memory usage.
  */
 static constexpr unsigned int DEFAULT_MAX_MEMPOOL_SIZE = 300;
@@ -62,8 +54,7 @@ static constexpr CFeeRate MEMPOOL_FULL_FEE_INCREMENT(1000 * SATOSHI);
 /**
  * Default for -bytespersigop .
  */
-static constexpr unsigned int DEFAULT_BYTES_PER_SIGOP =
-    1000000 / MAX_BLOCK_SIGOPS_PER_MB;
+static constexpr unsigned int DEFAULT_BYTES_PER_SIGOP = 50;
 /**
  * Min feerate for defining dust. Historically this has been the same as the
  * minRelayTxFee, however changing the dust limit changes which transactions are
@@ -82,7 +73,7 @@ static constexpr uint32_t MANDATORY_SCRIPT_VERIFY_FLAGS =
     SCRIPT_VERIFY_P2SH | SCRIPT_VERIFY_STRICTENC |
     SCRIPT_ENABLE_SIGHASH_FORKID | SCRIPT_VERIFY_LOW_S |
     SCRIPT_VERIFY_NULLFAIL | SCRIPT_VERIFY_MINIMALDATA |
-    SCRIPT_ENABLE_SCHNORR_MULTISIG;
+    SCRIPT_ENABLE_SCHNORR_MULTISIG | SCRIPT_ENFORCE_SIGCHECKS;
 
 /**
  * Standard script verification flags that standard transactions will comply

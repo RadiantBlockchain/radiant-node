@@ -135,7 +135,6 @@ add_boost_unit_tests_to_suite(bitcoin test_bitcoin
 		key_tests.cpp
 		lcg_tests.cpp
 		limitedmap_tests.cpp
-		mempool_policy_tests.cpp
 		mempool_tests.cpp
 		merkle_tests.cpp
 		merkleblock_tests.cpp
@@ -172,7 +171,6 @@ add_boost_unit_tests_to_suite(bitcoin test_bitcoin
 		sighash_tests.cpp
 		sighashtype_tests.cpp
 		sigcheckcount_tests.cpp
-		sigopcount_tests.cpp
 		skiplist_tests.cpp
 		streams_tests.cpp
 		sync_tests.cpp

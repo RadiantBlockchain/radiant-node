@@ -455,26 +455,6 @@ std::string FormatStateMessage(const CValidationState &state) {
         state.GetRejectCode());
 }
 
-// Returns the script flags which should be checked for mempool admission when
-// the tip is at the given block.
-static uint32_t GetStandardScriptFlags(const Consensus::Params &params,
-                                       const CBlockIndex *pindexTip) {
-    // Use the consensus flags for the next block as a basis, and mix in the
-    // declared-standard flags.
-    uint32_t flags = GetNextBlockScriptFlags(params, pindexTip) |
-                     STANDARD_SCRIPT_VERIFY_FLAGS;
-
-    // Disable input sigchecks limit for mempool admission, prior to its
-    // proper activation.
-    flags &= ~SCRIPT_VERIFY_INPUT_SIGCHECKS;
-
-    if (IsPhononEnabled(params, pindexTip)) {
-        flags |= SCRIPT_VERIFY_INPUT_SIGCHECKS;
-    }
-
-    return flags;
-}
-
 // Used to avoid mempool polluting consensus critical paths if CCoinsViewMempool
 // were somehow broken and returning the wrong scriptPubKeys
 static bool CheckInputsFromMempoolAndCache(
@@ -670,18 +650,6 @@ AcceptToMemoryPoolWorker(const Config &config, CTxMemPool &pool,
                 break;
             }
         }
-        auto nSigOpsCount =
-            GetTransactionSigOpCount(tx, view, nextBlockScriptVerifyFlags);
-
-        // Check that the transaction doesn't have an excessive number of
-        // sigops.
-        static_assert(MAX_STANDARD_TX_SIGOPS <= MAX_TX_SIGOPS_COUNT,
-                      "we don't want transactions we can't even mine");
-        if (nSigOpsCount > MAX_STANDARD_TX_SIGOPS) {
-            return state.DoS(0, false, REJECT_NONSTANDARD,
-                             "bad-txns-too-many-sigops", false,
-                             strprintf("%d", nSigOpsCount));
-        }
 
         unsigned int nSize = tx.GetTotalSize();
 
@@ -701,7 +669,7 @@ AcceptToMemoryPoolWorker(const Config &config, CTxMemPool &pool,
 
         // Validate input scripts against standard script flags.
         const uint32_t scriptVerifyFlags =
-            GetStandardScriptFlags(consensusParams, ::ChainActive().Tip());
+            nextBlockScriptVerifyFlags | STANDARD_SCRIPT_VERIFY_FLAGS;
         PrecomputedTransactionData txdata(tx);
         int nSigChecksStandard;
         if (!CheckInputs(tx, state, view, true, scriptVerifyFlags, true, false,
@@ -710,16 +678,8 @@ AcceptToMemoryPoolWorker(const Config &config, CTxMemPool &pool,
             return false;
         }
 
-        // After the sigchecks activation we repurpose the 'sigops' tracking in
-        // mempool/mining to actually track sigchecks instead. (Proper SigOps
-        // will not need to be counted any more since it's getting deactivated.)
-        auto nSigChecksOrOps =
-            (nextBlockScriptVerifyFlags & SCRIPT_REPORT_SIGCHECKS)
-                ? nSigChecksStandard
-                : nSigOpsCount;
-
         CTxMemPoolEntry entry(ptx, nFees, nAcceptTime, ::ChainActive().Height(),
-                              fSpendsCoinbase, nSigChecksOrOps, lp);
+                              fSpendsCoinbase, nSigChecksStandard, lp);
 
         unsigned int nVirtualSize = entry.GetTxVirtualSize();
 
@@ -737,15 +697,13 @@ AcceptToMemoryPoolWorker(const Config &config, CTxMemPool &pool,
 
         // Calculate in-mempool ancestors, up to a limit.
         CTxMemPool::setEntries setAncestors;
-        size_t nLimitAncestors = gArgs.GetArg(
-            "-limitancestorcount",
-            GetDefaultAncestorLimit(consensusParams, ::ChainActive().Tip()));
+        size_t nLimitAncestors =
+            gArgs.GetArg("-limitancestorcount", DEFAULT_ANCESTOR_LIMIT);
         size_t nLimitAncestorSize =
             gArgs.GetArg("-limitancestorsize", DEFAULT_ANCESTOR_SIZE_LIMIT) *
             1000;
-        size_t nLimitDescendants = gArgs.GetArg(
-            "-limitdescendantcount",
-            GetDefaultDescendantLimit(consensusParams, ::ChainActive().Tip()));
+        size_t nLimitDescendants =
+            gArgs.GetArg("-limitdescendantcount", DEFAULT_DESCENDANT_LIMIT);
         size_t nLimitDescendantSize =
             gArgs.GetArg("-limitdescendantsize",
                          DEFAULT_DESCENDANT_SIZE_LIMIT) *
@@ -1306,22 +1264,6 @@ bool CheckInputs(const CTransaction &tx, CValidationState &state,
                 scriptError = check2.GetScriptError();
             }
 
-            // Before banning, we need to check whether the transaction would
-            // be valid on the other side of the upgrade, so as to avoid
-            // splitting the network between upgraded and non-upgraded nodes.
-            // Note that this will create strange error messages like
-            // "upgrade-conditional-script-failure (Opcode missing or not
-            // understood)".
-            CScriptCheck check3(scriptPubKey, amount, tx, i,
-                                mandatoryFlags ^ SCRIPT_ENABLE_OP_REVERSEBYTES,
-                                sigCacheStore, txdata);
-            if (check3()) {
-                return state.Invalid(
-                    false, REJECT_INVALID,
-                    strprintf("upgrade-conditional-script-failure (%s)",
-                              ScriptErrorString(check.GetScriptError())));
-            }
-
             // Failures of other flags indicate a transaction that is invalid in
             // new blocks, e.g. a invalid P2SH. We DoS ban such nodes as they
             // are not following the protocol. That said during an upgrade
@@ -1657,9 +1599,7 @@ static uint32_t GetNextBlockScriptFlags(const Consensus::Params &params,
     }
 
     if (IsPhononEnabled(params, pindex)) {
-        flags |= SCRIPT_ENABLE_OP_REVERSEBYTES;
-        flags |= SCRIPT_REPORT_SIGCHECKS;
-        flags |= SCRIPT_ZERO_SIGOPS;
+        flags |= SCRIPT_ENFORCE_SIGCHECKS;
     }
 
     return flags;
@@ -1849,12 +1789,6 @@ bool CChainState::ConnectBlock(const CBlock &block, CValidationState &state,
     Amount nFees = Amount::zero();
     int nInputs = 0;
 
-    // Sigops counting. We need to do it again because of P2SH.
-    uint64_t nSigOpsCount = 0;
-    const uint64_t currentBlockSize =
-        ::GetSerializeSize(block, PROTOCOL_VERSION);
-    const uint64_t nMaxSigOpsCount = GetMaxBlockSigOpsCount(currentBlockSize);
-
     // Limit the total executed signature operations in the block, a consensus
     // rule. Tracking during the CPU-consuming part (validation of uncached
     // inputs) is per-input atomic and validation in each thread stops very
@@ -1912,20 +1846,6 @@ bool CChainState::ConnectBlock(const CBlock &block, CValidationState &state,
                 REJECT_INVALID, "bad-txns-accumulated-fee-outofrange");
         }
 
-        // GetTransactionSigOpCount counts 2 types of sigops:
-        // * legacy (always)
-        // * p2sh (when P2SH enabled in flags and excludes coinbase)
-        auto txSigOpsCount = GetTransactionSigOpCount(tx, view, flags);
-        if (txSigOpsCount > MAX_TX_SIGOPS_COUNT) {
-            return state.DoS(100, false, REJECT_INVALID, "bad-txn-sigops");
-        }
-
-        nSigOpsCount += txSigOpsCount;
-        if (nSigOpsCount > nMaxSigOpsCount) {
-            return state.DoS(100, error("ConnectBlock(): too many sigops"),
-                             REJECT_INVALID, "bad-blk-sigops");
-        }
-
         // The following checks do not apply to the coinbase.
         if (isCoinBase) {
             continue;
@@ -1950,13 +1870,21 @@ bool CChainState::ConnectBlock(const CBlock &block, CValidationState &state,
         // consult the cache, though).
         bool fCacheResults = fJustCheck;
 
+        const bool fEnforceSigCheck = flags & SCRIPT_ENFORCE_SIGCHECKS;
+        if (!fEnforceSigCheck) {
+            // Historically, there has been transactions with a very high
+            // sigcheck count, so we need to disable this check for such
+            // transactions.
+            nSigChecksTxLimiters[txIndex] = TxSigCheckLimiter::getDisabled();
+        }
+
         std::vector<CScriptCheck> vChecks;
         // nSigChecksRet may be accurate (found in cache) or 0 (checks were
         // deferred into vChecks).
         int nSigChecksRet;
         if (!CheckInputs(tx, state, view, fScriptChecks, flags, fCacheResults,
                          fCacheResults, PrecomputedTransactionData(tx),
-                         nSigChecksRet, nSigChecksTxLimiters.at(txIndex),
+                         nSigChecksRet, nSigChecksTxLimiters[txIndex],
                          &nSigChecksBlockLimiter, &vChecks)) {
             // Parallel CheckInputs shouldn't fail except for this reason, which
             // is banworthy. Use "blk-bad-inputs" to mimic the parallel script
@@ -3820,15 +3748,6 @@ static bool ContextualCheckBlock(const CBlock &block, CValidationState &state,
     const bool fIsMagneticAnomalyEnabled =
         IsMagneticAnomalyEnabled(params, pindexPrev);
 
-    // Keep track of the sigops count.
-    uint64_t nSigOps = 0;
-    const auto currentBlockSize = ::GetSerializeSize(block, PROTOCOL_VERSION);
-    auto nMaxSigOpsCount = GetMaxBlockSigOpsCount(currentBlockSize);
-    // Note that pindexPrev may be null if reindexing genesis block.
-    const auto scriptFlags = pindexPrev
-                                 ? GetNextBlockScriptFlags(params, pindexPrev)
-                                 : SCRIPT_VERIFY_NONE;
-
     // Check transactions:
     // - canonical ordering
     // - ensure they are finalized
@@ -3858,19 +3777,6 @@ static bool ContextualCheckBlock(const CBlock &block, CValidationState &state,
             if (prevTx || !tx.IsCoinBase()) {
                 prevTx = &tx;
             }
-        }
-
-        // Count the sigops for the current transaction. If the tx or total
-        // sigops counts are too high, then the block is invalid.
-        const auto txSigOps = GetSigOpCountWithoutP2SH(tx, scriptFlags);
-        if (txSigOps > MAX_TX_SIGOPS_COUNT) {
-            return state.DoS(100, false, REJECT_INVALID, "bad-txn-sigops",
-                             false, "out-of-bounds SigOpCount");
-        }
-        nSigOps += txSigOps;
-        if (nSigOps > nMaxSigOpsCount) {
-            return state.DoS(100, false, REJECT_INVALID, "bad-blk-sigops",
-                             false, "out-of-bounds SigOpCount");
         }
 
         if (!ContextualCheckTransaction(params, tx, state, nHeight,
