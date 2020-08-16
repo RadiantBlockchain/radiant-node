@@ -41,8 +41,8 @@ Result
              n                          (numeric) transactions before this one (by 1-based index in 'transactions' list) that must be present in the final block if this one is
              ,...
          ],
-         "fee": n,                    (numeric) difference in value between transaction inputs and outputs (in satoshis); for coinbase transactions, this is a negative number of the total collected block fees (i.e., not including the block subsidy); if key is not present, fee is unknown and clients MUST NOT assume there isn't one
-         "sigops" : n,                (numeric) total SigOps count, as counted for purposes of block limits; if key is not present, sigop count is unknown and clients MUST NOT assume it is zero
+         "fee": n,                    (numeric) difference in value between transaction inputs and outputs (in satoshis); for coinbase transactions, this is a negative number of the total collected block fees (i.e., not including the block subsidy); if this key is not present, fee is unknown and clients MUST NOT assume there isn't one
+         "sigops" : n,                (numeric) total sigcheck count, as counted for purposes of block limits; if this key is not present, sigcheck count is unknown and clients MUST NOT assume it is zero
          "required" : true|false      (boolean) if provided and true, this transaction must be in the final block
       }
       ,...
