@@ -473,7 +473,7 @@ static UniValue getblocktemplatecommon(bool fLight, const Config &config, const 
             "  ],\n"
             "  \"noncerange\" : \"00000000ffffffff\",(string) A range of valid "
             "nonces\n"
-            "  \"sigoplimit\" : n,                 (numeric) limit of sigops "
+            "  \"sigoplimit\" : n,                 (numeric) limit of sigchecks "
             "in blocks\n"
             "  \"sizelimit\" : n,                  (numeric) limit of block "
             "size\n"

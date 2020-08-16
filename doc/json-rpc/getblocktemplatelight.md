@@ -47,7 +47,7 @@ Result
      ,...
   ],
   "noncerange" : "00000000ffffffff",(string) A range of valid nonces
-  "sigoplimit" : n,                 (numeric) limit of sigops in blocks
+  "sigoplimit" : n,                 (numeric) limit of sigchecks in blocks
   "sizelimit" : n,                  (numeric) limit of block size
   "curtime" : ttt,                  (numeric) current timestamp in seconds since epoch (Jan 1 1970 GMT)
   "bits" : "xxxxxxxx",              (string) compressed target of next block
