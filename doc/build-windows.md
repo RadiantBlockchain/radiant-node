@@ -244,7 +244,7 @@ Once the source code is ready the build steps are below:
 ### Building BCHN installer
 
 To build a Windows installer for BCHN you need a newer version of the `nsis` package
-than is availiable in Ubuntu 18.04. To install a newer `nsis` from Ubuntu 19.10
+than is available in Ubuntu 18.04. To install a newer `nsis` from Ubuntu 19.10
 Eoan you can do:
 
 ```bash
