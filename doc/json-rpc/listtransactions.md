@@ -31,7 +31,7 @@ Result
                                         for the 'receive' category,
     "label": "label",       (string) A comment for the address/transaction, if any
     "vout": n,                (numeric) the vout value
-    "fee": x.xxx,             (numeric) The amount of the fee in BCH. This is negative and only available for the 
+    "fee": x.xxx,             (numeric) The amount of the fee in BCH. This is negative and only available for the
                                          'send' category of transactions.
     "confirmations": n,       (numeric) The number of confirmations for the transaction. Negative confirmations indicate the
                                          transaction conflicts with the block chain
@@ -43,7 +43,7 @@ Result
     "time": xxx,              (numeric) The transaction time in seconds since epoch (midnight Jan 1 1970 GMT).
     "timereceived": xxx,      (numeric) The time received in seconds since epoch (midnight Jan 1 1970 GMT).
     "comment": "...",       (string) If a comment is associated with the transaction.
-    "abandoned": xxx          (bool) 'true' if the transaction has been abandoned (inputs are respendable). Only available for the 
+    "abandoned": xxx          (bool) 'true' if the transaction has been abandoned (inputs are respendable). Only available for the
                                          'send' category of transactions.
   }
 ]
@@ -54,7 +54,7 @@ Examples
 
 ```
 List the most recent 10 transactions in the systems
-> bitcoin-cli listtransactions 
+> bitcoin-cli listtransactions
 
 List transactions 100 to 120
 > bitcoin-cli listtransactions "*" 20 100
@@ -65,4 +65,4 @@ As a JSON-RPC call
 
 ***
 
-*Bitcoin Cash Node Daemon version v0.21.2*
+*Bitcoin Cash Node Daemon version v22.0.0*

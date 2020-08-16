@@ -29,7 +29,7 @@ Examples
 
 ```
 List all labels
-> bitcoin-cli listlabels 
+> bitcoin-cli listlabels
 
 List labels that have receiving addresses
 > bitcoin-cli listlabels receive
@@ -43,4 +43,4 @@ As a JSON-RPC call
 
 ***
 
-*Bitcoin Cash Node Daemon version v0.21.2*
+*Bitcoin Cash Node Daemon version v22.0.0*

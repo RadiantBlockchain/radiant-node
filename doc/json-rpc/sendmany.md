@@ -33,7 +33,7 @@ Result
 ------
 
 ```
-"txid"                   (string) The transaction id for the send. Only 1 transaction is created regardless of 
+"txid"                   (string) The transaction id for the send. Only 1 transaction is created regardless of
                                     the number of addresses.
 ```
 
@@ -66,4 +66,4 @@ As a JSON-RPC call
 
 ***
 
-*Bitcoin Cash Node Daemon version v0.21.2*
+*Bitcoin Cash Node Daemon version v22.0.0*

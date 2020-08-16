@@ -25,8 +25,8 @@ Result
   "confirmations" : n,       (numeric) The number of confirmations
   "value" : x.xxx,           (numeric) The transaction value in BCH
   "scriptPubKey" : {         (json object)
-     "asm" : "code",       (string) 
-     "hex" : "hex",        (string) 
+     "asm" : "code",       (string)
+     "hex" : "hex",        (string)
      "reqSigs" : n,          (numeric) Number of required signatures
      "type" : "pubkeyhash", (string) The type, eg pubkeyhash
      "addresses" : [          (array of string) array of bitcoin addresses
@@ -43,7 +43,7 @@ Examples
 
 ```
 Get unspent transactions
-> bitcoin-cli listunspent 
+> bitcoin-cli listunspent
 
 View the details
 > bitcoin-cli gettxout "txid" 1
@@ -54,4 +54,4 @@ As a JSON-RPC call
 
 ***
 
-*Bitcoin Cash Node Daemon version v0.21.2*
+*Bitcoin Cash Node Daemon version v22.0.0*

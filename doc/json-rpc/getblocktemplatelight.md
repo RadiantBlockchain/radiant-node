@@ -42,7 +42,7 @@ Result
   "coinbasetxn" : { ... },          (json object) information for coinbase transaction
   "target" : "xxxx",                (string) The hash target
   "mintime" : xxx,                  (numeric) The minimum timestamp appropriate for next block time in seconds since epoch (Jan 1 1970 GMT)
-  "mutable" : [                     (array of string) list of ways the block template may be changed 
+  "mutable" : [                     (array of string) list of ways the block template may be changed
      "value"                          (string) A way the block template may be changed, e.g. 'time', 'transactions', 'prevblock'
      ,...
   ],
@@ -59,10 +59,10 @@ Examples
 --------
 
 ```
-> bitcoin-cli getblocktemplatelight 
+> bitcoin-cli getblocktemplatelight
 > curl --user myusername --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "getblocktemplatelight", "params": [] }' -H 'content-type: text/plain;' http://127.0.0.1:8332/
 ```
 
 ***
 
-*Bitcoin Cash Node Daemon version v0.21.2*
+*Bitcoin Cash Node Daemon version v22.0.0*

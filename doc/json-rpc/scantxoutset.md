@@ -53,11 +53,11 @@ Result
     "amount" : x.xxx,             (numeric) The total amount in BCH of the unspent output
     "height" : n,                 (numeric) Height of the unspent transaction output
    }
-   ,...], 
+   ,...],
  "total_amount" : x.xxx,          (numeric) The total amount of all found unspent outputs in BCH
 ]
 ```
 
 ***
 
-*Bitcoin Cash Node Daemon version v0.21.2*
+*Bitcoin Cash Node Daemon version v22.0.0*

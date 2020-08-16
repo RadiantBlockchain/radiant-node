@@ -31,13 +31,19 @@ Result
   "avgfeerate": x.xxx,      (numeric) Average feerate (in BCH per byte)
   "avgtxsize": xxxxx,       (numeric) Average transaction size
   "blockhash": xxxxx,       (string) The block hash (to check for potential reorgs)
+  "feerate_percentiles": [  (array of numeric) Feerates at the 10th, 25th, 50th, 75th, and 90th percentile weight unit (in satoshis per byte)
+      "10th_percentile_feerate",      (numeric) The 10th percentile feerate
+      "25th_percentile_feerate",      (numeric) The 25th percentile feerate
+      "50th_percentile_feerate",      (numeric) The 50th percentile feerate
+      "75th_percentile_feerate",      (numeric) The 75th percentile feerate
+      "90th_percentile_feerate",      (numeric) The 90th percentile feerate
+  ],
   "height": xxxxx,          (numeric) The height of the block
   "ins": xxxxx,             (numeric) The number of inputs (excluding coinbase)
   "maxfee": xxxxx,          (numeric) Maximum fee in the block
   "maxfeerate": xxxxx,      (numeric) Maximum feerate (in BCH per byte)
   "maxtxsize": xxxxx,       (numeric) Maximum transaction size
   "medianfee": x.xxx,       (numeric) Truncated median fee in the block
-  "medianfeerate": x.xxx,   (numeric) Truncated median feerate (in BCH per byte)
   "mediantime": xxxxx,      (numeric) The block median time past
   "mediantxsize": xxxxx,    (numeric) Truncated median transaction size
   "minfee": x.xxx,          (numeric) Minimum fee in the block
@@ -65,4 +71,4 @@ Examples
 
 ***
 
-*Bitcoin Cash Node Daemon version v0.21.2*
+*Bitcoin Cash Node Daemon version v22.0.0*

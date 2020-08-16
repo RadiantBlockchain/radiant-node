@@ -9,7 +9,7 @@ Bitcoin Cash Node JSON-RPC commands
 * [**`getblockchaininfo`**](getblockchaininfo.md)
 * [**`getblockcount`**](getblockcount.md)
 * [**`getblockhash`**`  height`](getblockhash.md)
-* [**`getblockheader`**`  "blockhash" ( verbose )`](getblockheader.md)
+* [**`getblockheader`**`  hash_or_height ( verbose )`](getblockheader.md)
 * [**`getblockstats`**`  hash_or_height ( stats )`](getblockstats.md)
 * [**`getchaintips`**](getchaintips.md)
 * [**`getchaintxstats`**`  ( nblocks "blockhash" )`](getchaintxstats.md)
@@ -62,7 +62,7 @@ Bitcoin Cash Node JSON-RPC commands
 ## Network
 
 * [**`addnode`**`  "node" "command"`](addnode.md)
-* [**`clearbanned`**](clearbanned.md)
+* [**`clearbanned`**`  ( manual automatic )`](clearbanned.md)
 * [**`disconnectnode`**`  ( "address" nodeid )`](disconnectnode.md)
 * [**`getaddednodeinfo`**`  ( "node" )`](getaddednodeinfo.md)
 * [**`getconnectioncount`**](getconnectioncount.md)
@@ -160,4 +160,4 @@ Bitcoin Cash Node JSON-RPC commands
 
 ***
 
-*Bitcoin Cash Node Daemon version v0.21.2*
+*Bitcoin Cash Node Daemon version v22.0.0*

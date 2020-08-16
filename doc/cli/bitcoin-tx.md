@@ -1,4 +1,4 @@
-# Bitcoin Cash Node bitcoin-tx utility version v0.21.2
+# Bitcoin Cash Node bitcoin-tx utility version v22.0.0
 
 | Usage                                      | Description                            |
 | :----------------------------------------- | :------------------------------------- |
@@ -8,13 +8,13 @@
 Options
 -------
 
-| Argument            | Description                                                                                                                                      |
-| :------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `-?`, `-h`, `-help` | Print this help message and exit                                                                                                                 |
-| `-create`           | Create new, empty TX.                                                                                                                            |
-| `-json`             | Select JSON output                                                                                                                               |
-| `-txid`             | Output only the hex-encoded transaction id of the resultant transaction.                                                                         |
-| `-usecashaddr`      | In JSON output, use CashAddr address format for destination encoding instead of the legacy base58 format (default: 0, will change to 1 in v0.22) |
+| Argument            | Description                                                                                                           |
+| :------------------ | :-------------------------------------------------------------------------------------------------------------------- |
+| `-?`, `-h`, `-help` | Print this help message and exit                                                                                      |
+| `-create`           | Create new, empty TX.                                                                                                 |
+| `-json`             | Select JSON output                                                                                                    |
+| `-txid`             | Output only the hex-encoded transaction id of the resultant transaction.                                              |
+| `-usecashaddr`      | In JSON output, use CashAddr address format for destination encoding instead of the legacy base58 format (default: 1) |
 
 Chain selection options
 -----------------------

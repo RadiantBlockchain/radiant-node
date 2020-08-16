@@ -5,7 +5,7 @@
 
 ```
 Combine multiple partially signed transactions into one transaction.
-The combined transaction may be another partially signed transaction or a 
+The combined transaction may be another partially signed transaction or a
 fully signed transaction.
 Arguments:
 1. "txs"         (string) A json array of hex strings of partially signed transactions
@@ -31,4 +31,4 @@ Examples
 
 ***
 
-*Bitcoin Cash Node Daemon version v0.21.2*
+*Bitcoin Cash Node Daemon version v22.0.0*

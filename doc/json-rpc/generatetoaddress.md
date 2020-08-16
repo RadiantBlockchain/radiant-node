@@ -33,4 +33,4 @@ Generate 11 blocks to myaddress
 
 ***
 
-*Bitcoin Cash Node Daemon version v0.21.2*
+*Bitcoin Cash Node Daemon version v22.0.0*

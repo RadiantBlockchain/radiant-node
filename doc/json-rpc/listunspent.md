@@ -33,7 +33,7 @@ Arguments
 Result
 [                   (array of json object)
   {
-    "txid" : "txid",          (string) the transaction id 
+    "txid" : "txid",          (string) the transaction id
     "vout" : n,               (numeric) the vout value
     "address" : "address",    (string) the bitcoin address
     "label" : "label",        (string) The associated label, or "" for the default label
@@ -51,7 +51,7 @@ Result
 ]
 
 Examples
-> bitcoin-cli listunspent 
+> bitcoin-cli listunspent
 > bitcoin-cli listunspent 6 9999999 "[\"1PGFqEzfmQch1gKD3ra4k18PNj3tTUUSqg\",\"1LtvqCaApEdUGFkpKMM4MstjcaL4dKg8SP\"]"
 > curl --user myusername --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "listunspent", "params": [6, 9999999 "[\"1PGFqEzfmQch1gKD3ra4k18PNj3tTUUSqg\",\"1LtvqCaApEdUGFkpKMM4MstjcaL4dKg8SP\"]"] }' -H 'content-type: text/plain;' http://127.0.0.1:8332/
 > bitcoin-cli listunspent 6 9999999 '[]' true '{ "minimumAmount": 0.005 }'
@@ -60,4 +60,4 @@ Examples
 
 ***
 
-*Bitcoin Cash Node Daemon version v0.21.2*
+*Bitcoin Cash Node Daemon version v22.0.0*

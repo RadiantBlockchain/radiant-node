@@ -21,7 +21,7 @@ Result
 ```
 {
   "amount" : x.xxx,        (numeric) The transaction amount in BCH
-  "fee": x.xxx,            (numeric) The amount of the fee in BCH. This is negative and only available for the 
+  "fee": x.xxx,            (numeric) The amount of the fee in BCH. This is negative and only available for the
                               'send' category of transactions.
   "confirmations" : n,     (numeric) The number of confirmations
   "blockhash" : "hash",  (string) The block hash
@@ -39,9 +39,9 @@ Result
       "amount" : x.xxx,                 (numeric) The amount in BCH
       "label" : "label",              (string) A comment for the address/transaction, if any
       "vout" : n,                       (numeric) the vout value
-      "fee": x.xxx,                     (numeric) The amount of the fee in BCH. This is negative and only available for the 
+      "fee": x.xxx,                     (numeric) The amount of the fee in BCH. This is negative and only available for the
                                            'send' category of transactions.
-      "abandoned": xxx                  (bool) 'true' if the transaction has been abandoned (inputs are respendable). Only available for the 
+      "abandoned": xxx                  (bool) 'true' if the transaction has been abandoned (inputs are respendable). Only available for the
                                            'send' category of transactions.
     }
     ,...
@@ -61,4 +61,4 @@ Examples
 
 ***
 
-*Bitcoin Cash Node Daemon version v0.21.2*
+*Bitcoin Cash Node Daemon version v22.0.0*
