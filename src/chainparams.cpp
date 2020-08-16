@@ -330,7 +330,7 @@ public:
         netMagic[3] = 0xf4;
         nDefaultPort = 18333;
         nPruneAfterHeight = 1000;
-        m_assumed_blockchain_size = 20;
+        m_assumed_blockchain_size = 60;
         m_assumed_chain_state_size = 2;
 
         genesis =
