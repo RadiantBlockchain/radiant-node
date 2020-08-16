@@ -29,7 +29,7 @@ Result
     "confirmations" : n,               (numeric) The number of confirmations of the most recent transaction included
     "label" : "label",               (string) The label of the receiving address. The default label is "".
     "txids": [
-       "txid",                         (string) The ids of transactions received with the address 
+       "txid",                         (string) The ids of transactions received with the address
        ...
     ]
   }
@@ -41,7 +41,7 @@ Examples
 --------
 
 ```
-> bitcoin-cli listreceivedbyaddress 
+> bitcoin-cli listreceivedbyaddress
 > bitcoin-cli listreceivedbyaddress 6 true
 > curl --user myusername --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "listreceivedbyaddress", "params": [6, true, true] }' -H 'content-type: text/plain;' http://127.0.0.1:8332/
 > curl --user myusername --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "listreceivedbyaddress", "params": [6, true, true, "1M72Sfpbz1BPpXFHz9m3CdqATR44Jvaydd"] }' -H 'content-type: text/plain;' http://127.0.0.1:8332/
@@ -49,4 +49,4 @@ Examples
 
 ***
 
-*Bitcoin Cash Node Daemon version v0.21.2*
+*Bitcoin Cash Node Daemon version v22.0.0*

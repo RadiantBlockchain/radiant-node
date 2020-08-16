@@ -26,7 +26,7 @@ Examples
 --------
 
 ```
-> bitcoin-cli sethdseed 
+> bitcoin-cli sethdseed
 > bitcoin-cli sethdseed false
 > bitcoin-cli sethdseed true "wifkey"
 > curl --user myusername --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "sethdseed", "params": [true, "wifkey"] }' -H 'content-type: text/plain;' http://127.0.0.1:8332/
@@ -34,4 +34,4 @@ Examples
 
 ***
 
-*Bitcoin Cash Node Daemon version v0.21.2*
+*Bitcoin Cash Node Daemon version v22.0.0*

@@ -40,13 +40,13 @@ Examples
 
 ```
 List the unspent transactions
-> bitcoin-cli listunspent 
+> bitcoin-cli listunspent
 
 Lock an unspent transaction
 > bitcoin-cli lockunspent false "[{\"txid\":\"a08e6907dbbd3d809776dbfc5d82e371b764ed838b5655e72f463568df1aadf0\",\"vout\":1}]"
 
 List the locked transactions
-> bitcoin-cli listlockunspent 
+> bitcoin-cli listlockunspent
 
 Unlock the transaction again
 > bitcoin-cli lockunspent true "[{\"txid\":\"a08e6907dbbd3d809776dbfc5d82e371b764ed838b5655e72f463568df1aadf0\",\"vout\":1}]"
@@ -57,4 +57,4 @@ As a JSON-RPC call
 
 ***
 
-*Bitcoin Cash Node Daemon version v0.21.2*
+*Bitcoin Cash Node Daemon version v22.0.0*

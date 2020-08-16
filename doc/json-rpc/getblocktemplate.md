@@ -37,7 +37,7 @@ Result
          "data" : "xxxx",             (string) transaction data encoded in hexadecimal (byte-for-byte)
          "txid" : "xxxx",             (string) transaction id encoded in little-endian hexadecimal
          "hash" : "xxxx",             (string) hash encoded in little-endian hexadecimal
-         "depends" : [                (array) array of numbers 
+         "depends" : [                (array) array of numbers
              n                          (numeric) transactions before this one (by 1-based index in 'transactions' list) that must be present in the final block if this one is
              ,...
          ],
@@ -54,7 +54,7 @@ Result
   "coinbasetxn" : { ... },          (json object) information for coinbase transaction
   "target" : "xxxx",                (string) The hash target
   "mintime" : xxx,                  (numeric) The minimum timestamp appropriate for next block time in seconds since epoch (Jan 1 1970 GMT)
-  "mutable" : [                     (array of string) list of ways the block template may be changed 
+  "mutable" : [                     (array of string) list of ways the block template may be changed
      "value"                          (string) A way the block template may be changed, e.g. 'time', 'transactions', 'prevblock'
      ,...
   ],
@@ -71,10 +71,10 @@ Examples
 --------
 
 ```
-> bitcoin-cli getblocktemplate 
+> bitcoin-cli getblocktemplate
 > curl --user myusername --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "getblocktemplate", "params": [] }' -H 'content-type: text/plain;' http://127.0.0.1:8332/
 ```
 
 ***
 
-*Bitcoin Cash Node Daemon version v0.21.2*
+*Bitcoin Cash Node Daemon version v22.0.0*

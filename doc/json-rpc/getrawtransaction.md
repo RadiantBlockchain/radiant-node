@@ -48,7 +48,7 @@ Result (if verbose is set to true)
   "vin" : [               (array of json objects)
      {
        "txid": "id",    (string) The transaction id
-       "vout": n,         (numeric) 
+       "vout": n,         (numeric)
        "scriptSig": {     (json object) The script
          "asm": "asm",  (string) asm
          "hex": "hex"   (string) hex
@@ -94,4 +94,4 @@ Examples
 
 ***
 
-*Bitcoin Cash Node Daemon version v0.21.2*
+*Bitcoin Cash Node Daemon version v22.0.0*

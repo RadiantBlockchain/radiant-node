@@ -15,7 +15,7 @@ Arguments
 
 ```
 1. "psbt"                 (string) A base64 string of a PSBT
-2. "extract"              (boolean, optional, default=true) If true and the transaction is complete, 
+2. "extract"              (boolean, optional, default=true) If true and the transaction is complete,
                              extract and return the complete transaction in normal network serialization instead of the PSBT.
 ```
 
@@ -40,4 +40,4 @@ Examples
 
 ***
 
-*Bitcoin Cash Node Daemon version v0.21.2*
+*Bitcoin Cash Node Daemon version v22.0.0*

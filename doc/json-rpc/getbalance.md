@@ -30,7 +30,7 @@ Examples
 
 ```
 The total amount in the wallet with 1 or more confirmations
-> bitcoin-cli getbalance 
+> bitcoin-cli getbalance
 
 The total amount in the wallet at least 6 blocks confirmed
 > bitcoin-cli getbalance "*" 6
@@ -41,4 +41,4 @@ As a JSON-RPC call
 
 ***
 
-*Bitcoin Cash Node Daemon version v0.21.2*
+*Bitcoin Cash Node Daemon version v22.0.0*

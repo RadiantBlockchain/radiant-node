@@ -47,8 +47,8 @@ Examples
 > bitcoin-cli importmulti '[{ "scriptPubKey": { "address": "<my address>" }, "timestamp":1455191478 }]' '{ "rescan": false}'
 ```
 
-Response is an array with the same size as the input that has the execution result 
------------------------------------------------------------------------------------
+Response is an array with the same size as the input that has the execution result
+----------------------------------------------------------------------------------
 
 ```
   [{ "success": true } , { "success": false, "error": { "code": -1, "message": "Internal Server Error"} }, ... ]
@@ -56,4 +56,4 @@ Response is an array with the same size as the input that has the execution resu
 
 ***
 
-*Bitcoin Cash Node Daemon version v0.21.2*
+*Bitcoin Cash Node Daemon version v22.0.0*

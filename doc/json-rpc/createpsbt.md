@@ -18,7 +18,7 @@ Arguments
          "txid":"id",      (string, required) The transaction id
          "vout":n,         (numeric, required) The output number
          "sequence":n      (numeric, optional) The sequence number
-       } 
+       }
        ,...
      ]
 2. "outputs"               (array, required) a json array with outputs (key-value pairs)
@@ -51,4 +51,4 @@ Examples
 
 ***
 
-*Bitcoin Cash Node Daemon version v0.21.2*
+*Bitcoin Cash Node Daemon version v22.0.0*
