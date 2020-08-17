@@ -171,8 +171,8 @@ class ExampleTest(BitcoinTestFramework):
 
         height = 1
 
-        for i in range(10):
-            # Use the mininode and blocktools functionality to manually build a block
+        for _ in range(10):
+            # Use the blocktools functionality to manually build a block.
             # Calling the generate() rpc is easier, but this allows us to exactly
             # control the blocks and transactions.
             block = create_block(

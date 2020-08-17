@@ -45,7 +45,7 @@ from test_framework.txtools import pad_tx
 from test_framework.util import assert_equal
 
 
-#  Use this class for tests that require behavior other than normal "mininode" behavior.
+#  Use this class for tests that require behavior other than normal p2p behavior.
 #  For now, it is used to serialize a bloated varint (b64).
 
 

@@ -13,7 +13,7 @@ from test_framework.util import wait_until
 class RejectSubVersionTest(BitcoinTestFramework):
     def set_test_params(self):
         self.num_nodes = 3
-        reject_subver = MY_SUBVERSION.decode('utf8').split('/')[1].split(':')[0]  # "python-mininode-tester"
+        reject_subver = MY_SUBVERSION.decode('utf8').split('/')[1].split(':')[0]  # "python-p2p-tester"
         # node 0 does not reject anybody
         # node 1 does reject us based on subversion
         # node 2 has -rejectsubversion but also -whitelist, so -whitelist allows us even with a bad subversion
