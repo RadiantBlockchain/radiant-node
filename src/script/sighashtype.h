@@ -33,7 +33,12 @@ enum class BaseSigHashType : uint8_t {
     SINGLE = SIGHASH_SINGLE
 };
 
-/** Signature hash type wrapper class */
+/** Signature hash type wrapper class
+ *
+ * Be very careful with modifying/using this class, as it contains a big footgun
+ * regarding the bit 0x20.
+ * (see https://github.com/mit-dci/cash-disclosure/blob/master/bitcoin-cash-disclosure-04252018.txt )
+ */
 class SigHashType {
 private:
     uint32_t sigHash;
@@ -43,6 +48,7 @@ public:
 
     explicit SigHashType(uint32_t sigHashIn) : sigHash(sigHashIn) {}
 
+    // "base type" here refers to the lower FIVE bits of sighash
     SigHashType withBaseType(BaseSigHashType baseSigHashType) const {
         return SigHashType((sigHash & ~0x1f) | uint32_t(baseSigHashType));
     }
@@ -61,6 +67,7 @@ public:
                            (anyoneCanPay ? SIGHASH_ANYONECANPAY : 0));
     }
 
+    // "base type" here refers to the lower FIVE bits of sighash
     BaseSigHashType getBaseType() const {
         return BaseSigHashType(sigHash & 0x1f);
     }
@@ -68,6 +75,7 @@ public:
     uint32_t getForkValue() const { return sigHash >> 8; }
 
     bool isDefined() const {
+        // "base type" here refers to lower SIX bits of sighash
         auto baseType =
             BaseSigHashType(sigHash & ~(SIGHASH_FORKID | SIGHASH_ANYONECANPAY));
         return baseType >= BaseSigHashType::ALL &&
