@@ -1,0 +1,18 @@
+{
+  "default": true,
+  "ol-prefix": {
+    "style": "one_or_ordered"
+    },
+  "ul-indent": {
+    "indent": 4
+    },
+  "fenced-code-language": false,
+  "MD012": false, 
+  "MD013": {
+    "code_blocks": false,
+    "tables": false
+    },
+  "MD032": false,  
+  "no-trailing-punctuation": false,
+  "MD033": false
+}
