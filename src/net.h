@@ -856,13 +856,13 @@ public:
     void PushInventory(const CInv &inv) {
         LOCK(cs_inventory);
         if (inv.type == MSG_TX) {
-            const TxId txid(inv.hash);
-            if (!filterInventoryKnown.contains(txid)) {
-                setInventoryTxToSend.insert(txid);
+            // inv.hash is a TxId
+            if (!filterInventoryKnown.contains(inv.hash)) {
+                setInventoryTxToSend.emplace(inv.hash);
             }
         } else if (inv.type == MSG_BLOCK) {
-            const BlockHash hash(inv.hash);
-            vInventoryBlockToSend.push_back(hash);
+            // inv.hash is a BlockHash
+            vInventoryBlockToSend.emplace_back(inv.hash);
         }
     }
 
