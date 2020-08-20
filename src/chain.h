@@ -49,6 +49,21 @@ static constexpr int64_t MAX_BLOCK_TIME_GAP = 90 * 60;
  * one of them can be part of the currently active branch.
  */
 class CBlockIndex {
+protected:
+    //! Copy & assignment operators are protected for safety since this is a
+    //! linked list node with pointers pointing to this instance and it would
+    //! be unsafe to copy instances of CBlockIndex in client code.  This
+    //! restriction prevents client code from building a chain and putting
+    //! CBlockIndex into a vector *by value*, for example, which may get
+    //! inadvertently resized (thus leading to a situation with dangling
+    //! pointers).
+    CBlockIndex(const CBlockIndex &) = default;
+    CBlockIndex &operator=(const CBlockIndex &) = default;
+    //! Move construction and move assignment are forbidden since nothing
+    //! in this codebase uses these and it's safer not to allow it.
+    CBlockIndex(CBlockIndex &&) = delete;
+    CBlockIndex &operator=(CBlockIndex &&) = delete;
+
 public:
     //! pointer to the hash of the block, if any. Memory is owned by this
     //! CBlockIndex
