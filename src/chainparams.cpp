@@ -8,6 +8,7 @@
 
 #include <chainparamsconstants.h>
 #include <chainparamsseeds.h>
+#include <consensus/consensus.h>
 #include <consensus/merkle.h>
 #include <tinyformat.h>
 #include <util/strencodings.h>
@@ -132,6 +133,9 @@ public:
 
         // May 15, 2021 12:00:00 UTC tentative protocol upgrade
         consensus.tachyonActivationTime = 1621080000;
+
+        // Default limit for block size (in bytes)
+        consensus.nDefaultMaxBlockSize = DEFAULT_MAX_BLOCK_SIZE;
 
         /**
          * The message start string is designed to be unlikely to occur in
@@ -320,6 +324,9 @@ public:
         // May 15, 2021 12:00:00 UTC tentative protocol upgrade
         consensus.tachyonActivationTime = 1621080000;
 
+        // Default limit for block size (in bytes)
+        consensus.nDefaultMaxBlockSize = DEFAULT_MAX_BLOCK_SIZE;
+
         diskMagic[0] = 0x0b;
         diskMagic[1] = 0x11;
         diskMagic[2] = 0x09;
@@ -461,6 +468,9 @@ public:
 
         // May 15, 2021 12:00:00 UTC tentative protocol upgrade
         consensus.tachyonActivationTime = 1621080000;
+
+        // Default limit for block size (in bytes)
+        consensus.nDefaultMaxBlockSize = DEFAULT_MAX_BLOCK_SIZE;
 
         diskMagic[0] = 0xfa;
         diskMagic[1] = 0xbf;

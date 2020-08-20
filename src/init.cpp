@@ -1715,7 +1715,7 @@ bool AppInitParameterInteraction(Config &config) {
 
     // Configure excessive block size.
     const uint64_t nProposedExcessiveBlockSize =
-        gArgs.GetArg("-excessiveblocksize", DEFAULT_MAX_BLOCK_SIZE);
+        gArgs.GetArg("-excessiveblocksize", chainparams.GetConsensus().nDefaultMaxBlockSize);
     if (!config.SetMaxBlockSize(nProposedExcessiveBlockSize)) {
         return InitError(
             _("Excessive block size must be > 1,000,000 bytes (1MB)"));
