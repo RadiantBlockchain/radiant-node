@@ -24,6 +24,10 @@ class Config : public boost::noncopyable {
 public:
     virtual bool SetMaxBlockSize(uint64_t maxBlockSize) = 0;
     virtual uint64_t GetMaxBlockSize() const = 0;
+    virtual void SetInvBroadcastRate(uint64_t rate) = 0;
+    virtual uint64_t GetInvBroadcastRate() const = 0;
+    virtual void SetInvBroadcastInterval(uint64_t interval) = 0;
+    virtual uint64_t GetInvBroadcastInterval() const = 0;
     virtual const CChainParams &GetChainParams() const = 0;
     virtual void SetCashAddrEncoding(bool) = 0;
     virtual bool UseCashAddrEncoding() const = 0;
@@ -37,6 +41,10 @@ public:
     GlobalConfig();
     bool SetMaxBlockSize(uint64_t maxBlockSize) override;
     uint64_t GetMaxBlockSize() const override;
+    void SetInvBroadcastRate(uint64_t rate) override{ nInvBroadcastRate = rate; }
+    uint64_t GetInvBroadcastRate() const override { return nInvBroadcastRate; }
+    void SetInvBroadcastInterval(uint64_t interval) override { nInvBroadcastInterval = interval; }
+    uint64_t GetInvBroadcastInterval() const override { return nInvBroadcastInterval; }
     const CChainParams &GetChainParams() const override;
     void SetCashAddrEncoding(bool) override;
     bool UseCashAddrEncoding() const override;
@@ -47,6 +55,8 @@ public:
 private:
     bool useCashAddr;
     Amount excessUTXOCharge;
+    uint64_t nInvBroadcastRate;
+    uint64_t nInvBroadcastInterval;
 
     /** The largest block size this node will accept. */
     uint64_t nMaxBlockSize;
@@ -58,8 +68,12 @@ public:
     DummyConfig();
     DummyConfig(const std::string &net);
     DummyConfig(std::unique_ptr<CChainParams> chainParamsIn);
-    bool SetMaxBlockSize(uint64_t maxBlockSize) override { return false; }
+    bool SetMaxBlockSize(uint64_t) override { return false; }
     uint64_t GetMaxBlockSize() const override { return 0; }
+    void SetInvBroadcastRate(uint64_t) override {}
+    uint64_t GetInvBroadcastRate() const override { return 0; }
+    void SetInvBroadcastInterval(uint64_t) override {}
+    uint64_t GetInvBroadcastInterval() const override {return 0; }
 
     void SetChainParams(const std::string &net);
     const CChainParams &GetChainParams() const override { return *chainParams; }

@@ -127,30 +127,18 @@ std::map<TxId, COrphanTx> mapOrphanTransactions GUARDED_BY(g_cs_orphans);
 }
 
 /**
- * Average delay between local address broadcasts in seconds.
+ * Average delay between local address broadcasts in milliseconds.
  */
 static constexpr unsigned int AVG_LOCAL_ADDRESS_BROADCAST_INTERVAL =
-    24 * 60 * 60;
+    24 * 60 * 60 * 1000;
 /**
- * Average delay between peer address broadcasts in seconds.
+ * Average delay between peer address broadcasts in milliseconds.
  */
-static const unsigned int AVG_ADDRESS_BROADCAST_INTERVAL = 30;
+static const unsigned int AVG_ADDRESS_BROADCAST_INTERVAL = 30 * 1000;
 /**
- * Average delay between trickled inventory transmissions in seconds.
- * Blocks and whitelisted receivers bypass this, outbound peers get half this
- * delay.
+ * Average delay between feefilter broadcasts in milliseconds.
  */
-static const unsigned int INVENTORY_BROADCAST_INTERVAL = 5;
-/**
- * Maximum number of inventory items to send per transmission.
- * Limits the impact of low-fee transaction floods.
- */
-static constexpr unsigned int INVENTORY_BROADCAST_MAX_PER_MB =
-    7 * INVENTORY_BROADCAST_INTERVAL;
-/**
- * Average delay between feefilter broadcasts in seconds.
- */
-static constexpr unsigned int AVG_FEEFILTER_BROADCAST_INTERVAL = 10 * 60;
+static constexpr unsigned int AVG_FEEFILTER_BROADCAST_INTERVAL = 10 * 60 * 1000;
 /**
  * Maximum feefilter broadcast delay after significant change.
  */
@@ -4486,9 +4474,12 @@ bool PeerLogicValidation::SendMessages(const Config &config, CNode *pto,
     std::vector<CInv> vInv;
     {
         LOCK(pto->cs_inventory);
-        vInv.reserve(std::max<size_t>(pto->vInventoryBlockToSend.size(),
-                                      INVENTORY_BROADCAST_MAX_PER_MB *
-                                          config.GetMaxBlockSize() / 1000000));
+
+        // (tx/sec/MB) * (block_bytes) * (ms/broadcast) * (1 sec/1000 ms) * (1 MB/1000000 bytes) = tx/broadcast
+        // (rounded up)
+        const uint64_t nMaxBroadcasts = (config.GetInvBroadcastRate() * config.GetMaxBlockSize() *
+                                         config.GetInvBroadcastInterval() + (1000 * 1000000 - 1)) / 1000 / 1000000;
+        vInv.reserve(std::max<size_t>(pto->vInventoryBlockToSend.size(), nMaxBroadcasts));
 
         // Add blocks
         for (const BlockHash &hash : pto->vInventoryBlockToSend) {
@@ -4506,12 +4497,12 @@ bool PeerLogicValidation::SendMessages(const Config &config, CNode *pto,
             fSendTrickle = true;
             if (pto->fInbound) {
                 pto->nNextInvSend = connman->PoissonNextSendInbound(
-                    nNow, INVENTORY_BROADCAST_INTERVAL);
+                    nNow, config.GetInvBroadcastInterval());
             } else {
                 // Use half the delay for outbound peers, as there is less
                 // privacy concern for them.
                 pto->nNextInvSend =
-                    PoissonNextSend(nNow, INVENTORY_BROADCAST_INTERVAL >> 1);
+                    PoissonNextSend(nNow, config.GetInvBroadcastInterval() >> 1);
             }
         }
 
@@ -4583,10 +4574,7 @@ bool PeerLogicValidation::SendMessages(const Config &config, CNode *pto,
             // shorter delays.
             unsigned int nRelayedTransactions = 0;
             LOCK(pto->cs_filter);
-            while (!vInvTx.empty() &&
-                   nRelayedTransactions < INVENTORY_BROADCAST_MAX_PER_MB *
-                                              config.GetMaxBlockSize() /
-                                              1000000) {
+            while (!vInvTx.empty() && nRelayedTransactions < nMaxBroadcasts) {
                 // Fetch the top element from the heap
                 std::pop_heap(vInvTx.begin(), vInvTx.end(),
                               compareInvMempoolOrder);

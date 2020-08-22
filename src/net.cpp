@@ -2023,6 +2023,7 @@ void CConnman::ThreadMessageHandler() {
         }
 
         bool fMoreWork = false;
+        int64_t nSleepUntil = GetTimeMicros() + 100000;
 
         for (CNode *pnode : vNodesCopy) {
             if (pnode->fDisconnect) {
@@ -2043,6 +2044,7 @@ void CConnman::ThreadMessageHandler() {
                 m_msgproc->SendMessages(*config, pnode, flagInterruptMsgProc);
             }
 
+            nSleepUntil = std::min(pnode->nNextInvSend, nSleepUntil);
             if (flagInterruptMsgProc) {
                 return;
             }
@@ -2057,10 +2059,8 @@ void CConnman::ThreadMessageHandler() {
 
         WAIT_LOCK(mutexMsgProc, lock);
         if (!fMoreWork) {
-            condMsgProc.wait_until(lock,
-                                   std::chrono::steady_clock::now() +
-                                       std::chrono::milliseconds(100),
-                                   [this] { return fMsgProcWake; });
+            int64_t nSleepFor = std::max((int64_t)0, std::min((int64_t)100000, nSleepUntil - GetTimeMicros()));
+            condMsgProc.wait_for(lock, std::chrono::microseconds(nSleepFor), [this] { return fMsgProcWake; });
         }
         fMsgProcWake = false;
     }
@@ -2808,24 +2808,22 @@ bool CConnman::ForNode(NodeId id, std::function<bool(CNode *pnode)> func) {
     return found != nullptr && NodeFullyConnected(found) && func(found);
 }
 
-int64_t CConnman::PoissonNextSendInbound(int64_t now,
-                                         int average_interval_seconds) {
+int64_t CConnman::PoissonNextSendInbound(int64_t now, int average_interval_ms) {
     if (m_next_send_inv_to_incoming < now) {
         // If this function were called from multiple threads simultaneously
         // it would be possible that both update the next send variable, and
         // return a different result to their caller. This is not possible in
         // practice as only the net processing thread invokes this function.
         m_next_send_inv_to_incoming =
-            PoissonNextSend(now, average_interval_seconds);
+            PoissonNextSend(now, average_interval_ms);
     }
     return m_next_send_inv_to_incoming;
 }
 
-int64_t PoissonNextSend(int64_t now, int average_interval_seconds) {
+int64_t PoissonNextSend(int64_t now, int average_interval_ms) {
     return now + int64_t(log1p(GetRand(1ULL << 48) *
                                -0.0000000000000035527136788 /* -1/2^48 */) *
-                             average_interval_seconds * -1000000.0 +
-                         0.5);
+                             average_interval_ms * -1000.0 + 0.5);
 }
 
 CSipHasher CConnman::GetDeterministicRandomizer(uint64_t id) const {
