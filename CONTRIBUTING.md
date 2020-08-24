@@ -145,14 +145,14 @@ git clone git@gitlab.com:username/bitcoin-cash-node.git
 git remote add upstream https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node.git
 ```
 
-8. You may want to add the 'mr' alias to your .git/config:
+8. You may want to add the `mreq` alias to your `.git/config`:
 
 ```
 [alias]
    mreq = !sh -c 'git fetch $1 merge-requests/$2/head:mr-$1-$2 && git checkout mr-$1-$2' -
 ```
 
-This 'mreq' alias can be used to easily check out Merge Requests from our
+This `mreq` alias can be used to easily check out Merge Requests from our
 main repository if you intend to test them or work on them.
 
 Example:
@@ -171,11 +171,11 @@ During submission of patches, our GitLab process may refused code that
 is not styled according to our coding guidelines.
 
 To enforce Bitcoin Cash Node codeformatting standards, you may need to
-install clang-format-8, clang-tidy (version >=8), autopep8, flake8,
-phpcs and shellcheck on your system to format your code before submission
+install `clang-format-8`, `clang-tidy` (version >=8), `autopep8`, `flake8`,
+`phpcs` and `shellcheck` on your system to format your code before submission
 as a Merge Request.
 
-To install clang-format-8 and clang-tidy on Ubuntu (>= 18.04+updates) or Debian (>= 10):
+To install `clang-format-8` and `clang-tidy` on Ubuntu (>= 18.04+updates) or Debian (>= 10):
 ```
 sudo apt-get install clang-format-8 clang-tidy-8 clang-tools-8
 ```
@@ -192,7 +192,7 @@ ln -s $PWD/clang+llvm-8.0.0-x86_64-apple-darwin/bin/clang-tidy /usr/local/bin/cl
 ```
 
 
-To install autopep8, flake8 and phpcs on Ubuntu:
+To install `autopep8`, `flake8` and `phpcs` on Ubuntu:
 ```
 sudo apt-get install python-autopep8 flake8 php-codesniffer shellcheck
 ```
