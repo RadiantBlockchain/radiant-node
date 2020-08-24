@@ -123,7 +123,7 @@ bool BanMan::IsBanned(const CSubNet &sub_net) const
 bool BanMan::IsDiscouraged(const CNetAddr &net_addr) const
 {
     LOCK(m_cs_banned);
-    return m_discouraged.contains(net_addr.GetAddressBytes(), net_addr.GetAddressLen());
+    return m_discouraged.contains(net_addr.GetAddrBytes());
 }
 
 CBanEntry BanMan::CreateBanEntry(int64_t ban_time_offset, bool since_unix_epoch) const
@@ -195,7 +195,7 @@ void BanMan::Ban(const CSubNet &sub_net, int64_t ban_time_offset, bool since_uni
 void BanMan::Discourage(const CNetAddr &net_addr)
 {
     LOCK(m_cs_banned);
-    m_discouraged.insert(net_addr.GetAddressBytes(), net_addr.GetAddressLen());
+    m_discouraged.insert(net_addr.GetAddrBytes());
 }
 
 bool BanMan::Unban(const CNetAddr &net_addr) {

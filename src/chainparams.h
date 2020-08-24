@@ -12,12 +12,13 @@
 
 #include <array>
 #include <memory>
+#include <type_traits>
 #include <vector>
 
 //! Convenience class that is a CService but is aggregate-initializable.
 //! See chainparamseeds.h for where it is used.
 struct SeedSpec6 : public CService {
-    constexpr SeedSpec6() noexcept {}
+    SeedSpec6() noexcept {}
 
     //! Parses a human readable host:port pair to construct a valid SeedSpec6.
     //! Throws std::invalid_argument on parse failure. This is used in
@@ -35,10 +36,10 @@ struct SeedSpec6 : public CService {
     SeedSpec6(const CService &cs) : CService(cs) {}
 
     //! Constructor used for inline aggregate initialization
-    constexpr SeedSpec6(const std::array<uint8_t, GetAddressLen()> &addr_, uint16_t port_) noexcept {
-        static_assert(sizeof(ip[0]) == 1);
+    SeedSpec6(const Span<const uint8_t> addr_, uint16_t port_) noexcept {
+        static_assert(std::is_same_v<decltype(m_addr)::value_type, uint8_t>);
         port = port_;
-        SetLegacyIPv6(addr_.data());
+        SetLegacyIPv6(addr_);
     }
 };
 
