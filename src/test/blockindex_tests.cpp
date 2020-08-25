@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE(get_block_header) {
     header.nBits = expectedDifficultyBits;
     header.nNonce = expectedNonce;
 
-    CBlockIndex index = CBlockIndex(header);
+    const CBlockIndex index(header);
 
     CBlockHeader checkHeader = index.GetBlockHeader();
     BOOST_CHECK(checkHeader.nVersion == expectedVersion);
@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE(get_disk_positions) {
 }
 
 BOOST_AUTO_TEST_CASE(get_block_hash) {
-    CBlockIndex index = CBlockIndex();
+    CBlockIndex index{};
 
     /* Test with all 0 hash */
     const BlockHash zeroHash = BlockHash();
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE(received_time) {
     CBlockHeader header;
     header.nTime = uint32_t(expectedBlockTime);
 
-    CBlockIndex index = CBlockIndex(header);
+    CBlockIndex index(header);
 
     // nTimeReceived defaults to 0
     BOOST_CHECK_EQUAL(index.nTimeReceived, 0);
@@ -187,12 +187,12 @@ BOOST_AUTO_TEST_CASE(to_string) {
     CBlockHeader header = CBlockHeader();
     header.hashMerkleRoot = uint256();
 
-    CBlockIndex index = CBlockIndex(header);
+    CBlockIndex index(header);
     const BlockHash hashBlock = BlockHash();
     index.phashBlock = &hashBlock;
     index.nHeight = 123;
 
-    CBlockIndex indexPrev = CBlockIndex();
+    CBlockIndex indexPrev{};
 
     std::string expectedString = "";
     std::string indexString = "";
@@ -317,11 +317,10 @@ BOOST_AUTO_TEST_CASE(index_validity_tests) {
 }
 
 BOOST_AUTO_TEST_CASE(index_ancestors) {
-    std::array<CBlockIndex, 256> indexes;
+    std::array<CBlockIndex, 256> indexes; //! all instances are default constructed here
 
     /* Check the skip pointer don't build when there is no precedence */
     for (size_t i = 0; i < indexes.size(); i++) {
-        indexes[i] = CBlockIndex();
         indexes[i].nHeight = i;
 
         indexes[i].pprev = nullptr;
