@@ -815,8 +815,8 @@ static UniValue getblocktemplatecommon(bool fLight, const Config &config, const 
     result.pushKV("mintime", int64_t(pindexPrev->GetMedianTimePast()) + 1, false);
     result.pushKV("mutable", std::move(aMutable), false);
     result.pushKV("noncerange", "00000000ffffffff", false);
-    result.pushKV("sigoplimit", GetMaxBlockSigChecksCount(DEFAULT_MAX_BLOCK_SIZE), false);
-    result.pushKV("sizelimit", DEFAULT_MAX_BLOCK_SIZE, false);
+    result.pushKV("sigoplimit", GetMaxBlockSigChecksCount(config.GetMaxBlockSize()), false);
+    result.pushKV("sizelimit", config.GetMaxBlockSize(), false);
     result.pushKV("curtime", pblock->GetBlockTime(), false);
     result.pushKV("bits", strprintf("%08x", pblock->nBits), false);
     result.pushKV("height", int64_t(pindexPrev->nHeight) + 1, false);
