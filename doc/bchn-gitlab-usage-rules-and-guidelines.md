@@ -166,6 +166,8 @@ NOTE: MR = "Merge Request"
 
 - "gitian": issue/MR that touches on the gitian build system, or requires a gitian build as part of its test plan
 
+- "bounty": issue/MR has an associated open or in-progress bounty. NOTE: The label should be removed once a bounty is awarded.
+
 
 ### Historical labels considered to be deprecated until further notice
 
