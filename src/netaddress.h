@@ -55,8 +55,14 @@ enum Network {
     /// IPv6
     NET_IPV6,
 
-    /// TORv2
+    /// TOR (v2 or v3)
     NET_ONION,
+
+    /// I2P
+    NET_I2P,
+
+    /// CJDNS
+    NET_CJDNS,
 
     /// A set of addresses that represent the hash of a string or FQDN. We use
     /// them in CAddrMan to keep track of which DNS seeds were used.
@@ -97,6 +103,16 @@ inline constexpr size_t ADDR_IPV6_SIZE = 16;
 
 /// Size of TORv2 address (in bytes).
 inline constexpr size_t ADDR_TORV2_SIZE = 10;
+
+/// Size of TORv3 address (in bytes). This is the length of just the address
+/// as used in BIP155, without the checksum and the version byte.
+inline constexpr size_t ADDR_TORV3_SIZE = 32;
+
+/// Size of I2P address (in bytes).
+inline constexpr size_t ADDR_I2P_SIZE = 32;
+
+/// Size of CJDNS address (in bytes).
+inline constexpr size_t ADDR_CJDNS_SIZE = 16;
 
 /// Size of "internal" (NET_INTERNAL) address (in bytes).
 inline constexpr size_t ADDR_INTERNAL_SIZE = 10;
@@ -174,6 +190,8 @@ public:
     // IPv6 Hurricane Electric - https://he.net (2001:0470::/36)
     bool IsHeNet() const;
     bool IsTor() const;
+    bool IsI2P() const;
+    bool IsCJDNS() const;
     bool IsLocal() const;
     bool IsRoutable() const;
     bool IsInternal() const;
@@ -243,6 +261,9 @@ private:
         IPV4 = 1,
         IPV6 = 2,
         TORV2 = 3,
+        TORV3 = 4,
+        I2P = 5,
+        CJDNS = 6,
     };
 
     /**
@@ -269,7 +290,7 @@ private:
      * @retval true the network was recognized, is valid and `m_net` was set
      * @retval false not recognised (from future?) and should be silently ignored
      * @throws std::ios_base::failure if the network is one of the BIP155 founding
-     * networks recognized by this software (id 1..3) and has wrong address size.
+     * networks (id 1..6) with wrong address size.
      */
     bool SetNetFromBIP155Network(uint8_t possible_bip155_net, size_t address_size);
 
@@ -291,12 +312,22 @@ private:
                 ret.insert(ret.end(), m_addr.begin(), m_addr.end());
                 break;
             case NET_ONION:
+                if (m_addr.size() == ADDR_TORV3_SIZE) {
+                    // Serialize TORv3 as all-zeros.
+                    ret.assign(V1_SERIALIZATION_SIZE, 0);
+                    break;
+                }
                 ret.insert(ret.end(), TORV2_IN_IPV6_PREFIX.begin(), TORV2_IN_IPV6_PREFIX.end());
                 ret.insert(ret.end(), m_addr.begin(), m_addr.end());
                 break;
             case NET_INTERNAL:
                 ret.insert(ret.end(), INTERNAL_IN_IPV6_PREFIX.begin(), INTERNAL_IN_IPV6_PREFIX.end());
                 ret.insert(ret.end(), m_addr.begin(), m_addr.end());
+                break;
+            case NET_I2P:
+            case NET_CJDNS:
+                // Serialize I2P and CJDNS as all-zeros.
+                ret.assign(V1_SERIALIZATION_SIZE, 0);
                 break;
             case NET_UNROUTABLE:
             case NET_MAX:
@@ -310,7 +341,6 @@ private:
 
     /**
      * Serialize in pre-ADDRv2/BIP155 format to a stream.
-     * Some addresses (e.g. TORv3) cannot be serialized in pre-BIP155 format.
      */
     template <typename Stream>
     void SerializeV1Stream(Stream &s) const {
