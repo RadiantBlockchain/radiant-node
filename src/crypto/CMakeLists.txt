@@ -12,6 +12,7 @@ add_library(crypto
 	sha1.cpp
 	sha256.cpp
 	sha256_sse4.cpp
+	sha3.cpp
 	sha512.cpp
 	siphash.cpp
 )
