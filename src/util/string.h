@@ -4,8 +4,12 @@
 
 #pragma once
 
+#include <span.h>
+
 #include <boost/algorithm/string.hpp>
 
+#include <algorithm>
+#include <array>
 #include <cstring>
 #include <string>
 #include <vector>
@@ -51,4 +55,12 @@ SequenceSequenceT& Split(SequenceSequenceT &Result, RangeT &&Input, const std::s
  */
 [[nodiscard]] inline bool ValidAsCString(const std::string &str) noexcept {
     return str.find_first_of('\0') == std::string::npos;
+}
+
+/**
+ * Check whether a container begins with the given prefix.
+ */
+template <typename T1>
+[[nodiscard]] inline bool HasPrefix(const T1 &obj, const Span<const uint8_t> prefix) {
+    return obj.size() >= prefix.size() && std::equal(prefix.begin(), prefix.end(), obj.begin());
 }
