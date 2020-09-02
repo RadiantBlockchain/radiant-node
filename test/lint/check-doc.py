@@ -34,7 +34,8 @@ SET_FALSE_POSITIVE_UNKNOWNS = {'-zmqpubhashblock',
 
 # list false positive undocumented arguments
 SET_FALSE_POSITIVE_UNDOCUMENTED = {'-dbcrashratio',
-                                   '-forcecompactdb'}
+                                   '-forcecompactdb',
+                                   '-expirerpc'}
 
 
 def main():
