@@ -56,7 +56,7 @@ bool IsBlockLike(const std::string &strCommand) {
  * All known message types. Keep this in the same order as the list of messages
  * above and in protocol.h.
  */
-static const std::string allNetMessageTypes[] = {
+static const std::vector<std::string> allNetMessageTypesVec{{
     NetMsgType::VERSION,     NetMsgType::VERACK,     NetMsgType::ADDR,
     NetMsgType::INV,         NetMsgType::GETDATA,    NetMsgType::MERKLEBLOCK,
     NetMsgType::GETBLOCKS,   NetMsgType::GETHEADERS, NetMsgType::TX,
@@ -66,10 +66,7 @@ static const std::string allNetMessageTypes[] = {
     NetMsgType::FILTERCLEAR, NetMsgType::REJECT,     NetMsgType::SENDHEADERS,
     NetMsgType::FEEFILTER,   NetMsgType::SENDCMPCT,  NetMsgType::CMPCTBLOCK,
     NetMsgType::GETBLOCKTXN, NetMsgType::BLOCKTXN,
-};
-static const std::vector<std::string>
-    allNetMessageTypesVec(allNetMessageTypes,
-                          allNetMessageTypes + ARRAYLEN(allNetMessageTypes));
+}};
 
 CMessageHeader::CMessageHeader(const MessageMagic &pchMessageStartIn) {
     memcpy(std::begin(pchMessageStart), std::begin(pchMessageStartIn),
