@@ -18,32 +18,32 @@
 static std::atomic<bool> g_initial_block_download_completed(false);
 
 namespace NetMsgType {
-const char *VERSION = "version";
-const char *VERACK = "verack";
-const char *ADDR = "addr";
-const char *INV = "inv";
-const char *GETDATA = "getdata";
-const char *MERKLEBLOCK = "merkleblock";
-const char *GETBLOCKS = "getblocks";
-const char *GETHEADERS = "getheaders";
-const char *TX = "tx";
-const char *HEADERS = "headers";
-const char *BLOCK = "block";
-const char *GETADDR = "getaddr";
-const char *MEMPOOL = "mempool";
-const char *PING = "ping";
-const char *PONG = "pong";
-const char *NOTFOUND = "notfound";
-const char *FILTERLOAD = "filterload";
-const char *FILTERADD = "filteradd";
-const char *FILTERCLEAR = "filterclear";
-const char *REJECT = "reject";
-const char *SENDHEADERS = "sendheaders";
-const char *FEEFILTER = "feefilter";
-const char *SENDCMPCT = "sendcmpct";
-const char *CMPCTBLOCK = "cmpctblock";
-const char *GETBLOCKTXN = "getblocktxn";
-const char *BLOCKTXN = "blocktxn";
+const char *const VERSION = "version";
+const char *const VERACK = "verack";
+const char *const ADDR = "addr";
+const char *const INV = "inv";
+const char *const GETDATA = "getdata";
+const char *const MERKLEBLOCK = "merkleblock";
+const char *const GETBLOCKS = "getblocks";
+const char *const GETHEADERS = "getheaders";
+const char *const TX = "tx";
+const char *const HEADERS = "headers";
+const char *const BLOCK = "block";
+const char *const GETADDR = "getaddr";
+const char *const MEMPOOL = "mempool";
+const char *const PING = "ping";
+const char *const PONG = "pong";
+const char *const NOTFOUND = "notfound";
+const char *const FILTERLOAD = "filterload";
+const char *const FILTERADD = "filteradd";
+const char *const FILTERCLEAR = "filterclear";
+const char *const REJECT = "reject";
+const char *const SENDHEADERS = "sendheaders";
+const char *const FEEFILTER = "feefilter";
+const char *const SENDCMPCT = "sendcmpct";
+const char *const CMPCTBLOCK = "cmpctblock";
+const char *const GETBLOCKTXN = "getblocktxn";
+const char *const BLOCKTXN = "blocktxn";
 
 bool IsBlockLike(const std::string &strCommand) {
     return strCommand == NetMsgType::BLOCK ||
