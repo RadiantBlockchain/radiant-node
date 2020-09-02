@@ -423,7 +423,7 @@ static UniValue CallRPC(BaseRequestHandler *rh, const std::string &strMethod,
         (std::string("Basic ") + EncodeBase64(strRPCUserColonPass)).c_str());
 
     // Attach request data
-    std::string strRequest = rh->PrepareRequest(strMethod, args).write() + "\n";
+    std::string strRequest = UniValue::stringify(rh->PrepareRequest(strMethod, args)) + "\n";
     struct evbuffer *output_buffer =
         evhttp_request_get_output_buffer(req.get());
     assert(output_buffer);
@@ -558,7 +558,7 @@ static int CommandLineRPC(int argc, char *argv[]) {
                     if (fWait && code == RPC_IN_WARMUP) {
                         throw CConnectionFailed("server in warmup");
                     }
-                    strPrint = "error: " + error.write();
+                    strPrint = "error: " + UniValue::stringify(error);
                     nRet = abs(code);
                     if (error.isObject()) {
                         const UniValue &errCode = error["code"];
@@ -586,7 +586,7 @@ static int CommandLineRPC(int argc, char *argv[]) {
                     } else if (result.isStr()) {
                         strPrint = result.get_str();
                     } else {
-                        strPrint = result.write(2);
+                        strPrint = UniValue::stringify(result, 2);
                     }
                 }
                 // Connection succeeded, no need to retry.

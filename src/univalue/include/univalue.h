@@ -20,8 +20,8 @@ class UniValue {
 public:
     enum VType { VNULL, VOBJ, VARR, VSTR, VNUM, VBOOL, };
 
-    using ObjectEntries = std::vector<std::pair<std::string, UniValue>>;
-    using ArrayValues = std::vector<UniValue>;
+    using Object = std::vector<std::pair<std::string, UniValue>>;
+    using Array = std::vector<UniValue>;
 
     UniValue(UniValue::VType initialType = VNULL) noexcept : typ(initialType) {}
     UniValue(UniValue::VType initialType, const std::string& initialStr)
@@ -48,8 +48,8 @@ public:
     void setStr(const std::string& val);
     void setStr(std::string&& val) noexcept;
     void setArray() noexcept;
-    void setArray(const ArrayValues& vec);
-    void setArray(ArrayValues&& vec) noexcept;
+    void setArray(const Array& vec);
+    void setArray(Array&& vec) noexcept;
     void setObject() noexcept;
 
     constexpr enum VType getType() const noexcept { return typ; }
@@ -214,7 +214,25 @@ public:
     void pushKV(std::string&& key, const UniValue& val, bool checkForDupes = true);
     void pushKV(std::string&& key, UniValue&& val, bool checkForDupes = true);
 
-    std::string write(unsigned int prettyIndent = 0) const;
+    /**
+     * Returns the JSON string representation of the provided value.
+     *
+     * The type of value can be the generic UniValue,
+     * or a more specific type: bool, std::string, UniValue::Array, or UniValue::Object.
+     *
+     * The optional argument indicates the number of spaces for indentation in pretty formatting.
+     * Use 0 (default) to disable pretty formatting and use compact formatting instead.
+     * Note that pretty formatting only affects arrays and objects.
+     *
+     * This is a Bitcoin Cash Node extension of the UniValue API.
+     */
+    template<typename Value> static std::string stringify(const Value& value, unsigned int prettyIndent = 0) {
+        std::string s; // we do it this way for RVO to work on all compilers
+        Stream ss{s};
+        s.reserve(1024);
+        stringify(ss, value, prettyIndent, 0);
+        return s;
+    }
 
     bool read(const char *raw, size_t len);
     bool read(const char *raw) { return read(raw, strlen(raw)); }
@@ -223,8 +241,8 @@ public:
 private:
     UniValue::VType typ;
     std::string val;                       // numbers are stored as C++ strings
-    ObjectEntries entries;
-    ArrayValues values;
+    Object entries;
+    Array values;
     static const std::string boolTrueVal; // = "1"
 
     // __pushKV does not check for duplicate keys and simply appends at the end
@@ -233,13 +251,23 @@ private:
     void __pushKV(std::string&& key, UniValue&& val);
     void __pushKV(std::string&& key, const UniValue& val);
 
-    struct Stream;
-
-    void writeStream(Stream & stream, unsigned int prettyIndent = 0, unsigned int indentLevel = 0) const;
-    void writeArray(Stream & stream, unsigned int prettyIndent, unsigned int indentLevel) const;
-    void writeObject(Stream & stream, unsigned int prettyIndent, unsigned int indentLevel) const;
-    static void jsonEscape(Stream & stream, const std::string & inString);
+    // Opaque type used for writing. This can be further optimized later.
+    struct Stream {
+        std::string & str; // this is a reference for RVO to always work in UniValue::stringify()
+        void put(char c) { str.push_back(c); }
+        void put(char c, size_t nFill) { str.append(nFill, c); }
+        void write(const char *s, size_t len) { str.append(s, len); }
+        Stream & operator<<(const char *s) { str.append(s); return *this; }
+        Stream & operator<<(const std::string &s) { str.append(s); return *this; }
+    };
     static inline void startNewLine(Stream & stream, unsigned int prettyIndent, unsigned int indentLevel);
+    static void jsonEscape(Stream & stream, const std::string & inString);
+
+    static void stringify(Stream & stream, const UniValue& value, unsigned int prettyIndent, unsigned int indentLevel);
+    static void stringify(Stream & stream, bool value, unsigned int prettyIndent, unsigned int indentLevel);
+    static void stringify(Stream & stream, const std::string& value, unsigned int prettyIndent, unsigned int indentLevel);
+    static void stringify(Stream & stream, const UniValue::Array& value, unsigned int prettyIndent, unsigned int indentLevel);
+    static void stringify(Stream & stream, const UniValue::Object& value, unsigned int prettyIndent, unsigned int indentLevel);
 
     // Used by the various setInt() and setFloat() overloads
     template<typename Num>
@@ -259,8 +287,8 @@ public:
      *
      * This is a Bitcoin Cash Node extension of the UniValue API.
      */
-    const ObjectEntries& getObjectEntries() const;
-    ObjectEntries& getObjectEntries();
+    const Object& getObjectEntries() const;
+    Object& getObjectEntries();
 
     /**
      * VARR: Returns a reference to the underlying vector of values.
@@ -274,8 +302,8 @@ public:
      *
      * If you want to clear the array after using this method, consider using takeArrayValues() instead.
      */
-    const ArrayValues& getArrayValues() const;
-    ArrayValues& getArrayValues();
+    const Array& getArrayValues() const;
+    Array& getArrayValues();
 
     /**
      * VARR: Changes the UniValue into an empty array and returns the old array contents as a vector.
@@ -287,7 +315,7 @@ public:
      *
      * If you do not want to make the array empty, please use getArrayValues() instead.
      */
-    ArrayValues takeArrayValues();
+    Array takeArrayValues();
 
     bool get_bool() const;
     const std::string& get_str() const;

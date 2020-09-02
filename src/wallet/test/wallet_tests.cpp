@@ -1,4 +1,5 @@
 // Copyright (c) 2012-2016 The Bitcoin Core developers
+// Copyright (c) 2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -169,7 +170,7 @@ BOOST_FIXTURE_TEST_CASE(importmulti_rescan, TestChain100Setup) {
 
         UniValue response = importmulti(GetConfig(), request);
         BOOST_CHECK_EQUAL(
-            response.write(),
+            UniValue::stringify(response),
             strprintf("[{\"success\":false,\"error\":{\"code\":-1,\"message\":"
                       "\"Rescan failed for key with creation timestamp %d. "
                       "There was an error reading a block from time %d, which "

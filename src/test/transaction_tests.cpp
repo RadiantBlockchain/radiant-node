@@ -62,8 +62,8 @@ BOOST_AUTO_TEST_CASE(tx_valid) {
 
     ScriptError err;
     for (size_t idx = 0; idx < tests.size(); idx++) {
-        UniValue test = tests[idx];
-        std::string strTest = test.write();
+        const UniValue& test = tests[idx];
+        std::string strTest = UniValue::stringify(test);
         if (test[0].isArray()) {
             if (test.size() != 3 || !test[1].isStr() || !test[2].isStr()) {
                 BOOST_ERROR("Bad test: " << strTest);
@@ -164,8 +164,8 @@ BOOST_AUTO_TEST_CASE(tx_invalid) {
     // value other than ScriptError::OK.
     ScriptError err = ScriptError::OK;
     for (size_t idx = 0; idx < tests.size(); idx++) {
-        UniValue test = tests[idx];
-        std::string strTest = test.write();
+        const UniValue& test = tests[idx];
+        std::string strTest = UniValue::stringify(test);
         if (test[0].isArray()) {
             if (test.size() != 3 || !test[1].isStr() || !test[2].isStr()) {
                 BOOST_ERROR("Bad test: " << strTest);

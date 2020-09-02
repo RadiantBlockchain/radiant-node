@@ -560,7 +560,7 @@ BOOST_AUTO_TEST_CASE(univalue_readwrite)
     BOOST_CHECK_EQUAL(obj["key2"].getValStr(), "800");
     BOOST_CHECK(obj["key3"].isObject());
 
-    BOOST_CHECK_EQUAL(strJson1, v.write());
+    BOOST_CHECK_EQUAL(strJson1, UniValue::stringify(v));
 
     /* Check for (correctly reporting) a parsing error if the initial
        JSON construct is followed by more stuff.  Note that whitespace
@@ -585,7 +585,7 @@ BOOST_AUTO_TEST_CASE(univalue_readwrite)
     BOOST_CHECK(!vcopy.empty());
     v.setNull();
     BOOST_CHECK(v.empty());
-    BOOST_CHECK(v.read(vcopy.write(2)));
+    BOOST_CHECK(v.read(UniValue::stringify(vcopy, 2)));
     BOOST_CHECK(!v.empty());
     BOOST_CHECK_EQUAL(v, vcopy);
     BOOST_CHECK_EQUAL(v[0], json1);

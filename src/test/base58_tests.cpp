@@ -1,4 +1,5 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
+// Copyright (c) 2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -22,8 +23,8 @@ BOOST_AUTO_TEST_CASE(base58_EncodeBase58) {
                               json_tests::base58_encode_decode +
                                   sizeof(json_tests::base58_encode_decode)));
     for (unsigned int idx = 0; idx < tests.size(); idx++) {
-        UniValue test = tests[idx];
-        std::string strTest = test.write();
+        const UniValue& test = tests[idx];
+        std::string strTest = UniValue::stringify(test);
         // Allow for extra stuff (useful for comments)
         if (test.size() < 2) {
             BOOST_ERROR("Bad test: " << strTest);
@@ -47,8 +48,8 @@ BOOST_AUTO_TEST_CASE(base58_DecodeBase58) {
     std::vector<uint8_t> result;
 
     for (unsigned int idx = 0; idx < tests.size(); idx++) {
-        UniValue test = tests[idx];
-        std::string strTest = test.write();
+        const UniValue& test = tests[idx];
+        std::string strTest = UniValue::stringify(test);
         // Allow for extra stuff (useful for comments)
         if (test.size() < 2) {
             BOOST_ERROR("Bad test: " << strTest);

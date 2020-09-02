@@ -1,4 +1,5 @@
 // Copyright (c) 2018 The Bitcoin Core developers
+// Copyright (c) 2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -143,13 +144,12 @@ BOOST_AUTO_TEST_CASE(blockfilters_json_test) {
 
     const UniValue &tests = json.get_array();
     for (size_t i = 0; i < tests.size(); i++) {
-        UniValue test = tests[i];
-        std::string strTest = test.write();
+        const UniValue& test = tests[i];
 
         if (test.size() == 1) {
             continue;
         } else if (test.size() < 7) {
-            BOOST_ERROR("Bad test: " << strTest);
+            BOOST_ERROR("Bad test: " << UniValue::stringify(test));
             continue;
         }
 

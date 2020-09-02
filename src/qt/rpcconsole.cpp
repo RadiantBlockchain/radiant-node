@@ -263,7 +263,7 @@ bool RPCConsole::RPCParseCommandLine(interfaces::Node *node,
                         if (lastResult.isStr()) {
                             curarg = lastResult.get_str();
                         } else {
-                            curarg = lastResult.write(2);
+                            curarg = UniValue::stringify(lastResult, 2);
                         }
 
                         // if we have a non empty result, use it as stack
@@ -434,7 +434,7 @@ bool RPCConsole::RPCParseCommandLine(interfaces::Node *node,
             if (lastResult.isStr()) {
                 strResult = lastResult.get_str();
             } else {
-                strResult = lastResult.write(2);
+                strResult = UniValue::stringify(lastResult, 2);
             }
         // FALLTHROUGH
         case STATE_ARGUMENT:
@@ -503,7 +503,7 @@ void RPCExecutor::request(const QString &command,
             // raised when converting to invalid type, i.e. missing code or
             // message. Show raw JSON object.
             Q_EMIT reply(RPCConsole::CMD_ERROR,
-                         QString::fromStdString(objError.write()));
+                         QString::fromStdString(UniValue::stringify(objError)));
         }
     } catch (const std::exception &e) {
         Q_EMIT reply(RPCConsole::CMD_ERROR,
