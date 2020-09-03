@@ -142,23 +142,31 @@ void UniValue::setArray() noexcept
     setNull();
     typ = VARR;
 }
-void UniValue::setArray(const Array& vec)
+void UniValue::setArray(const Array& array)
 {
-    setNull();
-    typ = VARR;
-    values = vec;
+    setArray();
+    values = array;
 }
-void UniValue::setArray(Array&& vec) noexcept
+void UniValue::setArray(Array&& array) noexcept
 {
-    setNull();
-    typ = VARR;
-    values = std::move(vec);
+    setArray();
+    values = std::move(array);
 }
 
 void UniValue::setObject() noexcept
 {
     setNull();
     typ = VOBJ;
+}
+void UniValue::setObject(const Object& object)
+{
+    setObject();
+    entries = object;
+}
+void UniValue::setObject(Object&& object) noexcept
+{
+    setObject();
+    entries = std::move(object);
 }
 
 void UniValue::push_back(const UniValue& val_)

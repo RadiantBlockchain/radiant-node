@@ -36,6 +36,10 @@ public:
     UniValue(const std::string& val_) : typ(VSTR), val(val_) {}
     UniValue(std::string&& val_) noexcept : typ(VSTR), val(std::move(val_)) {}
     UniValue(const char *val_) : typ(VSTR), val(val_) {}
+    UniValue(const Array& array) : typ(VARR), values(array) {}
+    UniValue(Array&& array) : typ(VARR), values(std::move(array)) {}
+    UniValue(const Object& object) : typ(VOBJ), entries(object) {}
+    UniValue(Object&& object) : typ(VOBJ), entries(std::move(object)) {}
 
     void setNull() noexcept;
     void setBool(bool val);
@@ -48,9 +52,11 @@ public:
     void setStr(const std::string& val);
     void setStr(std::string&& val) noexcept;
     void setArray() noexcept;
-    void setArray(const Array& vec);
-    void setArray(Array&& vec) noexcept;
+    void setArray(const Array& array);
+    void setArray(Array&& array) noexcept;
     void setObject() noexcept;
+    void setObject(const Object& object);
+    void setObject(Object&& object) noexcept;
 
     constexpr enum VType getType() const noexcept { return typ; }
     constexpr const std::string& getValStr() const noexcept { return val; }
