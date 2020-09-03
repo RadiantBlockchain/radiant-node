@@ -190,7 +190,7 @@ void UniValue::pushKV(const std::string& key, const UniValue& val_, bool check)
     if (typ != VOBJ)
         return;
     if (check) {
-        if (auto found = find(key)) {
+        if (auto found = locate(key)) {
             *found = val_;
             return;
         }
@@ -202,7 +202,7 @@ void UniValue::pushKV(const std::string& key, UniValue&& val_, bool check)
     if (typ != VOBJ)
         return;
     if (check) {
-        if (auto found = find(key)) {
+        if (auto found = locate(key)) {
             *found = std::move(val_);
             return;
         }
@@ -214,7 +214,7 @@ void UniValue::pushKV(std::string&& key, const UniValue& val_, bool check)
     if (typ != VOBJ)
         return;
     if (check) {
-        if (auto found = find(key)) {
+        if (auto found = locate(key)) {
             *found = val_;
             return;
         }
@@ -226,7 +226,7 @@ void UniValue::pushKV(std::string&& key, UniValue&& val_, bool check)
     if (typ != VOBJ)
         return;
     if (check) {
-        if (auto found = find(key)) {
+        if (auto found = locate(key)) {
             *found = std::move(val_);
             return;
         }
@@ -236,7 +236,7 @@ void UniValue::pushKV(std::string&& key, UniValue&& val_, bool check)
 
 const UniValue& UniValue::operator[](const std::string& key) const noexcept
 {
-    if (auto found = find(key)) {
+    if (auto found = locate(key)) {
         return *found;
     }
     return NullUniValue;
@@ -290,7 +290,7 @@ const UniValue& UniValue::back() const noexcept
     }
 }
 
-const UniValue* UniValue::find(const std::string& key) const noexcept {
+const UniValue* UniValue::locate(const std::string& key) const noexcept {
     for (auto& entry : entries) {
         if (entry.first == key) {
             return &entry.second;
@@ -298,7 +298,7 @@ const UniValue* UniValue::find(const std::string& key) const noexcept {
     }
     return nullptr;
 }
-UniValue* UniValue::find(const std::string& key) noexcept {
+UniValue* UniValue::locate(const std::string& key) noexcept {
     for (auto& entry : entries) {
         if (entry.first == key) {
             return &entry.second;

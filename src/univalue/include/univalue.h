@@ -121,7 +121,7 @@ public:
      *
      * Compatible with the upstream UniValue API.
      *
-     * If you want to distinguish between null values and missing keys, please use find() instead.
+     * If you want to distinguish between null values and missing keys, please use locate() instead.
      */
     const UniValue& operator[](const std::string& key) const noexcept;
 
@@ -198,8 +198,8 @@ public:
      *
      * If you want to treat missing keys as null values, please use the [] operator with string argument instead.
      */
-    const UniValue* find(const std::string& key) const noexcept;
-    UniValue* find(const std::string& key) noexcept;
+    const UniValue* locate(const std::string& key) const noexcept;
+    UniValue* locate(const std::string& key) noexcept;
 
     constexpr bool isNull() const noexcept { return typ == VNULL; }
     constexpr bool isTrue() const noexcept { return typ == VBOOL && val == boolTrueVal; }

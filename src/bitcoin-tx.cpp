@@ -1,4 +1,5 @@
 // Copyright (c) 2009-2019 The Bitcoin Core developers
+// Copyright (c) 2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -668,7 +669,7 @@ static void MutateTxSign(CMutableTransaction &tx, const std::string &flagStr) {
             CTxOut txout;
             txout.scriptPubKey = scriptPubKey;
             txout.nValue = Amount::zero();
-            if (auto amountUV = prevOut.find("amount")) {
+            if (auto amountUV = prevOut.locate("amount")) {
                 txout.nValue = AmountFromValue(*amountUV);
             }
 
@@ -678,7 +679,7 @@ static void MutateTxSign(CMutableTransaction &tx, const std::string &flagStr) {
         // If redeemScript given and private keys given, add redeemScript to the
         // tempKeystore so it can be signed:
         if (scriptPubKey.IsPayToScriptHash()) {
-            if (auto redeemScriptUV = prevOut.find("redeemScript")) {
+            if (auto redeemScriptUV = prevOut.locate("redeemScript")) {
                 std::vector<uint8_t> rsData(ParseHexUV(*redeemScriptUV, "redeemScript"));
                 CScript redeemScript(rsData.begin(), rsData.end());
                 tempKeystore.AddCScript(redeemScript);

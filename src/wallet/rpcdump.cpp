@@ -1,4 +1,5 @@
 // Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -1016,23 +1017,23 @@ static UniValue ProcessImport(CWallet *const pwallet, const UniValue &data,
 
         // Should have script or JSON with "address".
         bool isScript = scriptPubKey.getType() == UniValue::VSTR;
-        const UniValue* addressUV = scriptPubKey.getType() == UniValue::VOBJ ? scriptPubKey.find("address") : nullptr;
+        const UniValue* addressUV = scriptPubKey.getType() == UniValue::VOBJ ? scriptPubKey.locate("address") : nullptr;
         if (!addressUV && !isScript) {
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid scriptPubKey");
         }
 
         // Optional fields.
-        const auto redeemscriptUV = data.find("redeemscript");
+        const auto redeemscriptUV = data.locate("redeemscript");
         const std::string &strRedeemScript = redeemscriptUV ? redeemscriptUV->get_str() : "";
-        const auto pubkeysUV = data.find("pubkeys");
+        const auto pubkeysUV = data.locate("pubkeys");
         const UniValue &pubKeys = pubkeysUV ? pubkeysUV->get_array() : NullUniValue;
-        const auto keysUV = data.find("keys");
+        const auto keysUV = data.locate("keys");
         const UniValue &keys = keysUV ? keysUV->get_array() : NullUniValue;
-        const auto internalUV = data.find("internal");
+        const auto internalUV = data.locate("internal");
         const bool internal = internalUV ? internalUV->get_bool() : false;
-        const auto watchonlyUV = data.find("watchonly");
+        const auto watchonlyUV = data.locate("watchonly");
         const bool watchOnly = watchonlyUV ? watchonlyUV->get_bool() : false;
-        const auto labelUV = data.find("label");
+        const auto labelUV = data.locate("label");
         const std::string &label = labelUV && !internal ? labelUV->get_str() : "";
 
         // If private keys are disabled, abort if private keys are being
@@ -1345,7 +1346,7 @@ static UniValue ProcessImport(CWallet *const pwallet, const UniValue &data,
 }
 
 static int64_t GetImportTimestamp(const UniValue &data, int64_t now) {
-    if (auto timestampUV = data.find("timestamp")) {
+    if (auto timestampUV = data.locate("timestamp")) {
         const UniValue &timestamp = *timestampUV;
         if (timestamp.isNum()) {
             return timestamp.get_int64();
@@ -1421,7 +1422,7 @@ UniValue importmulti(const Config &, const JSONRPCRequest &mainRequest) {
     if (!mainRequest.params[1].isNull()) {
         const UniValue &options = mainRequest.params[1];
 
-        if (auto rescanUV = options.find("rescan")) {
+        if (auto rescanUV = options.locate("rescan")) {
             fRescan = rescanUV->get_bool();
         }
     }
@@ -1501,7 +1502,7 @@ UniValue importmulti(const Config &, const JSONRPCRequest &mainRequest) {
                 // the result stand unmodified. Otherwise replace the result
                 // with an error message.
                 if (scannedTime <= GetImportTimestamp(request, now) ||
-                    results[i].find("error")) {
+                    results[i].locate("error")) {
                     response.push_back(std::move(results[i]));
                 } else {
                     UniValue result = UniValue(UniValue::VOBJ);
