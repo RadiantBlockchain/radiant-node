@@ -91,100 +91,100 @@ namespace NetMsgType {
  * receiving node at the beginning of a connection.
  * @see https://bitcoin.org/en/developer-reference#version
  */
-extern const char *VERSION;
+extern const char *const VERSION;
 /**
  * The verack message acknowledges a previously-received version message,
  * informing the connecting node that it can begin to send other messages.
  * @see https://bitcoin.org/en/developer-reference#verack
  */
-extern const char *VERACK;
+extern const char *const VERACK;
 /**
  * The addr (IP address) message relays connection information for peers on the
  * network.
  * @see https://bitcoin.org/en/developer-reference#addr
  */
-extern const char *ADDR;
+extern const char *const ADDR;
 /**
  * The inv message (inventory message) transmits one or more inventories of
  * objects known to the transmitting peer.
  * @see https://bitcoin.org/en/developer-reference#inv
  */
-extern const char *INV;
+extern const char *const INV;
 /**
  * The getdata message requests one or more data objects from another node.
  * @see https://bitcoin.org/en/developer-reference#getdata
  */
-extern const char *GETDATA;
+extern const char *const GETDATA;
 /**
  * The merkleblock message is a reply to a getdata message which requested a
  * block using the inventory type MSG_MERKLEBLOCK.
  * @since protocol version 70001 as described by BIP37.
  * @see https://bitcoin.org/en/developer-reference#merkleblock
  */
-extern const char *MERKLEBLOCK;
+extern const char *const MERKLEBLOCK;
 /**
  * The getblocks message requests an inv message that provides block header
  * hashes starting from a particular point in the block chain.
  * @see https://bitcoin.org/en/developer-reference#getblocks
  */
-extern const char *GETBLOCKS;
+extern const char *const GETBLOCKS;
 /**
  * The getheaders message requests a headers message that provides block
  * headers starting from a particular point in the block chain.
  * @since protocol version 31800.
  * @see https://bitcoin.org/en/developer-reference#getheaders
  */
-extern const char *GETHEADERS;
+extern const char *const GETHEADERS;
 /**
  * The tx message transmits a single transaction.
  * @see https://bitcoin.org/en/developer-reference#tx
  */
-extern const char *TX;
+extern const char *const TX;
 /**
  * The headers message sends one or more block headers to a node which
  * previously requested certain headers with a getheaders message.
  * @since protocol version 31800.
  * @see https://bitcoin.org/en/developer-reference#headers
  */
-extern const char *HEADERS;
+extern const char *const HEADERS;
 /**
  * The block message transmits a single serialized block.
  * @see https://bitcoin.org/en/developer-reference#block
  */
-extern const char *BLOCK;
+extern const char *const BLOCK;
 /**
  * The getaddr message requests an addr message from the receiving node,
  * preferably one with lots of IP addresses of other receiving nodes.
  * @see https://bitcoin.org/en/developer-reference#getaddr
  */
-extern const char *GETADDR;
+extern const char *const GETADDR;
 /**
  * The mempool message requests the TXIDs of transactions that the receiving
  * node has verified as valid but which have not yet appeared in a block.
  * @since protocol version 60002.
  * @see https://bitcoin.org/en/developer-reference#mempool
  */
-extern const char *MEMPOOL;
+extern const char *const MEMPOOL;
 /**
  * The ping message is sent periodically to help confirm that the receiving
  * peer is still connected.
  * @see https://bitcoin.org/en/developer-reference#ping
  */
-extern const char *PING;
+extern const char *const PING;
 /**
  * The pong message replies to a ping message, proving to the pinging node that
  * the ponging node is still alive.
  * @since protocol version 60001 as described by BIP31.
  * @see https://bitcoin.org/en/developer-reference#pong
  */
-extern const char *PONG;
+extern const char *const PONG;
 /**
  * The notfound message is a reply to a getdata message which requested an
  * object the receiving node does not have available for relay.
  * @ince protocol version 70001.
  * @see https://bitcoin.org/en/developer-reference#notfound
  */
-extern const char *NOTFOUND;
+extern const char *const NOTFOUND;
 /**
  * The filterload message tells the receiving peer to filter all relayed
  * transactions and requested merkle blocks through the provided filter.
@@ -193,7 +193,7 @@ extern const char *NOTFOUND;
  *   70011 as described by BIP111.
  * @see https://bitcoin.org/en/developer-reference#filterload
  */
-extern const char *FILTERLOAD;
+extern const char *const FILTERLOAD;
 /**
  * The filteradd message tells the receiving peer to add a single element to a
  * previously-set bloom filter, such as a new public key.
@@ -202,7 +202,7 @@ extern const char *FILTERLOAD;
  *   70011 as described by BIP111.
  * @see https://bitcoin.org/en/developer-reference#filteradd
  */
-extern const char *FILTERADD;
+extern const char *const FILTERADD;
 /**
  * The filterclear message tells the receiving peer to remove a previously-set
  * bloom filter.
@@ -211,27 +211,27 @@ extern const char *FILTERADD;
  *   70011 as described by BIP111.
  * @see https://bitcoin.org/en/developer-reference#filterclear
  */
-extern const char *FILTERCLEAR;
+extern const char *const FILTERCLEAR;
 /**
  * The reject message informs the receiving node that one of its previous
  * messages has been rejected.
  * @since protocol version 70002 as described by BIP61.
  * @see https://bitcoin.org/en/developer-reference#reject
  */
-extern const char *REJECT;
+extern const char *const REJECT;
 /**
  * Indicates that a node prefers to receive new block announcements via a
  * "headers" message rather than an "inv".
  * @since protocol version 70012 as described by BIP130.
  * @see https://bitcoin.org/en/developer-reference#sendheaders
  */
-extern const char *SENDHEADERS;
+extern const char *const SENDHEADERS;
 /**
  * The feefilter message tells the receiving peer not to inv us any txs
  * which do not meet the specified min fee rate.
  * @since protocol version 70013 as described by BIP133
  */
-extern const char *FEEFILTER;
+extern const char *const FEEFILTER;
 /**
  * Contains a 1-byte bool and 8-byte LE version number.
  * Indicates that a node is willing to provide blocks via "cmpctblock" messages.
@@ -239,25 +239,25 @@ extern const char *FEEFILTER;
  * "cmpctblock" message rather than an "inv", depending on message contents.
  * @since protocol version 70014 as described by BIP 152
  */
-extern const char *SENDCMPCT;
+extern const char *const SENDCMPCT;
 /**
  * Contains a CBlockHeaderAndShortTxIDs object - providing a header and
  * list of "short txids".
  * @since protocol version 70014 as described by BIP 152
  */
-extern const char *CMPCTBLOCK;
+extern const char *const CMPCTBLOCK;
 /**
  * Contains a BlockTransactionsRequest
  * Peer should respond with "blocktxn" message.
  * @since protocol version 70014 as described by BIP 152
  */
-extern const char *GETBLOCKTXN;
+extern const char *const GETBLOCKTXN;
 /**
  * Contains a BlockTransactions.
  * Sent in response to a "getblocktxn" message.
  * @since protocol version 70014 as described by BIP 152
  */
-extern const char *BLOCKTXN;
+extern const char *const BLOCKTXN;
 
 /**
  * Indicate if the message is used to transmit the content of a block.
