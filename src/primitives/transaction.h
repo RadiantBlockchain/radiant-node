@@ -251,6 +251,14 @@ public:
     explicit CTransaction(const CMutableTransaction &tx);
     explicit CTransaction(CMutableTransaction &&tx);
 
+    /**
+     * We prevent copy assignment & construction to enforce use of
+     * CTransactionRef, as well as prevent new code from inadvertently copying
+     * around these potentially very heavy objects.
+     */
+    CTransaction(const CTransaction &) = delete;
+    CTransaction &operator=(const CTransaction &) = delete;
+
     template <typename Stream> inline void Serialize(Stream &s) const {
         SerializeTransaction(*this, s);
     }

@@ -270,7 +270,7 @@ BOOST_AUTO_TEST_CASE(coins_cache_simulation_test) {
 }
 
 // Store of all necessary tx and undo data for next test
-typedef std::map<COutPoint, std::tuple<CTransaction, CTxUndo, Coin>> UtxoData;
+typedef std::map<COutPoint, std::tuple<CTransactionRef, CTxUndo, Coin>> UtxoData;
 UtxoData utxoData;
 
 UtxoData::iterator FindRandomFrom(const std::set<COutPoint> &utxoSet) {
@@ -331,7 +331,7 @@ BOOST_AUTO_TEST_CASE(updatecoins_simulation_test) {
                 if (InsecureRandRange(10) == 0 && coinbase_coins.size()) {
                     auto utxod = FindRandomFrom(coinbase_coins);
                     // Reuse the exact same coinbase
-                    tx = CMutableTransaction{std::get<0>(utxod->second)};
+                    tx = CMutableTransaction{*std::get<0>(utxod->second)};
                     // shouldn't be available for reconnection if it's been
                     // duplicated
                     disconnected_coins.erase(utxod->first);
@@ -349,7 +349,7 @@ BOOST_AUTO_TEST_CASE(updatecoins_simulation_test) {
                 // 1/20 times reconnect a previously disconnected tx
                 if (randiter % 20 == 2 && disconnected_coins.size()) {
                     auto utxod = FindRandomFrom(disconnected_coins);
-                    tx = CMutableTransaction{std::get<0>(utxod->second)};
+                    tx = CMutableTransaction{*std::get<0>(utxod->second)};
                     prevout = tx.vin[0].prevout;
                     if (!CTransaction(tx).IsCoinBase() &&
                         !utxoset.count(prevout)) {
@@ -407,14 +407,14 @@ BOOST_AUTO_TEST_CASE(updatecoins_simulation_test) {
 
             // Track this tx and undo info to use later
             utxoData.emplace(outpoint,
-                             std::make_tuple(CTransaction(tx), undo, old_coin));
+                             std::make_tuple(MakeTransactionRef(tx), undo, old_coin));
         }
 
         // 1/20 times undo a previous transaction
         else if (utxoset.size()) {
             auto utxod = FindRandomFrom(utxoset);
 
-            CTransaction &tx = std::get<0>(utxod->second);
+            const CTransaction &tx = *std::get<0>(utxod->second);
             CTxUndo &undo = std::get<1>(utxod->second);
             Coin &orig_coin = std::get<2>(utxod->second);
 

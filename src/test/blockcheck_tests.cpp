@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(blockfail) {
     tx.vin[0].scriptSig.resize(10);
     tx.vout.resize(1);
     tx.vout[0].nValue = 42 * SATOSHI;
-    auto coinbaseTx = CTransaction(tx);
+    const CTransaction coinbaseTx(tx);
 
     block.vtx.resize(1);
     block.vtx[0] = MakeTransactionRef(tx);

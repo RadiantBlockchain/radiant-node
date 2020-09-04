@@ -4620,7 +4620,7 @@ static UniValue walletcreatefundedpsbt(const Config &config,
     FundTransaction(pwallet, rawTx, fee, change_position, request.params[3]);
 
     // Make a blank psbt
-    const CTransaction tx = CTransaction(rawTx);
+    const CTransaction tx(rawTx);
     PartiallySignedTransaction psbtx(tx);
 
     // Fill transaction with out data but don't sign
