@@ -728,8 +728,7 @@ BOOST_AUTO_TEST_CASE(BlockAssembler_construction) {
 }
 
 BOOST_AUTO_TEST_CASE(TestCBlockTemplateEntry) {
-    const CTransaction tx;
-    CTransactionRef txRef = MakeTransactionRef(tx);
+    CTransactionRef txRef = MakeTransactionRef();
     CBlockTemplateEntry txEntry(txRef, 1 * SATOSHI, 10);
     BOOST_CHECK_MESSAGE(txEntry.tx == txRef, "Transactions did not match");
     BOOST_CHECK_EQUAL(txEntry.fees, 1 * SATOSHI);

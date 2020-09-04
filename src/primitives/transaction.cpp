@@ -57,13 +57,17 @@ uint256 CTransaction::ComputeHash() const {
     return SerializeHash(*this, SER_GETHASH, 0);
 }
 
-/**
- * For backward compatibility, the hash is initialized to 0.
- * TODO: remove the need for this default constructor entirely.
- */
-CTransaction::CTransaction()
-    : vin(), vout(), nVersion(CTransaction::CURRENT_VERSION), nLockTime(0),
-      hash() {}
+/*static*/ const CTransaction CTransaction::null;
+
+//! This sharedNull is a singleton returned by MakeTransactionRef() (no args).
+//! It is a 'fake' shared pointer that points to `null` above, and its deleter
+//! is a no-op.
+/*static*/ const CTransactionRef CTransaction::sharedNull{&CTransaction::null, [](const CTransaction *){}};
+
+/* private - for construcing the above null value only */
+CTransaction::CTransaction() : nVersion{CTransaction::CURRENT_VERSION}, nLockTime{0} {}
+
+/* public */
 CTransaction::CTransaction(const CMutableTransaction &tx)
     : vin(tx.vin), vout(tx.vout), nVersion(tx.nVersion),
       nLockTime(tx.nLockTime), hash(ComputeHash()) {}

@@ -78,9 +78,8 @@ static CBlock makeLargeDummyBlock(const size_t num_tx) {
     CBlock block;
     block.vtx.reserve(num_tx);
 
-    CTransaction tx;
     for (size_t i = 0; i < num_tx; i++) {
-        block.vtx.push_back(MakeTransactionRef(tx));
+        block.vtx.push_back(MakeTransactionRef());
     }
     return block;
 }
@@ -110,7 +109,7 @@ BOOST_AUTO_TEST_CASE(validation_load_external_block_file) {
 
     BOOST_CHECK_EQUAL(nwritten, 1UL);
 
-    CTransaction empty_tx;
+    const auto &empty_tx = CTransaction::null;
     size_t empty_tx_size = GetSerializeSize(empty_tx, CLIENT_VERSION);
 
     size_t num_tx = (10 * MAX_TX_SIZE) / empty_tx_size;
