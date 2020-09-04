@@ -458,19 +458,19 @@ BOOST_AUTO_TEST_CASE(univalue_object)
 
     BOOST_CHECK_EQUAL(obj["nyuknyuknyuk"].getValStr(), "");
 
-    BOOST_CHECK_EQUAL(obj.find("age"), &obj["age"]);
-    BOOST_CHECK_EQUAL(obj.find("first"), &obj["first"]);
-    BOOST_CHECK_EQUAL(obj.find("last"), &obj["last"]);
-    BOOST_CHECK_EQUAL(obj.find("distance"), &obj["distance"]);
-    BOOST_CHECK_EQUAL(obj.find("time"), &obj["time"]);
-    BOOST_CHECK_EQUAL(obj.find("calories"), &obj["calories"]);
-    BOOST_CHECK_EQUAL(obj.find("temperature"), &obj["temperature"]);
-    BOOST_CHECK_EQUAL(obj.find("moon"), &obj["moon"]);
-    BOOST_CHECK_EQUAL(obj.find("spoon"), &obj["spoon"]);
-    BOOST_CHECK_EQUAL(obj.find("cat1"), &obj["cat1"]);
-    BOOST_CHECK_EQUAL(obj.find("cat2"), &obj["cat2"]);
+    BOOST_CHECK_EQUAL(obj.locate("age"), &obj["age"]);
+    BOOST_CHECK_EQUAL(obj.locate("first"), &obj["first"]);
+    BOOST_CHECK_EQUAL(obj.locate("last"), &obj["last"]);
+    BOOST_CHECK_EQUAL(obj.locate("distance"), &obj["distance"]);
+    BOOST_CHECK_EQUAL(obj.locate("time"), &obj["time"]);
+    BOOST_CHECK_EQUAL(obj.locate("calories"), &obj["calories"]);
+    BOOST_CHECK_EQUAL(obj.locate("temperature"), &obj["temperature"]);
+    BOOST_CHECK_EQUAL(obj.locate("moon"), &obj["moon"]);
+    BOOST_CHECK_EQUAL(obj.locate("spoon"), &obj["spoon"]);
+    BOOST_CHECK_EQUAL(obj.locate("cat1"), &obj["cat1"]);
+    BOOST_CHECK_EQUAL(obj.locate("cat2"), &obj["cat2"]);
 
-    BOOST_CHECK_EQUAL(obj.find("nyuknyuknyuk"), nullptr);
+    BOOST_CHECK_EQUAL(obj.locate("nyuknyuknyuk"), nullptr);
 
     BOOST_CHECK_EQUAL(obj["age"].getType(), UniValue::VNUM);
     BOOST_CHECK_EQUAL(obj["first"].getType(), UniValue::VSTR);

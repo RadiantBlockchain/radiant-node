@@ -1,5 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2018 The Bitcoin Core developers
+// Copyright (c) 2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -3347,19 +3348,19 @@ static UniValue listunspent(const Config &config,
     if (!request.params[4].isNull()) {
         const UniValue &options = request.params[4].get_obj();
 
-        if (auto minimumAmountUV = options.find("minimumAmount")) {
+        if (auto minimumAmountUV = options.locate("minimumAmount")) {
             nMinimumAmount = AmountFromValue(*minimumAmountUV);
         }
 
-        if (auto maximumAmountUV = options.find("maximumAmount")) {
+        if (auto maximumAmountUV = options.locate("maximumAmount")) {
             nMaximumAmount = AmountFromValue(*maximumAmountUV);
         }
 
-        if (auto minimumSumAmountUV = options.find("minimumSumAmount")) {
+        if (auto minimumSumAmountUV = options.locate("minimumSumAmount")) {
             nMinimumSumAmount = AmountFromValue(*minimumSumAmountUV);
         }
 
-        if (auto maximumCountUV = options.find("maximumCount")) {
+        if (auto maximumCountUV = options.locate("maximumCount")) {
             nMaximumCount = maximumCountUV->get_int64();
         }
     }
@@ -3457,7 +3458,7 @@ void FundTransaction(CWallet *const pwallet, CMutableTransaction &tx,
                 },
                 true, true);
 
-            if (auto changeAddressUV = options.find("changeAddress")) {
+            if (auto changeAddressUV = options.locate("changeAddress")) {
                 CTxDestination dest = DecodeDestination(
                     changeAddressUV->get_str(), pwallet->chainParams);
 
@@ -3470,24 +3471,24 @@ void FundTransaction(CWallet *const pwallet, CMutableTransaction &tx,
                 coinControl.destChange = dest;
             }
 
-            if (auto changePositionUV = options.find("changePosition")) {
+            if (auto changePositionUV = options.locate("changePosition")) {
                 change_position = changePositionUV->get_int();
             }
 
-            if (auto includeWatchingUV = options.find("includeWatching")) {
+            if (auto includeWatchingUV = options.locate("includeWatching")) {
                 coinControl.fAllowWatchOnly = includeWatchingUV->get_bool();
             }
 
-            if (auto lockUnspentsUV = options.find("lockUnspents")) {
+            if (auto lockUnspentsUV = options.locate("lockUnspents")) {
                 lockUnspents = lockUnspentsUV->get_bool();
             }
 
-            if (auto feeRateUV = options.find("feeRate")) {
+            if (auto feeRateUV = options.locate("feeRate")) {
                 coinControl.m_feerate = CFeeRate(AmountFromValue(*feeRateUV));
                 coinControl.fOverrideFeeRate = true;
             }
 
-            if (auto subtractFeeFromOutputsUV = options.find("subtractFeeFromOutputs")) {
+            if (auto subtractFeeFromOutputsUV = options.locate("subtractFeeFromOutputs")) {
                 subtractFeeFromOutputs = subtractFeeFromOutputsUV->get_array();
             }
         }
@@ -3942,7 +3943,7 @@ class DescribeWalletAddressVisitor : public boost::static_visitor<void> {
             subobj.pushKV("scriptPubKey", HexStr(subscript.begin(), subscript.end()), false);
             // Always report the pubkey at the top level, so that
             // `getnewaddress()['pubkey']` always works.
-            if (auto pubkeyUV = subobj.find("pubkey")) {
+            if (auto pubkeyUV = subobj.locate("pubkey")) {
                 obj.emplace_back("pubkey", *pubkeyUV);
             }
             obj.emplace_back("embedded", std::move(subobj));

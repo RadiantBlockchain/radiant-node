@@ -36,6 +36,10 @@ public:
     UniValue(const std::string& val_) : typ(VSTR), val(val_) {}
     UniValue(std::string&& val_) noexcept : typ(VSTR), val(std::move(val_)) {}
     UniValue(const char *val_) : typ(VSTR), val(val_) {}
+    UniValue(const Array& array) : typ(VARR), values(array) {}
+    UniValue(Array&& array) : typ(VARR), values(std::move(array)) {}
+    UniValue(const Object& object) : typ(VOBJ), entries(object) {}
+    UniValue(Object&& object) : typ(VOBJ), entries(std::move(object)) {}
 
     void setNull() noexcept;
     void setBool(bool val);
@@ -48,9 +52,11 @@ public:
     void setStr(const std::string& val);
     void setStr(std::string&& val) noexcept;
     void setArray() noexcept;
-    void setArray(const Array& vec);
-    void setArray(Array&& vec) noexcept;
+    void setArray(const Array& array);
+    void setArray(Array&& array) noexcept;
     void setObject() noexcept;
+    void setObject(const Object& object);
+    void setObject(Object&& object) noexcept;
 
     constexpr enum VType getType() const noexcept { return typ; }
     constexpr const std::string& getValStr() const noexcept { return val; }
@@ -115,7 +121,7 @@ public:
      *
      * Compatible with the upstream UniValue API.
      *
-     * If you want to distinguish between null values and missing keys, please use find() instead.
+     * If you want to distinguish between null values and missing keys, please use locate() instead.
      */
     const UniValue& operator[](const std::string& key) const noexcept;
 
@@ -192,8 +198,8 @@ public:
      *
      * If you want to treat missing keys as null values, please use the [] operator with string argument instead.
      */
-    const UniValue* find(const std::string& key) const noexcept;
-    UniValue* find(const std::string& key) noexcept;
+    const UniValue* locate(const std::string& key) const noexcept;
+    UniValue* locate(const std::string& key) noexcept;
 
     constexpr bool isNull() const noexcept { return typ == VNULL; }
     constexpr bool isTrue() const noexcept { return typ == VBOOL && val == boolTrueVal; }
@@ -244,12 +250,6 @@ private:
     Object entries;
     Array values;
     static const std::string boolTrueVal; // = "1"
-
-    // __pushKV does not check for duplicate keys and simply appends at the end
-    void __pushKV(const std::string& key, const UniValue& val);
-    void __pushKV(const std::string& key, UniValue&& val);
-    void __pushKV(std::string&& key, UniValue&& val);
-    void __pushKV(std::string&& key, const UniValue& val);
 
     // Opaque type used for writing. This can be further optimized later.
     struct Stream {

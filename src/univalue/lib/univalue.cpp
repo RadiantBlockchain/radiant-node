@@ -142,23 +142,31 @@ void UniValue::setArray() noexcept
     setNull();
     typ = VARR;
 }
-void UniValue::setArray(const Array& vec)
+void UniValue::setArray(const Array& array)
 {
-    setNull();
-    typ = VARR;
-    values = vec;
+    setArray();
+    values = array;
 }
-void UniValue::setArray(Array&& vec) noexcept
+void UniValue::setArray(Array&& array) noexcept
 {
-    setNull();
-    typ = VARR;
-    values = std::move(vec);
+    setArray();
+    values = std::move(array);
 }
 
 void UniValue::setObject() noexcept
 {
     setNull();
     typ = VOBJ;
+}
+void UniValue::setObject(const Object& object)
+{
+    setObject();
+    entries = object;
+}
+void UniValue::setObject(Object&& object) noexcept
+{
+    setObject();
+    entries = std::move(object);
 }
 
 void UniValue::push_back(const UniValue& val_)
@@ -177,78 +185,58 @@ void UniValue::push_back(UniValue&& val_)
     values.emplace_back(std::move(val_));
 }
 
-void UniValue::__pushKV(const std::string& key, UniValue&& val_)
-{
-    entries.emplace_back(key, std::move(val_));
-}
-
-void UniValue::__pushKV(std::string&& key, UniValue&& val_)
-{
-    entries.emplace_back(std::move(key), std::move(val_));
-}
-
-void UniValue::__pushKV(std::string&& key, const UniValue& val_)
-{
-    entries.emplace_back(std::move(key), val_);
-}
-
-void UniValue::__pushKV(const std::string& key, const UniValue& val_)
-{
-    entries.emplace_back(key, val_);
-}
-
 void UniValue::pushKV(const std::string& key, const UniValue& val_, bool check)
 {
     if (typ != VOBJ)
         return;
     if (check) {
-        if (auto found = find(key)) {
+        if (auto found = locate(key)) {
             *found = val_;
             return;
         }
     }
-    __pushKV(key, val_);
+    entries.emplace_back(key, val_);
 }
 void UniValue::pushKV(const std::string& key, UniValue&& val_, bool check)
 {
     if (typ != VOBJ)
         return;
     if (check) {
-        if (auto found = find(key)) {
+        if (auto found = locate(key)) {
             *found = std::move(val_);
             return;
         }
     }
-    __pushKV(key, std::move(val_));
+    entries.emplace_back(key, std::move(val_));
 }
 void UniValue::pushKV(std::string&& key, const UniValue& val_, bool check)
 {
     if (typ != VOBJ)
         return;
     if (check) {
-        if (auto found = find(key)) {
+        if (auto found = locate(key)) {
             *found = val_;
             return;
         }
     }
-    __pushKV(std::move(key), val_);
+    entries.emplace_back(std::move(key), val_);
 }
 void UniValue::pushKV(std::string&& key, UniValue&& val_, bool check)
 {
     if (typ != VOBJ)
         return;
     if (check) {
-        if (auto found = find(key)) {
+        if (auto found = locate(key)) {
             *found = std::move(val_);
             return;
         }
     }
-    __pushKV(std::move(key), std::move(val_));
+    entries.emplace_back(std::move(key), std::move(val_));
 }
 
 const UniValue& UniValue::operator[](const std::string& key) const noexcept
 {
-    if (auto found = find(key)) {
+    if (auto found = locate(key)) {
         return *found;
     }
     return NullUniValue;
@@ -302,7 +290,7 @@ const UniValue& UniValue::back() const noexcept
     }
 }
 
-const UniValue* UniValue::find(const std::string& key) const noexcept {
+const UniValue* UniValue::locate(const std::string& key) const noexcept {
     for (auto& entry : entries) {
         if (entry.first == key) {
             return &entry.second;
@@ -310,7 +298,7 @@ const UniValue* UniValue::find(const std::string& key) const noexcept {
     }
     return nullptr;
 }
-UniValue* UniValue::find(const std::string& key) noexcept {
+UniValue* UniValue::locate(const std::string& key) noexcept {
     for (auto& entry : entries) {
         if (entry.first == key) {
             return &entry.second;
