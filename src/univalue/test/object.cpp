@@ -390,11 +390,29 @@ BOOST_AUTO_TEST_CASE(univalue_array)
     BOOST_CHECK_EQUAL(arr[7].getValStr(), "-401");
     BOOST_CHECK_EQUAL(arr[8].getValStr(), "-40.1");
 
-    BOOST_CHECK_EQUAL(arr[999].getValStr(), "");
+    BOOST_CHECK_EQUAL(arr[9].getValStr(), "");
+    BOOST_CHECK_EQUAL(arr["nyuknyuknyuk"].getValStr(), "");
+
+    BOOST_CHECK_EQUAL(&arr[9], &NullUniValue);
+    BOOST_CHECK_EQUAL(&arr["nyuknyuknyuk"], &NullUniValue);
+
+    BOOST_CHECK_EQUAL(arr.locate("nyuknyuknyuk"), nullptr);
+
+    for (int i = 0; i < 9; ++i)
+        BOOST_CHECK_EQUAL(&arr.at(i), &arr[i]);
+
+    BOOST_CHECK_THROW(arr.at(9), std::out_of_range);
+    BOOST_CHECK_THROW(arr.at("nyuknyuknyuk"), std::domain_error);
 
     arr.setNull();
     BOOST_CHECK(arr.empty());
     BOOST_CHECK_EQUAL(arr.size(), 0);
+    BOOST_CHECK_EQUAL(arr.getType(), UniValue::VNULL);
+    BOOST_CHECK_EQUAL(&arr[0], &NullUniValue);
+    BOOST_CHECK_EQUAL(&arr["nyuknyuknyuk"], &NullUniValue);
+    BOOST_CHECK_EQUAL(arr.locate("nyuknyuknyuk"), nullptr);
+    BOOST_CHECK_THROW(arr.at(0), std::domain_error);
+    BOOST_CHECK_THROW(arr.at("nyuknyuknyuk"), std::domain_error);
 }
 
 BOOST_AUTO_TEST_CASE(univalue_object)
@@ -458,6 +476,20 @@ BOOST_AUTO_TEST_CASE(univalue_object)
 
     BOOST_CHECK_EQUAL(obj["nyuknyuknyuk"].getValStr(), "");
 
+    BOOST_CHECK_EQUAL(&obj[0], &obj["age"]);
+    BOOST_CHECK_EQUAL(&obj[1], &obj["first"]);
+    BOOST_CHECK_EQUAL(&obj[2], &obj["last"]);
+    BOOST_CHECK_EQUAL(&obj[3], &obj["distance"]);
+    BOOST_CHECK_EQUAL(&obj[4], &obj["time"]);
+    BOOST_CHECK_EQUAL(&obj[5], &obj["calories"]);
+    BOOST_CHECK_EQUAL(&obj[6], &obj["temperature"]);
+    BOOST_CHECK_EQUAL(&obj[7], &obj["moon"]);
+    BOOST_CHECK_EQUAL(&obj[8], &obj["spoon"]);
+    BOOST_CHECK_EQUAL(&obj[9], &obj["cat1"]);
+    BOOST_CHECK_EQUAL(&obj[10], &obj["cat2"]);
+
+    BOOST_CHECK_EQUAL(&obj[11], &NullUniValue);
+
     BOOST_CHECK_EQUAL(obj.locate("age"), &obj["age"]);
     BOOST_CHECK_EQUAL(obj.locate("first"), &obj["first"]);
     BOOST_CHECK_EQUAL(obj.locate("last"), &obj["last"]);
@@ -472,6 +504,25 @@ BOOST_AUTO_TEST_CASE(univalue_object)
 
     BOOST_CHECK_EQUAL(obj.locate("nyuknyuknyuk"), nullptr);
 
+    BOOST_CHECK_EQUAL(&obj.at("age"), &obj["age"]);
+    BOOST_CHECK_EQUAL(&obj.at("first"), &obj["first"]);
+    BOOST_CHECK_EQUAL(&obj.at("last"), &obj["last"]);
+    BOOST_CHECK_EQUAL(&obj.at("distance"), &obj["distance"]);
+    BOOST_CHECK_EQUAL(&obj.at("time"), &obj["time"]);
+    BOOST_CHECK_EQUAL(&obj.at("calories"), &obj["calories"]);
+    BOOST_CHECK_EQUAL(&obj.at("temperature"), &obj["temperature"]);
+    BOOST_CHECK_EQUAL(&obj.at("moon"), &obj["moon"]);
+    BOOST_CHECK_EQUAL(&obj.at("spoon"), &obj["spoon"]);
+    BOOST_CHECK_EQUAL(&obj.at("cat1"), &obj["cat1"]);
+    BOOST_CHECK_EQUAL(&obj.at("cat2"), &obj["cat2"]);
+
+    BOOST_CHECK_THROW(obj.at("nyuknyuknyuk"), std::out_of_range);
+
+    for (int i = 0; i < 11; ++i)
+        BOOST_CHECK_EQUAL(&obj.at(i), &obj[i]);
+
+    BOOST_CHECK_THROW(obj.at(11), std::out_of_range);
+
     BOOST_CHECK_EQUAL(obj["age"].getType(), UniValue::VNUM);
     BOOST_CHECK_EQUAL(obj["first"].getType(), UniValue::VSTR);
     BOOST_CHECK_EQUAL(obj["last"].getType(), UniValue::VSTR);
@@ -484,12 +535,18 @@ BOOST_AUTO_TEST_CASE(univalue_object)
     BOOST_CHECK_EQUAL(obj["cat1"].getType(), UniValue::VNUM);
     BOOST_CHECK_EQUAL(obj["cat2"].getType(), UniValue::VNUM);
 
+    BOOST_CHECK_EQUAL(obj[11].getType(), UniValue::VNULL);
     BOOST_CHECK_EQUAL(obj["nyuknyuknyuk"].getType(), UniValue::VNULL);
 
     obj.setNull();
     BOOST_CHECK(obj.empty());
     BOOST_CHECK_EQUAL(obj.size(), 0);
     BOOST_CHECK_EQUAL(obj.getType(), UniValue::VNULL);
+    BOOST_CHECK_EQUAL(&obj[0], &NullUniValue);
+    BOOST_CHECK_EQUAL(&obj["age"], &NullUniValue);
+    BOOST_CHECK_EQUAL(obj.locate("age"), nullptr);
+    BOOST_CHECK_THROW(obj.at(0), std::domain_error);
+    BOOST_CHECK_THROW(obj.at("age"), std::domain_error);
 
     obj.setObject();
     UniValue uv;

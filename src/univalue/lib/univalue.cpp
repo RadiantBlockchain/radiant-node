@@ -307,6 +307,64 @@ UniValue* UniValue::locate(const std::string& key) noexcept {
     return nullptr;
 }
 
+const UniValue& UniValue::at(const std::string& key) const {
+    if (typ != VOBJ) {
+        throw std::domain_error(std::string("Cannot lookup key in JSON ") + uvTypeName(typ) + ": " + key);
+    }
+    for (auto& entry : entries) {
+        if (entry.first == key) {
+            return entry.second;
+        }
+    }
+    throw std::out_of_range("Key not found in JSON object: " + key);
+}
+UniValue& UniValue::at(const std::string& key) {
+    if (typ != VOBJ) {
+        throw std::domain_error(std::string("Cannot lookup key in JSON ") + uvTypeName(typ) + ": " + key);
+    }
+    for (auto& entry : entries) {
+        if (entry.first == key) {
+            return entry.second;
+        }
+    }
+    throw std::out_of_range("Key not found in JSON object: " + key);
+}
+
+const UniValue& UniValue::at(size_t index) const
+{
+    switch (typ) {
+    case VOBJ:
+        if (index < entries.size())
+            return entries[index].second;
+        throw std::out_of_range("Index " + std::to_string(index) + " not found in JSON object of length " +
+                                std::to_string(entries.size()) + ".");
+    case VARR:
+        if (index < values.size())
+            return values[index];
+        throw std::out_of_range("Index " + std::to_string(index) + " not found in JSON array of length " +
+                                std::to_string(values.size()) + ".");
+    default:
+        throw std::domain_error("Cannot lookup index " + std::to_string(index) + " in JSON " + uvTypeName(typ) + ".");
+    }
+}
+UniValue& UniValue::at(size_t index)
+{
+    switch (typ) {
+    case VOBJ:
+        if (index < entries.size())
+            return entries[index].second;
+        throw std::out_of_range("Index " + std::to_string(index) + " not found in JSON object of length " +
+                                std::to_string(entries.size()) + ".");
+    case VARR:
+        if (index < values.size())
+            return values[index];
+        throw std::out_of_range("Index " + std::to_string(index) + " not found in JSON array of length " +
+                                std::to_string(values.size()) + ".");
+    default:
+        throw std::domain_error("Cannot lookup index " + std::to_string(index) + " in JSON " + uvTypeName(typ) + ".");
+    }
+}
+
 bool UniValue::operator==(const UniValue& other) const noexcept
 {
     // Type must be equal.

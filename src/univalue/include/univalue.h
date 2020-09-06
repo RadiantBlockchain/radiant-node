@@ -112,7 +112,8 @@ public:
     constexpr bool getBool() const noexcept { return isTrue(); }
 
     /**
-     * VOBJ: Returns a reference to the first value associated with the key, or NullUniValue if the key does not exist.
+     * VOBJ: Returns a reference to the first value associated with the key,
+     *       or NullUniValue if the key does not exist.
      * Other types: Returns NullUniValue.
      *
      * The returned reference follows the iterator invalidation rules of the underlying vector.
@@ -122,12 +123,15 @@ public:
      * Compatible with the upstream UniValue API.
      *
      * If you want to distinguish between null values and missing keys, please use locate() instead.
+     * If you want an exception thrown on missing keys, please use at() instead.
      */
     const UniValue& operator[](const std::string& key) const noexcept;
 
     /**
-     * VOBJ: Returns a reference to the value at the numeric index (regardless of key), or NullUniValue if index >= object size.
-     * VARR: Returns a reference to the element at the index, or NullUniValue if index >= array size.
+     * VOBJ: Returns a reference to the value at the numeric index (regardless of key),
+     *       or NullUniValue if index >= object size.
+     * VARR: Returns a reference to the element at the index,
+     *       or NullUniValue if index >= array size.
      * Other types: Returns NullUniValue.
      *
      * The returned reference follows the iterator invalidation rules of the underlying vector.
@@ -137,6 +141,7 @@ public:
      * Compatible with the upstream UniValue API.
      *
      * To access the first or last value, consider using front() or back() instead.
+     * If you want an exception thrown on missing keys, please use at() instead.
      */
     const UniValue& operator[](size_t index) const noexcept;
 
@@ -161,8 +166,10 @@ public:
     bool operator!=(const UniValue& other) const noexcept { return !(*this == other); }
 
     /**
-     * VOBJ: Returns a reference to the first value (regardless of key), or NullUniValue if the object is empty.
-     * VARR: Returns a reference to the first element, or NullUniValue if the array is empty.
+     * VOBJ: Returns a reference to the first value (regardless of key),
+     *       or NullUniValue if the object is empty.
+     * VARR: Returns a reference to the first element,
+     *       or NullUniValue if the array is empty.
      * Other types: Returns NullUniValue.
      *
      * The returned reference follows the iterator invalidation rules of the underlying vector.
@@ -174,8 +181,10 @@ public:
     const UniValue& front() const noexcept;
 
     /**
-     * VOBJ: Returns a reference to the last value (regardless of key), or NullUniValue if the object is empty.
-     * VARR: Returns a reference to the last element, or NullUniValue if the array is empty.
+     * VOBJ: Returns a reference to the last value (regardless of key),
+     *       or NullUniValue if the object is empty.
+     * VARR: Returns a reference to the last element,
+     *       or NullUniValue if the array is empty.
      * Other types: Returns NullUniValue.
      *
      * The returned reference follows the iterator invalidation rules of the underlying vector.
@@ -187,7 +196,8 @@ public:
     const UniValue& back() const noexcept;
 
     /**
-     * VOBJ: Returns a pointer to the first value associated with the key, or nullptr if the key does not exist.
+     * VOBJ: Returns a pointer to the first value associated with the key,
+     *       or nullptr if the key does not exist.
      * Other types: Returns nullptr.
      *
      * The returned pointer follows the iterator invalidation rules of the underlying vector.
@@ -196,10 +206,45 @@ public:
      *
      * This is a Bitcoin Cash Node extension of the UniValue API.
      *
-     * If you want to treat missing keys as null values, please use the [] operator with string argument instead.
+     * If you want to treat missing keys as null values, please use the [] operator instead.
+     * If you want an exception thrown on missing keys, please use at() instead.
      */
     const UniValue* locate(const std::string& key) const noexcept;
     UniValue* locate(const std::string& key) noexcept;
+
+    /**
+     * VOBJ: Returns a reference to the first value associated with the key,
+     *       or throws std::out_of_range if the key does not exist.
+     * Other types: Throws std::domain_error.
+     *
+     * The returned reference follows the iterator invalidation rules of the underlying vector.
+     *
+     * Complexity: linear in number of elements.
+     *
+     * This is a Bitcoin Cash Node extension of the UniValue API.
+     *
+     * If you don't want an exception thrown, please use locate() or the [] operator instead.
+     */
+    const UniValue& at(const std::string& key) const;
+    UniValue& at(const std::string& key);
+
+    /**
+     * VOBJ: Returns a reference to the value at the numeric index (regardless of key),
+     *       or throws std::out_of_range if index >= object size.
+     * VARR: Returns a reference to the element at the index,
+     *       or throws std::out_of_range if index >= array size.
+     * Other types: Throws std::domain_error.
+     *
+     * The returned reference follows the iterator invalidation rules of the underlying vector.
+     *
+     * Complexity: constant.
+     *
+     * This is a Bitcoin Cash Node extension of the UniValue API.
+     *
+     * If you don't want an exception thrown, please use the [] operator instead.
+     */
+    const UniValue& at(size_t index) const;
+    UniValue& at(size_t index);
 
     constexpr bool isNull() const noexcept { return typ == VNULL; }
     constexpr bool isTrue() const noexcept { return typ == VBOOL && val == boolTrueVal; }
