@@ -17,7 +17,7 @@ WARNING_TEXT_EXPIRED = "Warning: This version of Bitcoin Cash Node is old and ma
 # The amount of "lead" time we give the goodNode below before it expires.
 # It is necessary to use this mechanism because the scheduler does not
 # use mocktime -- so we must actually wait for it to expire.
-FUZZ_TIME = 10.0
+FUZZ_TIME = 15.0
 
 
 class WarnOnOutdatedTest(BitcoinTestFramework):
@@ -25,7 +25,7 @@ class WarnOnOutdatedTest(BitcoinTestFramework):
     def set_test_params(self):
         """
         This test spins up four nodes.
-        Node #0 has NO mock time and is started 10 seconds before warning shall be shown.
+        Node #0 has NO mock time and is started FUZZ_TIME seconds before warning shall be shown.
         Node #1 has mock time set to the exact time warning is to be shown.
         Node #2 has mock time set to the exact time warning is to be shown,
                 but has suppressed it with "-noexpire".
