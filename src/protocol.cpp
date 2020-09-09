@@ -44,6 +44,7 @@ const char *const SENDCMPCT = "sendcmpct";
 const char *const CMPCTBLOCK = "cmpctblock";
 const char *const GETBLOCKTXN = "getblocktxn";
 const char *const BLOCKTXN = "blocktxn";
+const char *const EXTVERSION = "extversion";
 
 bool IsBlockLike(const std::string &strCommand) {
     return strCommand == NetMsgType::BLOCK ||
@@ -65,7 +66,7 @@ static const std::vector<std::string> allNetMessageTypesVec{{
     NetMsgType::NOTFOUND,    NetMsgType::FILTERLOAD, NetMsgType::FILTERADD,
     NetMsgType::FILTERCLEAR, NetMsgType::REJECT,     NetMsgType::SENDHEADERS,
     NetMsgType::FEEFILTER,   NetMsgType::SENDCMPCT,  NetMsgType::CMPCTBLOCK,
-    NetMsgType::GETBLOCKTXN, NetMsgType::BLOCKTXN,
+    NetMsgType::GETBLOCKTXN, NetMsgType::BLOCKTXN,   NetMsgType::EXTVERSION,
 }};
 
 CMessageHeader::CMessageHeader(const MessageMagic &pchMessageStartIn) {

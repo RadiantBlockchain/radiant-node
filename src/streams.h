@@ -110,6 +110,7 @@ public:
     }
     int GetVersion() const { return nVersion; }
     int GetType() const { return nType; }
+    size_t size() const { return vchData.size(); }
     void seek(size_t nSize) {
         nPos += nSize;
         if (nPos > vchData.size()) {

@@ -14,6 +14,7 @@
 #include <chainparams.h>
 #include <compat.h>
 #include <crypto/siphash.h>
+#include <extversion.h>
 #include <hash.h>
 #include <limitedmap.h>
 #include <net_permissions.h>
@@ -718,6 +719,15 @@ public:
     std::atomic_bool fPauseRecv{false};
     std::atomic_bool fPauseSend{false};
 
+    /* ExtVersion support */
+    Mutex cs_extversion;
+    //! Stores the peer's extversion message. This member is only valid if extversionEnabled is true.
+    extversion::Message extversion GUARDED_BY(cs_extversion);
+    //! Set to true if peer supports extversion and has a valid extversion::Message
+    std::atomic_bool extversionEnabled{false};
+    //! Set to true if extversion is the next message expected
+    std::atomic_bool extversionExpected{false};
+
 protected:
     mapMsgCmdSize mapSendBytesPerMsgCmd;
     mapMsgCmdSize mapRecvBytesPerMsgCmd GUARDED_BY(cs_vRecv);
@@ -880,6 +890,8 @@ public:
     std::string GetAddrName() const;
     //! Sets the addrName only if it was not previously set
     void MaybeSetAddrName(const std::string &addrNameIn);
+
+    void ReadConfigFromExtversion() EXCLUSIVE_LOCKS_REQUIRED(cs_extversion);
 };
 
 /**

@@ -52,6 +52,7 @@ NODE_BLOOM = (1 << 2)
 NODE_XTHIN = (1 << 4)
 NODE_BITCOIN_CASH = (1 << 5)
 NODE_NETWORK_LIMITED = (1 << 10)
+NODE_EXTVERSION = (1 << 11)
 
 MSG_TX = 1
 MSG_BLOCK = 2
@@ -188,6 +189,29 @@ def ser_string_vector(v):
     for sv in v:
         r += ser_string(sv)
     return r
+
+
+class CompactSize(int):
+    def serialize(self):
+        assert self >= 0
+        if self < 253:
+            return struct.pack("<B", self)
+        elif self < 2**16:
+            return struct.pack("<B", 253) + struct.pack("<H", self)
+        elif self < 2**32:
+            return struct.pack("<B", 254) + struct.pack("<I", self)
+        elif self < 2**64:
+            return struct.pack("<B", 255) + struct.pack("<Q", self)
+
+    def deserialize(self, f):
+        self = struct.unpack("<B", f.read(1))[0]
+        if self == 253:
+            self = struct.unpack("<H", f.read(2))[0]
+        elif self == 254:
+            self = struct.unpack("<I", f.read(4))[0]
+        elif self == 255:
+            self = struct.unpack("<Q", f.read(8))[0]
+        return self
 
 
 # Deserialize from a hex string representation (eg from RPC)
@@ -878,6 +902,36 @@ class msg_version:
             self.nVersion, self.nServices, self.nTime,
             repr(self.addrTo), repr(self.addrFrom), self.nNonce,
             self.strSubVer, self.nStartingHeight, self.nRelay)
+
+
+class msg_extversion(object):
+    command = b"extversion"
+
+    def __init__(self, xver={}):
+        self.xver = xver
+
+    def deserialize(self, f):
+        map_size = CompactSize().deserialize(f)
+        self.xver = {}
+        for i in range(map_size):
+            key = CompactSize().deserialize(f)
+            val_size = CompactSize().deserialize(f)
+            value = f.read(val_size)
+            self.xver[key] = value
+
+    def serialize(self):
+        res = CompactSize(len(self.xver)).serialize()
+        for k, v in self.xver.items():
+            res += CompactSize(k).serialize()
+            if isinstance(v, int):
+                # serialize integers in compact format inside the vector
+                v = CompactSize(v).serialize()
+            res += CompactSize(len(v)).serialize()
+            res += v
+        return res
+
+    def __repr__(self):
+        return "msg_extversion({})".format(repr(self.xver))
 
 
 class msg_verack:

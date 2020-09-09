@@ -103,6 +103,7 @@ BITCOIN_TESTS =\
   test/descriptor_tests.cpp \
   test/dstencode_tests.cpp \
   test/excessiveblock_tests.cpp \
+  test/extversion_tests.cpp \
   test/feerate_tests.cpp \
   test/finalization_tests.cpp \
   test/flatfile_tests.cpp \
