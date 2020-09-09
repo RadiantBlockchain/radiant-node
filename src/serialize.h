@@ -388,7 +388,7 @@ template <typename Stream> void WriteCompactSize(Stream &os, uint64_t nSize) {
     return;
 }
 
-template <typename Stream> uint64_t ReadCompactSize(Stream &is) {
+template <typename Stream> uint64_t ReadCompactSizeWithLimit(Stream &is, const uint64_t maxSize) {
     uint8_t chSize = ser_readdata8(is);
     uint64_t nSizeRet = 0;
     if (chSize < 253) {
@@ -409,10 +409,14 @@ template <typename Stream> uint64_t ReadCompactSize(Stream &is) {
             throw std::ios_base::failure("non-canonical ReadCompactSize()");
         }
     }
-    if (nSizeRet > MAX_SIZE) {
+    if (nSizeRet > maxSize) {
         throw std::ios_base::failure("ReadCompactSize(): size too large");
     }
     return nSizeRet;
+}
+
+template <typename Stream> uint64_t ReadCompactSize(Stream &is) {
+    return ReadCompactSizeWithLimit(is, MAX_SIZE);
 }
 
 /**

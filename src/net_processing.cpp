@@ -14,6 +14,7 @@
 #include <chainparams.h>
 #include <config.h>
 #include <consensus/validation.h>
+#include <extversion.h>
 #include <hash.h>
 #include <merkleblock.h>
 #include <net.h>
@@ -2211,10 +2212,21 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
             PushNodeVersion(config, pfrom, connman, GetAdjustedTime());
         }
 
-        connman->PushMessage(
-            pfrom, CNetMsgMaker(INIT_PROTO_VERSION).Make(NetMsgType::VERACK));
-
         pfrom->nServices = nServices;
+
+        if (pfrom->nServices & NODE_EXTVERSION) {
+            // Peer has extversion, so use that handshake.
+            // Prepare extversion message. This must be sent before we send a verack message if extversion is enabled
+            extversion::Message xver;
+            xver.SetVersion(); // called with no args = set it to our version defined at compile-time.
+
+            connman->PushMessage(pfrom, CNetMsgMaker(INIT_PROTO_VERSION).Make(NetMsgType::EXTVERSION, xver));
+            pfrom->extversionExpected = true;
+        } else {
+            // Send VERACK handshake message (regular non-extversion peer)
+            connman->PushMessage(pfrom, CNetMsgMaker(INIT_PROTO_VERSION).Make(NetMsgType::VERACK));
+        }
+
         pfrom->SetAddrLocal(addrMe);
         {
             LOCK(pfrom->cs_SubVer);
@@ -2310,6 +2322,31 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         return false;
     }
 
+    if (strCommand == NetMsgType::EXTVERSION) {
+        // set expected to false, we got the message
+        pfrom->extversionExpected = false;
+        if (pfrom->fSuccessfullyConnected) {
+            LOCK(cs_main);
+            pfrom->fDisconnect = true;
+            return error("peer=%d received extversion message after verack, disconnecting", pfrom->GetId());
+        }
+
+        // Throws if message size limit of 100kB is exceeded
+        extversion::Message::CheckSize(vRecv.in_avail());
+
+        {
+            // Unserialize and process; lock must be held
+            LOCK(pfrom->cs_extversion);
+            vRecv >> pfrom->extversion;
+            pfrom->extversionEnabled = true;
+            pfrom->ReadConfigFromExtversion();
+        }
+
+        // Finish EXTVERSION handshake with a regular VERACK
+        connman->PushMessage(pfrom, CNetMsgMaker(INIT_PROTO_VERSION).Make(NetMsgType::VERACK));
+        return true;
+    }
+
     // At this point, the outgoing message serialization version can't change.
     const CNetMsgMaker msgMaker(pfrom->GetSendVersion());
 
@@ -2328,6 +2365,13 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
                 pfrom->nVersion.load(), pfrom->nStartingHeight, pfrom->GetId(),
                 (fLogIPs ? strprintf(", peeraddr=%s", pfrom->addr.ToString())
                          : ""));
+        }
+
+        if (pfrom->extversionExpected) {
+            // If we expected extversion but got a verack it is possible there is a service bit
+            // mismatch so we should send a verack response because the peer might not
+            // support extversion
+            connman->PushMessage(pfrom, CNetMsgMaker(INIT_PROTO_VERSION).Make(NetMsgType::VERACK));
         }
 
         if (pfrom->nVersion >= SENDHEADERS_VERSION) {
@@ -3884,6 +3928,11 @@ bool PeerLogicValidation::ProcessMessages(const Config &config, CNode *pfrom,
                      e.what());
         } else if (strstr(e.what(), "non-canonical ReadCompactSize()")) {
             // Allow exceptions from non-canonical encoding
+            LogPrint(BCLog::NET, "%s(%s, %u bytes): Exception '%s' caught\n",
+                     __func__, SanitizeString(strCommand), nMessageSize,
+                     e.what());
+        } else if (strstr(e.what(), "message xmap must not exceed")) {
+            // Allow exceptions from extversion message too large
             LogPrint(BCLog::NET, "%s(%s, %u bytes): Exception '%s' caught\n",
                      __func__, SanitizeString(strCommand), nMessageSize,
                      e.what());

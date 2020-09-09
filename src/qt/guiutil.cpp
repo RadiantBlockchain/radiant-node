@@ -892,6 +892,9 @@ QString formatServicesStr(quint64 mask) {
                 case NODE_NETWORK_LIMITED:
                     strList.append("LIMITED");
                     break;
+                case NODE_EXTVERSION:
+                    strList.append("EXTVERSION");
+                    break;
                 default:
                     strList.append(QString("%1[%2]").arg("UNKNOWN").arg(check));
             }

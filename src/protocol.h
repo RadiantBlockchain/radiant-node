@@ -260,6 +260,12 @@ extern const char *const GETBLOCKTXN;
 extern const char *const BLOCKTXN;
 
 /**
+ * The extversion message provides additional information about the transmitting
+ * node to the receiving node at the beginning of a connection.
+ */
+extern const char *const EXTVERSION;
+
+/**
  * Indicate if the message is used to transmit the content of a block.
  * These messages can be significantly larger than usual messages and therefore
  * may need to be processed differently.
@@ -311,6 +317,9 @@ enum ServiceFlags : uint64_t {
     // of only serving the last 288 (2 day) blocks
     // See BIP159 for details on how this is implemented.
     NODE_NETWORK_LIMITED = (1 << 10),
+
+    // indicates if node is using extversion
+    NODE_EXTVERSION = (1 << 11),
 
     // The last non experimental service bit, helper for looping over the flags
     NODE_LAST_NON_EXPERIMENTAL_SERVICE_BIT = (1 << 23),

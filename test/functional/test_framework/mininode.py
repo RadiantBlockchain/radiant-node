@@ -49,6 +49,7 @@ from test_framework.messages import (
     MSG_TYPE_MASK,
     msg_verack,
     msg_version,
+    msg_extversion,
     NODE_NETWORK,
     sha256,
 )
@@ -79,6 +80,7 @@ MESSAGEMAP = {
     b"tx": msg_tx,
     b"verack": msg_verack,
     b"version": msg_version,
+    b"extversion": msg_extversion
 }
 
 MAGIC_BYTES = {
@@ -400,6 +402,7 @@ class P2PInterface(P2PConnection):
     def on_version(self, message):
         assert message.nVersion >= MIN_VERSION_SUPPORTED, "Version {} received. Test framework only supports versions greater than {}".format(
             message.nVersion, MIN_VERSION_SUPPORTED)
+        print("sending verack")
         self.send_message(msg_verack())
         self.nServices = message.nServices
 

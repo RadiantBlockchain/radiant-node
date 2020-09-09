@@ -19,6 +19,7 @@
 #include <compat/sanity.h>
 #include <config.h>
 #include <consensus/validation.h>
+#include <extversion.h>
 #include <flatfile.h>
 #include <fs.h>
 #include <gbtlight.h>
@@ -722,6 +723,13 @@ void SetupServerArgs() {
                  "transactions are always relayed, even if they are already in "
                  "the mempool, useful e.g. for a gateway",
                  false, OptionsCategory::CONNECTION);
+
+    gArgs.AddArg(
+        "-useextversion",
+        strprintf("Enable extended versioning handshake (default: %d)",
+            extversion::DEFAULT_ENABLED),
+            false, OptionsCategory::CONNECTION);
+
     gArgs.AddArg(
         "-maxuploadtarget=<n>",
         strprintf("Tries to keep outbound traffic under the given target in "
@@ -1844,6 +1852,12 @@ bool AppInitParameterInteraction(Config &config) {
     // TODO: remove some time after the hardfork when no longer needed
     // to differentiate the network nodes.
     nLocalServices = ServiceFlags(nLocalServices | NODE_BITCOIN_CASH);
+
+    // option to use extversion
+    // we do not use extversion by default
+    if (gArgs.GetBoolArg("-useextversion", extversion::DEFAULT_ENABLED)) {
+        nLocalServices = ServiceFlags(nLocalServices | NODE_EXTVERSION);
+    }
 
     nMaxTipAge = gArgs.GetArg("-maxtipage", DEFAULT_MAX_TIP_AGE);
 

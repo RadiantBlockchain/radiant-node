@@ -2886,3 +2886,18 @@ std::string userAgent(const Config &config) {
 
     return subversion;
 }
+
+void CNode::ReadConfigFromExtversion()
+{
+    AssertLockHeld(cs_extversion);
+    assert(bool(extversionEnabled));
+    // Processing of the extversion message goes here if needed to set some node values
+    // for example here is where BU sets tx chain limits or if the message checksum is checked
+
+    // log the received version number, if any
+    if (const auto ver = extversion.GetVersion())
+        LogPrint(BCLog::NET, "extversion: peer=%d is using extversion %d.%d.%d\n", GetId(),
+                 ver->Major(), ver->Minor(), ver->Revision());
+    else
+        LogPrint(BCLog::NET, "extversion: peer=%d did not send us their \"Version\" key\n", GetId());
+}
