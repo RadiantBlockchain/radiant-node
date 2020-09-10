@@ -64,7 +64,7 @@ uint256 CTransaction::ComputeHash() const {
 //! is a no-op.
 /*static*/ const CTransactionRef CTransaction::sharedNull{&CTransaction::null, [](const CTransaction *){}};
 
-/* private - for construcing the above null value only */
+/* private - for constructing the above null value only */
 CTransaction::CTransaction() : nVersion{CTransaction::CURRENT_VERSION}, nLockTime{0} {}
 
 /* public */
