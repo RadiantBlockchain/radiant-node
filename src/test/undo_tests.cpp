@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(connect_utxo_extblock) {
     tx.vin[0].scriptSig.resize(10);
     tx.vout.resize(1);
     tx.vout[0].nValue = 42 * SATOSHI;
-    auto coinbaseTx = CTransaction(tx);
+    const CTransaction coinbaseTx(tx);
 
     block.vtx.resize(2);
     block.vtx[0] = MakeTransactionRef(tx);
@@ -72,12 +72,11 @@ BOOST_AUTO_TEST_CASE(connect_utxo_extblock) {
     tx.vin[0].scriptSig.resize(0);
     tx.nVersion = 2;
 
-    auto prevTx0 = CTransaction(tx);
+    const CTransaction prevTx0(tx);
     AddCoins(view, prevTx0, 100);
 
     tx.vin[0].prevout = COutPoint(prevTx0.GetId(), 0);
-    auto tx0 = CTransaction(tx);
-    block.vtx[1] = MakeTransactionRef(tx0);
+    const auto tx0 = block.vtx[1] = MakeTransactionRef(tx);
 
     // Now update the UTXO set.
     CBlockUndo blockundo;
@@ -85,14 +84,14 @@ BOOST_AUTO_TEST_CASE(connect_utxo_extblock) {
 
     BOOST_CHECK(view.GetBestBlock() == block.GetHash());
     BOOST_CHECK(HasSpendableCoin(view, coinbaseTx.GetId()));
-    BOOST_CHECK(HasSpendableCoin(view, tx0.GetId()));
+    BOOST_CHECK(HasSpendableCoin(view, tx0->GetId()));
     BOOST_CHECK(!HasSpendableCoin(view, prevTx0.GetId()));
 
     UndoBlock(block, view, blockundo, chainparams, 123456);
 
     BOOST_CHECK(view.GetBestBlock() == block.hashPrevBlock);
     BOOST_CHECK(!HasSpendableCoin(view, coinbaseTx.GetId()));
-    BOOST_CHECK(!HasSpendableCoin(view, tx0.GetId()));
+    BOOST_CHECK(!HasSpendableCoin(view, tx0->GetId()));
     BOOST_CHECK(HasSpendableCoin(view, prevTx0.GetId()));
 }
 
