@@ -61,7 +61,7 @@ struct Params;
 }
 
 #define MIN_TRANSACTION_SIZE                                                   \
-    (::GetSerializeSize(CTransaction(), PROTOCOL_VERSION))
+    (::GetSerializeSize(CTransaction::null, PROTOCOL_VERSION))
 
 /** Default for -whitelistrelay. */
 static constexpr bool DEFAULT_WHITELISTRELAY = true;

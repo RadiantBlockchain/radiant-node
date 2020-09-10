@@ -204,11 +204,14 @@ inline void SerializeTransaction(const TxType &tx, Stream &s) {
     s << tx.nLockTime;
 }
 
+class CTransaction;
+using CTransactionRef = std::shared_ptr<const CTransaction>;
+
 /**
  * The basic transaction that is broadcasted on the network and contained in
  * blocks. A transaction can contain multiple inputs and outputs.
  */
-class CTransaction {
+class CTransaction final {
 public:
     // Default transaction version.
     static const int32_t CURRENT_VERSION = 2;
@@ -235,9 +238,14 @@ private:
 
     uint256 ComputeHash() const;
 
-public:
     /** Construct a CTransaction that qualifies as IsNull() */
     CTransaction();
+
+public:
+    /** Default-constructed CTransaction that qualifies as IsNull() */
+    static const CTransaction null;
+    //! Points to null (with a no-op deleter)
+    static const CTransactionRef sharedNull;
 
     /** Convert a CMutableTransaction into a CTransaction. */
     explicit CTransaction(const CMutableTransaction &tx);
@@ -335,10 +343,8 @@ static_assert(sizeof(CMutableTransaction) == 56,
               "sizeof CMutableTransaction is expected to be 56 bytes");
 #endif
 
-typedef std::shared_ptr<const CTransaction> CTransactionRef;
-static inline CTransactionRef MakeTransactionRef() {
-    return std::make_shared<const CTransaction>();
-}
+static inline CTransactionRef MakeTransactionRef() { return CTransaction::sharedNull; }
+
 template <typename Tx>
 static inline CTransactionRef MakeTransactionRef(Tx &&txIn) {
     return std::make_shared<const CTransaction>(std::forward<Tx>(txIn));

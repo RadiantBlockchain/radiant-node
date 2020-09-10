@@ -799,7 +799,7 @@ BOOST_AUTO_TEST_CASE(txsize_activation_test) {
         params.magneticAnomalyHeight;
 
     // A minimaly sized transction.
-    CTransaction minTx;
+    const auto &minTx = CTransaction::null;
     CValidationState state;
 
     BOOST_CHECK(ContextualCheckTransaction(
