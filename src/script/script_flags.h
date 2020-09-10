@@ -98,7 +98,9 @@ enum {
     // VERIFY_INPUT_SIGCHECKS
     SCRIPT_VERIFY_INPUT_SIGCHECKS = (1U << 22),
 
-    // A utility flag to decide whether we must enforce sigcheck limits.
+    // A utility flag to decide whether we must enforce the per-tx consensus
+    // sigcheck limit. It does not control the sigcheck limits in
+    // policy/consensus.h .
     SCRIPT_ENFORCE_SIGCHECKS = (1U << 23),
 };
 
