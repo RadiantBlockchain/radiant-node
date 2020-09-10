@@ -1491,7 +1491,7 @@ UniValue importmulti(const Config &, const JSONRPCRequest &mainRequest) {
             throw JSONRPCError(RPC_MISC_ERROR, "Rescan aborted by user.");
         }
         if (scannedTime > nLowestTimestamp) {
-            std::vector<UniValue> results = response.takeArrayValues(); // cheap constant-time move
+            UniValue::Array results = response.takeArrayValues(); // cheap constant-time move
             // response is now an empty array after the above call
             response.reserve(requests.size());
             assert(results.size() == requests.size());

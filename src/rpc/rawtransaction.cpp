@@ -502,7 +502,7 @@ CMutableTransaction ConstructTransaction(const CChainParams &params,
                                    "Invalid parameter, key-value pair must "
                                    "contain exactly one key");
             }
-            auto& outputKV = output.getObjectEntries().front();
+            auto& outputKV = *output.getObjectEntries().begin();
             // Allowing duplicate key insertions here is intentional.
             // Checking for duplicate keys would break functionality, constructing a transaction with missing outputs.
             outputs.pushKV(std::move(outputKV.first), std::move(outputKV.second), false);

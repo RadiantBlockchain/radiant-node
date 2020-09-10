@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE(univalue_typecheck)
     UniValue v5;
     BOOST_CHECK(v5.read("[true, 10]"));
     BOOST_CHECK_NO_THROW(v5.get_array());
-    std::vector<UniValue> vals = v5.getArrayValues();
+    UniValue::Array vals = v5.getArrayValues();
     BOOST_CHECK_THROW(vals[0].get_int(), std::runtime_error);
     BOOST_CHECK_EQUAL(vals[0].get_bool(), true);
 
@@ -355,27 +355,27 @@ BOOST_AUTO_TEST_CASE(univalue_array)
     UniValue v((int64_t)1023LL);
     arr.push_back(v);
 
-    std::string vStr("zippy");
-    arr.push_back(vStr);
+    arr.getArrayValues().emplace_back("zippy");
 
     const char *s = "pippy";
     arr.push_back(s);
 
-    std::vector<UniValue> vec;
+    UniValue::Array vec;
     v.setStr("boing");
     vec.push_back(v);
 
     v.setStr("going");
-    vec.push_back(v);
+    vec.push_back(std::move(v));
 
     for (UniValue& thing : vec) {
-        arr.push_back(std::move(thing));
+        // emplace with copy constructor of UniValue
+        arr.getArrayValues().emplace_back(thing);
     }
 
-    arr.push_back((uint64_t) 400ULL);
-    arr.push_back((int64_t) -400LL);
-    arr.push_back((int) -401);
-    arr.push_back(-40.1);
+    arr.getArrayValues().emplace_back((uint64_t) 400ULL);
+    arr.getArrayValues().push_back((int64_t) -400LL);
+    arr.getArrayValues().emplace_back((int) -401);
+    arr.getArrayValues().push_back(-40.1);
 
     BOOST_CHECK_EQUAL(arr.empty(), false);
     BOOST_CHECK_EQUAL(arr.size(), 9);
@@ -404,6 +404,15 @@ BOOST_AUTO_TEST_CASE(univalue_array)
     BOOST_CHECK_THROW(arr.at(9), std::out_of_range);
     BOOST_CHECK_THROW(arr.at("nyuknyuknyuk"), std::domain_error);
 
+    // erase zippy and pippy
+    auto after = arr.getArrayValues().erase(arr.getArrayValues().begin() + 1, arr.getArrayValues().begin() + 3);
+
+    BOOST_CHECK_EQUAL(arr.getArrayValues().empty(), false);
+    BOOST_CHECK_EQUAL(arr.getArrayValues().size(), 7);
+    BOOST_CHECK_EQUAL(arr.at(0).getValStr(), "1023");
+    BOOST_CHECK_EQUAL(arr.at(1).getValStr(), "boing");
+    BOOST_CHECK_EQUAL(*after, "boing");
+
     arr.setNull();
     BOOST_CHECK(arr.empty());
     BOOST_CHECK_EQUAL(arr.size(), 0);
@@ -420,6 +429,9 @@ BOOST_AUTO_TEST_CASE(univalue_object)
     UniValue obj(UniValue::VOBJ);
     std::string strKey, strVal;
     UniValue v;
+
+    BOOST_CHECK(obj.empty());
+    BOOST_CHECK_EQUAL(obj.size(), 0);
 
     strKey = "age";
     v.setInt(100);
@@ -445,22 +457,43 @@ BOOST_AUTO_TEST_CASE(univalue_object)
     strKey = "temperature";
     obj.pushKV(strKey, (double) 90.012);
 
+    BOOST_CHECK(!obj.empty());
+    BOOST_CHECK_EQUAL(obj.size(), 7);
+
     strKey = "moon";
+    obj.pushKV(strKey, "overwrite me");
     obj.pushKV(strKey, true);
 
+    BOOST_CHECK(!obj.empty());
+    BOOST_CHECK_EQUAL(obj.size(), 8);
+
     strKey = "spoon";
-    obj.pushKV(strKey, false);
+    obj.getObjectEntries().emplace_back(strKey, false);
+    obj.getObjectEntries().push_back(std::make_pair(strKey, "just another spoon, but not the first one"));
+    obj.getObjectEntries().emplace_back(strKey, true);
+    obj.getObjectEntries().push_back(std::make_pair("spoon", "third spoon's a charm"));
+    obj.getObjectEntries().emplace_back("spoon", v);
+
+    BOOST_CHECK(!obj.empty());
+    BOOST_CHECK_EQUAL(obj.size(), 13);
 
     UniValue obj2(UniValue::VOBJ);
+    // emplace with move constructor of std::pair
+    obj2.getObjectEntries().emplace_back(std::make_pair<std::string, UniValue>("cat1", 8999));
+    obj2.pushKV("cat1", obj);
     obj2.pushKV("cat1", 9000);
-    obj2.pushKV("cat2", 12345);
+    // emplace with templated elementwise constructor of std::pair
+    obj2.getObjectEntries().emplace_back(std::make_pair("cat2", 12345));
+
+    BOOST_CHECK(!obj2.empty());
+    BOOST_CHECK_EQUAL(obj2.size(), 2);
 
     for (auto& pair : obj2.getObjectEntries()) {
         obj.pushKV(std::move(pair.first), std::move(pair.second));
     }
 
-    BOOST_CHECK_EQUAL(obj.empty(), false);
-    BOOST_CHECK_EQUAL(obj.size(), 11);
+    BOOST_CHECK(!obj.empty());
+    BOOST_CHECK_EQUAL(obj.size(), 15);
 
     BOOST_CHECK_EQUAL(obj["age"].getValStr(), "100");
     BOOST_CHECK_EQUAL(obj["first"].getValStr(), "John");
@@ -470,11 +503,18 @@ BOOST_AUTO_TEST_CASE(univalue_object)
     BOOST_CHECK_EQUAL(obj["calories"].getValStr(), "12");
     BOOST_CHECK_EQUAL(obj["temperature"].getValStr(), "90.012");
     BOOST_CHECK_EQUAL(obj["moon"].getValStr(), "1");
-    BOOST_CHECK_EQUAL(obj["spoon"].getValStr(), "");
+    BOOST_CHECK_EQUAL(obj["spoon"].getValStr(), ""); // checks the first spoon
     BOOST_CHECK_EQUAL(obj["cat1"].getValStr(), "9000");
     BOOST_CHECK_EQUAL(obj["cat2"].getValStr(), "12345");
 
     BOOST_CHECK_EQUAL(obj["nyuknyuknyuk"].getValStr(), "");
+
+    // check all five spoons
+    BOOST_CHECK_EQUAL(obj[8].getValStr(), "");
+    BOOST_CHECK_EQUAL(obj[9].getValStr(), "just another spoon, but not the first one");
+    BOOST_CHECK_EQUAL(obj[10].getValStr(), "1");
+    BOOST_CHECK_EQUAL(obj[11].getValStr(), "third spoon's a charm");
+    BOOST_CHECK_EQUAL(obj[12].getValStr(), "100");
 
     BOOST_CHECK_EQUAL(&obj[0], &obj["age"]);
     BOOST_CHECK_EQUAL(&obj[1], &obj["first"]);
@@ -485,10 +525,10 @@ BOOST_AUTO_TEST_CASE(univalue_object)
     BOOST_CHECK_EQUAL(&obj[6], &obj["temperature"]);
     BOOST_CHECK_EQUAL(&obj[7], &obj["moon"]);
     BOOST_CHECK_EQUAL(&obj[8], &obj["spoon"]);
-    BOOST_CHECK_EQUAL(&obj[9], &obj["cat1"]);
-    BOOST_CHECK_EQUAL(&obj[10], &obj["cat2"]);
+    BOOST_CHECK_EQUAL(&obj[13], &obj["cat1"]);
+    BOOST_CHECK_EQUAL(&obj[14], &obj["cat2"]);
 
-    BOOST_CHECK_EQUAL(&obj[11], &NullUniValue);
+    BOOST_CHECK_EQUAL(&obj[15], &NullUniValue);
 
     BOOST_CHECK_EQUAL(obj.locate("age"), &obj["age"]);
     BOOST_CHECK_EQUAL(obj.locate("first"), &obj["first"]);
@@ -518,10 +558,10 @@ BOOST_AUTO_TEST_CASE(univalue_object)
 
     BOOST_CHECK_THROW(obj.at("nyuknyuknyuk"), std::out_of_range);
 
-    for (int i = 0; i < 11; ++i)
+    for (int i = 0; i < 15; ++i)
         BOOST_CHECK_EQUAL(&obj.at(i), &obj[i]);
 
-    BOOST_CHECK_THROW(obj.at(11), std::out_of_range);
+    BOOST_CHECK_THROW(obj.at(15), std::out_of_range);
 
     BOOST_CHECK_EQUAL(obj["age"].getType(), UniValue::VNUM);
     BOOST_CHECK_EQUAL(obj["first"].getType(), UniValue::VSTR);
@@ -535,8 +575,18 @@ BOOST_AUTO_TEST_CASE(univalue_object)
     BOOST_CHECK_EQUAL(obj["cat1"].getType(), UniValue::VNUM);
     BOOST_CHECK_EQUAL(obj["cat2"].getType(), UniValue::VNUM);
 
-    BOOST_CHECK_EQUAL(obj[11].getType(), UniValue::VNULL);
+    BOOST_CHECK_EQUAL(obj[15].getType(), UniValue::VNULL);
     BOOST_CHECK_EQUAL(obj["nyuknyuknyuk"].getType(), UniValue::VNULL);
+
+    // erase all spoons but the last
+    auto after = obj.getObjectEntries().erase(obj.getObjectEntries().begin() + 8, obj.getObjectEntries().begin() + 12);
+
+    BOOST_CHECK(!obj.getObjectEntries().empty());
+    BOOST_CHECK_EQUAL(obj.getObjectEntries().size(), 11);
+    BOOST_CHECK_EQUAL(&obj.at(8), &obj.at("spoon"));
+    BOOST_CHECK_EQUAL(&obj.at(9), &obj.at("cat1"));
+    BOOST_CHECK_EQUAL(obj.at("spoon").getValStr(), "100");
+    BOOST_CHECK_EQUAL(after->first, "spoon"); // the remaining spoon is after the removed spoons
 
     obj.setNull();
     BOOST_CHECK(obj.empty());
@@ -567,12 +617,22 @@ BOOST_AUTO_TEST_CASE(univalue_object)
     UniValue arr{UniValue::VNUM}; // this is intentional.
     BOOST_CHECK_THROW(arr.takeArrayValues(), std::runtime_error); // should throw if !array
     BOOST_CHECK_EQUAL(&arr.front(), &NullUniValue); // should return the NullUniValue if !array
-    std::vector<UniValue> vals = {{
-        "foo", "bar", UniValue::VOBJ, "baz", "bat", false, {}, 1.2, true, 10, -42, -12345678.11234678,
-        UniValue{UniValue::VARR}
-    }};
-    vals[2].pushKV("akey", "this is a value");
-    vals.back().setArray(vals); // vals recursively contains a partial copy of vals!
+    UniValue::Array vals;
+    vals.emplace_back("foo");
+    vals.emplace_back("bar");
+    vals.emplace_back(UniValue::VOBJ);
+    vals.emplace_back("baz");
+    vals.emplace_back("bat");
+    vals.emplace_back(false);
+    vals.emplace_back();
+    vals.emplace_back(1.2);
+    vals.emplace_back(true);
+    vals.emplace_back(10);
+    vals.emplace_back(-42);
+    vals.emplace_back(-12345678.11234678);
+    vals.emplace_back(UniValue{UniValue::VARR});
+    vals.at(2).pushKV("akey", "this is a value");
+    vals.rbegin()->setArray(vals); // vals recursively contains a partial copy of vals!
     const auto valsExpected = vals; // save a copy
     arr.setArray(std::move(vals)); // assign to array via move
     BOOST_CHECK(vals.empty()); // vector should be empty after move

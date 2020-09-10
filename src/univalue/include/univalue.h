@@ -13,6 +13,7 @@
 #include <cassert>
 #include <map>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -20,8 +21,398 @@ class UniValue {
 public:
     enum VType { VNULL, VOBJ, VARR, VSTR, VNUM, VBOOL, };
 
-    using Object = std::vector<std::pair<std::string, UniValue>>;
-    using Array = std::vector<UniValue>;
+    class Object {
+
+    public:
+        using mapped_type = UniValue;
+        using key_type = std::string;
+        using value_type = std::pair<key_type, mapped_type>;
+
+    private:
+        using Vector = std::vector<value_type>;
+        Vector vector;
+
+    public:
+        using size_type = Vector::size_type;
+        using iterator = Vector::iterator;
+        using const_iterator = Vector::const_iterator;
+        using reverse_iterator = Vector::reverse_iterator;
+        using const_reverse_iterator = Vector::const_reverse_iterator;
+
+        /**
+         * Returns an iterator to the first key-value pair of the object.
+         *
+         * The returned iterator follows the iterator invalidation rules of the underlying vector.
+         *
+         * Complexity: constant.
+         */
+        const_iterator begin() const noexcept { return vector.begin(); }
+        iterator begin() noexcept { return vector.begin(); }
+
+        /**
+         * Returns an iterator to the past-the-last key-value pair of the object.
+         *
+         * The returned iterator follows the iterator invalidation rules of the underlying vector.
+         *
+         * Complexity: constant.
+         */
+        const_iterator end() const noexcept { return vector.end(); }
+        iterator end() noexcept { return vector.end(); }
+
+        /**
+         * Returns an iterator to the first key-value pair of the reversed object.
+         *
+         * The returned iterator follows the iterator invalidation rules of the underlying vector.
+         *
+         * Complexity: constant.
+         */
+        const_reverse_iterator rbegin() const noexcept { return vector.rbegin(); }
+        reverse_iterator rbegin() noexcept { return vector.rbegin(); }
+
+        /**
+         * Returns an iterator to the past-the-last key-value pair of the reversed object.
+         *
+         * The returned iterator follows the iterator invalidation rules of the underlying vector.
+         *
+         * Complexity: constant.
+         */
+        const_reverse_iterator rend() const noexcept { return vector.rend(); }
+        reverse_iterator rend() noexcept { return vector.rend(); }
+
+        /**
+         * Removes all key-value pairs from the object.
+         *
+         * Complexity: linear in number of elements.
+         */
+        void clear() noexcept { vector.clear(); }
+
+        /**
+         * Returns whether the object is empty.
+         *
+         * Complexity: constant.
+         */
+        bool empty() const noexcept { return vector.empty(); }
+
+        /**
+         * Returns the size of the object.
+         *
+         * Complexity: constant.
+         */
+        size_type size() const noexcept { return vector.size(); }
+
+        /**
+         * Increases the capacity of the underlying vector to at least new_cap.
+         *
+         * Complexity: at most linear in number of elements.
+         */
+        void reserve(size_type new_cap) { vector.reserve(new_cap); }
+
+        /**
+         * Returns a reference to the first value associated with the key,
+         * or NullUniValue if the key does not exist.
+         *
+         * The returned reference follows the iterator invalidation rules of the underlying vector.
+         *
+         * Complexity: linear in number of elements.
+         *
+         * If you want to distinguish between null values and missing keys, please use locate() instead.
+         */
+        const UniValue& operator[](const std::string& key) const noexcept;
+
+        /**
+         * Returns a reference to the value at the numeric index (regardless of key),
+         * or NullUniValue if index >= object size.
+         *
+         * The returned reference follows the iterator invalidation rules of the underlying vector.
+         *
+         * Complexity: constant.
+         *
+         * To access the first or last value, consider using front() or back() instead.
+         * If you want an exception thrown on missing indices, please use at() instead.
+         */
+        const UniValue& operator[](size_type index) const noexcept;
+
+        /**
+         * Returns a pointer to the first value associated with the key,
+         * or nullptr if the key does not exist.
+         *
+         * The returned pointer follows the iterator invalidation rules of the underlying vector.
+         *
+         * Complexity: linear in the number of elements.
+         *
+         * If you want to treat missing keys as null values, please use the [] operator instead.
+         * If you want an exception thrown on missing keys, please use at() instead.
+         */
+        const UniValue* locate(const std::string& key) const noexcept;
+        UniValue* locate(const std::string& key) noexcept;
+
+        /**
+         * Returns a reference to the first value associated with the key,
+         * or throws std::out_of_range if the key does not exist.
+         *
+         * The returned reference follows the iterator invalidation rules of the underlying vector.
+         *
+         * Complexity: linear in number of elements.
+         *
+         * If you don't want an exception thrown, please use locate() or the [] operator instead.
+         */
+        const UniValue& at(const std::string& key) const;
+        UniValue& at(const std::string& key);
+
+        /**
+         * Returns a reference to the value at the numeric index (regardless of key),
+         * or throws std::out_of_range if index >= object size.
+         *
+         * The returned reference follows the iterator invalidation rules of the underlying vector.
+         *
+         * Complexity: constant.
+         *
+         * If you don't want an exception thrown, please use the [] operator instead.
+         */
+        const UniValue& at(size_type index) const;
+        UniValue& at(size_type index);
+
+        /**
+         * Returns a reference to the first value (regardless of key),
+         * or NullUniValue if the object is empty.
+         *
+         * The returned reference follows the iterator invalidation rules of the underlying vector.
+         *
+         * Complexity: constant.
+         */
+        const UniValue& front() const noexcept;
+
+        /**
+         * Returns a reference to the last value (regardless of key),
+         * or NullUniValue if the object is empty.
+         *
+         * The returned reference follows the iterator invalidation rules of the underlying vector.
+         *
+         * Complexity: constant.
+         */
+        const UniValue& back() const noexcept;
+
+        /**
+         * Pushes the key-value pair onto the end of the object.
+         *
+         * Be aware that this method appends the new key-value pair regardless of whether the key already exists.
+         * If you want to avoid duplicate keys, use locate() and check its result before calling push_back().
+         * You can use the return value of locate() to update the existing value associated with the key, if any.
+         *
+         * Complexity: amortized constant (or constant if properly reserve()d).
+         */
+        void push_back(const value_type& entry) { vector.push_back(entry); }
+        void push_back(value_type&& entry) { vector.push_back(std::move(entry)); }
+
+        /**
+         * Constructs a key-value pair in-place at the end of the object.
+         *
+         * Be aware that this method appends the new key-value pair regardless of whether the key already exists.
+         * If you want to avoid duplicate keys, use locate() and check its result before calling emplace_back().
+         * You can use the return value of locate() to update the existing value associated with the key, if any.
+         *
+         * Complexity: amortized constant (or constant if properly reserve()d).
+         */
+        template<class... Args>
+        void emplace_back(Args&&... args) { vector.emplace_back(std::forward<Args>(args)...); }
+
+        /**
+         * Removes the key-value pairs in the range [first, last).
+         * Returns the iterator following the last removed key-value pair.
+         *
+         * Complexity: linear in the number of elements removed and linear in the number of elements after those.
+         */
+        iterator erase(const_iterator first, const_iterator last) { return vector.erase(first, last); }
+
+        /**
+         * Returns whether the objects contain equal data.
+         * Two objects are not considered equal if elements are ordered differently.
+         *
+         * Complexity: linear in the amount of data to compare.
+         */
+        bool operator==(const Object& other) const noexcept { return vector == other.vector; }
+
+        /**
+         * Returns whether the objects contain unequal data.
+         * Two objects are not considered equal if elements are ordered differently.
+         *
+         * Complexity: linear in the amount of data to compare.
+         */
+        bool operator!=(const Object& other) const noexcept { return !(*this == other); }
+    };
+
+    class Array {
+
+    public:
+        using value_type = UniValue;
+
+    private:
+        using Vector = std::vector<value_type>;
+        Vector vector;
+
+    public:
+        using size_type = Vector::size_type;
+        using iterator = Vector::iterator;
+        using const_iterator = Vector::const_iterator;
+        using reverse_iterator = Vector::reverse_iterator;
+        using const_reverse_iterator = Vector::const_reverse_iterator;
+
+        /**
+         * Returns an iterator to the first value of the array.
+         *
+         * The returned iterator follows the iterator invalidation rules of the underlying vector.
+         *
+         * Complexity: constant.
+         */
+        const_iterator begin() const noexcept { return vector.begin(); }
+        iterator begin() noexcept { return vector.begin(); }
+
+        /**
+         * Returns an iterator to the past-the-last value of the array.
+         *
+         * The returned iterator follows the iterator invalidation rules of the underlying vector.
+         *
+         * Complexity: constant.
+         */
+        const_iterator end() const noexcept { return vector.end(); }
+        iterator end() noexcept { return vector.end(); }
+
+        /**
+         * Returns an iterator to the first value of the reversed array.
+         *
+         * The returned iterator follows the iterator invalidation rules of the underlying vector.
+         *
+         * Complexity: constant.
+         */
+        const_reverse_iterator rbegin() const noexcept { return vector.rbegin(); }
+        reverse_iterator rbegin() noexcept { return vector.rbegin(); }
+
+        /**
+         * Returns an iterator to the past-the-last value of the reversed array.
+         *
+         * The returned iterator follows the iterator invalidation rules of the underlying vector.
+         *
+         * Complexity: constant.
+         */
+        const_reverse_iterator rend() const noexcept { return vector.rend(); }
+        reverse_iterator rend() noexcept { return vector.rend(); }
+
+        /**
+         * Removes all values from the array.
+         *
+         * Complexity: linear in number of elements.
+         */
+        void clear() noexcept { vector.clear(); }
+
+        /**
+         * Returns whether the array is empty.
+         *
+         * Complexity: constant.
+         */
+        bool empty() const noexcept { return vector.empty(); }
+
+        /**
+         * Returns the size of the array.
+         *
+         * Complexity: constant.
+         */
+        size_type size() const noexcept { return vector.size(); }
+
+        /**
+         * Increases the capacity of the underlying vector to at least new_cap.
+         *
+         * Complexity: at most linear in number of elements.
+         */
+        void reserve(size_type new_cap) { vector.reserve(new_cap); }
+
+        /**
+         * Returns a reference to the value at the index,
+         * or NullUniValue if index >= array size.
+         *
+         * The returned reference follows the iterator invalidation rules of the underlying vector.
+         *
+         * Complexity: constant.
+         *
+         * To access the first or last value, consider using front() or back() instead.
+         * If you want an exception thrown on missing indices, please use at() instead.
+         */
+        const UniValue& operator[](size_type index) const noexcept;
+
+        /**
+         * Returns a reference to the value at the index,
+         * or throws std::out_of_range if index >= array size.
+         *
+         * The returned reference follows the iterator invalidation rules of the underlying vector.
+         *
+         * Complexity: constant.
+         *
+         * If you don't want an exception thrown, please use the [] operator instead.
+         */
+        const UniValue& at(size_type index) const;
+        UniValue& at(size_type index);
+
+        /**
+         * Returns a reference to the first value,
+         * or NullUniValue if the array is empty.
+         *
+         * The returned reference follows the iterator invalidation rules of the underlying vector.
+         *
+         * Complexity: constant.
+         */
+        const UniValue& front() const noexcept;
+
+        /**
+         * Returns a reference to the last value,
+         * or NullUniValue if the array is empty.
+         *
+         * The returned reference follows the iterator invalidation rules of the underlying vector.
+         *
+         * Complexity: constant.
+         */
+        const UniValue& back() const noexcept;
+
+        /**
+         * Pushes the value onto the end of the array.
+         *
+         * Complexity: amortized constant (or constant if properly reserve()d).
+         */
+        void push_back(const value_type& entry) { vector.push_back(entry); }
+        void push_back(value_type&& entry) { vector.push_back(std::move(entry)); }
+
+        /**
+         * Constructs a value in-place at the end of the array.
+         *
+         * Complexity: amortized constant (or constant if properly reserve()d).
+         */
+        template<class... Args>
+        void emplace_back(Args&&... args) { vector.emplace_back(std::forward<Args>(args)...); }
+
+        /**
+         * Removes the values in the range [first, last).
+         * Returns the iterator following the last removed value.
+         *
+         * Complexity: linear in the number of elements removed and linear in the number of elements after those.
+         */
+        iterator erase(const_iterator first, const_iterator last) { return vector.erase(first, last); }
+
+        /**
+         * Returns whether the arrays contain equal data.
+         *
+         * Complexity: linear in the amount of data to compare.
+         */
+        bool operator==(const Array& other) const noexcept { return vector == other.vector; }
+
+        /**
+         * Returns whether the arrays contain unequal data.
+         *
+         * Complexity: linear in the amount of data to compare.
+         */
+        bool operator!=(const Array& other) const noexcept { return !(*this == other); }
+    };
+
+    using size_type = Object::size_type;
+    static_assert(std::is_same<size_type, Array::size_type>::value,
+                  "UniValue::size_type should be equal to both UniValue::Object::size_type and UniValue::Array::size_type.");
 
     UniValue(UniValue::VType initialType = VNULL) noexcept : typ(initialType) {}
     UniValue(UniValue::VType initialType, const std::string& initialStr)
@@ -88,7 +479,7 @@ public:
      *
      * Compatible with the upstream UniValue API.
      */
-    size_t size() const noexcept {
+    size_type size() const noexcept {
         switch (typ) {
         case VOBJ:
             return entries.size();
@@ -100,6 +491,9 @@ public:
     }
 
     /**
+     * DEPRECATED.
+     * Planned to be replaced with UniValue::Object::reserve() or UniValue::Array::reserve().
+     *
      * VOBJ/VARR: Increases the capacity of the underlying vector to at least n.
      * Other types: Does nothing.
      *
@@ -107,7 +501,7 @@ public:
      *
      * Compatible with the upstream UniValue API for VOBJ/VARR but does not implement upstream behavior for other types.
      */
-    void reserve(size_t n);
+    void reserve(size_type n);
 
     constexpr bool getBool() const noexcept { return isTrue(); }
 
@@ -141,9 +535,9 @@ public:
      * Compatible with the upstream UniValue API.
      *
      * To access the first or last value, consider using front() or back() instead.
-     * If you want an exception thrown on missing keys, please use at() instead.
+     * If you want an exception thrown on missing indices, please use at() instead.
      */
-    const UniValue& operator[](size_t index) const noexcept;
+    const UniValue& operator[](size_type index) const noexcept;
 
     /**
      * Returns whether the UniValues are of the same type and contain equal data.
@@ -243,8 +637,8 @@ public:
      *
      * If you don't want an exception thrown, please use the [] operator instead.
      */
-    const UniValue& at(size_t index) const;
-    UniValue& at(size_t index);
+    const UniValue& at(size_type index) const;
+    UniValue& at(size_type index);
 
     constexpr bool isNull() const noexcept { return typ == VNULL; }
     constexpr bool isTrue() const noexcept { return typ == VBOOL && val == boolTrueVal; }
@@ -255,11 +649,21 @@ public:
     constexpr bool isArray() const noexcept { return typ == VARR; }
     constexpr bool isObject() const noexcept { return typ == VOBJ; }
 
+    /*
+     * DEPRECATED.
+     * Planned to be replaced with UniValue::Array::push_back() or UniValue::Array::emplace_back().
+     */
     void push_back(UniValue&& val);
     void push_back(const UniValue& val);
 
-    // checkForDupes=true is slower, but does a linear search through the keys to overwrite existing keys.
-    // checkForDupes=false is faster, and will always append the new entry at the end (even if `key` exists).
+    /*
+     * DEPRECATED.
+     * Planned to be replaced with UniValue::Object::push_back() or UniValue::Object::emplace_back(),
+     * possibly combined with UniValue::Object::locate().
+     *
+     * checkForDupes=true is slower, but does a linear search through the keys to overwrite existing keys.
+     * checkForDupes=false is faster, and will always append the new entry at the end (even if `key` exists).
+     */
     void pushKV(const std::string& key, const UniValue& val, bool checkForDupes = true);
     void pushKV(const std::string& key, UniValue&& val, bool checkForDupes = true);
     void pushKV(std::string&& key, const UniValue& val, bool checkForDupes = true);
