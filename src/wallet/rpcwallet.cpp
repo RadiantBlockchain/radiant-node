@@ -1711,11 +1711,11 @@ UniValue listtransactions(const Config &config, const JSONRPCRequest &request) {
         nCount = ret.size() - nFrom;
     }
 
-    std::vector<UniValue> arrTmp = ret.takeArrayValues();
+    UniValue::Array arrTmp = ret.takeArrayValues();
 
-    std::vector<UniValue>::iterator first = arrTmp.begin();
+    auto first = arrTmp.begin();
     std::advance(first, nFrom);
-    std::vector<UniValue>::iterator last = arrTmp.begin();
+    auto last = arrTmp.begin();
     std::advance(last, nFrom + nCount);
 
     if (last != arrTmp.end()) {

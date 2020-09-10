@@ -321,15 +321,15 @@ bool UniValue::read(const char *raw, size_t size)
             } else {
                 UniValue *top = stack.back();
                 if (top->typ == VOBJ) {
-                    auto& entry = top->entries.back();
+                    auto& value = top->entries.rbegin()->second;
                     if (utyp == VOBJ)
-                        entry.second.setObject();
+                        value.setObject();
                     else
-                        entry.second.setArray();
-                    stack.push_back(&entry.second);
+                        value.setArray();
+                    stack.push_back(&value);
                 } else {
                     top->values.emplace_back(utyp);
-                    stack.push_back(&top->values.back());
+                    stack.push_back(&*top->values.rbegin());
                 }
             }
 
@@ -408,7 +408,7 @@ bool UniValue::read(const char *raw, size_t size)
 
             UniValue *top = stack.back();
             if (top->typ == VOBJ) {
-                top->entries.back().second = std::move(tmpVal);
+                top->entries.rbegin()->second = std::move(tmpVal);
             } else {
                 top->values.emplace_back(std::move(tmpVal));
             }
@@ -426,7 +426,7 @@ bool UniValue::read(const char *raw, size_t size)
 
             UniValue *top = stack.back();
             if (top->typ == VOBJ) {
-                top->entries.back().second = std::move(tmpVal);
+                top->entries.rbegin()->second = std::move(tmpVal);
             } else {
                 top->values.emplace_back(std::move(tmpVal));
             }
@@ -451,7 +451,7 @@ bool UniValue::read(const char *raw, size_t size)
                 }
                 UniValue *top = stack.back();
                 if (top->typ == VOBJ) {
-                    top->entries.back().second = std::move(tmpVal);
+                    top->entries.rbegin()->second = std::move(tmpVal);
                 } else {
                     top->values.emplace_back(std::move(tmpVal));
                 }
