@@ -73,7 +73,7 @@ const UniValue& UniValue::Object::at(size_type index) const
         return vector[index].second;
     }
     throw std::out_of_range("Index " + std::to_string(index) + " out of range in JSON object of length " +
-                            std::to_string(vector.size()) + ".");
+                            std::to_string(vector.size()));
 }
 UniValue& UniValue::Object::at(size_type index)
 {
@@ -81,7 +81,7 @@ UniValue& UniValue::Object::at(size_type index)
         return vector[index].second;
     }
     throw std::out_of_range("Index " + std::to_string(index) + " out of range in JSON object of length " +
-                            std::to_string(vector.size()) + ".");
+                            std::to_string(vector.size()));
 }
 
 const UniValue& UniValue::Object::front() const noexcept
@@ -114,7 +114,7 @@ const UniValue& UniValue::Array::at(size_type index) const
         return vector[index];
     }
     throw std::out_of_range("Index " + std::to_string(index) + " out of range in JSON array of length " +
-                            std::to_string(vector.size()) + ".");
+                            std::to_string(vector.size()));
 }
 UniValue& UniValue::Array::at(size_type index)
 {
@@ -122,7 +122,7 @@ UniValue& UniValue::Array::at(size_type index)
         return vector[index];
     }
     throw std::out_of_range("Index " + std::to_string(index) + " out of range in JSON array of length " +
-                            std::to_string(vector.size()) + ".");
+                            std::to_string(vector.size()));
 }
 
 const UniValue& UniValue::Array::front() const noexcept
@@ -409,13 +409,15 @@ const UniValue& UniValue::at(const std::string& key) const {
     if (typ == VOBJ) {
         return entries.at(key);
     }
-    throw std::domain_error(std::string("Cannot look up key in JSON ") + uvTypeName(typ) + ": " + key);
+    throw std::domain_error(std::string("Cannot look up keys in JSON ") + uvTypeName(typ) +
+                                        ", expected object with key: " + key);
 }
 UniValue& UniValue::at(const std::string& key) {
     if (typ == VOBJ) {
         return entries.at(key);
     }
-    throw std::domain_error(std::string("Cannot look up key in JSON ") + uvTypeName(typ) + ": " + key);
+    throw std::domain_error(std::string("Cannot look up keys in JSON ") + uvTypeName(typ) +
+                                        ", expected object with key: " + key);
 }
 
 const UniValue& UniValue::at(size_type index) const
@@ -426,7 +428,8 @@ const UniValue& UniValue::at(size_type index) const
     case VARR:
         return values.at(index);
     default:
-        throw std::domain_error("Cannot look up index " + std::to_string(index) + " in JSON " + uvTypeName(typ) + ".");
+        throw std::domain_error(std::string("Cannot look up indices in JSON ") + uvTypeName(typ) +
+                                ", expected array or object larger than " + std::to_string(index) + " elements");
     }
 }
 UniValue& UniValue::at(size_type index)
@@ -437,7 +440,8 @@ UniValue& UniValue::at(size_type index)
     case VARR:
         return values.at(index);
     default:
-        throw std::domain_error("Cannot look up index " + std::to_string(index) + " in JSON " + uvTypeName(typ) + ".");
+        throw std::domain_error(std::string("Cannot look up indices in JSON ") + uvTypeName(typ) +
+                                ", expected array or object larger than " + std::to_string(index) + " elements");
     }
 }
 
