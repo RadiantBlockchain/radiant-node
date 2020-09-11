@@ -754,18 +754,6 @@ public:
     const Array& getArrayValues() const;
     Array& getArrayValues();
 
-    /**
-     * VARR: Changes the UniValue into an empty array and returns the old array contents as a vector.
-     * Other types: Throws std::runtime_error.
-     *
-     * Complexity: constant.
-     *
-     * This is a Bitcoin Cash Node extension of the UniValue API.
-     *
-     * If you do not want to make the array empty, please use getArrayValues() instead.
-     */
-    Array takeArrayValues();
-
     bool get_bool() const;
     const std::string& get_str() const;
     int get_int() const;

@@ -1437,7 +1437,7 @@ UniValue importmulti(const Config &, const JSONRPCRequest &mainRequest) {
     int64_t now = 0;
     bool fRunScan = false;
     int64_t nLowestTimestamp = 0;
-    UniValue response(UniValue::VARR);
+    UniValue::Array response;
     {
         auto locked_chain = pwallet->chain().lock();
         LOCK(pwallet->cs_wallet);
@@ -1491,7 +1491,7 @@ UniValue importmulti(const Config &, const JSONRPCRequest &mainRequest) {
             throw JSONRPCError(RPC_MISC_ERROR, "Rescan aborted by user.");
         }
         if (scannedTime > nLowestTimestamp) {
-            UniValue::Array results = response.takeArrayValues(); // cheap constant-time move
+            UniValue::Array results = std::move(response); // cheap constant-time move
             // response is now an empty array after the above call
             response.reserve(requests.size());
             assert(results.size() == requests.size());

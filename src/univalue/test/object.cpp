@@ -613,9 +613,8 @@ BOOST_AUTO_TEST_CASE(univalue_object)
     obj.pushKV("name", "foo bar");
     BOOST_CHECK_EQUAL(obj["name"].getValStr(), "foo bar");
 
-    // test takeArrayValues(), front() / back() as well as operator==
+    // test front() / back() as well as operator==
     UniValue arr{UniValue::VNUM}; // this is intentional.
-    BOOST_CHECK_THROW(arr.takeArrayValues(), std::runtime_error); // should throw if !array
     BOOST_CHECK_EQUAL(&arr.front(), &NullUniValue); // should return the NullUniValue if !array
     UniValue::Array vals;
     vals.emplace_back("foo");
@@ -642,10 +641,6 @@ BOOST_AUTO_TEST_CASE(univalue_object)
     BOOST_CHECK_EQUAL(arr.front(), valsExpected.front());
     BOOST_CHECK_EQUAL(arr.back(), valsExpected.back());
     BOOST_CHECK(arr.getArrayValues() == valsExpected);
-    auto vals2 = arr.takeArrayValues(); // take the values back
-    BOOST_CHECK(arr.empty());
-    BOOST_CHECK(!vals2.empty());
-    BOOST_CHECK_EQUAL(vals2, valsExpected);
 }
 
 static const char *json1 =

@@ -1481,13 +1481,13 @@ static void MaybePushAddress(UniValue &entry, const CTxDestination &dest) {
  * @param  nMinDepth      The minimum confirmation depth.
  * @param  fLong          Whether to include the JSON version of the
  * transaction.
- * @param  ret            The UniValue into which the result is stored.
+ * @param  ret            The UniValue::Array into which the result is stored.
  * @param  filter_ismine  The "is mine" filter flags.
  * @param  filter_label   Optional label string to filter incoming transactions.
  */
 static void ListTransactions(interfaces::Chain::Lock &locked_chain,
                              CWallet *const pwallet, const CWalletTx &wtx,
-                             int nMinDepth, bool fLong, UniValue &ret,
+                             int nMinDepth, bool fLong, UniValue::Array &ret,
                              const isminefilter &filter_ismine,
                              const std::string *filter_label) {
     Amount nFee;
@@ -1682,7 +1682,7 @@ UniValue listtransactions(const Config &config, const JSONRPCRequest &request) {
     if (nFrom < 0) {
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Negative from");
     }
-    UniValue ret(UniValue::VARR);
+    UniValue::Array ret;
 
     {
         auto locked_chain = pwallet->chain().lock();
@@ -1711,24 +1711,14 @@ UniValue listtransactions(const Config &config, const JSONRPCRequest &request) {
         nCount = ret.size() - nFrom;
     }
 
-    UniValue::Array arrTmp = ret.takeArrayValues();
+    auto first = ret.begin() + nFrom;
+    auto last = first + nCount;
 
-    auto first = arrTmp.begin();
-    std::advance(first, nFrom);
-    auto last = arrTmp.begin();
-    std::advance(last, nFrom + nCount);
-
-    if (last != arrTmp.end()) {
-        arrTmp.erase(last, arrTmp.end());
-    }
-    if (first != arrTmp.begin()) {
-        arrTmp.erase(arrTmp.begin(), first);
-    }
+    ret.erase(last, ret.end());
+    ret.erase(ret.begin(), first);
 
     // Return oldest to newest
-    std::reverse(arrTmp.begin(), arrTmp.end());
-
-    ret.setArray(std::move(arrTmp));
+    std::reverse(ret.begin(), ret.end());
 
     return ret;
 }
@@ -1887,7 +1877,7 @@ static UniValue listsinceblock(const Config &config,
     const Optional<int> tip_height = locked_chain->getHeight();
     int depth = tip_height && height ? (1 + *tip_height - *height) : -1;
 
-    UniValue transactions(UniValue::VARR);
+    UniValue::Array transactions;
 
     for (const std::pair<const TxId, CWalletTx> &pairWtx : pwallet->mapWallet) {
         CWalletTx tx = pairWtx.second;
@@ -1900,7 +1890,7 @@ static UniValue listsinceblock(const Config &config,
 
     // when a reorg'd block is requested, we also list any relevant transactions
     // in the blocks of the chain that was detached
-    UniValue removed(UniValue::VARR);
+    UniValue::Array removed;
     while (include_removed && altheight && *altheight > *height) {
         CBlock block;
         if (!pwallet->chain().findBlock(blockId, &block) || block.IsNull()) {
@@ -2063,7 +2053,7 @@ static UniValue gettransaction(const Config &config,
 
     WalletTxToJSON(pwallet->chain(), *locked_chain, wtx, entry);
 
-    UniValue details(UniValue::VARR);
+    UniValue::Array details;
     ListTransactions(*locked_chain, pwallet, wtx, 0, false, details, filter,
                      nullptr /* filter_label */);
     entry.pushKV("details", details);

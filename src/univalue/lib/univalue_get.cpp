@@ -101,14 +101,6 @@ UniValue::Array& UniValue::getArrayValues()
     return values;
 }
 
-UniValue::Array UniValue::takeArrayValues()
-{
-    if (!isArray())
-        throw std::runtime_error("JSON value is not an array as expected");
-    // after move, our values vector is guaranteed to be empty()
-    return std::move(values);
-}
-
 bool UniValue::get_bool() const
 {
     if (!isBool())
