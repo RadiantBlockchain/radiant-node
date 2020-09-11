@@ -153,16 +153,28 @@ double UniValue::get_real() const
     return retval;
 }
 
-const UniValue& UniValue::get_obj() const
+const UniValue::Object& UniValue::get_obj() const
 {
     if (!isObject())
         throw std::runtime_error("JSON value is not an object as expected");
-    return *this;
+    return entries;
+}
+UniValue::Object& UniValue::get_obj()
+{
+    if (!isObject())
+        throw std::runtime_error("JSON value is not an object as expected");
+    return entries;
 }
 
-const UniValue& UniValue::get_array() const
+const UniValue::Array& UniValue::get_array() const
 {
     if (!isArray())
         throw std::runtime_error("JSON value is not an array as expected");
-    return *this;
+    return values;
+}
+UniValue::Array& UniValue::get_array()
+{
+    if (!isArray())
+        throw std::runtime_error("JSON value is not an array as expected");
+    return values;
 }

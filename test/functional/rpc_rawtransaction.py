@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # Copyright (c) 2014-2019 The Bitcoin Core developers
+# Copyright (c) 2020 The Bitcoin developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Test the rawtranscation RPCs.
@@ -100,13 +101,10 @@ class RawTransactionsTest(BitcoinTestFramework):
         txid = '1d1d4e24ed99057e84c3f80fd8fbec79ed9e1acee37da269356ecea000000000'
         assert_raises_rpc_error(-3, "Expected type array",
                                 self.nodes[0].createrawtransaction, 'foo', {})
-        assert_raises_rpc_error(-1, "JSON value is not an object as expected",
+        assert_raises_rpc_error(-1, "Cannot look up keys in JSON string, expected object with key: txid",
                                 self.nodes[0].createrawtransaction, ['foo'], {})
-        assert_raises_rpc_error(-1,
-                                "JSON value is not a string as expected",
-                                self.nodes[0].createrawtransaction,
-                                [{}],
-                                {})
+        assert_raises_rpc_error(-1, "Key not found in JSON object: txid",
+                                self.nodes[0].createrawtransaction, [{}], {})
         assert_raises_rpc_error(-8,
                                 "txid must be of length 64 (not 3, for 'foo')",
                                 self.nodes[0].createrawtransaction,

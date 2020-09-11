@@ -271,10 +271,10 @@ extern CRPCTable tableRPC;
 /**
  * Utilities: convert hex-encoded values (throws error if not hex).
  */
-extern uint256 ParseHashV(const UniValue &v, std::string strName);
-extern uint256 ParseHashO(const UniValue &o, std::string strKey);
-extern std::vector<uint8_t> ParseHexV(const UniValue &v, std::string strName);
-extern std::vector<uint8_t> ParseHexO(const UniValue &o, std::string strKey);
+extern uint256 ParseHashV(const UniValue &v, const std::string& strName);
+extern uint256 ParseHashO(const UniValue &o, const std::string& strKey);
+extern std::vector<uint8_t> ParseHexV(const UniValue &v, const std::string& strName);
+extern std::vector<uint8_t> ParseHexO(const UniValue &o, const std::string& strKey);
 
 extern Amount AmountFromValue(const UniValue &value);
 extern std::string HelpExampleCli(const std::string &methodname,

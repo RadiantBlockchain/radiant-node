@@ -196,7 +196,7 @@ Amount AmountFromValue(const UniValue &value) {
     return amt;
 }
 
-uint256 ParseHashV(const UniValue &v, std::string strName) {
+uint256 ParseHashV(const UniValue &v, const std::string& strName) {
     std::string strHex(v.get_str());
     if (64 != strHex.length()) {
         throw JSONRPCError(
@@ -212,10 +212,10 @@ uint256 ParseHashV(const UniValue &v, std::string strName) {
     }
     return uint256S(strHex);
 }
-uint256 ParseHashO(const UniValue &o, std::string strKey) {
-    return ParseHashV(o[strKey], strKey);
+uint256 ParseHashO(const UniValue &o, const std::string& strKey) {
+    return ParseHashV(o.at(strKey), strKey);
 }
-std::vector<uint8_t> ParseHexV(const UniValue &v, std::string strName) {
+std::vector<uint8_t> ParseHexV(const UniValue &v, const std::string& strName) {
     std::string strHex;
     if (v.isStr()) {
         strHex = v.get_str();
@@ -228,8 +228,8 @@ std::vector<uint8_t> ParseHexV(const UniValue &v, std::string strName) {
 
     return ParseHex(strHex);
 }
-std::vector<uint8_t> ParseHexO(const UniValue &o, std::string strKey) {
-    return ParseHexV(o[strKey], strKey);
+std::vector<uint8_t> ParseHexO(const UniValue &o, const std::string& strKey) {
+    return ParseHexV(o.at(strKey), strKey);
 }
 
 /**

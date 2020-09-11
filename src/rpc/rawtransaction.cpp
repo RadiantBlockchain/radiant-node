@@ -424,11 +424,6 @@ CMutableTransaction ConstructTransaction(const CChainParams &params,
             "Invalid parameter, arguments 1 and 2 must be non-null");
     }
 
-    UniValue inputs = inputs_in.get_array();
-    const bool outputs_is_obj = outputs_in.isObject();
-    UniValue outputs =
-        outputs_is_obj ? outputs_in.get_obj() : outputs_in.get_array();
-
     CMutableTransaction rawTx;
 
     if (!locktime.isNull()) {
@@ -441,9 +436,7 @@ CMutableTransaction ConstructTransaction(const CChainParams &params,
         rawTx.nLockTime = nLockTime;
     }
 
-    for (size_t idx = 0; idx < inputs.size(); idx++) {
-        const UniValue &input = inputs[idx];
-        const UniValue &o = input.get_obj();
+    for (const UniValue &o : inputs_in.get_array()) {
 
         TxId txid(ParseHashO(o, "txid"));
 
@@ -486,12 +479,16 @@ CMutableTransaction ConstructTransaction(const CChainParams &params,
     }
 
     std::set<CTxDestination> destinations;
-    if (!outputs_is_obj) {
+    UniValue::Object outputsConverted;
+    const UniValue::Object* outputs = &outputsConverted;
+    if (outputs_in.isObject()) {
+        // Point to the original dict
+        outputs = &outputs_in.get_obj();
+    } else {
         // Translate array of key-value pairs into dict
-        auto outputsArray = outputs.takeArrayValues();
-        outputs.setObject();
-        outputs.reserve(outputsArray.size());
-        for (UniValue& output : outputsArray) {
+        const UniValue::Array& outputsArray = outputs_in.get_array();
+        outputsConverted.reserve(outputsArray.size());
+        for (const UniValue& output : outputsArray) {
             if (!output.isObject()) {
                 throw JSONRPCError(RPC_INVALID_PARAMETER,
                                    "Invalid parameter, key-value pair not an "
@@ -505,10 +502,10 @@ CMutableTransaction ConstructTransaction(const CChainParams &params,
             auto& outputKV = *output.getObjectEntries().begin();
             // Allowing duplicate key insertions here is intentional.
             // Checking for duplicate keys would break functionality, constructing a transaction with missing outputs.
-            outputs.pushKV(std::move(outputKV.first), std::move(outputKV.second), false);
+            outputsConverted.emplace_back(outputKV.first, outputKV.second);
         }
     }
-    for (auto &entry : outputs.getObjectEntries()) {
+    for (auto &entry : *outputs) {
         if (entry.first == "data") {
             std::vector<uint8_t> data =
                 ParseHexV(entry.second.getValStr(), "Data");

@@ -771,8 +771,38 @@ public:
     int get_int() const;
     int64_t get_int64() const;
     double get_real() const;
-    const UniValue& get_obj() const;
-    const UniValue& get_array() const;
+
+    /**
+     * VOBJ: Returns a UniValue::Object reference to this value.
+     * Other types: Throws std::runtime_error.
+     *
+     * Destroying the object (e.g. destroying the UniValue wrapper or
+     * assigning a different type to it) invalidates the returned reference.
+     *
+     * Complexity: constant.
+     *
+     * Compatible with the upstream UniValue API,
+     * but with a different return type.
+     * Non-const overload is a Bitcoin Cash Node extension.
+     */
+    const Object& get_obj() const;
+    Object& get_obj();
+
+    /**
+     * VARR: Returns a UniValue::Array reference to this value.
+     * Other types: Throws std::runtime_error.
+     *
+     * Destroying the array (e.g. destroying the UniValue wrapper or
+     * assigning a different type to it) invalidates the returned reference.
+     *
+     * Complexity: constant.
+     *
+     * Compatible with the upstream UniValue API,
+     * but with a different return type.
+     * Non-const overload is a Bitcoin Cash Node extension.
+     */
+    const Array& get_array() const;
+    Array& get_array();
 
     constexpr enum VType type() const noexcept { return getType(); }
 };
