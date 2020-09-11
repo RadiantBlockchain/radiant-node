@@ -1,5 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -2460,8 +2461,7 @@ static UniValue scantxoutset(const Config &config,
         Amount total_in = Amount::zero();
 
         // loop through the scan objects
-        for (const UniValue &scanobject :
-             request.params[1].getArrayValues()) {
+        for (const UniValue &scanobject : request.params[1].get_array()) {
             std::string desc_str;
             int range = 1000;
             if (scanobject.isStr()) {

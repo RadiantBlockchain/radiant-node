@@ -88,19 +88,6 @@ UniValue::Object& UniValue::getObjectEntries()
     return entries;
 }
 
-const UniValue::Array& UniValue::getArrayValues() const
-{
-    if (!isArray())
-        throw std::runtime_error("JSON value is not an array as expected");
-    return values;
-}
-UniValue::Array& UniValue::getArrayValues()
-{
-    if (!isArray())
-        throw std::runtime_error("JSON value is not an array as expected");
-    return values;
-}
-
 bool UniValue::get_bool() const
 {
     if (!isBool())

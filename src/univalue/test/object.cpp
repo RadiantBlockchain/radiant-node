@@ -120,8 +120,7 @@ BOOST_AUTO_TEST_CASE(univalue_typecheck)
 
     UniValue v5;
     BOOST_CHECK(v5.read("[true, 10]"));
-    BOOST_CHECK_NO_THROW(v5.get_array());
-    UniValue::Array vals = v5.getArrayValues();
+    UniValue::Array vals = v5.get_array();
     BOOST_CHECK_THROW(vals[0].get_int(), std::runtime_error);
     BOOST_CHECK_EQUAL(vals[0].get_bool(), true);
 
@@ -355,7 +354,7 @@ BOOST_AUTO_TEST_CASE(univalue_array)
     UniValue v((int64_t)1023LL);
     arr.push_back(v);
 
-    arr.getArrayValues().emplace_back("zippy");
+    arr.get_array().emplace_back("zippy");
 
     const char *s = "pippy";
     arr.push_back(s);
@@ -369,13 +368,13 @@ BOOST_AUTO_TEST_CASE(univalue_array)
 
     for (UniValue& thing : vec) {
         // emplace with copy constructor of UniValue
-        arr.getArrayValues().emplace_back(thing);
+        arr.get_array().emplace_back(thing);
     }
 
-    arr.getArrayValues().emplace_back((uint64_t) 400ULL);
-    arr.getArrayValues().push_back((int64_t) -400LL);
-    arr.getArrayValues().emplace_back((int) -401);
-    arr.getArrayValues().push_back(-40.1);
+    arr.get_array().emplace_back((uint64_t) 400ULL);
+    arr.get_array().push_back((int64_t) -400LL);
+    arr.get_array().emplace_back((int) -401);
+    arr.get_array().push_back(-40.1);
 
     BOOST_CHECK_EQUAL(arr.empty(), false);
     BOOST_CHECK_EQUAL(arr.size(), 9);
@@ -405,10 +404,10 @@ BOOST_AUTO_TEST_CASE(univalue_array)
     BOOST_CHECK_THROW(arr.at("nyuknyuknyuk"), std::domain_error);
 
     // erase zippy and pippy
-    auto after = arr.getArrayValues().erase(arr.getArrayValues().begin() + 1, arr.getArrayValues().begin() + 3);
+    auto after = arr.get_array().erase(arr.get_array().begin() + 1, arr.get_array().begin() + 3);
 
-    BOOST_CHECK_EQUAL(arr.getArrayValues().empty(), false);
-    BOOST_CHECK_EQUAL(arr.getArrayValues().size(), 7);
+    BOOST_CHECK_EQUAL(arr.get_array().empty(), false);
+    BOOST_CHECK_EQUAL(arr.get_array().size(), 7);
     BOOST_CHECK_EQUAL(arr.at(0).getValStr(), "1023");
     BOOST_CHECK_EQUAL(arr.at(1).getValStr(), "boing");
     BOOST_CHECK_EQUAL(*after, "boing");
@@ -640,7 +639,7 @@ BOOST_AUTO_TEST_CASE(univalue_object)
     BOOST_CHECK(arr != UniValue{1.234}); // check operator== for differing types
     BOOST_CHECK_EQUAL(arr.front(), valsExpected.front());
     BOOST_CHECK_EQUAL(arr.back(), valsExpected.back());
-    BOOST_CHECK(arr.getArrayValues() == valsExpected);
+    BOOST_CHECK(arr.get_array() == valsExpected);
 }
 
 static const char *json1 =

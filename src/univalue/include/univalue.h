@@ -739,21 +739,6 @@ public:
     const Object& getObjectEntries() const;
     Object& getObjectEntries();
 
-    /**
-     * VARR: Returns a reference to the underlying vector of values.
-     * Other types: Throws std::runtime_error.
-     *
-     * Destroying the array invalidates the returned reference.
-     *
-     * Complexity: constant.
-     *
-     * This is a Bitcoin Cash Node extension of the UniValue API.
-     *
-     * If you want to clear the array after using this method, consider using takeArrayValues() instead.
-     */
-    const Array& getArrayValues() const;
-    Array& getArrayValues();
-
     bool get_bool() const;
     const std::string& get_str() const;
     int get_int() const;

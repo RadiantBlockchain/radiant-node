@@ -1414,7 +1414,7 @@ UniValue importmulti(const Config &, const JSONRPCRequest &mainRequest) {
 
     RPCTypeCheck(mainRequest.params, {UniValue::VARR, UniValue::VOBJ});
 
-    const UniValue &requests = mainRequest.params[0];
+    const UniValue::Array &requests = mainRequest.params[0].get_array();
 
     // Default options
     bool fRescan = true;
@@ -1447,7 +1447,7 @@ UniValue importmulti(const Config &, const JSONRPCRequest &mainRequest) {
         const Optional<int> tip_height = locked_chain->getHeight();
         now =
             tip_height ? locked_chain->getBlockMedianTimePast(*tip_height) : 0;
-        for (auto &data : requests.getArrayValues()) {
+        for (auto &data : requests) {
             GetImportTimestamp(data, now);
         }
 
@@ -1461,7 +1461,7 @@ UniValue importmulti(const Config &, const JSONRPCRequest &mainRequest) {
 
         response.reserve(requests.size());
 
-        for (const UniValue &data : requests.getArrayValues()) {
+        for (const UniValue &data : requests) {
             const int64_t timestamp =  std::max(GetImportTimestamp(data, now), minimumTimestamp);
             response.push_back( ProcessImport(pwallet, data, timestamp) );
 
@@ -1496,7 +1496,7 @@ UniValue importmulti(const Config &, const JSONRPCRequest &mainRequest) {
             response.reserve(requests.size());
             assert(results.size() == requests.size());
             size_t i = 0;
-            for (const UniValue &request : requests.getArrayValues()) {
+            for (const UniValue &request : requests) {
                 // If key creation date is within the successfully scanned
                 // range, or if the import result already has an error set, let
                 // the result stand unmodified. Otherwise replace the result
