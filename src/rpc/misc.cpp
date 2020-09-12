@@ -1,5 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -59,16 +60,16 @@ static UniValue validateaddress(const Config &config,
     CTxDestination dest = DecodeDestination(request.params[0].get_str(), config.GetChainParams());
     const bool isValid = IsValidDestination(dest);
 
-    UniValue ret(UniValue::VOBJ);
-    ret.pushKV("isvalid", isValid, false);
+    UniValue::Object ret;
+    ret.emplace_back("isvalid", isValid);
 
     if (isValid) {
-        ret.pushKV("address", EncodeDestination(dest, config), false);
+        ret.emplace_back("address", EncodeDestination(dest, config));
 
         CScript scriptPubKey = GetScriptForDestination(dest);
-        ret.pushKV("scriptPubKey", HexStr(scriptPubKey.begin(), scriptPubKey.end()), false);
+        ret.emplace_back("scriptPubKey", HexStr(scriptPubKey.begin(), scriptPubKey.end()));
 
-        DescribeAddress(dest, ret.getObjectEntries());
+        DescribeAddress(dest, ret);
     }
     return ret;
 }

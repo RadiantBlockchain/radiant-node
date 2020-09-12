@@ -115,7 +115,6 @@ BOOST_AUTO_TEST_CASE(univalue_typecheck)
     BOOST_CHECK_THROW(v4.get_str(), std::runtime_error);
     BOOST_CHECK_EQUAL(v4.get_real(), 1000);
     BOOST_CHECK_THROW(v4.get_array(), std::runtime_error);
-    BOOST_CHECK_THROW(v4.getObjectEntries(), std::runtime_error);
     BOOST_CHECK_THROW(v4.get_obj(), std::runtime_error);
 
     UniValue v5;
@@ -467,27 +466,27 @@ BOOST_AUTO_TEST_CASE(univalue_object)
     BOOST_CHECK_EQUAL(obj.size(), 8);
 
     strKey = "spoon";
-    obj.getObjectEntries().emplace_back(strKey, false);
-    obj.getObjectEntries().push_back(std::make_pair(strKey, "just another spoon, but not the first one"));
-    obj.getObjectEntries().emplace_back(strKey, true);
-    obj.getObjectEntries().push_back(std::make_pair("spoon", "third spoon's a charm"));
-    obj.getObjectEntries().emplace_back("spoon", v);
+    obj.get_obj().emplace_back(strKey, false);
+    obj.get_obj().push_back(std::make_pair(strKey, "just another spoon, but not the first one"));
+    obj.get_obj().emplace_back(strKey, true);
+    obj.get_obj().push_back(std::make_pair("spoon", "third spoon's a charm"));
+    obj.get_obj().emplace_back("spoon", v);
 
     BOOST_CHECK(!obj.empty());
     BOOST_CHECK_EQUAL(obj.size(), 13);
 
     UniValue obj2(UniValue::VOBJ);
     // emplace with move constructor of std::pair
-    obj2.getObjectEntries().emplace_back(std::make_pair<std::string, UniValue>("cat1", 8999));
+    obj2.get_obj().emplace_back(std::make_pair<std::string, UniValue>("cat1", 8999));
     obj2.pushKV("cat1", obj);
     obj2.pushKV("cat1", 9000);
     // emplace with templated elementwise constructor of std::pair
-    obj2.getObjectEntries().emplace_back(std::make_pair("cat2", 12345));
+    obj2.get_obj().emplace_back(std::make_pair("cat2", 12345));
 
     BOOST_CHECK(!obj2.empty());
     BOOST_CHECK_EQUAL(obj2.size(), 2);
 
-    for (auto& pair : obj2.getObjectEntries()) {
+    for (auto& pair : obj2.get_obj()) {
         obj.pushKV(std::move(pair.first), std::move(pair.second));
     }
 
@@ -578,10 +577,10 @@ BOOST_AUTO_TEST_CASE(univalue_object)
     BOOST_CHECK_EQUAL(obj["nyuknyuknyuk"].getType(), UniValue::VNULL);
 
     // erase all spoons but the last
-    auto after = obj.getObjectEntries().erase(obj.getObjectEntries().begin() + 8, obj.getObjectEntries().begin() + 12);
+    auto after = obj.get_obj().erase(obj.get_obj().begin() + 8, obj.get_obj().begin() + 12);
 
-    BOOST_CHECK(!obj.getObjectEntries().empty());
-    BOOST_CHECK_EQUAL(obj.getObjectEntries().size(), 11);
+    BOOST_CHECK(!obj.get_obj().empty());
+    BOOST_CHECK_EQUAL(obj.get_obj().size(), 11);
     BOOST_CHECK_EQUAL(&obj.at(8), &obj.at("spoon"));
     BOOST_CHECK_EQUAL(&obj.at(9), &obj.at("cat1"));
     BOOST_CHECK_EQUAL(obj.at("spoon").getValStr(), "100");

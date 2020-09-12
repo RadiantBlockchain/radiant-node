@@ -75,19 +75,6 @@ bool ParseDouble(const std::string& str, double *out)
 }
 } // end anonymous namespace
 
-const UniValue::Object& UniValue::getObjectEntries() const
-{
-    if (!isObject())
-        throw std::runtime_error("JSON value is not an object as expected");
-    return entries;
-}
-UniValue::Object& UniValue::getObjectEntries()
-{
-    if (!isObject())
-        throw std::runtime_error("JSON value is not an object as expected");
-    return entries;
-}
-
 bool UniValue::get_bool() const
 {
     if (!isBool())

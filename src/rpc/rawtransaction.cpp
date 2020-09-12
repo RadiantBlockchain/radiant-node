@@ -499,7 +499,7 @@ CMutableTransaction ConstructTransaction(const CChainParams &params,
                                    "Invalid parameter, key-value pair must "
                                    "contain exactly one key");
             }
-            auto& outputKV = *output.getObjectEntries().begin();
+            auto& outputKV = *output.get_obj().begin();
             // Allowing duplicate key insertions here is intentional.
             // Checking for duplicate keys would break functionality, constructing a transaction with missing outputs.
             outputsConverted.emplace_back(outputKV.first, outputKV.second);
@@ -879,7 +879,7 @@ UniValue SignTransaction(interfaces::Chain &, CMutableTransaction &mtx,
                                    "{\"txid'\",\"vout\",\"scriptPubKey\"}");
             }
 
-            UniValue prevOut = p.get_obj();
+            const UniValue::Object& prevOut = p.get_obj();
 
             RPCTypeCheckObj(prevOut,
                             {

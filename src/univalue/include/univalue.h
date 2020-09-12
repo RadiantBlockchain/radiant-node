@@ -726,19 +726,6 @@ public:
     // Strict type-specific getters, these throw std::runtime_error if the
     // value is of unexpected type
 
-    /**
-     * VOBJ: Returns a reference to the underlying vector of key-value pairs.
-     * Other types: Throws std::runtime_error.
-     *
-     * Destroying the object invalidates the returned reference.
-     *
-     * Complexity: constant.
-     *
-     * This is a Bitcoin Cash Node extension of the UniValue API.
-     */
-    const Object& getObjectEntries() const;
-    Object& getObjectEntries();
-
     bool get_bool() const;
     const std::string& get_str() const;
     int get_int() const;

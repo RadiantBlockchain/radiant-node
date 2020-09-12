@@ -1001,7 +1001,7 @@ static UniValue sendmany(const Config &config, const JSONRPCRequest &request) {
         throw JSONRPCError(RPC_INVALID_PARAMETER,
                            "Dummy value must be set to \"\"");
     }
-    UniValue sendTo = request.params[1].get_obj();
+    const UniValue::Object& sendTo = request.params[1].get_obj();
     int nMinDepth = 1;
     if (!request.params[2].isNull()) {
         nMinDepth = request.params[2].get_int();
@@ -1021,7 +1021,7 @@ static UniValue sendmany(const Config &config, const JSONRPCRequest &request) {
     std::vector<CRecipient> vecSend;
 
     Amount totalAmount = Amount::zero();
-    for (auto &entry : sendTo.getObjectEntries()) {
+    for (auto &entry : sendTo) {
         CTxDestination dest = DecodeDestination(entry.first, config.GetChainParams());
         if (!IsValidDestination(dest)) {
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY,
@@ -2608,7 +2608,7 @@ static UniValue lockunspent(const Config &config,
     outputs.reserve(output_params.size());
 
     for (size_t idx = 0; idx < output_params.size(); idx++) {
-        const UniValue &o = output_params[idx].get_obj();
+        const UniValue::Object &o = output_params[idx].get_obj();
 
         RPCTypeCheckObj(o, {
                                {"txid", UniValueType(UniValue::VSTR)},
@@ -3418,7 +3418,7 @@ static UniValue listunspent(const Config &config,
 }
 
 void FundTransaction(CWallet *const pwallet, CMutableTransaction &tx,
-                     Amount &fee_out, int &change_position, UniValue options) {
+                     Amount &fee_out, int &change_position, const UniValue& options) {
     // Make sure the results are valid at least up to the most recent block
     // the user could have gotten from another RPC command prior to now
     pwallet->BlockUntilSyncedToCurrentChain();
@@ -3435,8 +3435,9 @@ void FundTransaction(CWallet *const pwallet, CMutableTransaction &tx,
             coinControl.fAllowWatchOnly = options.get_bool();
         } else {
             RPCTypeCheckArgument(options, UniValue::VOBJ);
+            const UniValue::Object& options_obj = options.get_obj();
             RPCTypeCheckObj(
-                options,
+                options_obj,
                 {
                     {"changeAddress", UniValueType(UniValue::VSTR)},
                     {"changePosition", UniValueType(UniValue::VNUM)},
@@ -3448,7 +3449,7 @@ void FundTransaction(CWallet *const pwallet, CMutableTransaction &tx,
                 },
                 true, true);
 
-            if (auto changeAddressUV = options.locate("changeAddress")) {
+            if (auto changeAddressUV = options_obj.locate("changeAddress")) {
                 CTxDestination dest = DecodeDestination(
                     changeAddressUV->get_str(), pwallet->chainParams);
 
@@ -3461,24 +3462,24 @@ void FundTransaction(CWallet *const pwallet, CMutableTransaction &tx,
                 coinControl.destChange = dest;
             }
 
-            if (auto changePositionUV = options.locate("changePosition")) {
+            if (auto changePositionUV = options_obj.locate("changePosition")) {
                 change_position = changePositionUV->get_int();
             }
 
-            if (auto includeWatchingUV = options.locate("includeWatching")) {
+            if (auto includeWatchingUV = options_obj.locate("includeWatching")) {
                 coinControl.fAllowWatchOnly = includeWatchingUV->get_bool();
             }
 
-            if (auto lockUnspentsUV = options.locate("lockUnspents")) {
+            if (auto lockUnspentsUV = options_obj.locate("lockUnspents")) {
                 lockUnspents = lockUnspentsUV->get_bool();
             }
 
-            if (auto feeRateUV = options.locate("feeRate")) {
+            if (auto feeRateUV = options_obj.locate("feeRate")) {
                 coinControl.m_feerate = CFeeRate(AmountFromValue(*feeRateUV));
                 coinControl.fOverrideFeeRate = true;
             }
 
-            if (auto subtractFeeFromOutputsUV = options.locate("subtractFeeFromOutputs")) {
+            if (auto subtractFeeFromOutputsUV = options_obj.locate("subtractFeeFromOutputs")) {
                 subtractFeeFromOutputs = subtractFeeFromOutputsUV->get_array();
             }
         }
@@ -3927,10 +3928,10 @@ class DescribeWalletAddressVisitor : public boost::static_visitor<void> {
         UniValue a(UniValue::VARR);
         if (ExtractDestination(subscript, embedded)) {
             // Only when the script corresponds to an address.
-            UniValue subobj(UniValue::VOBJ);
-            DescribeWalletAddress(pwallet, embedded, subobj.getObjectEntries());
-            subobj.pushKV("address", EncodeDestination(embedded, GetConfig()), false);
-            subobj.pushKV("scriptPubKey", HexStr(subscript.begin(), subscript.end()), false);
+            UniValue::Object subobj;
+            DescribeWalletAddress(pwallet, embedded, subobj);
+            subobj.emplace_back("address", EncodeDestination(embedded, GetConfig()));
+            subobj.emplace_back("scriptPubKey", HexStr(subscript.begin(), subscript.end()));
             // Always report the pubkey at the top level, so that
             // `getnewaddress()['pubkey']` always works.
             if (auto pubkeyUV = subobj.locate("pubkey")) {
@@ -4098,7 +4099,7 @@ UniValue getaddressinfo(const Config &config, const JSONRPCRequest &request) {
 
     LOCK(pwallet->cs_wallet);
 
-    UniValue ret(UniValue::VOBJ);
+    UniValue::Object ret;
     CTxDestination dest =
         DecodeDestination(request.params[0].get_str(), config.GetChainParams());
 
@@ -4107,21 +4108,19 @@ UniValue getaddressinfo(const Config &config, const JSONRPCRequest &request) {
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid address");
     }
 
-    std::string currentAddress = EncodeDestination(dest, config);
-    ret.pushKV("address", currentAddress);
+    ret.emplace_back("address", EncodeDestination(dest, config));
 
     CScript scriptPubKey = GetScriptForDestination(dest);
-    ret.pushKV("scriptPubKey",
-               HexStr(scriptPubKey.begin(), scriptPubKey.end()));
+    ret.emplace_back("scriptPubKey", HexStr(scriptPubKey.begin(), scriptPubKey.end()));
 
     isminetype mine = IsMine(*pwallet, dest);
-    ret.pushKV("ismine", bool(mine & ISMINE_SPENDABLE));
-    ret.pushKV("iswatchonly", bool(mine & ISMINE_WATCH_ONLY));
-    DescribeWalletAddress(pwallet, dest, ret.getObjectEntries());
+    ret.emplace_back("ismine", bool(mine & ISMINE_SPENDABLE));
+    ret.emplace_back("iswatchonly", bool(mine & ISMINE_WATCH_ONLY));
+    DescribeWalletAddress(pwallet, dest, ret);
     if (pwallet->mapAddressBook.count(dest)) {
-        ret.pushKV("label", pwallet->mapAddressBook[dest].name);
+        ret.emplace_back("label", pwallet->mapAddressBook[dest].name);
     }
-    ret.pushKV("ischange", pwallet->IsChange(scriptPubKey));
+    ret.emplace_back("ischange", pwallet->IsChange(scriptPubKey));
     const CKeyMetadata *meta = nullptr;
     CKeyID key_id = GetKeyForDestination(*pwallet, dest);
     if (!key_id.IsNull()) {
@@ -4137,24 +4136,25 @@ UniValue getaddressinfo(const Config &config, const JSONRPCRequest &request) {
         }
     }
     if (meta) {
-        ret.pushKV("timestamp", meta->nCreateTime);
+        ret.emplace_back("timestamp", meta->nCreateTime);
         if (!meta->hdKeypath.empty()) {
-            ret.pushKV("hdkeypath", meta->hdKeypath);
-            ret.pushKV("hdseedid", meta->hd_seed_id.GetHex());
-            ret.pushKV("hdmasterkeyid", meta->hd_seed_id.GetHex());
+            ret.emplace_back("hdkeypath", meta->hdKeypath);
+            ret.emplace_back("hdseedid", meta->hd_seed_id.GetHex());
+            ret.emplace_back("hdmasterkeyid", meta->hd_seed_id.GetHex());
         }
     }
 
     // Currently only one label can be associated with an address, return an
     // array so the API remains stable if we allow multiple labels to be
     // associated with an address.
-    UniValue labels(UniValue::VARR);
+    UniValue::Array labels;
     std::map<CTxDestination, CAddressBookData>::iterator mi =
         pwallet->mapAddressBook.find(dest);
     if (mi != pwallet->mapAddressBook.end()) {
+        labels.reserve(1);
         labels.push_back(AddressBookDataToJSON(mi->second, true));
     }
-    ret.pushKV("labels", std::move(labels));
+    ret.emplace_back("labels", std::move(labels));
 
     return ret;
 }

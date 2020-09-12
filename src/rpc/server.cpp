@@ -149,7 +149,7 @@ void RPCTypeCheckArgument(const UniValue &value,
     }
 }
 
-void RPCTypeCheckObj(const UniValue &o,
+void RPCTypeCheckObj(const UniValue::Object &o,
                      const std::map<std::string, UniValueType> &typesExpected,
                      bool fAllowNull, bool fStrict) {
     for (const auto &t : typesExpected) {
@@ -169,7 +169,7 @@ void RPCTypeCheckObj(const UniValue &o,
     }
 
     if (fStrict) {
-        for (auto &kv : o.getObjectEntries()) {
+        for (auto &kv : o) {
             if (typesExpected.count(kv.first) == 0) {
                 std::string err = strprintf("Unexpected key %s", kv.first);
                 throw JSONRPCError(RPC_TYPE_ERROR, err);
@@ -212,6 +212,9 @@ uint256 ParseHashV(const UniValue &v, const std::string& strName) {
     }
     return uint256S(strHex);
 }
+uint256 ParseHashO(const UniValue::Object &o, const std::string& strKey) {
+    return ParseHashV(o.at(strKey), strKey);
+}
 uint256 ParseHashO(const UniValue &o, const std::string& strKey) {
     return ParseHashV(o.at(strKey), strKey);
 }
@@ -227,6 +230,9 @@ std::vector<uint8_t> ParseHexV(const UniValue &v, const std::string& strName) {
     }
 
     return ParseHex(strHex);
+}
+std::vector<uint8_t> ParseHexO(const UniValue::Object &o, const std::string& strKey) {
+    return ParseHexV(o.at(strKey), strKey);
 }
 std::vector<uint8_t> ParseHexO(const UniValue &o, const std::string& strKey) {
     return ParseHexV(o.at(strKey), strKey);
@@ -514,11 +520,11 @@ static inline JSONRPCRequest
 transformNamedArguments(const JSONRPCRequest &in,
                         const std::vector<std::string> &argNames) {
     JSONRPCRequest out = in;
-    out.params = UniValue(UniValue::VARR);
+    out.params.setArray();
     // Build a map of parameters, and remove ones that have been processed, so
     // that we can throw a focused error if there is an unknown one.
     std::unordered_map<std::string, const UniValue *> argsIn;
-    for (auto &entry : in.params.getObjectEntries()) {
+    for (auto &entry : in.params.get_obj()) {
         argsIn[entry.first] = &entry.second;
     }
     // Process expected parameters.
