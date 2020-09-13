@@ -336,6 +336,7 @@ nav:
         - Init scripts: doc/init.md
         - Tor support: doc/tor.md
         - Traffic reduction: doc/reduce-traffic.md
+        - src/univalue/README.md
         - Publishing documentation: doc/publishing-documentation.md
         - DNS seed policy: doc/dnsseed-policy.md
         - doc/assets-attribution.md
