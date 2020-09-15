@@ -312,7 +312,6 @@ add_library(util
 	fs.cpp
 	logging.cpp
 	random.cpp
-	rcu.cpp
 	rpc/protocol.cpp
 	rpc/util.cpp
 	support/cleanse.cpp
