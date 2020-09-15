@@ -430,6 +430,11 @@ public:
     explicit UniValue(const Object& object) : typ(VOBJ), entries(object) {}
     UniValue(Object&& object) : typ(VOBJ), entries(std::move(object)) {}
 
+    explicit UniValue(const UniValue&) = default;
+    UniValue(UniValue&&) noexcept = default;
+    UniValue& operator=(const UniValue&) = default;
+    UniValue& operator=(UniValue&&) = default;
+
     void setNull() noexcept;
     void setBool(bool val);
     void setNumStr(const std::string& val);

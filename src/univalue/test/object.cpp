@@ -648,7 +648,7 @@ BOOST_AUTO_TEST_CASE(univalue_readwrite)
 {
     UniValue v;
     BOOST_CHECK(v.read(json1));
-    const UniValue vjson1 = v; // save a copy for below
+    const UniValue vjson1(v); // save a copy for below
 
     std::string strJson1(json1);
     BOOST_CHECK(v.read(strJson1));
@@ -658,7 +658,7 @@ BOOST_AUTO_TEST_CASE(univalue_readwrite)
 
     BOOST_CHECK_EQUAL(v[0].getValStr(), "1.10000000");
 
-    UniValue obj = v[1];
+    const UniValue& obj = v[1];
     BOOST_CHECK(obj.isObject());
     BOOST_CHECK_EQUAL(obj.size(), 3);
 
@@ -691,7 +691,7 @@ BOOST_AUTO_TEST_CASE(univalue_readwrite)
     // and doing a round of ser/deser on it.
     v.setArray();
     v.push_back(json1);
-    const auto vcopy = v;
+    const UniValue vcopy(v);
     BOOST_CHECK(!vcopy.empty());
     v.setNull();
     BOOST_CHECK(v.empty());

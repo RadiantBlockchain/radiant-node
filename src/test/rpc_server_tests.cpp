@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2019 The Bitcoin developers
+// Copyright (c) 2018-2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -87,9 +87,8 @@ public:
     // Sanity check that Execute(JSONRPCRequest) is called correctly from
     // RPCServer
     UniValue Execute(const JSONRPCRequest &request) const override {
-        const UniValue args = request.params;
         BOOST_CHECK_EQUAL(request.strMethod, "testcommand2");
-        BOOST_CHECK_EQUAL(args["arg2"].get_str(), "value2");
+        BOOST_CHECK_EQUAL(request.params["arg2"].get_str(), "value2");
         return UniValue("testing2");
     }
 };

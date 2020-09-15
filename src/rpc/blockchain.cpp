@@ -388,7 +388,7 @@ syncwithvalidationinterfacequeue(const Config &config,
             HelpExampleRpc("syncwithvalidationinterfacequeue", ""));
     }
     SyncWithValidationInterfaceQueue();
-    return NullUniValue;
+    return UniValue();
 }
 
 static UniValue getdifficulty(const Config &config,
@@ -1247,11 +1247,11 @@ UniValue gettxout(const Config &config, const JSONRPCRequest &request) {
         LOCK(g_mempool.cs);
         CCoinsViewMemPool view(pcoinsTip.get(), g_mempool);
         if (!view.GetCoin(out, coin) || g_mempool.isSpent(out)) {
-            return NullUniValue;
+            return UniValue();
         }
     } else {
         if (!pcoinsTip->GetCoin(out, coin)) {
-            return NullUniValue;
+            return UniValue();
         }
     }
 
@@ -1610,7 +1610,7 @@ static UniValue preciousblock(const Config &config,
         throw JSONRPCError(RPC_DATABASE_ERROR, state.GetRejectReason());
     }
 
-    return NullUniValue;
+    return UniValue();
 }
 
 UniValue finalizeblock(const Config &config, const JSONRPCRequest &request) {
@@ -1650,7 +1650,7 @@ UniValue finalizeblock(const Config &config, const JSONRPCRequest &request) {
         throw JSONRPCError(RPC_DATABASE_ERROR, FormatStateMessage(state));
     }
 
-    return NullUniValue;
+    return UniValue();
 }
 
 static UniValue invalidateblock(const Config &config,
@@ -1690,7 +1690,7 @@ static UniValue invalidateblock(const Config &config,
         throw JSONRPCError(RPC_DATABASE_ERROR, FormatStateMessage(state));
     }
 
-    return NullUniValue;
+    return UniValue();
 }
 
 UniValue parkblock(const Config &config, const JSONRPCRequest &request) {
@@ -1729,7 +1729,7 @@ UniValue parkblock(const Config &config, const JSONRPCRequest &request) {
         throw JSONRPCError(RPC_DATABASE_ERROR, state.GetRejectReason());
     }
 
-    return NullUniValue;
+    return UniValue();
 }
 
 static UniValue reconsiderblock(const Config &config,
@@ -1768,7 +1768,7 @@ static UniValue reconsiderblock(const Config &config,
         throw JSONRPCError(RPC_DATABASE_ERROR, FormatStateMessage(state));
     }
 
-    return NullUniValue;
+    return UniValue();
 }
 
 UniValue unparkblock(const Config &config, const JSONRPCRequest &request) {
@@ -1807,7 +1807,7 @@ UniValue unparkblock(const Config &config, const JSONRPCRequest &request) {
         throw JSONRPCError(RPC_DATABASE_ERROR, state.GetRejectReason());
     }
 
-    return NullUniValue;
+    return UniValue();
 }
 
 static UniValue getchaintxstats(const Config &config,
@@ -2278,7 +2278,7 @@ static UniValue savemempool(const Config &config,
         throw JSONRPCError(RPC_MISC_ERROR, "Unable to dump mempool to disk");
     }
 
-    return NullUniValue;
+    return UniValue();
 }
 
 //! Search for a given set of pubkey scripts
@@ -2435,7 +2435,7 @@ static UniValue scantxoutset(const Config &config,
         CoinsViewScanReserver reserver;
         if (reserver.reserve()) {
             // no scan in progress
-            return NullUniValue;
+            return UniValue();
         }
         result.pushKV("progress", g_scan_progress.load());
         return result;

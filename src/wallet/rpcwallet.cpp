@@ -165,7 +165,7 @@ static UniValue getnewaddress(const Config &config,
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() > 2) {
@@ -240,7 +240,7 @@ static UniValue getrawchangeaddress(const Config &config,
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() > 1) {
@@ -305,7 +305,7 @@ static UniValue setlabel(const Config &config, const JSONRPCRequest &request) {
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() != 2) {
@@ -342,7 +342,7 @@ static UniValue setlabel(const Config &config, const JSONRPCRequest &request) {
         pwallet->SetAddressBook(dest, label, "send");
     }
 
-    return NullUniValue;
+    return UniValue();
 }
 
 static CTransactionRef SendMoney(interfaces::Chain::Lock &locked_chain,
@@ -408,7 +408,7 @@ static UniValue sendtoaddress(const Config &config,
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() < 2 ||
@@ -504,7 +504,7 @@ static UniValue listaddressgroupings(const Config &config,
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() != 0) {
@@ -570,7 +570,7 @@ static UniValue signmessage(const Config &config,
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() != 2) {
@@ -646,7 +646,7 @@ static UniValue getreceivedbyaddress(const Config &config,
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() < 1 ||
@@ -738,7 +738,7 @@ static UniValue getreceivedbylabel(const Config &config,
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() < 1 ||
@@ -820,7 +820,7 @@ static UniValue getbalance(const Config &config,
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || (request.params.size() > 3)) {
@@ -885,7 +885,7 @@ static UniValue getunconfirmedbalance(const Config &config,
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() > 0) {
@@ -909,7 +909,7 @@ static UniValue sendmany(const Config &config, const JSONRPCRequest &request) {
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() < 2 ||
@@ -1096,7 +1096,7 @@ static UniValue addmultisigaddress(const Config &config,
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() < 2 ||
@@ -1355,7 +1355,7 @@ static UniValue listreceivedbyaddress(const Config &config,
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() > 4) {
@@ -1421,7 +1421,7 @@ static UniValue listreceivedbylabel(const Config &config,
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() > 3) {
@@ -1568,7 +1568,7 @@ UniValue listtransactions(const Config &config, const JSONRPCRequest &request) {
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() > 4) {
@@ -1728,7 +1728,7 @@ static UniValue listsinceblock(const Config &config,
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() > 4) {
@@ -1932,7 +1932,7 @@ static UniValue gettransaction(const Config &config,
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() < 1 ||
@@ -2068,7 +2068,7 @@ static UniValue abandontransaction(const Config &config,
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() != 1) {
@@ -2113,7 +2113,7 @@ static UniValue abandontransaction(const Config &config,
                            "Transaction not eligible for abandonment");
     }
 
-    return NullUniValue;
+    return UniValue();
 }
 
 static UniValue backupwallet(const Config &config,
@@ -2122,7 +2122,7 @@ static UniValue backupwallet(const Config &config,
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() != 1) {
@@ -2149,7 +2149,7 @@ static UniValue backupwallet(const Config &config,
         throw JSONRPCError(RPC_WALLET_ERROR, "Error: Wallet backup failed!");
     }
 
-    return NullUniValue;
+    return UniValue();
 }
 
 static UniValue keypoolrefill(const Config &config,
@@ -2158,7 +2158,7 @@ static UniValue keypoolrefill(const Config &config,
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() > 1) {
@@ -2201,7 +2201,7 @@ static UniValue keypoolrefill(const Config &config,
         throw JSONRPCError(RPC_WALLET_ERROR, "Error refreshing keypool.");
     }
 
-    return NullUniValue;
+    return UniValue();
 }
 
 static UniValue walletpassphrase(const Config &config,
@@ -2210,7 +2210,7 @@ static UniValue walletpassphrase(const Config &config,
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (pwallet->IsCrypted() && (request.fHelp || request.params.size() != 2)) {
@@ -2305,7 +2305,7 @@ static UniValue walletpassphrase(const Config &config,
         },
         nSleepTime);
 
-    return NullUniValue;
+    return UniValue();
 }
 
 static UniValue walletpassphrasechange(const Config &config,
@@ -2314,7 +2314,7 @@ static UniValue walletpassphrasechange(const Config &config,
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (pwallet->IsCrypted() && (request.fHelp || request.params.size() != 2)) {
@@ -2369,7 +2369,7 @@ static UniValue walletpassphrasechange(const Config &config,
             "Error: The wallet passphrase entered was incorrect.");
     }
 
-    return NullUniValue;
+    return UniValue();
 }
 
 static UniValue walletlock(const Config &config,
@@ -2378,7 +2378,7 @@ static UniValue walletlock(const Config &config,
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (pwallet->IsCrypted() && (request.fHelp || request.params.size() != 0)) {
@@ -2417,7 +2417,7 @@ static UniValue walletlock(const Config &config,
     pwallet->Lock();
     pwallet->nRelockTime = 0;
 
-    return NullUniValue;
+    return UniValue();
 }
 
 static UniValue encryptwallet(const Config &config,
@@ -2426,7 +2426,7 @@ static UniValue encryptwallet(const Config &config,
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (!pwallet->IsCrypted() &&
@@ -2501,7 +2501,7 @@ static UniValue lockunspent(const Config &config,
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() < 1 ||
@@ -2670,7 +2670,7 @@ static UniValue listlockunspent(const Config &config,
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() > 0) {
@@ -2732,7 +2732,7 @@ static UniValue settxfee(const Config &config, const JSONRPCRequest &request) {
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() < 1 ||
@@ -2782,7 +2782,7 @@ static UniValue getwalletinfo(const Config &config,
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() != 0) {
@@ -2928,7 +2928,7 @@ static UniValue listwallets(const Config &config,
 
     for (const std::shared_ptr<CWallet> &wallet : GetWallets()) {
         if (!EnsureWalletIsAvailable(wallet.get(), request.fHelp)) {
-            return NullUniValue;
+            return UniValue();
         }
 
         LOCK(wallet->cs_wallet);
@@ -3121,7 +3121,7 @@ static UniValue unloadwallet(const Config &config,
 
     UnloadWallet(std::move(wallet));
 
-    return NullUniValue;
+    return UniValue();
 }
 
 static UniValue resendwallettransactions(const Config &config,
@@ -3130,7 +3130,7 @@ static UniValue resendwallettransactions(const Config &config,
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() != 0) {
@@ -3176,7 +3176,7 @@ static UniValue listunspent(const Config &config,
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() > 5) {
@@ -3528,7 +3528,7 @@ static UniValue fundrawtransaction(const Config &config,
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() < 1 ||
@@ -3637,7 +3637,7 @@ UniValue signrawtransactionwithwallet(const Config &config,
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() < 1 ||
@@ -3754,7 +3754,7 @@ UniValue generate(const Config &config, const JSONRPCRequest &request) {
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() < 1 ||
@@ -3805,7 +3805,7 @@ UniValue rescanblockchain(const Config &config, const JSONRPCRequest &request) {
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() > 2) {
@@ -4010,7 +4010,7 @@ UniValue getaddressinfo(const Config &config, const JSONRPCRequest &request) {
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() != 1) {
@@ -4160,7 +4160,7 @@ UniValue getaddressesbylabel(const Config &config,
     std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
     CWallet *const pwallet = wallet.get();
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() != 1) {
@@ -4208,7 +4208,7 @@ UniValue listlabels(const Config &config, const JSONRPCRequest &request) {
     std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
     CWallet *const pwallet = wallet.get();
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() > 1) {
@@ -4264,7 +4264,7 @@ static UniValue sethdseed(const Config &config, const JSONRPCRequest &request) {
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() > 2) {
@@ -4356,7 +4356,7 @@ static UniValue sethdseed(const Config &config, const JSONRPCRequest &request) {
         pwallet->NewKeyPool();
     }
 
-    return NullUniValue;
+    return UniValue();
 }
 
 static UniValue walletprocesspsbt(const Config &config,
@@ -4365,7 +4365,7 @@ static UniValue walletprocesspsbt(const Config &config,
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() < 1 ||
@@ -4449,7 +4449,7 @@ static UniValue walletcreatefundedpsbt(const Config &config,
     CWallet *const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (request.fHelp || request.params.size() < 2 ||

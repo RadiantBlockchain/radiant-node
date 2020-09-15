@@ -303,7 +303,7 @@ static UniValue setmocktime(const Config &config,
     }
     SetMockTime(mockTime);
 
-    return NullUniValue;
+    return UniValue();
 }
 
 static UniValue RPCLockedMemoryInfo() {
@@ -510,7 +510,7 @@ static UniValue echo(const Config &config, const JSONRPCRequest &request) {
             "bitcoin-cli and the GUI. There is no server-side difference.");
     }
 
-    return request.params;
+    return UniValue(request.params);
 }
 
 static UniValue getinfo_deprecated(const Config &config,
