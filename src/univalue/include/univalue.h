@@ -39,6 +39,12 @@ public:
         using reverse_iterator = Vector::reverse_iterator;
         using const_reverse_iterator = Vector::const_reverse_iterator;
 
+        Object() noexcept = default;
+        explicit Object(const Object&) = default;
+        Object(Object&&) noexcept = default;
+        Object& operator=(const Object&) = default;
+        Object& operator=(Object&&) = default;
+
         /**
          * Returns an iterator to the first key-value pair of the object.
          *
