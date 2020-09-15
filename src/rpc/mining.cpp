@@ -496,7 +496,7 @@ static UniValue getblocktemplatecommon(bool fLight, const Config &config, const 
     const UniValue *lpval = &NullUniValue;
     std::set<std::string> setClientRules;
     if (!request.params[0].isNull()) {
-        const UniValue &oparam = request.params[0].get_obj();
+        const UniValue::Object &oparam = request.params[0].get_obj();
         const UniValue &modeval = oparam["mode"];
         if (modeval.isStr()) {
             strMode = modeval.get_str();

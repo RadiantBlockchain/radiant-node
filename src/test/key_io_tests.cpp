@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(key_io_valid_parse) {
         }
         std::string exp_base58string = test[0].get_str();
         std::vector<uint8_t> exp_payload = ParseHex(test[1].get_str());
-        const UniValue &metadata = test[2].get_obj();
+        const UniValue::Object &metadata = test[2].get_obj();
         bool isPrivkey = metadata["isPrivkey"].get_bool();
         SelectParams(metadata["chain"].get_str());
         const UniValue& tryCaseFlipUV = metadata["tryCaseFlip"];
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE(key_io_valid_gen) {
         }
         std::string exp_base58string = test[0].get_str();
         std::vector<uint8_t> exp_payload = ParseHex(test[1].get_str());
-        const UniValue &metadata = test[2].get_obj();
+        const UniValue::Object &metadata = test[2].get_obj();
         bool isPrivkey = metadata["isPrivkey"].get_bool();
         SelectParams(metadata["chain"].get_str());
         if (isPrivkey) {

@@ -15,7 +15,7 @@ void JSONRPCRequest::parse(const UniValue &valRequest) {
     if (!valRequest.isObject()) {
         throw JSONRPCError(RPC_INVALID_REQUEST, "Invalid Request object");
     }
-    const UniValue &request = valRequest.get_obj();
+    const UniValue::Object &request = valRequest.get_obj();
 
     // Parse id now so errors from here on will have the id
     id = request["id"];
