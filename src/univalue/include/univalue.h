@@ -263,6 +263,12 @@ public:
         using reverse_iterator = Vector::reverse_iterator;
         using const_reverse_iterator = Vector::const_reverse_iterator;
 
+        Array() noexcept = default;
+        explicit Array(const Array&) = default;
+        Array(Array&&) noexcept = default;
+        Array& operator=(const Array&) = default;
+        Array& operator=(Array&&) = default;
+
         /**
          * Returns an iterator to the first value of the array.
          *

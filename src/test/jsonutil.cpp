@@ -13,5 +13,5 @@ UniValue::Array read_json(const std::string &jsondata) {
         BOOST_ERROR("Parse error.");
         return UniValue::Array();
     }
-    return v.get_array();
+    return std::move(v.get_array());
 }

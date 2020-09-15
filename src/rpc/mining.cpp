@@ -620,6 +620,7 @@ static UniValue getblocktemplatecommon(bool fLight, const Config &config, const 
     struct LightResult {
         const gbtl::JobId jobId;
         const UniValue::Array merkle;
+        LightResult(const gbtl::JobId& _jobId, const UniValue::Array& _merkle) : jobId(_jobId), merkle(_merkle) {}
     };
     // Update block
     static CBlockIndex *pindexPrev;
@@ -751,7 +752,7 @@ static UniValue getblocktemplatecommon(bool fLight, const Config &config, const 
 
             // Finally, cache the merkle results if they were calculated from the tx's in pblock (no additional_txs).
             if (pvtx == &pblock->vtx) {
-                plightresult.reset(new LightResult{jobId, merkle});
+                plightresult.reset(new LightResult(jobId, merkle));
                 LogPrint(BCLog::RPC, "Saved merkle result\n");
             }
         }
