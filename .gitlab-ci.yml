@@ -646,7 +646,7 @@ pages:
         # Add parts from depends and src that were excluded above
         - tar cf - $(find src depends -name \*.md) | ( cd files-for-mkdocs ; tar xf - )
         # Add specific files referenced from the docs
-        - tar cf - src/chainparams.cpp src/crypto/sha256_sse4.cpp src/interfaces/*.h src/qt/intro.cpp | ( cd files-for-mkdocs ; tar xf - )
+        - tar cf - src/chainparams.cpp src/crypto/sha256_sse4.cpp src/interfaces/*.h src/qt/intro.cpp src/univalue/COPYING | ( cd files-for-mkdocs ; tar xf - )
         - rm -f files-for-mkdocs/doc/release-notes.md
         - mkdocs build
         - mv site public
