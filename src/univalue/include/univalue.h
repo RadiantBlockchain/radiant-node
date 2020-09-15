@@ -414,11 +414,9 @@ public:
     static_assert(std::is_same<size_type, Array::size_type>::value,
                   "UniValue::size_type should be equal to both UniValue::Object::size_type and UniValue::Array::size_type.");
 
-    UniValue(UniValue::VType initialType = VNULL) noexcept : typ(initialType) {}
-    UniValue(UniValue::VType initialType, const std::string& initialStr)
-        : typ(initialType), val(initialStr) {}
-    UniValue(UniValue::VType initialType, std::string&& initialStr) noexcept
-        : typ(initialType), val(std::move(initialStr)) {}
+    explicit UniValue(VType initialType = VNULL) noexcept : typ(initialType) {}
+    UniValue(VType initialType, const std::string& initialStr) : typ(initialType), val(initialStr) {}
+    UniValue(VType initialType, std::string&& initialStr) noexcept : typ(initialType), val(std::move(initialStr)) {}
     UniValue(uint64_t val_) { setInt(val_); }
     UniValue(int64_t val_) { setInt(val_); }
     UniValue(bool val_) { setBool(val_); }
