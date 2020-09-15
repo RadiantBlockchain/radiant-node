@@ -279,9 +279,8 @@ static UniValue gettxoutproof(const Config &config,
 
     std::set<TxId> setTxIds;
     TxId oneTxId;
-    UniValue txids = request.params[0].get_array();
-    for (unsigned int idx = 0; idx < txids.size(); idx++) {
-        const UniValue &utxid = txids[idx];
+    const UniValue::Array& txids = request.params[0].get_array();
+    for (const UniValue &utxid : txids) {
         TxId txid(ParseHashV(utxid, "txid"));
         if (setTxIds.count(txid)) {
             throw JSONRPCError(
@@ -775,7 +774,7 @@ static UniValue combinerawtransaction(const Config &,
                            "[\"myhex1\", \"myhex2\", \"myhex3\"]"));
     }
 
-    UniValue txs = request.params[0].get_array();
+    const UniValue::Array& txs = request.params[0].get_array();
     std::vector<CMutableTransaction> txVariants(txs.size());
 
     for (unsigned int idx = 0; idx < txs.size(); idx++) {
@@ -870,9 +869,7 @@ UniValue SignTransaction(interfaces::Chain &, CMutableTransaction &mtx,
 
     // Add previous txouts given in the RPC call:
     if (!prevTxsUnival.isNull()) {
-        UniValue prevTxs = prevTxsUnival.get_array();
-        for (size_t idx = 0; idx < prevTxs.size(); ++idx) {
-            const UniValue &p = prevTxs[idx];
+        for (const UniValue& p : prevTxsUnival.get_array()) {
             if (!p.isObject()) {
                 throw JSONRPCError(RPC_DESERIALIZATION_ERROR,
                                    "expected object with "
@@ -1130,9 +1127,7 @@ static UniValue signrawtransactionwithkey(const Config &,
     }
 
     CBasicKeyStore keystore;
-    const UniValue &keys = request.params[1].get_array();
-    for (size_t idx = 0; idx < keys.size(); ++idx) {
-        UniValue k = keys[idx];
+    for (const UniValue &k : request.params[1].get_array()) {
         CKey key = DecodeSecret(k.get_str());
         if (!key.IsValid()) {
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY,
@@ -1611,16 +1606,16 @@ static UniValue combinepsbt(const Config &,
 
     // Unserialize the transactions
     std::vector<PartiallySignedTransaction> psbtxs;
-    const UniValue &txs = request.params[0].get_array();
+    const UniValue::Array &txs = request.params[0].get_array();
     if (txs.empty()) {
         throw JSONRPCError(RPC_INVALID_PARAMETER,
                            "Parameter 'txs' cannot be empty");
     }
     psbtxs.reserve(txs.size());
-    for (size_t i = 0; i < txs.size(); ++i) {
+    for (const UniValue& tx : txs) {
         PartiallySignedTransaction psbtx;
         std::string error;
-        if (!DecodePSBT(psbtx, txs[i].get_str(), error)) {
+        if (!DecodePSBT(psbtx, tx.get_str(), error)) {
             throw JSONRPCError(RPC_DESERIALIZATION_ERROR,
                                strprintf("TX decode failed %s", error));
         }

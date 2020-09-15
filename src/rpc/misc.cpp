@@ -124,18 +124,18 @@ static UniValue createmultisig(const Config &config,
     int required = request.params[0].get_int();
 
     // Get the public keys
-    const UniValue &keys = request.params[1].get_array();
     std::vector<CPubKey> pubkeys;
-    for (size_t i = 0; i < keys.size(); ++i) {
-        if ((keys[i].get_str().length() ==
+    for (const UniValue &key : request.params[1].get_array()) {
+        const std::string& keyStr = key.get_str();
+        if ((keyStr.length() ==
                  2 * CPubKey::COMPRESSED_PUBLIC_KEY_SIZE ||
-             keys[i].get_str().length() == 2 * CPubKey::PUBLIC_KEY_SIZE) &&
-            IsHex(keys[i].get_str())) {
-            pubkeys.push_back(HexToPubKey(keys[i].get_str()));
+             keyStr.length() == 2 * CPubKey::PUBLIC_KEY_SIZE) &&
+            IsHex(keyStr)) {
+            pubkeys.push_back(HexToPubKey(keyStr));
         } else {
             throw JSONRPCError(
                 RPC_INVALID_ADDRESS_OR_KEY,
-                strprintf("Invalid public key: %s\n", keys[i].get_str()));
+                strprintf("Invalid public key: %s\n", keyStr));
         }
     }
 
@@ -395,21 +395,20 @@ static UniValue getmemoryinfo(const Config &config,
     }
 }
 
-static void EnableOrDisableLogCategories(UniValue cats, bool enable) {
-    cats = cats.get_array();
-    for (size_t i = 0; i < cats.size(); ++i) {
-        std::string cat = cats[i].get_str();
+static void EnableOrDisableLogCategories(const UniValue::Array& cats, bool enable) {
+    for (auto& cat : cats) {
+        auto& catStr = cat.get_str();
 
         bool success;
         if (enable) {
-            success = LogInstance().EnableCategory(cat);
+            success = LogInstance().EnableCategory(catStr);
         } else {
-            success = LogInstance().DisableCategory(cat);
+            success = LogInstance().DisableCategory(catStr);
         }
 
         if (!success) {
             throw JSONRPCError(RPC_INVALID_PARAMETER,
-                               "unknown logging category " + cat);
+                               "unknown logging category " + catStr);
         }
     }
 }
@@ -461,11 +460,11 @@ static UniValue logging(const Config &config, const JSONRPCRequest &request) {
 
     uint32_t original_log_categories = LogInstance().GetCategoryMask();
     if (request.params[0].isArray()) {
-        EnableOrDisableLogCategories(request.params[0], true);
+        EnableOrDisableLogCategories(request.params[0].get_array(), true);
     }
 
     if (request.params[1].isArray()) {
-        EnableOrDisableLogCategories(request.params[1], false);
+        EnableOrDisableLogCategories(request.params[1].get_array(), false);
     }
 
     uint32_t updated_log_categories = LogInstance().GetCategoryMask();

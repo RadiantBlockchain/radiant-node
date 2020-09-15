@@ -340,7 +340,7 @@ bool HTTPRPCRequestProcessor::ProcessHTTPRequest(HTTPRequest *req) {
         } else if (valRequest.isArray()) {
             // array of requests
             strReply = JSONRPCExecBatch(config, rpcServer, jreq,
-                                        valRequest.get_array());
+                                        valRequest);
         } else {
             throw JSONRPCError(RPC_PARSE_ERROR, "Top-level object parse error");
         }

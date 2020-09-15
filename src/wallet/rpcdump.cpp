@@ -1023,12 +1023,13 @@ static UniValue ProcessImport(CWallet *const pwallet, const UniValue &data,
         }
 
         // Optional fields.
+        const UniValue::Array emptyArray;
         const auto redeemscriptUV = data.locate("redeemscript");
         const std::string &strRedeemScript = redeemscriptUV ? redeemscriptUV->get_str() : "";
         const auto pubkeysUV = data.locate("pubkeys");
-        const UniValue &pubKeys = pubkeysUV ? pubkeysUV->get_array() : NullUniValue;
+        const UniValue::Array &pubKeys = pubkeysUV ? pubkeysUV->get_array() : emptyArray;
         const auto keysUV = data.locate("keys");
-        const UniValue &keys = keysUV ? keysUV->get_array() : NullUniValue;
+        const UniValue::Array &keys = keysUV ? keysUV->get_array() : emptyArray;
         const auto internalUV = data.locate("internal");
         const bool internal = internalUV ? internalUV->get_bool() : false;
         const auto watchonlyUV = data.locate("watchonly");
@@ -1039,7 +1040,7 @@ static UniValue ProcessImport(CWallet *const pwallet, const UniValue &data,
         // If private keys are disabled, abort if private keys are being
         // imported
         if (pwallet->IsWalletFlagSet(WALLET_FLAG_DISABLE_PRIVATE_KEYS) &&
-            !keys.isNull()) {
+            keysUV) {
             throw JSONRPCError(RPC_WALLET_ERROR,
                                "Cannot import private keys to a wallet with "
                                "private keys disabled");

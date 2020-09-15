@@ -365,15 +365,15 @@ BOOST_AUTO_TEST_CASE(rpc_ban) {
     BOOST_CHECK_THROW(r = CallRPC(std::string("setban 127.0.0.0:8334")), std::runtime_error);
     BOOST_CHECK_NO_THROW(r = CallRPC(std::string("listbanned")));
     {
-        const UniValue& ar = r.get_array();
-        const UniValue& o1 = ar[0].get_obj();
-        const UniValue& adr = o1["address"];
+        UniValue::Array& ar = r.get_array();
+        UniValue::Object& o1 = ar.at(0).get_obj();
+        UniValue& adr = o1.at("address");
         BOOST_CHECK_EQUAL(adr.get_str(), "127.0.0.0/32");
     }
     BOOST_CHECK_NO_THROW(CallRPC(std::string("setban 127.0.0.0 remove")));
     BOOST_CHECK_NO_THROW(r = CallRPC(std::string("listbanned")));
     {
-        const UniValue& ar = r.get_array();
+        UniValue::Array& ar = r.get_array();
         BOOST_CHECK_EQUAL(ar.size(), 0UL);
     }
 
@@ -381,10 +381,10 @@ BOOST_AUTO_TEST_CASE(rpc_ban) {
     BOOST_CHECK_NO_THROW(r = CallRPC(std::string("setban 127.0.0.0/24 add 9907731200 true")));
     BOOST_CHECK_NO_THROW(r = CallRPC(std::string("listbanned")));
     {
-        const UniValue& ar = r.get_array();
-        const UniValue& o1 = ar[0].get_obj();
-        const UniValue& adr = o1["address"];
-        const UniValue& banned_until = o1["banned_until"];
+        UniValue::Array& ar = r.get_array();
+        UniValue::Object& o1 = ar.at(0).get_obj();
+        UniValue& adr = o1.at("address");
+        UniValue& banned_until = o1.at("banned_until");
         BOOST_CHECK_EQUAL(adr.get_str(), "127.0.0.0/24");
         // absolute time check
         BOOST_CHECK_EQUAL(banned_until.get_int64(), 9907731200);
@@ -395,10 +395,10 @@ BOOST_AUTO_TEST_CASE(rpc_ban) {
     BOOST_CHECK_NO_THROW(r = CallRPC(std::string("setban 127.0.0.0/24 add 200")));
     BOOST_CHECK_NO_THROW(r = CallRPC(std::string("listbanned")));
     {
-        const UniValue& ar = r.get_array();
-        const UniValue& o1 = ar[0].get_obj();
-        const UniValue& adr = o1["address"];
-        const UniValue& banned_until = o1["banned_until"];
+        UniValue::Array& ar = r.get_array();
+        UniValue::Object& o1 = ar.at(0).get_obj();
+        UniValue& adr = o1.at("address");
+        UniValue& banned_until = o1.at("banned_until");
         BOOST_CHECK_EQUAL(adr.get_str(), "127.0.0.0/24");
         int64_t now = GetTime();
         BOOST_CHECK(banned_until.get_int64() > now);
@@ -412,7 +412,7 @@ BOOST_AUTO_TEST_CASE(rpc_ban) {
     BOOST_CHECK_NO_THROW(CallRPC(std::string("setban 127.0.0.0/24 remove")));
     BOOST_CHECK_NO_THROW(r = CallRPC(std::string("listbanned")));
     {
-        const UniValue& ar = r.get_array();
+        UniValue::Array& ar = r.get_array();
         BOOST_CHECK_EQUAL(ar.size(), 0UL);
     }
 
@@ -422,7 +422,7 @@ BOOST_AUTO_TEST_CASE(rpc_ban) {
     BOOST_CHECK_NO_THROW(CallRPC(std::string("clearbanned")));
     BOOST_CHECK_NO_THROW(r = CallRPC(std::string("listbanned")));
     {
-        const UniValue& ar = r.get_array();
+        UniValue::Array& ar = r.get_array();
         BOOST_CHECK_EQUAL(ar.size(), 0UL);
     }
 
@@ -433,9 +433,9 @@ BOOST_AUTO_TEST_CASE(rpc_ban) {
     BOOST_CHECK_NO_THROW(r = CallRPC(std::string("setban FE80:0000:0000:0000:0202:B3FF:FE1E:8329 add")));
     BOOST_CHECK_NO_THROW(r = CallRPC(std::string("listbanned")));
     {
-        const UniValue& ar = r.get_array();
-        const UniValue& o1 = ar[0].get_obj();
-        const UniValue& adr = o1["address"];
+        UniValue::Array& ar = r.get_array();
+        UniValue::Object& o1 = ar.at(0).get_obj();
+        UniValue& adr = o1.at("address");
         BOOST_CHECK_EQUAL(adr.get_str(), "fe80::202:b3ff:fe1e:8329/128");
     }
 
@@ -443,9 +443,9 @@ BOOST_AUTO_TEST_CASE(rpc_ban) {
     BOOST_CHECK_NO_THROW(r = CallRPC(std::string("setban 2001:db8::/ffff:fffc:0:0:0:0:0:0 add")));
     BOOST_CHECK_NO_THROW(r = CallRPC(std::string("listbanned")));
     {
-        const UniValue& ar = r.get_array();
-        const UniValue& o1 = ar[0].get_obj();
-        const UniValue& adr = o1["address"];
+        UniValue::Array& ar = r.get_array();
+        UniValue::Object& o1 = ar.at(0).get_obj();
+        UniValue& adr = o1.at("address");
         BOOST_CHECK_EQUAL(adr.get_str(), "2001:db8::/30");
     }
 
@@ -453,9 +453,9 @@ BOOST_AUTO_TEST_CASE(rpc_ban) {
     BOOST_CHECK_NO_THROW(r = CallRPC(std::string("setban 2001:4d48:ac57:400:cacf:e9ff:fe1d:9c63/128 add")));
     BOOST_CHECK_NO_THROW(r = CallRPC(std::string("listbanned")));
     {
-        const UniValue& ar = r.get_array();
-        const UniValue& o1 = ar[0].get_obj();
-        const UniValue& adr = o1["address"];
+        UniValue::Array& ar = r.get_array();
+        UniValue::Object& o1 = ar.at(0).get_obj();
+        UniValue& adr = o1.at("address");
         BOOST_CHECK_EQUAL(adr.get_str(), "2001:4d48:ac57:400:cacf:e9ff:fe1d:9c63/128");
     }
 }

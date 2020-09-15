@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2019 The Bitcoin developers
+// Copyright (c) 2018-2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -6,12 +6,12 @@
 
 #include <boost/test/unit_test.hpp>
 
-UniValue read_json(const std::string &jsondata) {
+UniValue::Array read_json(const std::string &jsondata) {
     UniValue v;
 
     if (!v.read(jsondata) || !v.isArray()) {
         BOOST_ERROR("Parse error.");
-        return UniValue(UniValue::VARR);
+        return UniValue::Array();
     }
     return v.get_array();
 }
