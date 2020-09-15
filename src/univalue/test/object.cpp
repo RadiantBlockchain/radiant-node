@@ -115,13 +115,11 @@ BOOST_AUTO_TEST_CASE(univalue_typecheck)
     BOOST_CHECK_THROW(v4.get_str(), std::runtime_error);
     BOOST_CHECK_EQUAL(v4.get_real(), 1000);
     BOOST_CHECK_THROW(v4.get_array(), std::runtime_error);
-    BOOST_CHECK_THROW(v4.getObjectEntries(), std::runtime_error);
     BOOST_CHECK_THROW(v4.get_obj(), std::runtime_error);
 
     UniValue v5;
     BOOST_CHECK(v5.read("[true, 10]"));
-    BOOST_CHECK_NO_THROW(v5.get_array());
-    UniValue::Array vals = v5.getArrayValues();
+    UniValue::Array vals = v5.get_array();
     BOOST_CHECK_THROW(vals[0].get_int(), std::runtime_error);
     BOOST_CHECK_EQUAL(vals[0].get_bool(), true);
 
@@ -355,7 +353,7 @@ BOOST_AUTO_TEST_CASE(univalue_array)
     UniValue v((int64_t)1023LL);
     arr.push_back(v);
 
-    arr.getArrayValues().emplace_back("zippy");
+    arr.get_array().emplace_back("zippy");
 
     const char *s = "pippy";
     arr.push_back(s);
@@ -369,13 +367,13 @@ BOOST_AUTO_TEST_CASE(univalue_array)
 
     for (UniValue& thing : vec) {
         // emplace with copy constructor of UniValue
-        arr.getArrayValues().emplace_back(thing);
+        arr.get_array().emplace_back(thing);
     }
 
-    arr.getArrayValues().emplace_back((uint64_t) 400ULL);
-    arr.getArrayValues().push_back((int64_t) -400LL);
-    arr.getArrayValues().emplace_back((int) -401);
-    arr.getArrayValues().push_back(-40.1);
+    arr.get_array().emplace_back((uint64_t) 400ULL);
+    arr.get_array().push_back((int64_t) -400LL);
+    arr.get_array().emplace_back((int) -401);
+    arr.get_array().push_back(-40.1);
 
     BOOST_CHECK_EQUAL(arr.empty(), false);
     BOOST_CHECK_EQUAL(arr.size(), 9);
@@ -405,10 +403,10 @@ BOOST_AUTO_TEST_CASE(univalue_array)
     BOOST_CHECK_THROW(arr.at("nyuknyuknyuk"), std::domain_error);
 
     // erase zippy and pippy
-    auto after = arr.getArrayValues().erase(arr.getArrayValues().begin() + 1, arr.getArrayValues().begin() + 3);
+    auto after = arr.get_array().erase(arr.get_array().begin() + 1, arr.get_array().begin() + 3);
 
-    BOOST_CHECK_EQUAL(arr.getArrayValues().empty(), false);
-    BOOST_CHECK_EQUAL(arr.getArrayValues().size(), 7);
+    BOOST_CHECK_EQUAL(arr.get_array().empty(), false);
+    BOOST_CHECK_EQUAL(arr.get_array().size(), 7);
     BOOST_CHECK_EQUAL(arr.at(0).getValStr(), "1023");
     BOOST_CHECK_EQUAL(arr.at(1).getValStr(), "boing");
     BOOST_CHECK_EQUAL(*after, "boing");
@@ -468,27 +466,27 @@ BOOST_AUTO_TEST_CASE(univalue_object)
     BOOST_CHECK_EQUAL(obj.size(), 8);
 
     strKey = "spoon";
-    obj.getObjectEntries().emplace_back(strKey, false);
-    obj.getObjectEntries().push_back(std::make_pair(strKey, "just another spoon, but not the first one"));
-    obj.getObjectEntries().emplace_back(strKey, true);
-    obj.getObjectEntries().push_back(std::make_pair("spoon", "third spoon's a charm"));
-    obj.getObjectEntries().emplace_back("spoon", v);
+    obj.get_obj().emplace_back(strKey, false);
+    obj.get_obj().push_back(std::make_pair(strKey, "just another spoon, but not the first one"));
+    obj.get_obj().emplace_back(strKey, true);
+    obj.get_obj().push_back(std::make_pair("spoon", "third spoon's a charm"));
+    obj.get_obj().emplace_back("spoon", v);
 
     BOOST_CHECK(!obj.empty());
     BOOST_CHECK_EQUAL(obj.size(), 13);
 
     UniValue obj2(UniValue::VOBJ);
     // emplace with move constructor of std::pair
-    obj2.getObjectEntries().emplace_back(std::make_pair<std::string, UniValue>("cat1", 8999));
+    obj2.get_obj().emplace_back(std::make_pair<std::string, UniValue>("cat1", 8999));
     obj2.pushKV("cat1", obj);
     obj2.pushKV("cat1", 9000);
     // emplace with templated elementwise constructor of std::pair
-    obj2.getObjectEntries().emplace_back(std::make_pair("cat2", 12345));
+    obj2.get_obj().emplace_back(std::make_pair("cat2", 12345));
 
     BOOST_CHECK(!obj2.empty());
     BOOST_CHECK_EQUAL(obj2.size(), 2);
 
-    for (auto& pair : obj2.getObjectEntries()) {
+    for (auto& pair : obj2.get_obj()) {
         obj.pushKV(std::move(pair.first), std::move(pair.second));
     }
 
@@ -579,10 +577,10 @@ BOOST_AUTO_TEST_CASE(univalue_object)
     BOOST_CHECK_EQUAL(obj["nyuknyuknyuk"].getType(), UniValue::VNULL);
 
     // erase all spoons but the last
-    auto after = obj.getObjectEntries().erase(obj.getObjectEntries().begin() + 8, obj.getObjectEntries().begin() + 12);
+    auto after = obj.get_obj().erase(obj.get_obj().begin() + 8, obj.get_obj().begin() + 12);
 
-    BOOST_CHECK(!obj.getObjectEntries().empty());
-    BOOST_CHECK_EQUAL(obj.getObjectEntries().size(), 11);
+    BOOST_CHECK(!obj.get_obj().empty());
+    BOOST_CHECK_EQUAL(obj.get_obj().size(), 11);
     BOOST_CHECK_EQUAL(&obj.at(8), &obj.at("spoon"));
     BOOST_CHECK_EQUAL(&obj.at(9), &obj.at("cat1"));
     BOOST_CHECK_EQUAL(obj.at("spoon").getValStr(), "100");
@@ -613,9 +611,8 @@ BOOST_AUTO_TEST_CASE(univalue_object)
     obj.pushKV("name", "foo bar");
     BOOST_CHECK_EQUAL(obj["name"].getValStr(), "foo bar");
 
-    // test takeArrayValues(), front() / back() as well as operator==
+    // test front() / back() as well as operator==
     UniValue arr{UniValue::VNUM}; // this is intentional.
-    BOOST_CHECK_THROW(arr.takeArrayValues(), std::runtime_error); // should throw if !array
     BOOST_CHECK_EQUAL(&arr.front(), &NullUniValue); // should return the NullUniValue if !array
     UniValue::Array vals;
     vals.emplace_back("foo");
@@ -641,11 +638,7 @@ BOOST_AUTO_TEST_CASE(univalue_object)
     BOOST_CHECK(arr != UniValue{1.234}); // check operator== for differing types
     BOOST_CHECK_EQUAL(arr.front(), valsExpected.front());
     BOOST_CHECK_EQUAL(arr.back(), valsExpected.back());
-    BOOST_CHECK(arr.getArrayValues() == valsExpected);
-    auto vals2 = arr.takeArrayValues(); // take the values back
-    BOOST_CHECK(arr.empty());
-    BOOST_CHECK(!vals2.empty());
-    BOOST_CHECK_EQUAL(vals2, valsExpected);
+    BOOST_CHECK(arr.get_array() == valsExpected);
 }
 
 static const char *json1 =

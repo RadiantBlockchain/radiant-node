@@ -726,53 +726,43 @@ public:
     // Strict type-specific getters, these throw std::runtime_error if the
     // value is of unexpected type
 
-    /**
-     * VOBJ: Returns a reference to the underlying vector of key-value pairs.
-     * Other types: Throws std::runtime_error.
-     *
-     * Destroying the object invalidates the returned reference.
-     *
-     * Complexity: constant.
-     *
-     * This is a Bitcoin Cash Node extension of the UniValue API.
-     */
-    const Object& getObjectEntries() const;
-    Object& getObjectEntries();
-
-    /**
-     * VARR: Returns a reference to the underlying vector of values.
-     * Other types: Throws std::runtime_error.
-     *
-     * Destroying the array invalidates the returned reference.
-     *
-     * Complexity: constant.
-     *
-     * This is a Bitcoin Cash Node extension of the UniValue API.
-     *
-     * If you want to clear the array after using this method, consider using takeArrayValues() instead.
-     */
-    const Array& getArrayValues() const;
-    Array& getArrayValues();
-
-    /**
-     * VARR: Changes the UniValue into an empty array and returns the old array contents as a vector.
-     * Other types: Throws std::runtime_error.
-     *
-     * Complexity: constant.
-     *
-     * This is a Bitcoin Cash Node extension of the UniValue API.
-     *
-     * If you do not want to make the array empty, please use getArrayValues() instead.
-     */
-    Array takeArrayValues();
-
     bool get_bool() const;
     const std::string& get_str() const;
     int get_int() const;
     int64_t get_int64() const;
     double get_real() const;
-    const UniValue& get_obj() const;
-    const UniValue& get_array() const;
+
+    /**
+     * VOBJ: Returns a UniValue::Object reference to this value.
+     * Other types: Throws std::runtime_error.
+     *
+     * Destroying the object (e.g. destroying the UniValue wrapper or
+     * assigning a different type to it) invalidates the returned reference.
+     *
+     * Complexity: constant.
+     *
+     * Compatible with the upstream UniValue API,
+     * but with a different return type.
+     * Non-const overload is a Bitcoin Cash Node extension.
+     */
+    const Object& get_obj() const;
+    Object& get_obj();
+
+    /**
+     * VARR: Returns a UniValue::Array reference to this value.
+     * Other types: Throws std::runtime_error.
+     *
+     * Destroying the array (e.g. destroying the UniValue wrapper or
+     * assigning a different type to it) invalidates the returned reference.
+     *
+     * Complexity: constant.
+     *
+     * Compatible with the upstream UniValue API,
+     * but with a different return type.
+     * Non-const overload is a Bitcoin Cash Node extension.
+     */
+    const Array& get_array() const;
+    Array& get_array();
 
     constexpr enum VType type() const noexcept { return getType(); }
 };

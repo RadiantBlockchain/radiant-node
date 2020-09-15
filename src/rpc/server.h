@@ -1,6 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
-// Copyright (c) 2017-2019 The Bitcoin developers
+// Copyright (c) 2017-2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -110,7 +110,7 @@ void RPCTypeCheckArgument(const UniValue &value,
 /**
  * Check for expected keys/value types in an Object.
  */
-void RPCTypeCheckObj(const UniValue &o,
+void RPCTypeCheckObj(const UniValue::Object &o,
                      const std::map<std::string, UniValueType> &typesExpected,
                      bool fAllowNull = false, bool fStrict = false);
 
@@ -271,10 +271,12 @@ extern CRPCTable tableRPC;
 /**
  * Utilities: convert hex-encoded values (throws error if not hex).
  */
-extern uint256 ParseHashV(const UniValue &v, std::string strName);
-extern uint256 ParseHashO(const UniValue &o, std::string strKey);
-extern std::vector<uint8_t> ParseHexV(const UniValue &v, std::string strName);
-extern std::vector<uint8_t> ParseHexO(const UniValue &o, std::string strKey);
+extern uint256 ParseHashV(const UniValue &v, const std::string& strName);
+extern uint256 ParseHashO(const UniValue::Object &o, const std::string& strKey);
+extern uint256 ParseHashO(const UniValue &o, const std::string& strKey);
+extern std::vector<uint8_t> ParseHexV(const UniValue &v, const std::string& strName);
+extern std::vector<uint8_t> ParseHexO(const UniValue::Object &o, const std::string& strKey);
+extern std::vector<uint8_t> ParseHexO(const UniValue &o, const std::string& strKey);
 
 extern Amount AmountFromValue(const UniValue &value);
 extern std::string HelpExampleCli(const std::string &methodname,

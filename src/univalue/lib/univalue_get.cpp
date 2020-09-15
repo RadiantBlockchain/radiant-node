@@ -75,40 +75,6 @@ bool ParseDouble(const std::string& str, double *out)
 }
 } // end anonymous namespace
 
-const UniValue::Object& UniValue::getObjectEntries() const
-{
-    if (!isObject())
-        throw std::runtime_error("JSON value is not an object as expected");
-    return entries;
-}
-UniValue::Object& UniValue::getObjectEntries()
-{
-    if (!isObject())
-        throw std::runtime_error("JSON value is not an object as expected");
-    return entries;
-}
-
-const UniValue::Array& UniValue::getArrayValues() const
-{
-    if (!isArray())
-        throw std::runtime_error("JSON value is not an array as expected");
-    return values;
-}
-UniValue::Array& UniValue::getArrayValues()
-{
-    if (!isArray())
-        throw std::runtime_error("JSON value is not an array as expected");
-    return values;
-}
-
-UniValue::Array UniValue::takeArrayValues()
-{
-    if (!isArray())
-        throw std::runtime_error("JSON value is not an array as expected");
-    // after move, our values vector is guaranteed to be empty()
-    return std::move(values);
-}
-
 bool UniValue::get_bool() const
 {
     if (!isBool())
@@ -153,16 +119,28 @@ double UniValue::get_real() const
     return retval;
 }
 
-const UniValue& UniValue::get_obj() const
+const UniValue::Object& UniValue::get_obj() const
 {
     if (!isObject())
         throw std::runtime_error("JSON value is not an object as expected");
-    return *this;
+    return entries;
+}
+UniValue::Object& UniValue::get_obj()
+{
+    if (!isObject())
+        throw std::runtime_error("JSON value is not an object as expected");
+    return entries;
 }
 
-const UniValue& UniValue::get_array() const
+const UniValue::Array& UniValue::get_array() const
 {
     if (!isArray())
         throw std::runtime_error("JSON value is not an array as expected");
-    return *this;
+    return values;
+}
+UniValue::Array& UniValue::get_array()
+{
+    if (!isArray())
+        throw std::runtime_error("JSON value is not an array as expected");
+    return values;
 }

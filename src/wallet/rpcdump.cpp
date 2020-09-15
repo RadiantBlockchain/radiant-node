@@ -1414,7 +1414,7 @@ UniValue importmulti(const Config &, const JSONRPCRequest &mainRequest) {
 
     RPCTypeCheck(mainRequest.params, {UniValue::VARR, UniValue::VOBJ});
 
-    const UniValue &requests = mainRequest.params[0];
+    const UniValue::Array &requests = mainRequest.params[0].get_array();
 
     // Default options
     bool fRescan = true;
@@ -1437,7 +1437,7 @@ UniValue importmulti(const Config &, const JSONRPCRequest &mainRequest) {
     int64_t now = 0;
     bool fRunScan = false;
     int64_t nLowestTimestamp = 0;
-    UniValue response(UniValue::VARR);
+    UniValue::Array response;
     {
         auto locked_chain = pwallet->chain().lock();
         LOCK(pwallet->cs_wallet);
@@ -1447,7 +1447,7 @@ UniValue importmulti(const Config &, const JSONRPCRequest &mainRequest) {
         const Optional<int> tip_height = locked_chain->getHeight();
         now =
             tip_height ? locked_chain->getBlockMedianTimePast(*tip_height) : 0;
-        for (auto &data : requests.getArrayValues()) {
+        for (auto &data : requests) {
             GetImportTimestamp(data, now);
         }
 
@@ -1461,7 +1461,7 @@ UniValue importmulti(const Config &, const JSONRPCRequest &mainRequest) {
 
         response.reserve(requests.size());
 
-        for (const UniValue &data : requests.getArrayValues()) {
+        for (const UniValue &data : requests) {
             const int64_t timestamp =  std::max(GetImportTimestamp(data, now), minimumTimestamp);
             response.push_back( ProcessImport(pwallet, data, timestamp) );
 
@@ -1491,12 +1491,12 @@ UniValue importmulti(const Config &, const JSONRPCRequest &mainRequest) {
             throw JSONRPCError(RPC_MISC_ERROR, "Rescan aborted by user.");
         }
         if (scannedTime > nLowestTimestamp) {
-            UniValue::Array results = response.takeArrayValues(); // cheap constant-time move
+            UniValue::Array results = std::move(response); // cheap constant-time move
             // response is now an empty array after the above call
             response.reserve(requests.size());
             assert(results.size() == requests.size());
             size_t i = 0;
-            for (const UniValue &request : requests.getArrayValues()) {
+            for (const UniValue &request : requests) {
                 // If key creation date is within the successfully scanned
                 // range, or if the import result already has an error set, let
                 // the result stand unmodified. Otherwise replace the result
