@@ -2055,6 +2055,23 @@ static bool ProcessHeadersMessage(const Config &config, CNode *pfrom,
     return true;
 }
 
+//! Called from 3 places in this file; ensuring:
+//! - GETADDR is not sent if !fInbound as well as some other criteria are not met
+//! - GETADDR is sent precisely once after VERACK
+static void PushGetAddrOnceIfAfterVerAck(CConnman *connman, CNode *pfrom) {
+    if ( !pfrom->fInbound
+         && (pfrom->fOneShot || pfrom->nVersion >= CADDR_TIME_VERSION
+             || connman->GetAddressCount() < 1000)
+         && pfrom->GetBytesSentForCmd(NetMsgType::VERACK) > 0
+         && pfrom->GetBytesSentForCmd(NetMsgType::GETADDR) == 0)
+    {
+        connman->PushMessage(
+            pfrom,
+            CNetMsgMaker(pfrom->GetSendVersion()).Make(NetMsgType::GETADDR));
+        pfrom->fGetAddr = true;
+    }
+}
+
 static bool ProcessMessage(const Config &config, CNode *pfrom,
                            const std::string &strCommand, CDataStream &vRecv,
                            int64_t nTimeReceived, CConnman *connman,
@@ -2214,8 +2231,8 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
 
         pfrom->nServices = nServices;
 
-        if (pfrom->nServices & NODE_EXTVERSION) {
-            // Peer has extversion, so use that handshake.
+        if (nServices & NODE_EXTVERSION && connman->GetLocalServices() & NODE_EXTVERSION) {
+            // This node + peer both support extversion, so use that handshake.
             // Prepare extversion message. This must be sent before we send a verack message if extversion is enabled
             extversion::Message xver;
             xver.SetVersion(); // called with no args = set it to our version defined at compile-time.
@@ -2280,14 +2297,9 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
                 }
             }
 
-            // Get recent addresses
-            if (pfrom->fOneShot || pfrom->nVersion >= CADDR_TIME_VERSION ||
-                connman->GetAddressCount() < 1000) {
-                connman->PushMessage(
-                    pfrom,
-                    CNetMsgMaker(nSendVersion).Make(NetMsgType::GETADDR));
-                pfrom->fGetAddr = true;
-            }
+            // Get recent addresses - unless we're doing the extversion handshake in which case we
+            // do this after sending our VERACK
+            PushGetAddrOnceIfAfterVerAck(connman, pfrom);
             connman->MarkAddressGood(pfrom->addr);
         }
 
@@ -2344,6 +2356,9 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
 
         // Finish EXTVERSION handshake with a regular VERACK
         connman->PushMessage(pfrom, CNetMsgMaker(INIT_PROTO_VERSION).Make(NetMsgType::VERACK));
+        // Finish by (maybe) sending GETADDR
+        PushGetAddrOnceIfAfterVerAck(connman, pfrom);
+
         return true;
     }
 
@@ -2372,6 +2387,8 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
             // mismatch so we should send a verack response because the peer might not
             // support extversion
             connman->PushMessage(pfrom, CNetMsgMaker(INIT_PROTO_VERSION).Make(NetMsgType::VERACK));
+            // Finish by (maybe) sending GETADDR
+            PushGetAddrOnceIfAfterVerAck(connman, pfrom);
         }
 
         if (pfrom->nVersion >= SENDHEADERS_VERSION) {

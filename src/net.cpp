@@ -2901,3 +2901,11 @@ void CNode::ReadConfigFromExtversion()
     else
         LogPrint(BCLog::NET, "extversion: peer=%d did not send us their \"Version\" key\n", GetId());
 }
+
+//! Returns the number of bytes enqeueud (and eventually sent) for a particular command
+uint64_t CNode::GetBytesSentForCmd(const std::string &strCommand) const
+{
+    LOCK(cs_vSend);
+    const auto it = mapSendBytesPerMsgCmd.find(strCommand);
+    return it != mapSendBytesPerMsgCmd.end() ? it->second : 0;
+}
