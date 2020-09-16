@@ -655,7 +655,7 @@ public:
     size_t nSendOffset{0};
     uint64_t nSendBytes GUARDED_BY(cs_vSend){0};
     std::deque<std::vector<uint8_t>> vSendMsg GUARDED_BY(cs_vSend);
-    RecursiveMutex cs_vSend;
+    mutable RecursiveMutex cs_vSend;
     RecursiveMutex cs_hSocket;
     RecursiveMutex cs_vRecv;
 
@@ -892,6 +892,9 @@ public:
     void MaybeSetAddrName(const std::string &addrNameIn);
 
     void ReadConfigFromExtversion() EXCLUSIVE_LOCKS_REQUIRED(cs_extversion);
+
+    //! Returns the number of bytes enqeueud (and eventually sent) for a particular command
+    uint64_t GetBytesSentForCmd(const std::string &strCommand) const;
 };
 
 /**
