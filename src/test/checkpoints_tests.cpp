@@ -90,7 +90,7 @@ public:
 
     static std::unique_ptr<CChainParams> createChainParams() {
         CCheckpointData checkpoints = {
-            .mapCheckpoints = {
+           /* .mapCheckpoints = */ {
                 {2, BlockHash::fromHex("000000006a625f06636b8bb6ac7b960a8d03705"
                                        "d1ace08b1a19da3fdcc99ddbd")},
             }};

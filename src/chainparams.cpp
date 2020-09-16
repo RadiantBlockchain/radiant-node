@@ -197,7 +197,7 @@ public:
         m_is_test_chain = false;
 
         checkpointData = {
-            .mapCheckpoints = {
+            /* .mapCheckpoints = */ {
                 {11111, BlockHash::fromHex("0000000069e244f73d78e8fd29ba2fd2ed6"
                                            "18bd6fa2ee92559f542fdb26e7c1d")},
                 {33333, BlockHash::fromHex("000000002dd5588a74784eaa7ab0507a18a"
@@ -376,7 +376,7 @@ public:
         m_is_test_chain = true;
 
         checkpointData = {
-            .mapCheckpoints = {
+            /* .mapCheckpoints = */ {
                 {546, BlockHash::fromHex("000000002a936ca763904c3c35fce2f3556c5"
                                          "59c0214345d31b1bcebf76acb70")},
                 // UAHF fork block.
@@ -509,7 +509,7 @@ public:
         m_is_test_chain = true;
 
         checkpointData = {
-            .mapCheckpoints = {
+            /* .mapCheckpoints = */ {
                 {0, genesis.GetHash()},
                 {5000, BlockHash::fromHex("000000009f092d074574a216faec682040a853c4f079c33dfd2c3ef1fd8108c4")},
             }};
@@ -626,7 +626,7 @@ public:
         m_is_test_chain = true;
 
         checkpointData = {
-            .mapCheckpoints = {
+            /* .mapCheckpoints = */ {
                 {0, genesis.GetHash()},
                 {45, BlockHash::fromHex("00000000d75a7c9098d02b321e9900b16ecbd552167e65683fe86e5ecf88b320")},
             }};
@@ -731,7 +731,7 @@ public:
         m_is_test_chain = true;
 
         checkpointData = {
-            .mapCheckpoints = {
+            /* .mapCheckpoints = */ {
                 {0, BlockHash::fromHex("0f9188f13cb7b2c71f2a335e3a4fc328bf5beb4"
                                        "36012afca590b1a11466e2206")},
             }};
