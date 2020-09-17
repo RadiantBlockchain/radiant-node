@@ -14,9 +14,10 @@ static const struct {
     const char *appName;
     const int iconColorHue;
     const char *titleAddText;
-} network_styles[] = {{"main",    QAPP_APP_NAME_DEFAULT,   0, ""                                            },
-                      {"test",    QAPP_APP_NAME_TESTNET, 120, QT_TRANSLATE_NOOP("SplashScreen", "[testnet]")},
-                      {"regtest", QAPP_APP_NAME_TESTNET, 180, "[regtest]"                                   }};
+} network_styles[] = {{"main",    QAPP_APP_NAME_DEFAULT,    0, ""                                            },
+                      {"test",    QAPP_APP_NAME_TESTNET,  120, QT_TRANSLATE_NOOP("SplashScreen", "[testnet]")},
+                      {"test4",   QAPP_APP_NAME_TESTNET4, 300, QT_TRANSLATE_NOOP("SplashScreen", "[testnet4]")},
+                      {"regtest", QAPP_APP_NAME_TESTNET,  180, "[regtest]"                                   }};
 static const unsigned network_styles_count =
     sizeof(network_styles) / sizeof(*network_styles);
 

@@ -397,7 +397,7 @@ std::set<std::string> ArgsManager::GetUnsuitableSectionOnlyArgs() const {
 const std::list<SectionInfo> ArgsManager::GetUnrecognizedSections() const {
     // Section names to be recognized in the config file.
     static const std::set<std::string> available_sections{
-        CBaseChainParams::REGTEST, CBaseChainParams::TESTNET,
+        CBaseChainParams::REGTEST, CBaseChainParams::TESTNET, CBaseChainParams::TESTNET4,
         CBaseChainParams::MAIN};
 
     LOCK(cs_args);
@@ -1109,16 +1109,20 @@ std::string ArgsManager::GetChainName() const {
     LOCK(cs_args);
     bool fRegTest = ArgsManagerHelper::GetNetBoolArg(*this, "-regtest");
     bool fTestNet = ArgsManagerHelper::GetNetBoolArg(*this, "-testnet");
+    bool fTestNet4 = ArgsManagerHelper::GetNetBoolArg(*this, "-testnet4");
 
-    if (fTestNet && fRegTest) {
+    if (fTestNet + fTestNet4 + fRegTest > 1) {
         throw std::runtime_error(
-            "Invalid combination of -regtest and -testnet.");
+            "Invalid combination of -regtest, -testnet, and -testnet4.");
     }
     if (fRegTest) {
         return CBaseChainParams::REGTEST;
     }
     if (fTestNet) {
         return CBaseChainParams::TESTNET;
+    }
+    if (fTestNet4) {
+        return CBaseChainParams::TESTNET4;
     }
     return CBaseChainParams::MAIN;
 }

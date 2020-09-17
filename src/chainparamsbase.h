@@ -19,6 +19,7 @@ public:
     /** BIP70 chain name strings (main, test or regtest) */
     static const std::string MAIN;
     static const std::string TESTNET;
+    static const std::string TESTNET4;
     static const std::string REGTEST;
 
     const std::string &DataDir() const { return strDataDir; }
