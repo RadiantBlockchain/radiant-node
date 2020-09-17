@@ -11,12 +11,46 @@
 #include <primitives/block.h>
 #include <protocol.h>
 
+#include <array>
 #include <memory>
 #include <vector>
 
 struct SeedSpec6 {
-    uint8_t addr[16];
-    uint16_t port;
+    static constexpr int ADDRLEN = 16;
+
+    uint8_t addr[ADDRLEN]{};
+    uint16_t port{};
+
+    constexpr SeedSpec6() noexcept {}
+
+    //! Parses a human readable host:port pair to construct a valid SeedSpec6.
+    //! Throws std::invalid_argument on parse failure. This is used in
+    //! chainparamsseeds.h to build the internal list of seeds.
+    //!
+    //! Valid examples of human-reabale strings this constructor can parse:
+    //!
+    //!   IP4: "167.172.41.140:8333"
+    //!   IP6: "[2001:470:8f9e:944:5054:ff:fed7:c164]:8333"
+    //!        "[2a0a:51c0:0:136::4]:8333"
+    SeedSpec6(const char *pszHostPort);
+    SeedSpec6(const std::string &s) : SeedSpec6(s.c_str()) {}
+
+    //! Constructor used for inline aggregate initialization
+    constexpr SeedSpec6(const std::array<uint8_t, ADDRLEN> &addr_, uint16_t port_) noexcept
+        : port(port_) {
+        for (int i = 0; i < ADDRLEN; ++i)
+            addr[i] = addr_[i];
+    }
+
+    constexpr bool operator==(const SeedSpec6 &o) const noexcept {
+        if (port != o.port)
+            return false;
+        for (int i = 0; i < ADDRLEN; ++i)
+            if (addr[i] != o.addr[i])
+                return false;
+        return true;
+    }
+    constexpr bool operator!=(const SeedSpec6 &o) const noexcept { return !(*this == o); }
 };
 
 typedef std::map<int, BlockHash> MapCheckpoints;

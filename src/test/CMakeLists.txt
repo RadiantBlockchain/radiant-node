@@ -164,6 +164,7 @@ add_boost_unit_tests_to_suite(bitcoin test_bitcoin
 		script_standard_tests.cpp
 		script_tests.cpp
 		scriptnum_tests.cpp
+		seedspec6_tests.cpp
 		serialize_tests.cpp
 		sigcache_tests.cpp
 		sigencoding_tests.cpp
