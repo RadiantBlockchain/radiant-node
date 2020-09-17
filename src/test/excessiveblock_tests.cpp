@@ -13,7 +13,7 @@
 #include <limits>
 #include <string>
 
-extern UniValue CallRPC(std::string strMethod);
+extern UniValue CallRPC(const std::string &strMethod);
 
 BOOST_FIXTURE_TEST_SUITE(excessiveblock_tests, TestingSetup)
 

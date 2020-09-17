@@ -56,12 +56,12 @@ private:
 class DummyConfig : public Config {
 public:
     DummyConfig();
-    DummyConfig(std::string net);
+    DummyConfig(const std::string &net);
     DummyConfig(std::unique_ptr<CChainParams> chainParamsIn);
     bool SetMaxBlockSize(uint64_t maxBlockSize) override { return false; }
     uint64_t GetMaxBlockSize() const override { return 0; }
 
-    void SetChainParams(std::string net);
+    void SetChainParams(const std::string &net);
     const CChainParams &GetChainParams() const override { return *chainParams; }
 
     void SetCashAddrEncoding(bool) override {}

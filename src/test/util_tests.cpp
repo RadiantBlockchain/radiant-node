@@ -1283,7 +1283,7 @@ BOOST_AUTO_TEST_CASE(test_ParseFixedPoint) {
     BOOST_CHECK(!ParseFixedPoint("1.", 8, &amount));
 }
 
-static void TestOtherThread(fs::path dirname, std::string lockname,
+static void TestOtherThread(const fs::path &dirname, const std::string &lockname,
                             bool *result) {
     *result = LockDirectory(dirname, lockname);
 }
@@ -1293,7 +1293,7 @@ static constexpr char LockCommand = 'L';
 static constexpr char UnlockCommand = 'U';
 static constexpr char ExitCommand = 'X';
 
-static void TestOtherProcess(fs::path dirname, std::string lockname, int fd) {
+static void TestOtherProcess(const fs::path &dirname, const std::string &lockname, int fd) {
     char ch;
     while (true) {
         // Wait for command

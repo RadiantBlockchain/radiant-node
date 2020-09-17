@@ -229,7 +229,7 @@ static void TestPackageSelection(const CChainParams &chainparams,
     BOOST_CHECK(pblocktemplate->block.vtx[8]->GetId() == lowFeeTxId2);
 }
 
-void TestCoinbaseMessageEB(uint64_t eb, std::string cbmsg) {
+void TestCoinbaseMessageEB(uint64_t eb, const std::string &cbmsg) {
     GlobalConfig config;
     config.SetMaxBlockSize(eb);
 

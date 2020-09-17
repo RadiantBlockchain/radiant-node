@@ -64,7 +64,7 @@ public:
 
     bool UpdateTimer(time_point finish_time);
 
-    State(std::string name, uint64_t num_evals, double num_iters,
+    State(const std::string &name, uint64_t num_evals, double num_iters,
           Printer &printer)
         : m_name(name), m_num_iters_left(0), m_num_iters(num_iters),
           m_num_evals(num_evals) {}
@@ -92,7 +92,7 @@ class BenchRunner {
     static BenchmarkMap &benchmarks();
 
 public:
-    BenchRunner(std::string name, BenchFunction func,
+    BenchRunner(const std::string &name, BenchFunction func,
                 uint64_t num_iters_for_one_second);
 
     static void RunAll(Printer &printer, uint64_t num_evals, double scaling,
@@ -119,7 +119,7 @@ public:
 // creates box plot with plotly.js
 class PlotlyPrinter : public Printer {
 public:
-    PlotlyPrinter(std::string plotly_url, int64_t width, int64_t height);
+    PlotlyPrinter(const std::string &plotly_url, int64_t width, int64_t height);
     void header() override;
     void result(const State &state) override;
     void footer() override;

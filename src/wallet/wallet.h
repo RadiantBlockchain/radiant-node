@@ -1427,12 +1427,12 @@ public:
      * multi-wallet use cases.
      */
     template <typename... Params>
-    void WalletLogPrintf(std::string fmt, Params... parameters) const {
+    void WalletLogPrintf(const std::string &fmt, Params... parameters) const {
         LogPrintf(("%s " + fmt).c_str(), GetDisplayName(), parameters...);
     };
 
     template <typename... Params>
-    void WalletLogPrintfToBeContinued(std::string fmt,
+    void WalletLogPrintfToBeContinued(const std::string &fmt,
                                       Params... parameters) const {
         LogPrintfToBeContinued(("%s " + fmt).c_str(), GetDisplayName(),
                                parameters...);
