@@ -14,6 +14,7 @@
 const std::string CBaseChainParams::MAIN = "main";
 const std::string CBaseChainParams::TESTNET = "test";
 const std::string CBaseChainParams::TESTNET4 = "test4";
+const std::string CBaseChainParams::SCALENET = "scale";
 const std::string CBaseChainParams::REGTEST = "regtest";
 
 void SetupChainParamsBaseOptions() {
@@ -25,6 +26,8 @@ void SetupChainParamsBaseOptions() {
     gArgs.AddArg("-testnet", "Use the test chain", false,
                  OptionsCategory::CHAINPARAMS);
     gArgs.AddArg("-testnet4", "Use the test4 chain", false,
+                 OptionsCategory::CHAINPARAMS);
+    gArgs.AddArg("-scalenet", "Use the scaling test chain", false,
                  OptionsCategory::CHAINPARAMS);
 }
 
@@ -47,6 +50,10 @@ CreateBaseChainParams(const std::string &chain) {
 
     if (chain == CBaseChainParams::TESTNET4) {
         return std::make_unique<CBaseChainParams>("testnet4", 28332);
+    }
+
+    if (chain == CBaseChainParams::SCALENET) {
+        return std::make_unique<CBaseChainParams>("scalenet", 38332);
     }
 
     if (chain == CBaseChainParams::REGTEST) {

@@ -39,6 +39,7 @@ static void SetupCliArgs() {
     const auto defaultBaseParams = CreateBaseChainParams(CBaseChainParams::MAIN);
     const auto testnetBaseParams = CreateBaseChainParams(CBaseChainParams::TESTNET);
     const auto testnet4BaseParams = CreateBaseChainParams(CBaseChainParams::TESTNET4);
+    const auto scalenetBaseParams = CreateBaseChainParams(CBaseChainParams::SCALENET);
     const auto regtestBaseParams = CreateBaseChainParams(CBaseChainParams::REGTEST);
 
     gArgs.AddArg("-version", "Print version and exit", false,
@@ -75,10 +76,11 @@ static void SetupCliArgs() {
                  false, OptionsCategory::OPTIONS);
     gArgs.AddArg("-rpcport=<port>",
                  strprintf("Connect to JSON-RPC on <port> (default: %u, "
-                           "testnet: %u, testnet4: %u, regtest: %u)",
+                           "testnet: %u, testnet4: %u, scalenet: %u, regtest: %u)",
                            defaultBaseParams->RPCPort(),
                            testnetBaseParams->RPCPort(),
                            testnet4BaseParams->RPCPort(),
+                           scalenetBaseParams->RPCPort(),
                            regtestBaseParams->RPCPort()),
                  false, OptionsCategory::OPTIONS);
     gArgs.AddArg("-rpcwait", "Wait for RPC server to start", false,

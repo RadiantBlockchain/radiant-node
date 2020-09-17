@@ -360,10 +360,12 @@ void SetupServerArgs() {
     const auto testnetBaseParams = CreateBaseChainParams(CBaseChainParams::TESTNET);
     const auto testnet4BaseParams = CreateBaseChainParams(CBaseChainParams::TESTNET4);
     const auto regtestBaseParams = CreateBaseChainParams(CBaseChainParams::REGTEST);
+    const auto scalenetBaseParams = CreateBaseChainParams(CBaseChainParams::SCALENET);
     const auto defaultChainParams = CreateChainParams(CBaseChainParams::MAIN);
     const auto testnetChainParams = CreateChainParams(CBaseChainParams::TESTNET);
     const auto testnet4ChainParams = CreateChainParams(CBaseChainParams::TESTNET4);
     const auto regtestChainParams = CreateChainParams(CBaseChainParams::REGTEST);
+    const auto scalenetChainParams = CreateChainParams(CBaseChainParams::SCALENET);
 
     // Hidden Options
     std::vector<std::string> hidden_args = {
@@ -662,10 +664,11 @@ void SetupServerArgs() {
                  false, OptionsCategory::CONNECTION);
     gArgs.AddArg("-port=<port>",
                  strprintf("Listen for connections on <port> (default: %u, "
-                           "testnet: %u, testnet4: %u, regtest: %u)",
+                           "testnet: %u, testnet4: %u, scalenet: %u, regtest: %u)",
                            defaultChainParams->GetDefaultPort(),
                            testnetChainParams->GetDefaultPort(),
                            testnet4ChainParams->GetDefaultPort(),
+                           scalenetChainParams->GetDefaultPort(),
                            regtestChainParams->GetDefaultPort()),
                  false, OptionsCategory::CONNECTION);
     gArgs.AddArg("-proxy=<ip:port>", "Connect through SOCKS5 proxy", false,
@@ -1026,10 +1029,11 @@ void SetupServerArgs() {
         false, OptionsCategory::RPC);
     gArgs.AddArg("-rpcport=<port>",
                  strprintf("Listen for JSON-RPC connections on <port> "
-                           "(default: %u, testnet: %u, testnet4: %u, regtest: %u)",
+                           "(default: %u, testnet: %u, testnet4: %u, scalenet: %u, regtest: %u)",
                            defaultBaseParams->RPCPort(),
                            testnetBaseParams->RPCPort(),
                            testnet4BaseParams->RPCPort(),
+                           scalenetBaseParams->RPCPort(),
                            regtestBaseParams->RPCPort()),
                  false, OptionsCategory::RPC);
     gArgs.AddArg("-rpcallowip=<ip>",
