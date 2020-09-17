@@ -11,19 +11,18 @@
 #include <key_io.h>
 #include <script/script.h>
 #include <test/setup_common.h>
+#include <test/jsonutil.h>
 #include <util/strencodings.h>
 
 #include <boost/test/unit_test.hpp>
 
 #include <univalue.h>
 
-extern UniValue read_json(const std::string &jsondata);
-
 BOOST_FIXTURE_TEST_SUITE(key_io_tests, BasicTestingSetup)
 
 // Goal: check that parsed keys match test payload
 BOOST_AUTO_TEST_CASE(key_io_valid_parse) {
-    UniValue tests = read_json(std::string(
+    UniValue::Array tests = read_json(std::string(
         json_tests::key_io_valid,
         json_tests::key_io_valid + sizeof(json_tests::key_io_valid)));
     CKey privkey;

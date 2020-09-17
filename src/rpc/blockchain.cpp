@@ -2079,10 +2079,8 @@ static UniValue getblockstats(const Config &config,
 
     std::set<std::string> stats;
     if (!request.params[1].isNull()) {
-        const UniValue stats_univalue = request.params[1].get_array();
-        for (unsigned int i = 0; i < stats_univalue.size(); i++) {
-            const std::string stat = stats_univalue[i].get_str();
-            stats.insert(stat);
+        for (const UniValue& stat : request.params[1].get_array()) {
+            stats.insert(stat.get_str());
         }
     }
 

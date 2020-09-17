@@ -142,9 +142,7 @@ BOOST_AUTO_TEST_CASE(blockfilters_json_test) {
         return;
     }
 
-    const UniValue &tests = json.get_array();
-    for (size_t i = 0; i < tests.size(); i++) {
-        const UniValue& test = tests[i];
+    for (const UniValue& test : json.get_array()) {
 
         if (test.size() == 1) {
             continue;
@@ -164,10 +162,8 @@ BOOST_AUTO_TEST_CASE(blockfilters_json_test) {
         CBlockUndo block_undo;
         block_undo.vtxundo.emplace_back();
         CTxUndo &tx_undo = block_undo.vtxundo.back();
-        const UniValue &prev_scripts = test[pos++].get_array();
-        for (size_t ii = 0; ii < prev_scripts.size(); ii++) {
-            std::vector<uint8_t> raw_script =
-                ParseHex(prev_scripts[ii].get_str());
+        for (const UniValue &prev_script : test[pos++].get_array()) {
+            std::vector<uint8_t> raw_script = ParseHex(prev_script.get_str());
             CTxOut txout(0 * SATOSHI,
                          CScript(raw_script.begin(), raw_script.end()));
             tx_undo.vprevout.emplace_back(txout, 0, false);

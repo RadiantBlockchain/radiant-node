@@ -40,10 +40,10 @@ typedef std::vector<uint8_t> valtype;
 
 BOOST_FIXTURE_TEST_SUITE(transaction_tests, BasicTestingSetup)
 
-static COutPoint buildOutPoint(const UniValue &vinput) {
+static COutPoint buildOutPoint(const UniValue::Array &vinput) {
     TxId txid;
-    txid.SetHex(vinput[0].get_str());
-    return COutPoint(txid, vinput[1].get_int());
+    txid.SetHex(vinput.at(0).get_str());
+    return COutPoint(txid, vinput.at(1).get_int());
 }
 
 BOOST_AUTO_TEST_CASE(tx_valid) {
@@ -56,13 +56,12 @@ BOOST_AUTO_TEST_CASE(tx_valid) {
     //
     // verifyFlags is a comma separated list of script verification flags to
     // apply, or "NONE"
-    UniValue tests = read_json(
+    UniValue::Array tests = read_json(
         std::string(json_tests::tx_valid,
                     json_tests::tx_valid + sizeof(json_tests::tx_valid)));
 
     ScriptError err;
-    for (size_t idx = 0; idx < tests.size(); idx++) {
-        const UniValue& test = tests[idx];
+    for (const UniValue& test : tests) {
         std::string strTest = UniValue::stringify(test);
         if (test[0].isArray()) {
             if (test.size() != 3 || !test[1].isStr() || !test[2].isStr()) {
@@ -72,7 +71,7 @@ BOOST_AUTO_TEST_CASE(tx_valid) {
 
             std::map<COutPoint, CScript> mapprevOutScriptPubKeys;
             std::map<COutPoint, Amount> mapprevOutValues;
-            UniValue inputs = test[0].get_array();
+            const UniValue::Array& inputs = test[0].get_array();
             bool fValid = true;
             for (size_t inpIdx = 0; inpIdx < inputs.size(); inpIdx++) {
                 const UniValue &input = inputs[inpIdx];
@@ -80,7 +79,7 @@ BOOST_AUTO_TEST_CASE(tx_valid) {
                     fValid = false;
                     break;
                 }
-                UniValue vinput = input.get_array();
+                const UniValue::Array& vinput = input.get_array();
                 if (vinput.size() < 3 || vinput.size() > 4) {
                     fValid = false;
                     break;
@@ -174,7 +173,7 @@ BOOST_AUTO_TEST_CASE(tx_invalid) {
 
             std::map<COutPoint, CScript> mapprevOutScriptPubKeys;
             std::map<COutPoint, Amount> mapprevOutValues;
-            UniValue inputs = test[0].get_array();
+            const UniValue::Array& inputs = test[0].get_array();
             bool fValid = true;
             for (size_t inpIdx = 0; inpIdx < inputs.size(); inpIdx++) {
                 const UniValue &input = inputs[inpIdx];
@@ -182,7 +181,7 @@ BOOST_AUTO_TEST_CASE(tx_invalid) {
                     fValid = false;
                     break;
                 }
-                UniValue vinput = input.get_array();
+                const UniValue::Array& vinput = input.get_array();
                 if (vinput.size() < 3 || vinput.size() > 4) {
                     fValid = false;
                     break;

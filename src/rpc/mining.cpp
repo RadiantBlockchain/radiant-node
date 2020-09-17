@@ -673,7 +673,7 @@ static UniValue getblocktemplatecommon(bool fLight, const Config &config, const 
         // we are called.  However, pblock sticks around as global state for 5 seconds. `additional_txs` is a
         // per-invocation parameter, and should not affect global state.  So, instead, we must use the `pvtx` pointer
         // above which will end up pointing to a private copy of pblock's tx data which we will create below.
-        const UniValue &injectedTxsHex = request.params[1].get_array(); // throws error to client if not array
+        const UniValue::Array &injectedTxsHex = request.params[1].get_array(); // throws error to client if not array
         const auto size = injectedTxsHex.size();
         if (size) {
             // copy pblock's txs since we need a private copy to modify the set of txs for this invocation

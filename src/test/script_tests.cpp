@@ -524,7 +524,7 @@ public:
     std::string GetComment() const { return comment; }
 };
 
-std::string JSONPrettyPrint(const UniValue &univalue) {
+template<typename Value>  static std::string JSONPrettyPrint(const Value &univalue) {
     std::string ret = UniValue::stringify(univalue, 4);
     // Workaround for libunivalue pretty printer, which puts a space between
     // commas and newlines

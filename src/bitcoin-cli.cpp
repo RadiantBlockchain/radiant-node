@@ -364,7 +364,7 @@ public:
     }
 
     UniValue ProcessReply(const UniValue &reply) override {
-        return reply.get_obj();
+        return UniValue(reply.get_obj());
     }
 };
 

@@ -427,9 +427,9 @@ public:
     UniValue(const std::string& val_) : typ(VSTR), val(val_) {}
     UniValue(std::string&& val_) noexcept : typ(VSTR), val(std::move(val_)) {}
     UniValue(const char *val_) : typ(VSTR), val(val_) {}
-    UniValue(const Array& array) : typ(VARR), values(array) {}
+    explicit UniValue(const Array& array) : typ(VARR), values(array) {}
     UniValue(Array&& array) : typ(VARR), values(std::move(array)) {}
-    UniValue(const Object& object) : typ(VOBJ), entries(object) {}
+    explicit UniValue(const Object& object) : typ(VOBJ), entries(object) {}
     UniValue(Object&& object) : typ(VOBJ), entries(std::move(object)) {}
 
     void setNull() noexcept;

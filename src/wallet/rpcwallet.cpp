@@ -119,35 +119,35 @@ void EnsureWalletIsUnlocked(CWallet *const pwallet) {
 
 static void WalletTxToJSON(interfaces::Chain &chain,
                            interfaces::Chain::Lock &locked_chain,
-                           const CWalletTx &wtx, UniValue &entry) {
+                           const CWalletTx &wtx, UniValue::Object &entry) {
     int confirms = wtx.GetDepthInMainChain(locked_chain);
-    entry.pushKV("confirmations", confirms);
+    entry.emplace_back("confirmations", confirms);
     if (wtx.IsCoinBase()) {
-        entry.pushKV("generated", true);
+        entry.emplace_back("generated", true);
     }
     if (confirms > 0) {
-        entry.pushKV("blockhash", wtx.hashBlock.GetHex());
-        entry.pushKV("blockindex", wtx.nIndex);
+        entry.emplace_back("blockhash", wtx.hashBlock.GetHex());
+        entry.emplace_back("blockindex", wtx.nIndex);
         int64_t block_time;
         bool found_block =
             chain.findBlock(wtx.hashBlock, nullptr /* block */, &block_time);
         assert(found_block);
-        entry.pushKV("blocktime", block_time);
+        entry.emplace_back("blocktime", block_time);
     } else {
-        entry.pushKV("trusted", wtx.IsTrusted(locked_chain));
+        entry.emplace_back("trusted", wtx.IsTrusted(locked_chain));
     }
     uint256 hash = wtx.GetId();
-    entry.pushKV("txid", hash.GetHex());
-    UniValue conflicts(UniValue::VARR);
+    entry.emplace_back("txid", hash.GetHex());
+    UniValue::Array conflicts;
     for (const uint256 &conflict : wtx.GetConflicts()) {
         conflicts.push_back(conflict.GetHex());
     }
-    entry.pushKV("walletconflicts", conflicts);
-    entry.pushKV("time", wtx.GetTxTime());
-    entry.pushKV("timereceived", (int64_t)wtx.nTimeReceived);
+    entry.emplace_back("walletconflicts", std::move(conflicts));
+    entry.emplace_back("time", wtx.GetTxTime());
+    entry.emplace_back("timereceived", (int64_t)wtx.nTimeReceived);
 
     for (const std::pair<const std::string, std::string> &item : wtx.mapValue) {
-        entry.pushKV(item.first, item.second);
+        entry.emplace_back(item.first, item.second);
     }
 }
 
@@ -1012,7 +1012,7 @@ static UniValue sendmany(const Config &config, const JSONRPCRequest &request) {
         mapValue["comment"] = request.params[3].get_str();
     }
 
-    UniValue subtractFeeFromAmount(UniValue::VARR);
+    UniValue::Array subtractFeeFromAmount;
     if (!request.params[4].isNull()) {
         subtractFeeFromAmount = request.params[4].get_array();
     }
@@ -1044,10 +1044,10 @@ static UniValue sendmany(const Config &config, const JSONRPCRequest &request) {
         totalAmount += nAmount;
 
         bool fSubtractFeeFromAmount = false;
-        for (size_t idx = 0; idx < subtractFeeFromAmount.size(); idx++) {
-            const UniValue &addr = subtractFeeFromAmount[idx];
+        for (const UniValue &addr : subtractFeeFromAmount) {
             if (addr.get_str() == entry.first) {
                 fSubtractFeeFromAmount = true;
+                break;
             }
         }
 
@@ -1155,16 +1155,16 @@ static UniValue addmultisigaddress(const Config &config,
     int required = request.params[0].get_int();
 
     // Get the public keys
-    const UniValue &keys_or_addrs = request.params[1].get_array();
     std::vector<CPubKey> pubkeys;
-    for (size_t i = 0; i < keys_or_addrs.size(); ++i) {
-        if (IsHex(keys_or_addrs[i].get_str()) &&
-            (keys_or_addrs[i].get_str().length() == 66 ||
-             keys_or_addrs[i].get_str().length() == 130)) {
-            pubkeys.push_back(HexToPubKey(keys_or_addrs[i].get_str()));
+    for (const UniValue &key_or_addr : request.params[1].get_array()) {
+        const auto& key_or_addr_str = key_or_addr.get_str();
+        if (IsHex(key_or_addr_str) &&
+            (key_or_addr_str.length() == 66 ||
+             key_or_addr_str.length() == 130)) {
+            pubkeys.push_back(HexToPubKey(key_or_addr_str));
         } else {
             pubkeys.push_back(AddrToPubKey(config.GetChainParams(), pwallet,
-                                           keys_or_addrs[i].get_str()));
+                                           key_or_addr_str));
         }
     }
 
@@ -1467,9 +1467,9 @@ static UniValue listreceivedbylabel(const Config &config,
     return ListReceived(config, *locked_chain, pwallet, request.params, true);
 }
 
-static void MaybePushAddress(UniValue &entry, const CTxDestination &dest) {
+static void MaybePushAddress(UniValue::Object &entry, const CTxDestination &dest) {
     if (IsValidDestination(dest)) {
-        entry.pushKV("address", EncodeDestination(dest, GetConfig()));
+        entry.emplace_back("address", EncodeDestination(dest, GetConfig()));
     }
 }
 
@@ -1501,25 +1501,24 @@ static void ListTransactions(interfaces::Chain::Lock &locked_chain,
     // Sent
     if (!filter_label) {
         for (const COutputEntry &s : listSent) {
-            UniValue entry(UniValue::VOBJ);
+            UniValue::Object entry;
             if (involvesWatchonly ||
                 (::IsMine(*pwallet, s.destination) & ISMINE_WATCH_ONLY)) {
-                entry.pushKV("involvesWatchonly", true);
+                entry.emplace_back("involvesWatchonly", true);
             }
             MaybePushAddress(entry, s.destination);
-            entry.pushKV("category", "send");
-            entry.pushKV("amount", ValueFromAmount(-s.amount));
+            entry.emplace_back("category", "send");
+            entry.emplace_back("amount", ValueFromAmount(-s.amount));
             if (pwallet->mapAddressBook.count(s.destination)) {
-                entry.pushKV("label",
-                             pwallet->mapAddressBook[s.destination].name);
+                entry.emplace_back("label", pwallet->mapAddressBook[s.destination].name);
             }
-            entry.pushKV("vout", s.vout);
-            entry.pushKV("fee", ValueFromAmount(-1 * nFee));
+            entry.emplace_back("vout", s.vout);
+            entry.emplace_back("fee", ValueFromAmount(-1 * nFee));
             if (fLong) {
                 WalletTxToJSON(pwallet->chain(), locked_chain, wtx, entry);
             }
-            entry.pushKV("abandoned", wtx.isAbandoned());
-            ret.push_back(entry);
+            entry.emplace_back("abandoned", wtx.isAbandoned());
+            ret.emplace_back(std::move(entry));
         }
     }
 
@@ -1534,32 +1533,32 @@ static void ListTransactions(interfaces::Chain::Lock &locked_chain,
             if (filter_label && label != *filter_label) {
                 continue;
             }
-            UniValue entry(UniValue::VOBJ);
+            UniValue::Object entry;
             if (involvesWatchonly ||
                 (::IsMine(*pwallet, r.destination) & ISMINE_WATCH_ONLY)) {
-                entry.pushKV("involvesWatchonly", true);
+                entry.emplace_back("involvesWatchonly", true);
             }
             MaybePushAddress(entry, r.destination);
             if (wtx.IsCoinBase()) {
                 if (wtx.GetDepthInMainChain(locked_chain) < 1) {
-                    entry.pushKV("category", "orphan");
+                    entry.emplace_back("category", "orphan");
                 } else if (wtx.IsImmatureCoinBase(locked_chain)) {
-                    entry.pushKV("category", "immature");
+                    entry.emplace_back("category", "immature");
                 } else {
-                    entry.pushKV("category", "generate");
+                    entry.emplace_back("category", "generate");
                 }
             } else {
-                entry.pushKV("category", "receive");
+                entry.emplace_back("category", "receive");
             }
-            entry.pushKV("amount", ValueFromAmount(r.amount));
+            entry.emplace_back("amount", ValueFromAmount(r.amount));
             if (pwallet->mapAddressBook.count(r.destination)) {
-                entry.pushKV("label", label);
+                entry.emplace_back("label", label);
             }
-            entry.pushKV("vout", r.vout);
+            entry.emplace_back("vout", r.vout);
             if (fLong) {
                 WalletTxToJSON(pwallet->chain(), locked_chain, wtx, entry);
             }
-            ret.push_back(entry);
+            ret.emplace_back(std::move(entry));
         }
     }
 }
@@ -1917,12 +1916,12 @@ static UniValue listsinceblock(const Config &config,
                               ? locked_chain->getBlockHash(last_height)
                               : BlockHash();
 
-    UniValue ret(UniValue::VOBJ);
-    ret.pushKV("transactions", transactions);
+    UniValue::Object ret;
+    ret.emplace_back("transactions", std::move(transactions));
     if (include_removed) {
-        ret.pushKV("removed", removed);
+        ret.emplace_back("removed", std::move(removed));
     }
-    ret.pushKV("lastblock", lastblock.GetHex());
+    ret.emplace_back("lastblock", lastblock.GetHex());
 
     return ret;
 }
@@ -2032,7 +2031,7 @@ static UniValue gettransaction(const Config &config,
         filter = filter | ISMINE_WATCH_ONLY;
     }
 
-    UniValue entry(UniValue::VOBJ);
+    UniValue::Object entry;
     auto it = pwallet->mapWallet.find(txid);
     if (it == pwallet->mapWallet.end()) {
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY,
@@ -2046,9 +2045,9 @@ static UniValue gettransaction(const Config &config,
     Amount nFee = (wtx.IsFromMe(filter) ? wtx.tx->GetValueOut() - nDebit
                                         : Amount::zero());
 
-    entry.pushKV("amount", ValueFromAmount(nNet - nFee));
+    entry.emplace_back("amount", ValueFromAmount(nNet - nFee));
     if (wtx.IsFromMe(filter)) {
-        entry.pushKV("fee", ValueFromAmount(nFee));
+        entry.emplace_back("fee", ValueFromAmount(nFee));
     }
 
     WalletTxToJSON(pwallet->chain(), *locked_chain, wtx, entry);
@@ -2056,10 +2055,9 @@ static UniValue gettransaction(const Config &config,
     UniValue::Array details;
     ListTransactions(*locked_chain, pwallet, wtx, 0, false, details, filter,
                      nullptr /* filter_label */);
-    entry.pushKV("details", details);
+    entry.emplace_back("details", std::move(details));
 
-    std::string strHex = EncodeHexTx(*wtx.tx, RPCSerializationFlags());
-    entry.pushKV("hex", strHex);
+    entry.emplace_back("hex", EncodeHexTx(*wtx.tx, RPCSerializationFlags()));
 
     return entry;
 }
@@ -3305,21 +3303,19 @@ static UniValue listunspent(const Config &config,
     std::set<CTxDestination> destinations;
     if (!request.params[2].isNull()) {
         RPCTypeCheckArgument(request.params[2], UniValue::VARR);
-        UniValue inputs = request.params[2].get_array();
-        for (size_t idx = 0; idx < inputs.size(); idx++) {
-            const UniValue &input = inputs[idx];
-            CTxDestination dest =
-                DecodeDestination(input.get_str(), config.GetChainParams());
+        for (const UniValue& input : request.params[2].get_array()) {
+            const auto& inputStr = input.get_str();
+            CTxDestination dest = DecodeDestination(inputStr, config.GetChainParams());
             if (!IsValidDestination(dest)) {
                 throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY,
                                    std::string("Invalid Bitcoin address: ") +
-                                       input.get_str());
+                                       inputStr);
             }
             if (!destinations.insert(dest).second) {
                 throw JSONRPCError(
                     RPC_INVALID_PARAMETER,
                     std::string("Invalid parameter, duplicated address: ") +
-                        input.get_str());
+                        inputStr);
             }
         }
     }
@@ -3336,7 +3332,7 @@ static UniValue listunspent(const Config &config,
     uint64_t nMaximumCount = 0;
 
     if (!request.params[4].isNull()) {
-        const UniValue &options = request.params[4].get_obj();
+        const UniValue::Object &options = request.params[4].get_obj();
 
         if (auto minimumAmountUV = options.locate("minimumAmount")) {
             nMinimumAmount = AmountFromValue(*minimumAmountUV);
@@ -3426,7 +3422,7 @@ void FundTransaction(CWallet *const pwallet, CMutableTransaction &tx,
     CCoinControl coinControl;
     change_position = -1;
     bool lockUnspents = false;
-    UniValue subtractFeeFromOutputs;
+    UniValue::Array subtractFeeFromOutputs;
     std::set<int> setSubtractFeeFromOutputs;
 
     if (!options.isNull()) {
