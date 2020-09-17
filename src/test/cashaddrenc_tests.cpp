@@ -17,7 +17,7 @@
 namespace {
 
 std::vector<std::string> GetNetworks() {
-    return {CBaseChainParams::MAIN, CBaseChainParams::TESTNET, CBaseChainParams::TESTNET4,
+    return {CBaseChainParams::MAIN, CBaseChainParams::TESTNET, CBaseChainParams::TESTNET4, CBaseChainParams::SCALENET,
             CBaseChainParams::REGTEST};
 }
 
@@ -129,8 +129,9 @@ BOOST_AUTO_TEST_CASE(invalid_on_wrong_network) {
     for (auto net : GetNetworks()) {
         for (auto otherNet : GetNetworks()) {
             if (net == otherNet ||
-                    // testnet and testnet4 are valid on each other's chain, so skip
-                    (net.substr(0, 4) == "test" && otherNet.substr(0, 4) == "test")) {
+                    // testnet, testnet4, and scalenet are valid on each other's chain, so skip
+                    ((     net.substr(0, 4) == "test" ||      net.substr(0, 5) == "scale") &&
+                     (otherNet.substr(0, 4) == "test" || otherNet.substr(0, 5) == "scale"))) {
                 continue;
             }
 

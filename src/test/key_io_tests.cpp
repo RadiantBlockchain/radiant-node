@@ -154,7 +154,7 @@ BOOST_AUTO_TEST_CASE(key_io_invalid) {
 
         // must be invalid as public and as private key
         for (const auto &chain :
-             {CBaseChainParams::MAIN, CBaseChainParams::TESTNET, CBaseChainParams::TESTNET4,
+             {CBaseChainParams::MAIN, CBaseChainParams::TESTNET, CBaseChainParams::TESTNET4, CBaseChainParams::SCALENET,
               CBaseChainParams::REGTEST}) {
             SelectParams(chain);
             destination = DecodeLegacyAddr(exp_base58string, Params());

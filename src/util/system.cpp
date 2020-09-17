@@ -397,7 +397,8 @@ std::set<std::string> ArgsManager::GetUnsuitableSectionOnlyArgs() const {
 const std::list<SectionInfo> ArgsManager::GetUnrecognizedSections() const {
     // Section names to be recognized in the config file.
     static const std::set<std::string> available_sections{
-        CBaseChainParams::REGTEST, CBaseChainParams::TESTNET, CBaseChainParams::TESTNET4,
+        CBaseChainParams::REGTEST,
+        CBaseChainParams::TESTNET, CBaseChainParams::TESTNET4, CBaseChainParams::SCALENET,
         CBaseChainParams::MAIN};
 
     LOCK(cs_args);
@@ -1110,10 +1111,11 @@ std::string ArgsManager::GetChainName() const {
     bool fRegTest = ArgsManagerHelper::GetNetBoolArg(*this, "-regtest");
     bool fTestNet = ArgsManagerHelper::GetNetBoolArg(*this, "-testnet");
     bool fTestNet4 = ArgsManagerHelper::GetNetBoolArg(*this, "-testnet4");
+    bool fScaleNet = ArgsManagerHelper::GetNetBoolArg(*this, "-scalenet");
 
-    if (fTestNet + fTestNet4 + fRegTest > 1) {
+    if (fTestNet + fTestNet4 + fScaleNet + fRegTest > 1) {
         throw std::runtime_error(
-            "Invalid combination of -regtest, -testnet, and -testnet4.");
+            "Invalid combination of -regtest, -testnet, -testnet4, and -scalenet.");
     }
     if (fRegTest) {
         return CBaseChainParams::REGTEST;
@@ -1123,6 +1125,9 @@ std::string ArgsManager::GetChainName() const {
     }
     if (fTestNet4) {
         return CBaseChainParams::TESTNET4;
+    }
+    if (fScaleNet) {
+        return CBaseChainParams::SCALENET;
     }
     return CBaseChainParams::MAIN;
 }
