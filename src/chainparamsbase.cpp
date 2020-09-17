@@ -13,6 +13,7 @@
 
 const std::string CBaseChainParams::MAIN = "main";
 const std::string CBaseChainParams::TESTNET = "test";
+const std::string CBaseChainParams::TESTNET4 = "test4";
 const std::string CBaseChainParams::REGTEST = "regtest";
 
 void SetupChainParamsBaseOptions() {
@@ -22,6 +23,8 @@ void SetupChainParamsBaseOptions() {
                  "regression testing tools and app development.",
                  false, OptionsCategory::CHAINPARAMS);
     gArgs.AddArg("-testnet", "Use the test chain", false,
+                 OptionsCategory::CHAINPARAMS);
+    gArgs.AddArg("-testnet4", "Use the test4 chain", false,
                  OptionsCategory::CHAINPARAMS);
 }
 
@@ -40,6 +43,10 @@ CreateBaseChainParams(const std::string &chain) {
 
     if (chain == CBaseChainParams::TESTNET) {
         return std::make_unique<CBaseChainParams>("testnet3", 18332);
+    }
+
+    if (chain == CBaseChainParams::TESTNET4) {
+        return std::make_unique<CBaseChainParams>("testnet4", 28332);
     }
 
     if (chain == CBaseChainParams::REGTEST) {

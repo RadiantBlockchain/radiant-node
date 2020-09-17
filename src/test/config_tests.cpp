@@ -55,6 +55,9 @@ BOOST_AUTO_TEST_CASE(chain_params) {
     SelectParams(CBaseChainParams::TESTNET);
     BOOST_CHECK_EQUAL(&Params(), &config.GetChainParams());
 
+    SelectParams(CBaseChainParams::TESTNET4);
+    BOOST_CHECK_EQUAL(&Params(), &config.GetChainParams());
+
     SelectParams(CBaseChainParams::REGTEST);
     BOOST_CHECK_EQUAL(&Params(), &config.GetChainParams());
 }

@@ -409,6 +409,119 @@ public:
 };
 
 /**
+ * Testnet (v4)
+ */
+class CTestNet4Params : public CChainParams {
+public:
+    CTestNet4Params() {
+        strNetworkID = CBaseChainParams::TESTNET4;
+        consensus.nSubsidyHalvingInterval = 210000;
+        consensus.BIP16Height = 1;
+        // Note: Because BIP34Height is less than 17, clients will face an unusual corner case with BIP34 encoding.
+        // The "correct" encoding for BIP34 blocks at height <= 16 uses OP_1 (0x81) through OP_16 (0x90) as a single
+        // byte (i.e. "[shortest possible] encoded CScript format"), not a single byte with length followed by the
+        // little-endian encoded version of the height as mentioned in BIP34. The BIP34 spec document itself ought to
+        // be updated to reflect this.
+        // https://github.com/bitcoin/bitcoin/pull/14633
+        consensus.BIP34Height = 2;
+        consensus.BIP34Hash = BlockHash::fromHex("00000000b0c65b1e03baace7d5c093db0d6aac224df01484985ffd5e86a1a20c");
+        consensus.BIP65Height = 3;
+        consensus.BIP66Height = 4;
+        consensus.CSVHeight = 5;
+        consensus.powLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+        // two weeks
+        consensus.nPowTargetTimespan = 14 * 24 * 60 * 60;
+        consensus.nPowTargetSpacing = 10 * 60;
+        consensus.fPowAllowMinDifficultyBlocks = true;
+        consensus.fPowNoRetargeting = false;
+
+        // The half life for the ASERT DAA. For every (nASERTHalfLife) seconds behind schedule the blockchain gets,
+        // difficulty is cut in half. Doubled if blocks are ahead of schedule.
+        // One hour
+        consensus.nASERTHalfLife = 60 * 60;
+
+        // The best chain should have at least this much work.
+        consensus.nMinimumChainWork = ChainParamsConstants::TESTNET4_MINIMUM_CHAIN_WORK;
+
+        // By default assume that the signatures in ancestors of this block are
+        // valid.
+        consensus.defaultAssumeValid = ChainParamsConstants::TESTNET4_DEFAULT_ASSUME_VALID;
+
+        // August 1, 2017 hard fork
+        consensus.uahfHeight = 6;
+
+        // November 13, 2017 hard fork
+        consensus.daaHeight = 3000;
+
+        // November 15, 2018 hard fork
+        consensus.magneticAnomalyHeight = 4000;
+
+        // November 15, 2019 protocol upgrade
+        consensus.gravitonHeight = 5000;
+
+        // May 15, 2020 12:00:00 UTC protocol upgrade
+        consensus.phononHeight = 6000;
+
+        // Nov 15, 2020 12:00:00 UTC protocol upgrade
+        consensus.axionActivationTime = 1605441600;
+
+        // May 15, 2021 12:00:00 UTC tentative protocol upgrade
+        consensus.tachyonActivationTime = 1621080000;
+
+        // Default limit for block size (in bytes)
+        consensus.nDefaultMaxBlockSize = 2000000;
+
+        diskMagic[0] = 0xcd;
+        diskMagic[1] = 0x22;
+        diskMagic[2] = 0xa7;
+        diskMagic[3] = 0x92;
+        netMagic[0] = 0xe2;
+        netMagic[1] = 0xb7;
+        netMagic[2] = 0xda;
+        netMagic[3] = 0xaf;
+        nDefaultPort = 28333;
+        nPruneAfterHeight = 1000;
+        m_assumed_blockchain_size = 20;
+        m_assumed_chain_state_size = 2;
+
+        genesis = CreateGenesisBlock(1597811185, 114152193, 0x1d00ffff, 1, 50 * COIN);
+        consensus.hashGenesisBlock = genesis.GetHash();
+        assert(consensus.hashGenesisBlock ==
+            BlockHash::fromHex("000000001dd410c49a788668ce26751718cc797474d3152a5fc073dd44fd9f7b"));
+
+        vFixedSeeds.clear();
+        vSeeds.clear();
+        // nodes with support for servicebits filtering should be at the top
+        vSeeds.emplace_back("testnet4-seed-bch.bitcoinforks.org");
+        vSeeds.emplace_back("seed.tbch4.loping.net");
+        vSeeds.emplace_back("testnet4-seed-bch.toom.im");
+
+        base58Prefixes[PUBKEY_ADDRESS] = std::vector<uint8_t>(1, 111);
+        base58Prefixes[SCRIPT_ADDRESS] = std::vector<uint8_t>(1, 196);
+        base58Prefixes[SECRET_KEY] = std::vector<uint8_t>(1, 239);
+        base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x35, 0x87, 0xCF};
+        base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x35, 0x83, 0x94};
+        cashaddrPrefix = "bchtest";
+        vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_test4, pnSeed6_test4 + ARRAYLEN(pnSeed6_test4));
+
+        fDefaultConsistencyChecks = false;
+        fRequireStandard = false;
+        m_is_test_chain = true;
+
+        checkpointData = {
+            .mapCheckpoints = {
+                {0, genesis.GetHash()},
+                {5000, BlockHash::fromHex("000000009f092d074574a216faec682040a853c4f079c33dfd2c3ef1fd8108c4")},
+            }};
+
+        // Data as of block
+        // 0000000019df558b6686b1a1c3e7aee0535c38052651b711f84eebafc0cc4b5e
+        // (height 5677)
+        chainTxData = {1599886634, 7432, 1.3};
+    }
+};
+
+/**
  * Regression test
  */
 class CRegTestParams : public CChainParams {
@@ -534,6 +647,10 @@ std::unique_ptr<CChainParams> CreateChainParams(const std::string &chain) {
 
     if (chain == CBaseChainParams::TESTNET) {
         return std::make_unique<CTestNetParams>();
+    }
+
+    if (chain == CBaseChainParams::TESTNET4) {
+        return std::make_unique<CTestNet4Params>();
     }
 
     if (chain == CBaseChainParams::REGTEST) {
