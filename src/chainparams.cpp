@@ -179,6 +179,8 @@ public:
         vSeeds.emplace_back("btccash-seeder.bitcoinunlimited.info");
         // BCHD
         vSeeds.emplace_back("seed.bchd.cash");
+        // Loping.net
+        vSeeds.emplace_back("seed.bch.loping.net");
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<uint8_t>(1, 0);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<uint8_t>(1, 5);
@@ -357,6 +359,8 @@ public:
         vSeeds.emplace_back("testnet-seed-bch.bitcoinforks.org");
         // BCHD
         vSeeds.emplace_back("testnet-seed.bchd.cash");
+        // Loping.net
+        vSeeds.emplace_back("seed.tbch.loping.net");
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<uint8_t>(1, 111);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<uint8_t>(1, 196);
@@ -489,8 +493,9 @@ public:
         vSeeds.clear();
         // nodes with support for servicebits filtering should be at the top
         vSeeds.emplace_back("testnet4-seed-bch.bitcoinforks.org");
-        vSeeds.emplace_back("seed.tbch4.loping.net");
         vSeeds.emplace_back("testnet4-seed-bch.toom.im");
+        // Loping.net
+        vSeeds.emplace_back("seed.tbch4.loping.net");
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<uint8_t>(1, 111);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<uint8_t>(1, 196);
@@ -607,6 +612,8 @@ public:
         // bitcoinforks seeders
         vSeeds.emplace_back("scalenet-seed-bch.bitcoinforks.org");
         vSeeds.emplace_back("scalenet-seed-bch.toom.im");
+        // Loping.net
+        vSeeds.emplace_back("seed.sbch.loping.net");
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<uint8_t>(1, 111);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<uint8_t>(1, 196);
