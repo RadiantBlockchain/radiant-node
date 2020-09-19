@@ -1,4 +1,5 @@
 // Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -71,7 +72,7 @@ static UniValue ping(const Config &config, const JSONRPCRequest &request) {
 
     // Request that each node send a ping during next message processing pass
     g_connman->ForEachNode([](CNode *pnode) { pnode->fPingQueued = true; });
-    return NullUniValue;
+    return UniValue();
 }
 
 static UniValue getpeerinfo(const Config &config,
@@ -285,7 +286,7 @@ static UniValue addnode(const Config &config, const JSONRPCRequest &request) {
         CAddress addr;
         g_connman->OpenNetworkConnection(addr, false, nullptr, strNode.c_str(),
                                          false, false, true);
-        return NullUniValue;
+        return UniValue();
     }
 
     if ((strCommand == "add") && (!g_connman->AddNode(strNode))) {
@@ -297,7 +298,7 @@ static UniValue addnode(const Config &config, const JSONRPCRequest &request) {
                            "Error: Node has not been added.");
     }
 
-    return NullUniValue;
+    return UniValue();
 }
 
 static UniValue disconnectnode(const Config &config,
@@ -353,7 +354,7 @@ static UniValue disconnectnode(const Config &config,
                            "Node not found in connected nodes");
     }
 
-    return NullUniValue;
+    return UniValue();
 }
 
 static UniValue getaddednodeinfo(const Config &config,
@@ -714,7 +715,7 @@ static UniValue setban(const Config &config, const JSONRPCRequest &request) {
                                "was not previously manually banned.");
         }
     }
-    return NullUniValue;
+    return UniValue();
 }
 
 static UniValue listbanned(const Config &config,
@@ -789,7 +790,7 @@ static UniValue clearbanned(const Config &config,
     if (automatic)
         g_banman->ClearDiscouraged();
 
-    return NullUniValue;
+    return UniValue();
 }
 
 static UniValue setnetworkactive(const Config &config,

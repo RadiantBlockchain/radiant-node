@@ -306,10 +306,10 @@ public:
         // them on getwalletinfo() is allowed to fail in case there is no
         // wallet.
         if (!batch[ID_NETWORKINFO]["error"].isNull()) {
-            return batch[ID_NETWORKINFO];
+            return std::move(batch[ID_NETWORKINFO]);
         }
         if (!batch[ID_BLOCKCHAININFO]["error"].isNull()) {
-            return batch[ID_BLOCKCHAININFO];
+            return std::move(batch[ID_BLOCKCHAININFO]);
         }
         result.pushKV("version", batch[ID_NETWORKINFO]["result"]["version"]);
         result.pushKV("protocolversion",
@@ -495,7 +495,7 @@ static UniValue CallRPC(BaseRequestHandler *rh, const std::string &strMethod,
     if (!valReply.read(response.body)) {
         throw std::runtime_error("couldn't parse reply from server");
     }
-    const UniValue reply = rh->ProcessReply(valReply);
+    UniValue reply = rh->ProcessReply(valReply);
     if (reply.empty()) {
         throw std::runtime_error(
             "expected reply to have result, error and id properties");

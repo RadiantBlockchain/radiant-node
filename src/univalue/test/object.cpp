@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE(univalue_typecheck)
 
     UniValue v5;
     BOOST_CHECK(v5.read("[true, 10]"));
-    UniValue::Array vals = v5.get_array();
+    UniValue::Array& vals = v5.get_array();
     BOOST_CHECK_THROW(vals[0].get_int(), std::runtime_error);
     BOOST_CHECK_EQUAL(vals[0].get_bool(), true);
 
@@ -630,7 +630,7 @@ BOOST_AUTO_TEST_CASE(univalue_object)
     vals.emplace_back(UniValue{UniValue::VARR});
     vals.at(2).pushKV("akey", "this is a value");
     vals.rbegin()->setArray(vals); // vals recursively contains a partial copy of vals!
-    const auto valsExpected = vals; // save a copy
+    const auto valsExpected(vals); // save a copy
     arr.setArray(std::move(vals)); // assign to array via move
     BOOST_CHECK(vals.empty()); // vector should be empty after move
     BOOST_CHECK(!arr.empty()); // but our array should not be
@@ -648,7 +648,7 @@ BOOST_AUTO_TEST_CASE(univalue_readwrite)
 {
     UniValue v;
     BOOST_CHECK(v.read(json1));
-    const UniValue vjson1 = v; // save a copy for below
+    const UniValue vjson1(v); // save a copy for below
 
     std::string strJson1(json1);
     BOOST_CHECK(v.read(strJson1));
@@ -658,7 +658,7 @@ BOOST_AUTO_TEST_CASE(univalue_readwrite)
 
     BOOST_CHECK_EQUAL(v[0].getValStr(), "1.10000000");
 
-    UniValue obj = v[1];
+    const UniValue& obj = v[1];
     BOOST_CHECK(obj.isObject());
     BOOST_CHECK_EQUAL(obj.size(), 3);
 
@@ -691,7 +691,7 @@ BOOST_AUTO_TEST_CASE(univalue_readwrite)
     // and doing a round of ser/deser on it.
     v.setArray();
     v.push_back(json1);
-    const auto vcopy = v;
+    const UniValue vcopy(v);
     BOOST_CHECK(!vcopy.empty());
     v.setNull();
     BOOST_CHECK(v.empty());

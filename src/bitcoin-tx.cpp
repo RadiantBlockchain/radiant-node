@@ -604,7 +604,7 @@ static void MutateTxSign(CMutableTransaction &tx, const std::string &flagStr) {
     }
 
     CBasicKeyStore tempKeystore;
-    UniValue keysObj = registers["privatekeys"];
+    const UniValue& keysObj = registers["privatekeys"];
 
     for (unsigned int kidx = 0; kidx < keysObj.size(); kidx++) {
         if (!keysObj[kidx].isStr()) {
@@ -623,10 +623,10 @@ static void MutateTxSign(CMutableTransaction &tx, const std::string &flagStr) {
         throw std::runtime_error("prevtxs register variable must be set.");
     }
 
-    UniValue prevtxsObj = registers["prevtxs"];
+    const UniValue& prevtxsObj = registers["prevtxs"];
 
     for (unsigned int previdx = 0; previdx < prevtxsObj.size(); previdx++) {
-        UniValue prevOut = prevtxsObj[previdx];
+        const UniValue& prevOut = prevtxsObj[previdx];
         if (!prevOut.isObject()) {
             throw std::runtime_error("expected prevtxs internal object");
         }

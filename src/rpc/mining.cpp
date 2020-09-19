@@ -1,5 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2018 The Bitcoin Core developers
+// Copyright (c) 2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -320,7 +321,7 @@ static UniValue prioritisetransaction(const Config &config,
 static UniValue BIP22ValidationResult(const Config &config,
                                       const CValidationState &state) {
     if (state.IsValid()) {
-        return NullUniValue;
+        return UniValue();
     }
 
     if (state.IsError()) {
@@ -618,7 +619,8 @@ static UniValue getblocktemplatecommon(bool fLight, const Config &config, const 
 
     struct LightResult {
         const gbtl::JobId jobId;
-        const UniValue merkle;
+        const UniValue::Array merkle;
+        LightResult(const gbtl::JobId& _jobId, const UniValue::Array& _merkle) : jobId(_jobId), merkle(_merkle) {}
     };
     // Update block
     static CBlockIndex *pindexPrev;
@@ -713,7 +715,7 @@ static UniValue getblocktemplatecommon(bool fLight, const Config &config, const 
     aCaps.push_back("proposal");
 
     uint160 jobId; // fLight version only, ends up in results["job_id"]
-    UniValue merkle(UniValue::VARR); // fLight version only, ends up in results["merkle"]
+    UniValue::Array merkle; // fLight version only, ends up in results["merkle"]
     UniValue transactions(UniValue::VARR); // !fLight version only, ends up in results["transactions"]
     if (fLight) {
         assert(pvtx && (!tmpBlockTxsWithAdditionalTxs || pvtx == tmpBlockTxsWithAdditionalTxs.get()));
@@ -741,7 +743,7 @@ static UniValue getblocktemplatecommon(bool fLight, const Config &config, const 
             hashSource.reserve(pblock->hashPrevBlock.size() + merkleSteps.size()*32);
             hashSource.insert(hashSource.end(), pblock->hashPrevBlock.begin(), pblock->hashPrevBlock.end());
             for (const auto &h : merkleSteps) {
-                merkle.push_back(h.GetHex()); // push UniValue
+                merkle.emplace_back(h.GetHex()); // push UniValue
                 hashSource.insert(hashSource.end(), h.begin(), h.end()); // add to hash source
             }
             // Compute the jobId -- we will return this jobId to the client and also generate a cache entry based on it
@@ -750,7 +752,7 @@ static UniValue getblocktemplatecommon(bool fLight, const Config &config, const 
 
             // Finally, cache the merkle results if they were calculated from the tx's in pblock (no additional_txs).
             if (pvtx == &pblock->vtx) {
-                plightresult.reset(new LightResult{jobId, merkle});
+                plightresult.reset(new LightResult(jobId, merkle));
                 LogPrint(BCLog::RPC, "Saved merkle result\n");
             }
         }
@@ -924,7 +926,7 @@ static UniValue submitblockcommon(const Config &config, const JSONRPCRequest &re
         return "inconclusive";
     }
 
-    const auto result = BIP22ValidationResult(config, sc.state);
+    auto result = BIP22ValidationResult(config, sc.state);
     if (jobId) {
         LogPrint(BCLog::RPC, "SubmitBlock (light) deserialize duration: %f seconds\n", tDeserTx / 1e6);
     }
@@ -1013,7 +1015,7 @@ static UniValue submitheader(const Config &config,
     ProcessNewBlockHeaders(config, {h}, state, /* ppindex */ nullptr,
                            /* first_invalid */ nullptr);
     if (state.IsValid()) {
-        return NullUniValue;
+        return UniValue();
     }
     if (state.IsError()) {
         throw JSONRPCError(RPC_VERIFY_ERROR, FormatStateMessage(state));

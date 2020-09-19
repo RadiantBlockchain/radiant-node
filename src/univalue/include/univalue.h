@@ -39,6 +39,12 @@ public:
         using reverse_iterator = Vector::reverse_iterator;
         using const_reverse_iterator = Vector::const_reverse_iterator;
 
+        Object() noexcept = default;
+        explicit Object(const Object&) = default;
+        Object(Object&&) noexcept = default;
+        Object& operator=(const Object&) = default;
+        Object& operator=(Object&&) = default;
+
         /**
          * Returns an iterator to the first key-value pair of the object.
          *
@@ -257,6 +263,12 @@ public:
         using reverse_iterator = Vector::reverse_iterator;
         using const_reverse_iterator = Vector::const_reverse_iterator;
 
+        Array() noexcept = default;
+        explicit Array(const Array&) = default;
+        Array(Array&&) noexcept = default;
+        Array& operator=(const Array&) = default;
+        Array& operator=(Array&&) = default;
+
         /**
          * Returns an iterator to the first value of the array.
          *
@@ -414,11 +426,9 @@ public:
     static_assert(std::is_same<size_type, Array::size_type>::value,
                   "UniValue::size_type should be equal to both UniValue::Object::size_type and UniValue::Array::size_type.");
 
-    UniValue(UniValue::VType initialType = VNULL) noexcept : typ(initialType) {}
-    UniValue(UniValue::VType initialType, const std::string& initialStr)
-        : typ(initialType), val(initialStr) {}
-    UniValue(UniValue::VType initialType, std::string&& initialStr) noexcept
-        : typ(initialType), val(std::move(initialStr)) {}
+    explicit UniValue(VType initialType = VNULL) noexcept : typ(initialType) {}
+    UniValue(VType initialType, const std::string& initialStr) : typ(initialType), val(initialStr) {}
+    UniValue(VType initialType, std::string&& initialStr) noexcept : typ(initialType), val(std::move(initialStr)) {}
     UniValue(uint64_t val_) { setInt(val_); }
     UniValue(int64_t val_) { setInt(val_); }
     UniValue(bool val_) { setBool(val_); }
@@ -431,6 +441,11 @@ public:
     UniValue(Array&& array) : typ(VARR), values(std::move(array)) {}
     explicit UniValue(const Object& object) : typ(VOBJ), entries(object) {}
     UniValue(Object&& object) : typ(VOBJ), entries(std::move(object)) {}
+
+    explicit UniValue(const UniValue&) = default;
+    UniValue(UniValue&&) noexcept = default;
+    UniValue& operator=(const UniValue&) = default;
+    UniValue& operator=(UniValue&&) = default;
 
     void setNull() noexcept;
     void setBool(bool val);
