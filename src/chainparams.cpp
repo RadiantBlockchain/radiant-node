@@ -177,8 +177,6 @@ public:
         vSeeds.emplace_back("seed-bch.bitcoinforks.org");
         // BU backed seeder
         vSeeds.emplace_back("btccash-seeder.bitcoinunlimited.info");
-        // Amaury SÉCHET
-        vSeeds.emplace_back("seed.deadalnix.me");
         // BCHD
         vSeeds.emplace_back("seed.bchd.cash");
 
@@ -357,8 +355,6 @@ public:
         vSeeds.emplace_back("testnet-seed.bitcoinabc.org");
         // bitcoinforks seeders
         vSeeds.emplace_back("testnet-seed-bch.bitcoinforks.org");
-        // Amaury SÉCHET
-        vSeeds.emplace_back("testnet-seed.deadalnix.me");
         // BCHD
         vSeeds.emplace_back("testnet-seed.bchd.cash");
 
