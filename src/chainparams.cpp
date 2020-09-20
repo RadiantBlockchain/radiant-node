@@ -181,6 +181,8 @@ public:
         vSeeds.emplace_back("seed.bchd.cash");
         // Loping.net
         vSeeds.emplace_back("seed.bch.loping.net");
+        // Electroncash.de
+        vSeeds.emplace_back("dnsseed.electroncash.de");
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<uint8_t>(1, 0);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<uint8_t>(1, 5);
