@@ -37,7 +37,7 @@ PATTERN_ONION = re.compile(
 # Used to only select nodes with a user agent string compatible with the
 # Bitcoin Cash specification.
 PATTERN_AGENT = re.compile(
-    r"^(/Bitcoin ABC:0.(21).(\d+)\(.+\)/|/Bitcoin Cash Node:0.(21).(\d+)\(.+\)/|/bchd:0.16.(\d+)\(.+\)/|/BCH Unlimited:1.8.(\d+)\(.+\)/)")
+      r"^(/Bitcoin Cash Node:22\.(\d+)\.(\d+)[^/]*/|/Flowee:1[^/]*/|/kth:0\.4\.(\d+)[^/]*/|/bchd:0\.16\.(\d+)[^/]*/|/Bitcoin Verde:1\.3\.(\d+)[^/]*/|/BCH Unlimited:1\.9\.(\d+)[^/]*/)")
 
 
 def parseline(line):
@@ -183,24 +183,32 @@ def main():
 
     # Skip entries with valid address.
     ips = [ip for ip in ips if ip is not None]
+
     # Skip entries from suspicious hosts.
     ips = [ip for ip in ips if ip['ip'] not in SUSPICIOUS_HOSTS]
+
     # Enforce minimal number of blocks.
     ips = [ip for ip in ips if ip['blocks'] >= MIN_BLOCKS]
+
     # Require service bit 1.
     ips = [ip for ip in ips if (ip['service'] & 1) == 1]
+
     # Require at least 50% 30-day uptime.
     ips = [ip for ip in ips if ip['uptime'] > 50]
+
     # Require a known and recent user agent.
     ips = [ip for ip in ips if PATTERN_AGENT.match(ip['agent'])]
 
     # Sort by availability (and use last success as tie breaker)
     ips.sort(key=lambda x:
              (x['uptime'], x['lastsuccess'], x['ip']), reverse=True)
+
     # Filter out hosts with multiple bitcoin ports, these are likely abusive
     ips = filtermultiport(ips)
+
     # Look up ASNs and limit results, both per ASN and globally.
     ips = filterbyasn(ips, MAX_SEEDS_PER_ASN, NSEEDS)
+
     # Sort the results by IP address (for deterministic output).
     ips.sort(key=lambda x: (x['net'], x['sortkey']))
 
