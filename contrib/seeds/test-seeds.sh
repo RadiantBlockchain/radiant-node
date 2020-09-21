@@ -16,10 +16,12 @@ help_message() {
   echo ""
   echo "Example usages:"
   echo "Mainnet: $0 < nodes_main.txt"
-  echo "Testnet: $0 --testnet < nodes_test.txt"
+  echo "Testnet: $0 --testnet3 < nodes_testnet3.txt"
   echo ""
   echo "Options:"
-  echo "-t, --testnet         Connect to testnet seeds (mainnet is default)."
+  echo "-t3, --testnet3       Connect to testnet3 seeds (mainnet is default)."
+  echo "-t4, --testnet4       Connect to testnet4 seeds"
+  echo "-s1, --scalenet       Connect to scalenet seeds"
   echo "-h, --help            Display this help message."
   echo ""
   echo "Environment Variables:"
@@ -33,8 +35,16 @@ OPTION_TESTNET=""
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
 case $1 in
-  -t|--testnet)
-    OPTION_TESTNET="--testnet"
+  -t3|--testnet3)
+    OPTION_TESTNET="--testnet3"
+    shift # shift past argument
+    ;;
+  -t4|--testnet4)
+    OPTION_TESTNET="--testnet4"
+    shift # shift past argument
+    ;;
+  -s1|--scalenet)
+    OPTION_TESTNET="--scalenet"
     shift # shift past argument
     ;;
   -h|--help)
