@@ -462,7 +462,19 @@ public:
         consensus.gravitonHeight = 5000;
 
         // May 15, 2020 12:00:00 UTC protocol upgrade
-        consensus.phononHeight = 6000;
+        // Note: We must set this to 0 here because "historical" sigop code has
+        //       been removed from the BCHN codebase. All sigop checks really
+        //       use the new post-May2020 sigcheck code unconditionally in this
+        //       codebase, regardless of what this height is set to. So it's
+        //       "as-if" the activation height really is 0 for all intents and
+        //       purposes. If other node implementations wish to use this code
+        //       as a reference, they need to be made aware of this quirk of
+        //       BCHN, so we explicitly set the activation height to zero here.
+        //       For example, BU or other nodes do keep both sigop and sigcheck
+        //       implementations in their execution paths so they will need to
+        //       use 0 here to be able to synch to this chain.
+        //       See: https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/issues/167
+        consensus.phononHeight = 0;
 
         // Nov 15, 2020 12:00:00 UTC protocol upgrade
         consensus.axionActivationTime = 1605441600;
@@ -576,7 +588,19 @@ public:
         consensus.gravitonHeight = 5000;
 
         // May 15, 2020 12:00:00 UTC protocol upgrade
-        consensus.phononHeight = 6000;
+        // Note: We must set this to 0 here because "historical" sigop code has
+        //       been removed from the BCHN codebase. All sigop checks really
+        //       use the new post-May2020 sigcheck code unconditionally in this
+        //       codebase, regardless of what this height is set to. So it's
+        //       "as-if" the activation height really is 0 for all intents and
+        //       purposes. If other node implementations wish to use this code
+        //       as a reference, they need to be made aware of this quirk of
+        //       BCHN, so we explicitly set the activation height to zero here.
+        //       For example, BU or other nodes do keep both sigop and sigcheck
+        //       implementations in their execution paths so they will need to
+        //       use 0 here to be able to synch to this chain.
+        //       See: https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/issues/167
+        consensus.phononHeight = 0;
 
         // Nov 15, 2020 12:00:00 UTC protocol upgrade
         consensus.axionActivationTime = 1605441600;
