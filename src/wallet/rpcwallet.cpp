@@ -381,9 +381,11 @@ static CTransactionRef SendMoney(interfaces::Chain::Lock &locked_chain,
     vecSend.push_back(recipient);
 
     CTransactionRef tx;
-    if (!pwallet->CreateTransaction(locked_chain, vecSend, tx, reservekey,
-                                    nFeeRequired, nChangePosRet, strError,
-                                    coinControl)) {
+    auto rc = pwallet->CreateTransaction(locked_chain, vecSend, tx, reservekey,
+                                         nFeeRequired, nChangePosRet, strError,
+                                         coinControl);
+
+    if (rc != CreateTransactionResult::CT_OK) {
         if (!fSubtractFeeFromAmount && nValue + nFeeRequired > curBalance) {
             strError = strprintf("Error: This transaction requires a "
                                  "transaction fee of at least %s",
@@ -1073,9 +1075,10 @@ static UniValue sendmany(const Config &config, const JSONRPCRequest &request) {
     std::string strFailReason;
     CTransactionRef tx;
     CCoinControl coinControl;
-    bool fCreated = pwallet->CreateTransaction(
-        *locked_chain, vecSend, tx, keyChange, nFeeRequired, nChangePosRet,
-        strFailReason, coinControl);
+    bool fCreated =
+        pwallet->CreateTransaction(*locked_chain, vecSend, tx, keyChange,
+                                   nFeeRequired, nChangePosRet, strFailReason,
+                                   coinControl) == CreateTransactionResult::CT_OK;
     if (!fCreated) {
         throw JSONRPCError(RPC_WALLET_INSUFFICIENT_FUNDS, strFailReason);
     }

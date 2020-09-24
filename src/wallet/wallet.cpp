@@ -2913,9 +2913,9 @@ bool CWallet::FundTransaction(CMutableTransaction &tx, Amount &nFeeRet,
 
     CReserveKey reservekey(this);
     CTransactionRef tx_new;
-    if (!CreateTransaction(*locked_chain, vecSend, tx_new, reservekey, nFeeRet,
-                           nChangePosInOut, strFailReason, coinControl,
-                           false)) {
+    if (CreateTransaction(*locked_chain, vecSend, tx_new, reservekey, nFeeRet,
+                          nChangePosInOut, strFailReason, coinControl,
+                          false) != CreateTransactionResult::CT_OK) {
         return false;
     }
 
@@ -3029,19 +3029,18 @@ CWallet::TransactionChangeType(OutputType change_type,
     return m_default_address_type;
 }
 
-bool CWallet::CreateTransaction(interfaces::Chain::Lock &locked_chainIn,
-                                const std::vector<CRecipient> &vecSend,
-                                CTransactionRef &tx, CReserveKey &reservekey,
-                                Amount &nFeeRet, int &nChangePosInOut,
-                                std::string &strFailReason,
-                                const CCoinControl &coinControl, bool sign) {
+CreateTransactionResult CWallet::CreateTransaction(
+    interfaces::Chain::Lock &locked_chainIn,
+    const std::vector<CRecipient> &vecSend, CTransactionRef &tx,
+    CReserveKey &reservekey, Amount &nFeeRet, int &nChangePosInOut,
+    std::string &strFailReason, const CCoinControl &coinControl, bool sign) {
     Amount nValue = Amount::zero();
     int nChangePosRequest = nChangePosInOut;
     unsigned int nSubtractFeeFromAmount = 0;
     for (const auto &recipient : vecSend) {
         if (nValue < Amount::zero() || recipient.nAmount < Amount::zero()) {
             strFailReason = _("Transaction amounts must not be negative");
-            return false;
+            return CreateTransactionResult::CT_INVALID_PARAMETER;
         }
 
         nValue += recipient.nAmount;
@@ -3053,7 +3052,7 @@ bool CWallet::CreateTransaction(interfaces::Chain::Lock &locked_chainIn,
 
     if (vecSend.empty()) {
         strFailReason = _("Transaction must have at least one recipient");
-        return false;
+        return CreateTransactionResult::CT_INVALID_PARAMETER;
     }
 
     CMutableTransaction txNew;
@@ -3095,7 +3094,7 @@ bool CWallet::CreateTransaction(interfaces::Chain::Lock &locked_chainIn,
                 strFailReason =
                     _("Can't generate a change-address key. Private keys "
                       "are disabled for this wallet.");
-                return false;
+                return CreateTransactionResult::CT_ERROR;
             }
             CPubKey vchPubKey;
             bool ret;
@@ -3103,7 +3102,7 @@ bool CWallet::CreateTransaction(interfaces::Chain::Lock &locked_chainIn,
             if (!ret) {
                 strFailReason =
                     _("Keypool ran out, please call keypoolrefill first");
-                return false;
+                return CreateTransactionResult::CT_ERROR;
             }
 
             const OutputType change_type = TransactionChangeType(
@@ -3183,7 +3182,7 @@ bool CWallet::CreateTransaction(interfaces::Chain::Lock &locked_chainIn,
                         strFailReason = _("Transaction amount too small");
                     }
 
-                    return false;
+                    return CreateTransactionResult::CT_INSUFFICIENT_AMOUNT;
                 }
 
                 txNew.vout.push_back(txout);
@@ -3208,7 +3207,7 @@ bool CWallet::CreateTransaction(interfaces::Chain::Lock &locked_chainIn,
                         continue;
                     } else {
                         strFailReason = _("Insufficient funds");
-                        return false;
+                        return CreateTransactionResult::CT_INSUFFICIENT_FUNDS;
                     }
                 }
             }
@@ -3231,7 +3230,7 @@ bool CWallet::CreateTransaction(interfaces::Chain::Lock &locked_chainIn,
                     } else if ((unsigned int)nChangePosInOut >
                                txNew.vout.size()) {
                         strFailReason = _("Change index out of range");
-                        return false;
+                        return CreateTransactionResult::CT_INVALID_PARAMETER;
                     }
 
                     std::vector<CTxOut>::iterator position =
@@ -3253,7 +3252,7 @@ bool CWallet::CreateTransaction(interfaces::Chain::Lock &locked_chainIn,
                 txNewConst, this, coinControl.fAllowWatchOnly);
             if (nBytes < 0) {
                 strFailReason = _("Signing transaction failed");
-                return false;
+                return CreateTransactionResult::CT_ERROR;
             }
 
             Amount nFeeNeeded =
@@ -3264,7 +3263,7 @@ bool CWallet::CreateTransaction(interfaces::Chain::Lock &locked_chainIn,
             // allowed fee.
             if (nFeeNeeded < ::minRelayTxFee.GetFee(nBytes)) {
                 strFailReason = _("Transaction too large for fee policy");
-                return false;
+                return CreateTransactionResult::CT_ERROR;
             }
 
             if (nFeeRet >= nFeeNeeded) {
@@ -3315,7 +3314,7 @@ bool CWallet::CreateTransaction(interfaces::Chain::Lock &locked_chainIn,
                 // nFeeNeeded should not have changed.
                 strFailReason =
                     _("Transaction fee and change calculation failed");
-                return false;
+                return CreateTransactionResult::CT_ERROR;
             }
 
             // Try to reduce change to include necessary fee.
@@ -3380,7 +3379,7 @@ bool CWallet::CreateTransaction(interfaces::Chain::Lock &locked_chainIn,
                             &txNew, nIn, coin.txout.nValue, sigHashType),
                         scriptPubKey, sigdata)) {
                     strFailReason = _("Signing transaction failed");
-                    return false;
+                    return CreateTransactionResult::CT_ERROR;
                 }
 
                 UpdateInput(txNew.vin.at(nIn), sigdata);
@@ -3394,7 +3393,7 @@ bool CWallet::CreateTransaction(interfaces::Chain::Lock &locked_chainIn,
         // Limit size.
         if (tx->GetTotalSize() > MAX_STANDARD_TX_SIZE) {
             strFailReason = _("Transaction too large");
-            return false;
+            return CreateTransactionResult::CT_ERROR;
         }
     }
 
@@ -3421,11 +3420,11 @@ bool CWallet::CreateTransaction(interfaces::Chain::Lock &locked_chainIn,
                 entry, setAncestors, nLimitAncestors, nLimitAncestorSize,
                 nLimitDescendants, nLimitDescendantSize, errString)) {
             strFailReason = _("Transaction has too long of a mempool chain");
-            return false;
+            return CreateTransactionResult::CT_ERROR;
         }
     }
 
-    return true;
+    return CreateTransactionResult::CT_OK;
 }
 
 /**
