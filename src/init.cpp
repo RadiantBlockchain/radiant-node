@@ -2777,7 +2777,7 @@ bool AppInitMain(Config &config, RPCServer &rpcServer,
     LogPrintf("nBestHeight = %d\n", chain_active_height);
 
     if (gArgs.GetBoolArg("-listenonion", DEFAULT_LISTEN_ONION)) {
-        StartTorControl();
+        StartTorControl(DefaultOnionServiceTarget());
     }
 
     Discover();
