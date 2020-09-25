@@ -351,17 +351,6 @@ static CTransactionRef SendMoney(interfaces::Chain::Lock &locked_chain,
                                  bool fSubtractFeeFromAmount,
                                  const CCoinControl &coinControl,
                                  mapValue_t mapValue) {
-    Amount curBalance = pwallet->GetBalance();
-
-    // Check amount
-    if (nValue <= Amount::zero()) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid amount");
-    }
-
-    if (nValue > curBalance) {
-        throw JSONRPCError(RPC_WALLET_INSUFFICIENT_FUNDS, "Insufficient funds");
-    }
-
     if (pwallet->GetBroadcastTransactions() && !g_connman) {
         throw JSONRPCError(
             RPC_CLIENT_P2P_DISABLED,
@@ -381,16 +370,41 @@ static CTransactionRef SendMoney(interfaces::Chain::Lock &locked_chain,
     vecSend.push_back(recipient);
 
     CTransactionRef tx;
-    if (!pwallet->CreateTransaction(locked_chain, vecSend, tx, reservekey,
-                                    nFeeRequired, nChangePosRet, strError,
-                                    coinControl)) {
-        if (!fSubtractFeeFromAmount && nValue + nFeeRequired > curBalance) {
-            strError = strprintf("Error: This transaction requires a "
-                                 "transaction fee of at least %s",
-                                 FormatMoney(nFeeRequired));
+    auto rc = pwallet->CreateTransaction(locked_chain, vecSend, tx, reservekey,
+                                         nFeeRequired, nChangePosRet, strError,
+                                         coinControl);
+    if (rc == CreateTransactionResult::CT_INVALID_PARAMETER) {
+        if (nValue <= Amount::zero()) {
+            // We override the string in this one for backward compatibility.
+            // TODO: Remove this special case when string translation is
+            //       removed from CWallet.
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid amount");
         }
-        throw JSONRPCError(RPC_WALLET_ERROR, strError);
+        throw JSONRPCError(RPC_INVALID_PARAMETER, strError);
+    } else if (rc == CreateTransactionResult::CT_INSUFFICIENT_FUNDS) {
+        // The following check is kind of awkward, but is there for backwards
+        // compatibility. We take a performance hit here, calling the expensive
+        // GetBalance, to _maybe_ provide an improved error message on
+        // insufficient fee.
+        if (!fSubtractFeeFromAmount) {
+            Amount curBalance = pwallet->GetBalance();
+            if (nValue <= curBalance && nValue + nFeeRequired > curBalance) {
+                strError = strprintf("Error: This transaction requires a "
+                                     "transaction fee of at least %s",
+                                     FormatMoney(nFeeRequired));
+                throw JSONRPCError(RPC_WALLET_ERROR, strError);
+            }
+        }
+        // We override the error message for backward compatibility.
+        // TODO: Don't override after string translation in removed from
+        //       CWallet
+        throw JSONRPCError(RPC_WALLET_INSUFFICIENT_FUNDS, "Insufficient funds");
+    } else {
+        if (rc != CreateTransactionResult::CT_OK) {
+            throw JSONRPCError(RPC_WALLET_ERROR, strError);
+        }
     }
+
     CValidationState state;
     if (!pwallet->CommitTransaction(tx, std::move(mapValue), {} /* orderForm */,
                                     reservekey, g_connman.get(), state)) {
@@ -1073,9 +1087,10 @@ static UniValue sendmany(const Config &config, const JSONRPCRequest &request) {
     std::string strFailReason;
     CTransactionRef tx;
     CCoinControl coinControl;
-    bool fCreated = pwallet->CreateTransaction(
-        *locked_chain, vecSend, tx, keyChange, nFeeRequired, nChangePosRet,
-        strFailReason, coinControl);
+    bool fCreated =
+        pwallet->CreateTransaction(*locked_chain, vecSend, tx, keyChange,
+                                   nFeeRequired, nChangePosRet, strFailReason,
+                                   coinControl) == CreateTransactionResult::CT_OK;
     if (!fCreated) {
         throw JSONRPCError(RPC_WALLET_INSUFFICIENT_FUNDS, strFailReason);
     }

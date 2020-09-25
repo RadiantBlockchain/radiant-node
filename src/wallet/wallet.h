@@ -157,6 +157,20 @@ enum WalletFlags : uint64_t {
 static constexpr uint64_t g_known_wallet_flags =
     WALLET_FLAG_DISABLE_PRIVATE_KEYS | WALLET_FLAG_BLANK_WALLET;
 
+/** Return value of CWallet::CreateTransaction */
+enum class CreateTransactionResult : uint32_t {
+    //! Sucess
+    CT_OK,
+    //! An error happened
+    CT_ERROR,
+    //! Error: Invalid input arguments to method
+    CT_INVALID_PARAMETER,
+    //! Error: The wallet balance is insufficient
+    CT_INSUFFICIENT_FUNDS,
+    //! Error: The input amount is insufficent for creating the outputs + fee
+    CT_INSUFFICIENT_AMOUNT,
+};
+
 /** A key pool entry */
 class CKeyPool {
 public:
@@ -1118,12 +1132,13 @@ public:
      * @note passing nChangePosInOut as -1 will result in setting a random
      * position
      */
-    bool CreateTransaction(interfaces::Chain::Lock &locked_chain,
-                           const std::vector<CRecipient> &vecSend,
-                           CTransactionRef &tx, CReserveKey &reservekey,
-                           Amount &nFeeRet, int &nChangePosInOut,
-                           std::string &strFailReason,
-                           const CCoinControl &coin_control, bool sign = true);
+    CreateTransactionResult
+    CreateTransaction(interfaces::Chain::Lock &locked_chain,
+                      const std::vector<CRecipient> &vecSend,
+                      CTransactionRef &tx, CReserveKey &reservekey,
+                      Amount &nFeeRet, int &nChangePosInOut,
+                      std::string &strFailReason,
+                      const CCoinControl &coin_control, bool sign = true);
     bool CommitTransaction(
         CTransactionRef tx, mapValue_t mapValue,
         std::vector<std::pair<std::string, std::string>> orderForm,

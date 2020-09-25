@@ -258,9 +258,10 @@ namespace {
             auto locked_chain = m_wallet.chain().lock();
             LOCK(m_wallet.cs_wallet);
             auto pending = std::make_unique<PendingWalletTxImpl>(m_wallet);
-            if (!m_wallet.CreateTransaction(
-                    *locked_chain, recipients, pending->m_tx, pending->m_key,
-                    fee, change_pos, fail_reason, coin_control, sign)) {
+            auto rc = m_wallet.CreateTransaction(
+                *locked_chain, recipients, pending->m_tx, pending->m_key, fee,
+                change_pos, fail_reason, coin_control, sign);
+            if (rc != CreateTransactionResult::CT_OK) {
                 return {};
             }
             return pending;
