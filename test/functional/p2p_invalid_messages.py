@@ -102,6 +102,8 @@ class InvalidMessagesTest(BitcoinTestFramework):
             msg = msg[:cut_len] + b'\xff' * 4 + msg[cut_len + 4:]
             conn.send_raw_message(msg)
             conn.wait_for_disconnect()
+        # Check that after disconnect there is no peer
+        assert_equal(len(self.nodes[0].getpeerinfo()), 0)
         self.nodes[0].disconnect_p2ps()
 
     def test_size(self):
@@ -125,6 +127,8 @@ class InvalidMessagesTest(BitcoinTestFramework):
             msg = msg[:7] + b'\x00' + msg[7 + 1:]
             conn.send_raw_message(msg)
             conn.sync_with_ping(timeout=1)
+        # Check that traffic is accounted for (24 bytes header + 2 bytes payload)
+        assert_equal(self.nodes[0].getpeerinfo()[0]['bytesrecv_per_msg']['*other*'], 26)
         self.nodes[0].disconnect_p2ps()
 
     def test_oversized_msg(self, msg, size, expected_reason):
