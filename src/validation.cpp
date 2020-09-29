@@ -2240,6 +2240,9 @@ bool CChainState::DisconnectTip(const CChainParams &params,
     // If the tip is finalized, then undo it.
     if (pindexFinalized == pindexDelete) {
         pindexFinalized = pindexDelete->pprev;
+        LogPrint(BCLog::FINALIZATION, "%s: moved finalized back to %s height=%d\n",
+                 __func__, pindexFinalized->GetBlockHash().ToString(),
+                 pindexFinalized->nHeight);
     }
 
     m_chain.SetTip(pindexDelete->pprev);
@@ -2355,6 +2358,9 @@ static bool FinalizeBlockInternal(const Config &config, CValidationState &state,
     }
 
     // We have a new block to finalize.
+    LogPrint(BCLog::FINALIZATION, "%s: new finalized block=%s height=%d\n",
+             __func__, pindex->GetBlockHash().ToString(),
+             pindex->nHeight);
     pindexFinalized = pindex;
     return true;
 }
@@ -2382,6 +2388,7 @@ static const CBlockIndex *FindBlockToFinalize(const Config &config,
     // finalization should be avoided. Header receive time is not saved to disk
     // and so cannot be anterior to startup time.
     if (now < (GetStartupTime() + finalizationdelay)) {
+        LogPrint(BCLog::FINALIZATION, "No finalization because uptime has not reached finalizationdelay\n");
         return nullptr;
     }
 
@@ -2471,6 +2478,12 @@ bool CChainState::ConnectTip(const Config &config, CValidationState &state,
             return error("ConnectTip(): FinalizeBlock %s failed (%s)",
                          pindexNew->GetBlockHash().ToString(),
                          FormatStateMessage(state));
+        }
+        else if (pindexToFinalize) {
+            LogPrint(BCLog::FINALIZATION, "%s: FinalizeBlock succeeded (%s) height=%d\n",
+                     __func__,
+                     pindexToFinalize->GetBlockHash().ToString(),
+                     pindexToFinalize->nHeight);
         }
 
         nTime3 = GetTimeMicros();
@@ -2586,6 +2599,8 @@ CBlockIndex *CChainState::FindMostWorkChain() {
                 // null. In this case, we just ignore the fact that the chain is
                 // parked.
                 if (!pindexTip || !pindexFork) {
+                    LogPrint(BCLog::PARKING, "%s: unparking block (presumed during init) (%s)\n",
+                             __func__, pindexTest->GetBlockHash().ToString());
                     UnparkBlock(pindexTest);
                     continue;
                 }
@@ -2651,6 +2666,8 @@ CBlockIndex *CChainState::FindMostWorkChain() {
                 (pindexBestParked == nullptr ||
                  pindexNew->nChainWork > pindexBestParked->nChainWork)) {
                 pindexBestParked = pindexNew;
+                LogPrint(BCLog::PARKING, "%s: updated pindexBestParkedChain (%s)\n",
+                         __func__, pindexBestParked->GetBlockHash().ToString());
             }
 
             LogPrintf("Considered switching to better tip %s but that chain "
@@ -3019,6 +3036,7 @@ bool CChainState::PreciousBlock(const Config &config, CValidationState &state,
         }
 
         // In case this was parked, unpark it.
+        LogPrint(BCLog::PARKING, "Unpark precious block\n");
         UnparkBlock(pindex);
 
         // Make sure it is added to the candidate list if appropriate.
@@ -3162,12 +3180,17 @@ bool FinalizeBlockAndInvalidate(const Config &config, CValidationState &state,
                                 CBlockIndex *pindex) {
     AssertLockHeld(cs_main);
     if (!FinalizeBlockInternal(config, state, pindex)) {
+        LogPrint(BCLog::PARKING, "%s: %s failed FinalizeBlockInternal()\n",
+                 __func__, pindex->GetBlockHash().ToString());
+
         // state is set by FinalizeBlockInternal.
         return false;
     }
 
     // We have a valid candidate, make sure it is not parked.
     if (pindex->nStatus.isOnParkedChain()) {
+        LogPrint(BCLog::PARKING, "%s: unparking the block (%s)\n",
+                 __func__, pindex->GetBlockHash().ToString());
         UnparkBlock(pindex);
     }
 
