@@ -53,6 +53,8 @@ enum LogFlags : uint32_t {
     COINDB = (1 << 18),
     QT = (1 << 19),
     LEVELDB = (1 << 20),
+    FINALIZATION = (1 << 21),
+    PARKING = (1 << 22),
     ALL = ~uint32_t(0),
 };
 
