@@ -22,7 +22,7 @@ FOLDER_SRC = '/src/**/'
 FOLDER_TEST = '/src/**/test/'
 
 EXTENSIONS = ["*.c", "*.h", "*.cpp", "*.cc", "*.hpp"]
-REGEX_ARG = r'(?:ForceSet|SoftSet|Get|Is)(?:Bool)?Args?(?:Set)?\(\s*"(-[^"]+)"'
+REGEX_ARG = r'(?:ForceSet|SoftSet|Get|Is)(?:Bool|NetBool)?Args?(?:Set)?\((?:\*this, )?\s*"(-[^"]+)"'
 REGEX_DOC = r'AddArg\(\s*"(-[^"]+?)"'
 REGEX_DOC_TRIM = r'=.+'
 
