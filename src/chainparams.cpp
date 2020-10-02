@@ -10,12 +10,15 @@
 #include <chainparamsseeds.h>
 #include <consensus/consensus.h>
 #include <consensus/merkle.h>
+#include <netbase.h>
 #include <tinyformat.h>
 #include <util/strencodings.h>
 #include <util/system.h>
 
 #include <cassert>
+#include <cstring>
 #include <memory>
+#include <stdexcept>
 
 static CBlock CreateGenesisBlock(const char *pszTimestamp,
                                  const CScript &genesisOutputScript,
@@ -812,4 +815,18 @@ std::unique_ptr<CChainParams> CreateChainParams(const std::string &chain) {
 void SelectParams(const std::string &network) {
     SelectBaseParams(network);
     globalChainParams = CreateChainParams(network);
+}
+
+SeedSpec6::SeedSpec6(const char *pszHostPort)
+{
+    const CService service = LookupNumeric(pszHostPort, 0);
+    if (!service.IsValid() || service.GetPort() == 0)
+        throw std::invalid_argument(strprintf("Unable to parse numeric-IP:port pair: %s", pszHostPort));
+    if (!service.IsRoutable())
+        throw std::invalid_argument(strprintf("Not routable: %s", pszHostPort));
+    static_assert (sizeof(addr[0]) == 1 && ADDRLEN == service.GetAddressLen(),
+                   "CNetAddr and SeedSpec6 must both be of the same exact data format");
+
+    std::memcpy(&addr[0], service.GetAddressBytes(), service.GetAddressLen());
+    port = service.GetPort();
 }
