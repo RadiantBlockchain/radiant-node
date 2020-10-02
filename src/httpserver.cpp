@@ -127,8 +127,8 @@ public:
 };
 
 struct HTTPPathHandler {
-    HTTPPathHandler(std::string _prefix, bool _exactMatch,
-                    HTTPRequestHandler _handler)
+    HTTPPathHandler(const std::string &_prefix, bool _exactMatch,
+                    const HTTPRequestHandler &_handler)
         : prefix(_prefix), exactMatch(_exactMatch), handler(_handler) {}
     std::string prefix;
     bool exactMatch;
@@ -668,7 +668,7 @@ void RegisterHTTPHandler(const std::string &prefix, bool exactMatch,
                          const HTTPRequestHandler &handler) {
     LogPrint(BCLog::HTTP, "Registering HTTP handler for %s (exactmatch %d)\n",
              prefix, exactMatch);
-    pathHandlers.push_back(HTTPPathHandler(prefix, exactMatch, handler));
+    pathHandlers.emplace_back(prefix, exactMatch, handler);
 }
 
 void UnregisterHTTPHandler(const std::string &prefix, bool exactMatch) {

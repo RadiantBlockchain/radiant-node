@@ -33,7 +33,7 @@ static std::map<std::string, uint32_t> mapFlagNames = {
     {"INPUT_SIGCHECKS", SCRIPT_VERIFY_INPUT_SIGCHECKS},
 };
 
-uint32_t ParseScriptFlags(std::string strFlags) {
+uint32_t ParseScriptFlags(const std::string &strFlags) {
     if (strFlags.empty()) {
         return 0;
     }
@@ -42,7 +42,7 @@ uint32_t ParseScriptFlags(std::string strFlags) {
     std::vector<std::string> words;
     boost::algorithm::split(words, strFlags, boost::algorithm::is_any_of(","));
 
-    for (std::string &word : words) {
+    for (const std::string &word : words) {
         if (!mapFlagNames.count(word)) {
             BOOST_ERROR("Bad test: unknown verification flag '" << word << "'");
         }

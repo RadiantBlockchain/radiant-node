@@ -51,7 +51,7 @@ void benchmark::ConsolePrinter::result(const State &state) {
 }
 
 void benchmark::ConsolePrinter::footer() {}
-benchmark::PlotlyPrinter::PlotlyPrinter(std::string plotly_url, int64_t width,
+benchmark::PlotlyPrinter::PlotlyPrinter(const std::string &plotly_url, int64_t width,
                                         int64_t height)
     : m_plotly_url(plotly_url), m_width(width), m_height(height) {}
 
@@ -91,7 +91,7 @@ benchmark::BenchRunner::BenchmarkMap &benchmark::BenchRunner::benchmarks() {
     return benchmarks_map;
 }
 
-benchmark::BenchRunner::BenchRunner(std::string name,
+benchmark::BenchRunner::BenchRunner(const std::string &name,
                                     benchmark::BenchFunction func,
                                     uint64_t num_iters_for_one_second) {
     benchmarks().insert(

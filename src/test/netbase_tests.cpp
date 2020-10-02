@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(netbase_properties) {
     BOOST_CHECK(CreateInternal("bar.com").IsInternal());
 }
 
-static bool TestSplitHost(std::string test, std::string host, int port) {
+static bool TestSplitHost(const std::string &test, const std::string &host, int port) {
     std::string hostOut;
     int portOut = -1;
     SplitHostPort(test, portOut, hostOut);
@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE(netbase_splithost) {
     BOOST_CHECK(TestSplitHost("", "", -1));
 }
 
-static bool TestParse(std::string src, std::string canon) {
+static bool TestParse(const std::string &src, const std::string &canon) {
     CService addr(LookupNumeric(src.c_str(), 65535));
     return canon == addr.ToString();
 }

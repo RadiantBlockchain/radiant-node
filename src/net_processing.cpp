@@ -422,7 +422,7 @@ struct CNodeState {
 
     TxDownloadState m_tx_download;
 
-    CNodeState(CAddress addrIn, std::string addrNameIn)
+    CNodeState(const CAddress &addrIn, const std::string &addrNameIn)
         : address(addrIn), name(addrNameIn) {
         fCurrentlyConnected = false;
         nMisbehavior = 0;

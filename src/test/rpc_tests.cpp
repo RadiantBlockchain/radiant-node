@@ -23,7 +23,7 @@
 
 #include <rpc/blockchain.h>
 
-UniValue CallRPC(std::string args)
+UniValue CallRPC(const std::string &args)
 {
     std::vector<std::string> vArgs;
     boost::split(vArgs, args, boost::is_any_of(" \t"));

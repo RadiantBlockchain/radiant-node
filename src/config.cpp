@@ -45,13 +45,13 @@ bool GlobalConfig::UseCashAddrEncoding() const {
 DummyConfig::DummyConfig()
     : chainParams(CreateChainParams(CBaseChainParams::REGTEST)) {}
 
-DummyConfig::DummyConfig(std::string net)
+DummyConfig::DummyConfig(const std::string &net)
     : chainParams(CreateChainParams(net)) {}
 
 DummyConfig::DummyConfig(std::unique_ptr<CChainParams> chainParamsIn)
     : chainParams(std::move(chainParamsIn)) {}
 
-void DummyConfig::SetChainParams(std::string net) {
+void DummyConfig::SetChainParams(const std::string &net) {
     chainParams = CreateChainParams(net);
 }
 

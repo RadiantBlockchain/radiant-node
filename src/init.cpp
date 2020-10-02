@@ -1638,7 +1638,7 @@ bool AppInitParameterInteraction(Config &config) {
         const std::vector<std::string> &categories = gArgs.GetArgs("-debug");
         if (std::none_of(
                 categories.begin(), categories.end(),
-                [](std::string cat) { return cat == "0" || cat == "none"; })) {
+                [](const std::string &cat) { return cat == "0" || cat == "none"; })) {
             for (const auto &cat : categories) {
                 if (!LogInstance().EnableCategory(cat)) {
                     InitWarning(
