@@ -404,6 +404,9 @@ void SetupServerArgs() {
                  "Specify directory to hold blocks subdirectory for *.dat "
                  "files (default: <datadir>)",
                  false, OptionsCategory::OPTIONS);
+    gArgs.AddArg("-indexdir=<dir>",
+                 "Specify directory to hold leveldb files (default: <datadir>)",
+                 false, OptionsCategory::OPTIONS);
     gArgs.AddArg("-blocknotify=<cmd>",
                  "Execute command when the best block changes (%s in cmd is "
                  "replaced by block hash)",
@@ -1586,6 +1589,16 @@ bool AppInitParameterInteraction(Config &config) {
             strprintf(_("Specified blocks directory \"%s\" does not exist."),
                       gArgs.GetArg("-blocksdir", "").c_str()));
     }
+    try{
+        if (!fs::is_directory(GetIndexDir())) {
+            return InitError(
+                strprintf(_("Specified index directory \"%s\" does not exist."),
+                            gArgs.GetArg("-indexdir", "").c_str()));
+        }
+    } catch (const fs::filesystem_error &e) {
+        return InitError(
+                strprintf("Error creating index directory: %s", e.what()));
+    }
 
     // if using block pruning, then disallow txindex
     if (gArgs.GetArg("-prune", 0)) {
@@ -2495,6 +2508,11 @@ bool AppInitMain(Config &config, RPCServer &rpcServer,
     if (!CheckDiskSpace(GetBlocksDir())) {
         InitError(
             strprintf(_("Error: Disk space is low for %s"), GetBlocksDir()));
+        return false;
+    }
+    if (!CheckDiskSpace(GetIndexDir())) {
+        InitError(
+            strprintf(_("Error: Disk space is low for %s"), GetIndexDir()));
         return false;
     }
 
