@@ -818,6 +818,7 @@ fs::path GetDefaultDataDir() {
 static fs::path g_blocks_path_cache_net_specific;
 static fs::path pathCached;
 static fs::path pathCachedNetSpecific;
+static fs::path pathWithIndex;
 static RecursiveMutex csPathCached;
 
 const fs::path &GetBlocksDir() {
@@ -884,12 +885,37 @@ const fs::path &GetDataDir(bool fNetSpecific) {
     return path;
 }
 
+const fs::path &GetIndexDir() {
+    LOCK(csPathCached);
+    fs::path &path = pathWithIndex;
+
+    // Cache the path to avoid calling fs::create_directories on every call of
+    // this function
+    if (!path.empty()) {
+        return path;
+    }
+
+    if (gArgs.IsArgSet("-indexdir")) {
+        path = fs::system_complete(gArgs.GetArg("-indexdir", ""));
+        path /= BaseParams().DataDir();
+    } else {
+        path = gArgs.IsArgSet("-blocksdir") ? GetDataDir() / "blocks" : GetBlocksDir();
+    }
+    path /= "index";
+
+    if (!fs::is_directory(path)) {
+        fs::create_directories(path);
+    }
+    return path;
+}
+
 void ClearDatadirCache() {
     LOCK(csPathCached);
 
     pathCached = fs::path();
     pathCachedNetSpecific = fs::path();
     g_blocks_path_cache_net_specific = fs::path();
+    pathWithIndex = fs::path();
 }
 
 fs::path GetConfigFile(const std::string &confPath) {
