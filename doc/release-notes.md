@@ -4,6 +4,9 @@ Bitcoin Cash Node version 22.1.0 is now available from:
 
   <https://bitcoincashnode.org>
 
+This release includes the following features and fixes:
+
+- Added `-indexdir=<dir>` command line option for saving leveldb files to a disk location different from the block storage (such as lower-latency medium SSD).
 
 ## Overview
 
@@ -116,7 +119,7 @@ all of them on our GitLab repository.
 
 #### Interfaces / RPC
 
-...
+- Add -indexdir option in bitcoind (issue #52, MR!801)
 
 #### Peformance optimizations
 
