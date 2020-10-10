@@ -78,18 +78,34 @@ bool CheckRegularTransaction(const CTransaction &tx, CValidationState &state) {
         return false;
     }
 
-    std::unordered_set<COutPoint, SaltedOutpointHasher> vInOutPoints;
-    for (const auto &txin : tx.vin) {
-        if (txin.prevout.IsNull()) {
-            return state.DoS(10, false, REJECT_INVALID,
-                             "bad-txns-prevout-null");
+    // Creating and filling an unordered_set is O(n), but simply checking inputs is O(n^2). However, the unordered_set
+    // requires memory allocations, which are significantly slower for small transactions. The crossover point appears
+    // to be a vin.size() of about 300.
+    if (tx.vin.size() < 300) {
+        for (size_t i=0; i < tx.vin.size(); ++i) {
+            if (tx.vin[i].prevout.IsNull()) {
+                return state.DoS(10, false, REJECT_INVALID,
+                                 "bad-txns-prevout-null");
+            }
+            for (size_t j=i+1; j < tx.vin.size(); ++j) {
+                if (tx.vin[i].prevout == tx.vin[j].prevout) {
+                    return state.DoS(100, false, REJECT_INVALID, "bad-txns-inputs-duplicate");
+                }
+            }
         }
+    } else {
+        std::unordered_set<COutPoint, SaltedOutpointHasher> vInOutPoints;
+        for (const auto &txin : tx.vin) {
+            if (txin.prevout.IsNull()) {
+                return state.DoS(10, false, REJECT_INVALID,
+                                 "bad-txns-prevout-null");
+            }
 
-        if (!vInOutPoints.insert(txin.prevout).second) {
-            return state.DoS(100, false, REJECT_INVALID,
-                             "bad-txns-inputs-duplicate");
+            if (!vInOutPoints.insert(txin.prevout).second) {
+                return state.DoS(100, false, REJECT_INVALID,
+                                 "bad-txns-inputs-duplicate");
+            }
         }
     }
-
     return true;
 }

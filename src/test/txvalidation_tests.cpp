@@ -10,6 +10,8 @@
 #include <test/setup_common.h>
 #include <txmempool.h>
 #include <validation.h>
+#include <consensus/tx_check.h>
+#include <util/time.h>
 
 #include <boost/test/unit_test.hpp>
 
@@ -51,6 +53,58 @@ BOOST_FIXTURE_TEST_CASE(tx_mempool_reject_coinbase, TestChain100Setup) {
     // Check that the validation state reflects the unsuccesful attempt.
     BOOST_CHECK(state.IsInvalid());
     BOOST_CHECK_EQUAL(state.GetRejectReason(), "bad-tx-coinbase");
+
+    int nDoS;
+    BOOST_CHECK_EQUAL(state.IsInvalid(nDoS), true);
+    BOOST_CHECK_EQUAL(nDoS, 100);
+}
+
+/**
+ * Ensure that transactions with duplicate inputs are appropriately rejected regardless of the length of vin
+ */
+BOOST_FIXTURE_TEST_CASE(tx_mempool_reject_dup_txin, TestChain100Setup) {
+    CScript scriptPubKey = CScript() << ToByteVector(coinbaseKey.GetPubKey()) << OP_CHECKSIG;
+
+    CMutableTransaction tx;
+    for (size_t vinSize = 2; vinSize < 2000; vinSize < 20 ? vinSize++ : vinSize *= 2) {
+      tx.nVersion = 1;
+      tx.vin.resize(vinSize);
+      tx.vout.resize(1);
+      tx.vout[0].nValue = 400 * SATOSHI;
+      tx.vout[0].scriptPubKey = scriptPubKey;
+      for (size_t i=0; i<vinSize; i++) {
+        tx.vin[i].prevout = COutPoint(TxId(InsecureRand256()), 0);
+      }
+      BOOST_CHECK(!CTransaction(tx).IsCoinBase());
+
+      CValidationState state;
+      BOOST_CHECK(CheckRegularTransaction(CTransaction(tx), state));
+
+      size_t i = InsecureRandRange(vinSize-1);
+      size_t j = 1 + InsecureRandRange(vinSize-1);
+      if (i == j) j++;
+      tx.vin[j] = tx.vin[i];
+      BOOST_CHECK(!CheckRegularTransaction(CTransaction(tx), state));
+      BOOST_CHECK_EQUAL(state.GetRejectReason(), "bad-txns-inputs-duplicate");
+    }
+
+    CValidationState state;
+
+    LOCK(cs_main);
+    unsigned int initialPoolSize = g_mempool.size();
+
+    BOOST_CHECK_EQUAL(false, AcceptToMemoryPool(GetConfig(), g_mempool, state,
+                                                MakeTransactionRef(tx),
+                                                nullptr /* pfMissingInputs */,
+                                                true /* bypass_limits */,
+                                                Amount::zero() /* nAbsurdFee */));
+
+    // Check that the transaction hasn't been added to mempool.
+    BOOST_CHECK_EQUAL(g_mempool.size(), initialPoolSize);
+
+    // Check that the validation state reflects the unsuccesful attempt.
+    BOOST_CHECK(state.IsInvalid());
+    BOOST_CHECK_EQUAL(state.GetRejectReason(), "bad-txns-inputs-duplicate");
 
     int nDoS;
     BOOST_CHECK_EQUAL(state.IsInvalid(nDoS), true);
