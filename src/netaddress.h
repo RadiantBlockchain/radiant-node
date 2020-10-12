@@ -482,7 +482,20 @@ public:
     /// Return the (prefix as CNetAddr, mask length)
     std::pair<CNetAddr, uint8_t> GetCIDR() const;
 
-    SERIALIZE_METHODS(CSubNet, obj) { READWRITE(obj.network, obj.netmask, obj.valid); }
+    SERIALIZE_METHODS(CSubNet, obj) {
+        READWRITE(obj.network);
+        if (obj.network.IsIPv4()) {
+            // Before commit 084265a60d79740d7ee8fa04b4d315ef71c1c21f, CSubNet used the last 4 bytes of netmask
+            // to store the relevant bytes for an IPv4 mask. For compatiblity reasons, keep doing so in
+            // serialized form.
+            unsigned char dummy[12] = {0};
+            READWRITE(dummy);
+            READWRITE(MakeSpan(obj.netmask).first(4));
+        } else {
+            READWRITE(obj.netmask);
+        }
+        READWRITE(obj.valid);
+    }
 };
 
 /** A combination of a network address (CNetAddr) and a (TCP) port */
