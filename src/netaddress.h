@@ -453,6 +453,8 @@ protected:
     /// Is this value valid? (only used to signal parse errors)
     bool valid;
 
+    bool SanityCheck() const;
+
     /// Returns the CIDR length e.g. 0, 8, 12, 16, 24, etc
     uint8_t GetCIDRLength() const;
 
@@ -495,6 +497,8 @@ public:
             READWRITE(obj.netmask);
         }
         READWRITE(obj.valid);
+        // Mark invalid if the result doesn't pass sanity checking.
+        SER_READ(obj, if (obj.valid) obj.valid = obj.SanityCheck());
     }
 };
 
