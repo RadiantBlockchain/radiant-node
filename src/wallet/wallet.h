@@ -915,7 +915,8 @@ public:
                         const Amount nMinimumSumAmount = MAX_MONEY,
                         const uint64_t nMaximumCount = 0,
                         const int nMinDepth = 0,
-                        const int nMaxDepth = 9999999) const
+                        const int nMaxDepth = 9999999,
+                        const CFeeRate = CFeeRate(Amount::zero())) const
         EXCLUSIVE_LOCKS_REQUIRED(cs_wallet);
 
     /**
@@ -1138,7 +1139,8 @@ public:
                       CTransactionRef &tx, CReserveKey &reservekey,
                       Amount &nFeeRet, int &nChangePosInOut,
                       std::string &strFailReason,
-                      const CCoinControl &coin_control, bool sign = true);
+                      const CCoinControl &coin_control, bool sign = true,
+                      int coinsel = 0);
     bool CommitTransaction(
         CTransactionRef tx, mapValue_t mapValue,
         std::vector<std::pair<std::string, std::string>> orderForm,

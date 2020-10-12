@@ -2461,7 +2461,7 @@ void CWallet::AvailableCoins(interfaces::Chain::Lock &locked_chain,
                              const Amount nMaximumAmount,
                              const Amount nMinimumSumAmount,
                              const uint64_t nMaximumCount, const int nMinDepth,
-                             const int nMaxDepth) const {
+                             const int nMaxDepth, const CFeeRate nFeeRate) const {
     AssertLockHeld(cs_main);
     AssertLockHeld(cs_wallet);
 
@@ -2568,7 +2568,7 @@ void CWallet::AvailableCoins(interfaces::Chain::Lock &locked_chain,
             if (nMinimumSumAmount != MAX_MONEY) {
                 nTotal += pcoin->tx->vout[i].nValue;
 
-                if (nTotal >= nMinimumSumAmount) {
+                if (nTotal >= nMinimumSumAmount + nFeeRate.GetFee(vCoins.size() * 150)) {
                     return;
                 }
             }
@@ -3033,7 +3033,8 @@ CreateTransactionResult CWallet::CreateTransaction(
     interfaces::Chain::Lock &locked_chainIn,
     const std::vector<CRecipient> &vecSend, CTransactionRef &tx,
     CReserveKey &reservekey, Amount &nFeeRet, int &nChangePosInOut,
-    std::string &strFailReason, const CCoinControl &coinControl, bool sign) {
+    std::string &strFailReason, const CCoinControl &coinControl, bool sign,
+    int coinsel) {
     Amount nValue = Amount::zero();
     int nChangePosRequest = nChangePosInOut;
     unsigned int nSubtractFeeFromAmount = 0;
@@ -3065,7 +3066,19 @@ CreateTransactionResult CWallet::CreateTransaction(
         LOCK(cs_wallet);
 
         std::vector<COutput> vAvailableCoins;
-        AvailableCoins(*locked_chain, vAvailableCoins, true, &coinControl);
+        // coinsel == 2 is planned to be a future fast algorithm, so we will
+        // make 2 as fast as we can here to ease the upgrade transition
+        if (coinsel == 1 || coinsel == 2) {
+            AvailableCoins(*locked_chain, vAvailableCoins, true, &coinControl,
+                SATOSHI,   // nMinimumAmount
+                MAX_MONEY, // nMaximumAmount
+                10 * nValue, // nMinimumSumAmount
+                0, 0, 9999999,
+                GetMinimumFeeRate(*this, coinControl, g_mempool));
+        } else {
+            AvailableCoins(*locked_chain, vAvailableCoins, true, &coinControl);
+        }
+
         // Parameters for coin selection, init with dummy
         CoinSelectionParams coin_selection_params;
 
