@@ -350,7 +350,7 @@ static CTransactionRef SendMoney(interfaces::Chain::Lock &locked_chain,
                                  const CTxDestination &address, Amount nValue,
                                  bool fSubtractFeeFromAmount,
                                  const CCoinControl &coinControl,
-                                 mapValue_t mapValue) {
+                                 mapValue_t mapValue, int coinsel) {
     if (pwallet->GetBroadcastTransactions() && !g_connman) {
         throw JSONRPCError(
             RPC_CLIENT_P2P_DISABLED,
@@ -372,7 +372,7 @@ static CTransactionRef SendMoney(interfaces::Chain::Lock &locked_chain,
     CTransactionRef tx;
     auto rc = pwallet->CreateTransaction(locked_chain, vecSend, tx, reservekey,
                                          nFeeRequired, nChangePosRet, strError,
-                                         coinControl);
+                                         coinControl, true, coinsel);
     if (rc == CreateTransactionResult::CT_INVALID_PARAMETER) {
         if (nValue <= Amount::zero()) {
             // We override the string in this one for backward compatibility.
@@ -404,7 +404,6 @@ static CTransactionRef SendMoney(interfaces::Chain::Lock &locked_chain,
             throw JSONRPCError(RPC_WALLET_ERROR, strError);
         }
     }
-
     CValidationState state;
     if (!pwallet->CommitTransaction(tx, std::move(mapValue), {} /* orderForm */,
                                     reservekey, g_connman.get(), state)) {
@@ -426,10 +425,10 @@ static UniValue sendtoaddress(const Config &config,
     }
 
     if (request.fHelp || request.params.size() < 2 ||
-        request.params.size() > 5) {
+        request.params.size() > 6) {
         throw std::runtime_error(
             "sendtoaddress \"address\" amount ( \"comment\" \"comment_to\" "
-            "subtractfeefromamount )\n"
+            "subtractfeefromamount coinsel)\n"
             "\nSend an amount to a given address.\n" +
             HelpRequiringPassphrase(pwallet) +
             "\nArguments:\n"
@@ -453,6 +452,14 @@ static UniValue sendtoaddress(const Config &config,
             "fee will be deducted from the amount being sent.\n"
             "                             The recipient will receive less "
             "bitcoins than you enter in the amount field.\n"
+            "6. coinsel  (int, optional, default=0) Which coin selection\n"
+            "algorithm to use. A value of 1 will use a faster algorithm "
+            "suitable for stress tests or use with large wallets. This\n"
+            "algorithm is likely to produce larger transactions on average."
+            "0 is a slower algorithm using BNB and a knapsack solver, but\n"
+            "which can produce transactions with slightly better privacy and "
+            "smaller transaction sizes. Values other than 0 or 1 are reserved\n"
+            "for future algorithms.\n"
             "\nResult:\n"
             "\"txid\"                  (string) The transaction id.\n"
             "\nExamples:\n" +
@@ -504,11 +511,21 @@ static UniValue sendtoaddress(const Config &config,
 
     CCoinControl coinControl;
 
+    int coinsel = 0;
+    if (!request.params[5].isNull()) {
+        // RPC API is an int to allow for multiple speed settings in the future
+        coinsel = (request.params[5].get_int());
+    }
+    // coinsel==2 will be another fast algorithm, for which we maintain forwards compatibility
+    if (coinsel < 0 || coinsel > 2) {
+        throw JSONRPCError(RPC_TYPE_ERROR, "Unsupported coin selection algorithm");
+    }
+
     EnsureWalletIsUnlocked(pwallet);
 
     CTransactionRef tx =
         SendMoney(*locked_chain, pwallet, dest, nAmount, fSubtractFeeFromAmount,
-                  coinControl, std::move(mapValue));
+                  coinControl, std::move(mapValue), coinsel);
     return tx->GetId().GetHex();
 }
 
@@ -4677,7 +4694,7 @@ static const ContextFreeRPCCommand commands[] = {
     { "wallet",             "lockunspent",                  lockunspent,                  {"unlock","transactions"} },
     { "wallet",             "rescanblockchain",             rescanblockchain,             {"start_height", "stop_height"} },
     { "wallet",             "sendmany",                     sendmany,                     {"dummy","amounts","minconf","comment","subtractfeefrom"} },
-    { "wallet",             "sendtoaddress",                sendtoaddress,                {"address","amount","comment","comment_to","subtractfeefromamount"} },
+    { "wallet",             "sendtoaddress",                sendtoaddress,                {"address","amount","comment","comment_to","subtractfeefromamount","coinsel"} },
     { "wallet",             "sethdseed",                    sethdseed,                    {"newkeypool","seed"} },
     { "wallet",             "setlabel",                     setlabel,                     {"address","label"} },
     { "wallet",             "settxfee",                     settxfee,                     {"amount"} },

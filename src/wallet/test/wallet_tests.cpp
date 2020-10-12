@@ -385,7 +385,7 @@ public:
 
     ~ListCoinsTestingSetup() { wallet.reset(); }
 
-    CWalletTx &AddTx(CRecipient recipient) {
+    CWalletTx &AddTx(CRecipient recipient, int coinsel=0) {
         CTransactionRef tx;
         CReserveKey reservekey(wallet.get());
         Amount fee;
@@ -395,7 +395,7 @@ public:
         BOOST_CHECK_EQUAL(CreateTransactionResult::CT_OK,
                           wallet->CreateTransaction(
                               *m_locked_chain, {recipient}, tx, reservekey, fee,
-                              changePos, error, dummy));
+                              changePos, error, dummy, true, coinsel));
         CValidationState state;
         BOOST_CHECK(
             wallet->CommitTransaction(tx, {}, {}, reservekey, nullptr, state));
@@ -438,6 +438,9 @@ BOOST_FIXTURE_TEST_CASE(ListCoins, ListCoinsTestingSetup) {
 
     // Check initial balance from one mature coinbase transaction.
     BOOST_CHECK_EQUAL(50 * COIN, wallet->GetAvailableBalance());
+
+    // Check that wallet->GetBalance returns the same thing
+    BOOST_CHECK_EQUAL(50 * COIN, wallet->GetBalance());
 
     // Add a transaction creating a change address, and confirm ListCoins still
     // returns the coin associated with the change address underneath the
@@ -483,6 +486,27 @@ BOOST_FIXTURE_TEST_CASE(ListCoins, ListCoinsTestingSetup) {
     BOOST_CHECK_EQUAL(boost::get<CKeyID>(list.begin()->first).ToString(),
                       coinbaseAddress);
     BOOST_CHECK_EQUAL(list.begin()->second.size(), 2U);
+}
+
+BOOST_FIXTURE_TEST_CASE(FastTransaction, ListCoinsTestingSetup) {
+    std::string coinbaseAddress = coinbaseKey.GetPubKey().GetID().ToString();
+
+    for (uint8_t i=0; i<2; i++) {
+        int coinsel = i;
+
+        BOOST_CHECK(wallet->GetBalance() == 50 * COIN);
+
+        // Each AddTx call will spend some coins then mine a block, adding another 50 coins
+        AddTx(CRecipient{GetScriptForRawPubKey({}),   1 * COIN, true /* subtract fee */}, coinsel);
+        BOOST_CHECK(wallet->GetBalance() == 99 * COIN);
+        AddTx(CRecipient{GetScriptForRawPubKey({}),   1 * COIN, true /* subtract fee */}, coinsel);
+        BOOST_CHECK(wallet->GetBalance() == 148 * COIN);
+        AddTx(CRecipient{GetScriptForRawPubKey({}),  51 * COIN, true /* subtract fee */}, coinsel);
+        BOOST_CHECK(wallet->GetBalance() == 147 * COIN);
+        AddTx(CRecipient{GetScriptForRawPubKey({}), 147 * COIN, true /* subtract fee */}, coinsel);
+
+        BOOST_CHECK(wallet->GetBalance() == 50 * COIN);
+    }
 }
 
 BOOST_FIXTURE_TEST_CASE(wallet_disableprivkeys, TestChain100Setup) {
