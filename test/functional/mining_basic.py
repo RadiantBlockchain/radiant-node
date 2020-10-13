@@ -270,6 +270,21 @@ class MiningTest(BitcoinTestFramework):
         assert_equal(node.submitblock(
             hexdata=block.serialize().hex()), 'duplicate')
 
+        # Ensure that "parameters" and "dummy" second arg are interchangeable
+        self.log.info("Ensuring that the \"dummy\" and \"parameters\" args to "
+                      "submitblock are aliases of each other")
+        # Ensure that unknown arg raises the right error
+        assert_raises_rpc_error(-8,
+                                "Unknown named parameter foobar",
+                                node.submitblock,
+                                hexdata=block.serialize().hex(), foobar={})
+        # Now check that dummy={} is accepted as a valid call
+        assert_equal(node.submitblock(
+            hexdata=block.serialize().hex(), dummy={}), 'duplicate')
+        # And that parameters={} is accepted as a valid call
+        assert_equal(node.submitblock(
+            hexdata=block.serialize().hex(), parameters={}), 'duplicate')
+
         # Test for RPC_CLIENT_NOT_CONNECTED error
         self.nodes[0].disconnect_p2ps()
         self.nodes[1].disconnect_p2ps()

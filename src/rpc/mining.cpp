@@ -1263,7 +1263,7 @@ static const ContextFreeRPCCommand commands[] = {
     {"mining",     "prioritisetransaction", prioritisetransaction, {"txid", "dummy", "fee_delta"}},
     {"mining",     "getblocktemplate",      getblocktemplate,      {"template_request"}},
     {"mining",     "getblocktemplatelight", getblocktemplatelight, {"template_request", "additional_txs"}},
-    {"mining",     "submitblock",           submitblock,           {"hexdata", "parameters"}},
+    {"mining",     "submitblock",           submitblock,           {"hexdata", "dummy|parameters"}}, //! "dummy" is for compat. with Core
     {"mining",     "submitblocklight",      submitblocklight,      {"hexdata", "job_id"}},
     {"mining",     "submitheader",          submitheader,          {"hexdata"}},
 
