@@ -2563,7 +2563,7 @@ static const ContextFreeRPCCommand commands[] = {
     { "blockchain",         "getblockchaininfo",      getblockchaininfo,      {} },
     { "blockchain",         "getblockcount",          getblockcount,          {} },
     { "blockchain",         "getblockhash",           getblockhash,           {"height"} },
-    { "blockchain",         "getblockheader",         getblockheader,         {"hash_or_height","verbose"} },
+    { "blockchain",         "getblockheader",         getblockheader,         {"blockhash|hash_or_height","verbose"} },
     { "blockchain",         "getblockstats",          getblockstats,          {"hash_or_height","stats"} },
     { "blockchain",         "getchaintips",           getchaintips,           {} },
     { "blockchain",         "getchaintxstats",        getchaintxstats,        {"nblocks", "blockhash"} },

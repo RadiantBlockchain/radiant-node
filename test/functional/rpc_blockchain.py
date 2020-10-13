@@ -284,6 +284,22 @@ class BlockchainTest(BitcoinTestFramework):
         header_by_height = node.getblockheader(hash_or_height=200)
         assert_equal(header, header_by_height)
 
+        # Next, check that the old alias 'blockhash' still works
+        # and is interchangeable with hash_or_height
+        # First, make sure errors work as expected for unknown named params
+        self.log.info("Testing that getblockheader(blockhashhh=\"HEX\") produces the proper error")
+        assert_raises_rpc_error(
+            -8,
+            "Unknown named parameter blockhashhh",
+            node.getblockheader,
+            blockhashhh=header['hash'])
+        # Next, actually try the old legacy blockhash="xx" style arg
+        self.log.info("Testing that legacy getblockheader(blockhash=\"HEX\") still works ok")
+        header_by_hash2 = node.getblockheader(blockhash=header['hash'])
+        assert_equal(header, header_by_hash2)
+        header_by_height2 = node.getblockheader(blockhash=200)
+        assert_equal(header, header_by_height2)
+
         # check that we actually get a hex string back from getblockheader
         # if verbose is set to false.
         header_verbose_false = node.getblockheader(200, False)
