@@ -328,6 +328,7 @@ nav:
             - RapidCheck: doc/rapidcheck.md
             - doc/fuzzing.md
             - doc/benchmarking.md
+            - doc/test-networks.md
         - Translation: doc/translation_process.md
         - doc/release-process.md
         - Responsible disclosure: DISCLOSURE_POLICY.md
