@@ -79,6 +79,16 @@ static bool LookupIntern(const char *pszName, std::vector<CNetAddr> &vIP,
             return true;
         }
     }
+#ifdef WIN32
+    // Windows: WSAStartup must be called before getaddrinfo below will work.
+    // SetupNetworking() is a no-op on all platforms except Windows, and on
+    // Windows it is guaranteed to be ok to call more than once in this
+    // codebase. This was added after MR !786, which ends up calling into here
+    // during static initialization, before SetupNetworking() could be called
+    // by init.cpp.
+    static const bool setupOnce = SetupNetworking(); // leverage C++ guarantee this is called just once.
+    (void)setupOnce;
+#endif
 
     struct addrinfo aiHint;
     memset(&aiHint, 0, sizeof(struct addrinfo));
