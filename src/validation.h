@@ -174,6 +174,10 @@ static constexpr bool DEFAULT_PEERBLOOMFILTERS = true;
 static constexpr int DEFAULT_STOPATHEIGHT = 0;
 /** Default for -maxreorgdepth */
 static constexpr int DEFAULT_MAX_REORG_DEPTH = 10;
+/** Default for -finalizeheaders */
+static constexpr bool DEFAULT_FINALIZE_HEADERS = true;
+/** Default DoS score for finalized header violation - range 0..100 */
+static constexpr unsigned int DEFAULT_FINALIZE_HEADERS_PENALTY = 100;
 /**
  * Default for -finalizationdelay
  * This is the minimum time between a block header reception and the block

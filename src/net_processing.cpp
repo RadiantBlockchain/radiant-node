@@ -1843,6 +1843,7 @@ static bool ProcessHeadersMessage(const Config &config, CNode *pfrom,
             return true;
         }
 
+        // Check for non-contiguous header sequence
         BlockHash hashLastBlock;
         for (const CBlockHeader &header : headers) {
             if (!hashLastBlock.IsNull() &&

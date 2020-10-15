@@ -471,6 +471,16 @@ void SetupServerArgs() {
                            "final (-1 to disable, default: %d)",
                            DEFAULT_MAX_REORG_DEPTH),
                  false, OptionsCategory::OPTIONS);
+    gArgs.AddArg("-finalizeheaders",
+                 strprintf("Whether to reject new headers below maxreorgdepth "
+                           "if a finalized block exists (default: %u)",
+                           DEFAULT_FINALIZE_HEADERS),
+                 false, OptionsCategory::OPTIONS);
+    gArgs.AddArg("-finalizeheaderspenalty=<n>",
+                 strprintf("Penalize peers sending headers below with DoS score <n> "
+                           "(default: %u)",
+                           DEFAULT_FINALIZE_HEADERS_PENALTY),
+                 false, OptionsCategory::OPTIONS);
     gArgs.AddArg("-loadblock=<file>",
                  "Imports blocks from external blk000??.dat file on startup",
                  false, OptionsCategory::OPTIONS);
@@ -1688,6 +1698,23 @@ bool AppInitParameterInteraction(Config &config) {
         LogPrintf("Checkpoints will be verified.\n");
     } else {
         LogPrintf("Skipping checkpoint verification.\n");
+    }
+
+    if (gArgs.GetBoolArg("-finalizeheaders", DEFAULT_FINALIZE_HEADERS)
+            && gArgs.GetArg("-maxreorgdepth", DEFAULT_MAX_REORG_DEPTH) > -1) {
+        LogPrintf("New block headers below finalized block (maxreorgdepth=%d) will be rejected.\n",
+                gArgs.GetArg("-maxreorgdepth", DEFAULT_MAX_REORG_DEPTH));
+        const auto nFinalizeHeadersPenalty = gArgs.GetArg("-finalizeheaderspenalty", DEFAULT_FINALIZE_HEADERS_PENALTY);
+        if (nFinalizeHeadersPenalty < 0 || nFinalizeHeadersPenalty > 100) {
+                return InitError(strprintf(
+                    "Invalid header finalization penalty (DoS score) (%s) - must be between 0 and 100",
+                    nFinalizeHeadersPenalty));
+        } else {
+            LogPrintf("Nodes sending headers below finalized block will be penalized with DoS score %d.\n",
+                    nFinalizeHeadersPenalty);
+        }
+    } else {
+        LogPrintf("New block headers below finalized block may be accepted.\n");
     }
 
     hashAssumeValid = BlockHash::fromHex(
