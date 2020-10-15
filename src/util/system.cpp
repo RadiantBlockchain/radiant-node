@@ -1395,15 +1395,23 @@ void SetupEnvironment() {
 
 bool SetupNetworking() {
 #ifdef WIN32
-    // Initialize Windows Sockets.
-    WSADATA wsadata;
-    int ret = WSAStartup(MAKEWORD(2, 2), &wsadata);
-    if (ret != NO_ERROR || LOBYTE(wsadata.wVersion) != 2 ||
-        HIBYTE(wsadata.wVersion) != 2) {
-        return false;
-    }
-#endif
+    // the below guard is to ensure we can call SetupNetworking() from multiple
+    // places in the codebase and that WSAStartup() will only execute precisely
+    // once, with the results cached in the static variable.
+    static const bool wsaResult = [] {
+        // Initialize Windows Sockets.
+        WSADATA wsadata;
+        int ret = WSAStartup(MAKEWORD(2, 2), &wsadata);
+        if (ret != NO_ERROR || LOBYTE(wsadata.wVersion) != 2 ||
+            HIBYTE(wsadata.wVersion) != 2) {
+            return false;
+        }
+        return true;
+    }();
+    return wsaResult;
+#else
     return true;
+#endif
 }
 
 int GetNumCores() {
