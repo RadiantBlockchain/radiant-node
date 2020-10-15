@@ -3650,6 +3650,34 @@ static bool ContextualCheckBlockHeader(const CChainParams &params,
                          "incorrect proof of work");
     }
 
+    // finalizeheaders: Check against last finalized block height
+    if (pindexFinalized) {
+        const auto finalizeheaders = gArgs.GetBoolArg("-finalizeheaders", DEFAULT_FINALIZE_HEADERS);
+
+        if (finalizeheaders) {
+            const auto maxreorgdepth = gArgs.GetArg("-maxreorgdepth", DEFAULT_MAX_REORG_DEPTH);
+            LogPrint(BCLog::FINALIZATION, "%s: header finalization check: hash=%s  height=%d  date=%s  maxreorgdepth=%d   final height=%d  final hash=%s\n",
+                     __func__, block.GetHash().ToString(),
+                     nHeight,
+                     FormatISO8601DateTime(block.GetBlockTime()),
+                     maxreorgdepth,
+                     pindexFinalized->nHeight,
+                     pindexFinalized->GetBlockHash().ToString());
+            if (maxreorgdepth > -1
+                && pindexPrev->GetAncestor(pindexFinalized->nHeight) != pindexFinalized) {
+                LogPrint(BCLog::FINALIZATION, "%s: below final=%s  height=%d  date=%s\n",
+                         __func__, block.GetHash().ToString(),
+                         nHeight,
+                         FormatISO8601DateTime(block.GetBlockTime()));
+
+                return state.DoS(gArgs.GetArg("-finalizeheaderspenalty", DEFAULT_FINALIZE_HEADERS_PENALTY),
+                                 error("%s: height %d rejected due to existing finalized header",
+                                       __func__, nHeight),
+                                 REJECT_AGAINST_FINALIZED, "bad-header-finalization");
+            }
+        }
+    }
+
     // Check against checkpoints
     if (fCheckpointsEnabled) {
         const CCheckpointData &checkpoints = params.Checkpoints();

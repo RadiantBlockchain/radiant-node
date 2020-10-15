@@ -56,6 +56,16 @@ class ConfArgsTest(BitcoinTestFramework):
         self.nodes[0].assert_start_raises_init_error(
             expected_msg='Error reading configuration file: parse error on line 4, using # in rpcpassword can be ambiguous and should be avoided')
 
+        with open(inc_conf_file_path, 'w', encoding='utf-8') as conf:
+            conf.write('finalizeheaderspenalty=101\n')
+        self.nodes[0].assert_start_raises_init_error(
+            expected_msg='Error: Invalid header finalization penalty (DoS score) (101) - must be between 0 and 100')
+
+        with open(inc_conf_file_path, 'w', encoding='utf-8') as conf:
+            conf.write('finalizeheaderspenalty=-1\n')
+        self.nodes[0].assert_start_raises_init_error(
+            expected_msg='Error: Invalid header finalization penalty (DoS score) (-1) - must be between 0 and 100')
+
         inc_conf_file2_path = os.path.join(
             self.nodes[0].datadir, 'include2.conf')
         with open(os.path.join(self.nodes[0].datadir, 'bitcoin.conf'), 'a', encoding='utf-8') as conf:
