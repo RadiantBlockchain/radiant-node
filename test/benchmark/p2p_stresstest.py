@@ -1,29 +1,40 @@
 #!/usr/bin/env python3
-# Copyright (c) 2016 The Bitcoin Core developers
-# Copyright (c) 2017 The Bitcoin developers
-# Copyright (c) 2019 The Bitcoin ABC developers
+# Copyright (c) 2019-2020 Jonathan Toomim
+# Copyright (c) 2020 The Bitcoin Cash Node developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
-
-import os
-import sys
-sys.path.insert(0, os.path.join('..', 'functional'))
-
-from test_framework.authproxy import JSONRPCException
-from test_framework.mininode import (
-    mininode_lock,
-    P2PInterface,
-)
-from test_framework.script import CScript, OP_TRUE
-from test_framework.test_framework import BitcoinTestFramework
-from test_framework.util import assert_equal, sync_blocks, wait_until
-import test_framework.util
-import time, threading, traceback, http, sys
-from decimal import Decimal
-
 '''
 stresstest -- test spam generation and localhost block propagation
+
+This test will be slow at generating transactions unless
+you have a very fast SSD or a ramdisk for the wallet files.
+It is strongly recommended to run it on a ramdisk.
+You can set one up up on Linux like this (adapt mountpoint as needed):
+
+  sudo mount -t tmpfs size=4G /mnt/my/ramdisk
+  sudo chmod a+x /mnt/my/ramdisk
+  mkdir /mnt/my/ramdisk/tmp
+  export TMPDIR=/mnt/my/ramdisk/tmp
+
+Then build or copy the software you want to test, onto the ramdisk and
+run this script from there.
 '''
+
+import http
+import traceback
+import threading
+import time
+import os
+import sys
+
+sys.path.insert(0, os.path.join('..', 'functional'))
+import test_framework.util
+from test_framework.util import sync_blocks
+from test_framework.test_framework import BitcoinTestFramework
+from test_framework.mininode import P2PInterface
+from test_framework.authproxy import JSONRPCException
+from decimal import Decimal
+
 
 NUM_NODES = 4
 # 168k tx is 32 MB
@@ -31,66 +42,72 @@ TX_PER_BLOCK = 10000
 # set this below your hardware's peak generation rate if you want
 # to have transaction validation happen in parallel with generation,
 # or if you otherwise want to simulate lower generation rates.
-MAX_GENERATION_RATE_PER_NODE = 15000 
+MAX_GENERATION_RATE_PER_NODE = 15000
 
 if NUM_NODES > test_framework.util.MAX_NODES:
     test_framework.util.MAX_NODES = NUM_NODES
 
 # TestNode: A peer we use to send messages to bitcoind, and store responses.
 
+
 class TestNode(P2PInterface):
     pass
+
 
 class StressTest(BitcoinTestFramework):
     def skip_test_if_missing_module(self):
         self.skip_if_no_wallet()
 
-    def set_test_params(self, xthinner='1'):
+    def set_test_params(self):
         self.setup_clean_chain = True
         self.num_nodes = NUM_NODES
         self.extra_args = [["-blockmaxsize=32000000",
                             "-checkmempool=0",
                             "-debugexclude=net",
-                            "-debugexclude=mempool"]]* self.num_nodes
+                            "-debugexclude=mempool"]] * self.num_nodes
 
     def make_utxos(self, target=10000):
         print("Running make_utxos()...")
-        rootamount = 49.0/len(self.nodes)
-        fanout = target+1 if target < 100 else 100 if target < 100*50 else target // 50
-        num_stages = -(-target // fanout) +1 # rounds up
-        print("Fanout=%i, num_stages=%i" % (fanout, num_stages))
+        rootamount = 49.0 / len(self.nodes)
+        fanout = target + 1 if target < 100 else 100 if target < 100 * 50 else target // 50
+        num_stages = -(-target // fanout) + 1  # rounds up
+        print("Fanout={}, num_stages={}".format(fanout, num_stages))
         self.nodes[0].generate(101)
-        self.nodes[0].generate(num_stages * self.num_nodes-1)
+        self.nodes[0].generate(num_stages * self.num_nodes - 1)
         time.sleep(0.2)
         self.nodes[0].generate(1)
-        addresses = [node.getnewaddress() for node in self.nodes]
         node_addresses = [[] for _ in self.nodes]
         self.node_addresses = node_addresses
         t0 = time.time()
+
         def get_addresses(node, addresslist, n):
             for _ in range(n):
                 addresslist.append(node.getnewaddress())
-        threads = [threading.Thread(target=get_addresses, 
-                                    args=(self.nodes[i], node_addresses[i], fanout)) 
+        threads = [threading.Thread(target=get_addresses,
+                                    args=(self.nodes[i], node_addresses[i], fanout))
                    for i in range(len(self.nodes))]
-        for thread in threads: thread.start()
-        for thread in threads: thread.join()
-        t1 = time.time(); print("Generating addresses took %3.3f sec" % (t1-t0))
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
+        t1 = time.time()
+        print("Generating addresses took {:3.3f} sec".format(t1 - t0))
         sync_blocks(self.nodes, timeout=10)
-        for i in range(self.num_nodes-1, 0, -1):
-            amount = Decimal(round(rootamount/(fanout+1) * 1e8)) / Decimal(1e8)
-            payments = {node_addresses[i][n]:amount for n in range(fanout)}
+        for i in range(self.num_nodes - 1, 0, -1):
+            amount = Decimal(round(rootamount / (fanout + 1) * 1e8)) / Decimal(1e8)
+            payments = {node_addresses[i][n]: amount for n in range(fanout)}
             t1 = time.time()
             for stage in range(num_stages):
                 self.nodes[0].sendmany('', payments)
-            t2 = time.time(); print("Filling node wallets took %3.3f sec for stage %i:%i" % (t2-t1, i, stage))
+            t2 = time.time()
+            print("Filling node wallets took {:3.3f} sec for stage {}:{}".format(t2 - t1, i, stage))
         self.nodes[0].generate(1)
         sync_blocks(self.nodes)
-        for i in range(1+(target*self.num_nodes)//20000):
+        for i in range(1 + (target * self.num_nodes) // 20000):
             self.nodes[0].generate(1)
             sync_blocks(self.nodes, timeout=20)
             blk = self.nodes[0].getblock(self.nodes[0].getbestblockhash(), 1)
-            print("Block has %i transactions and is %i bytes" % (len(blk['tx']), blk['size']))
+            print("Block has {} transactions and is {} bytes".format(len(blk['tx']), blk['size']))
         return amount
 
     def check_mempools(self):
@@ -98,9 +115,8 @@ class StressTest(BitcoinTestFramework):
         for node in self.nodes:
             res = node.getmempoolinfo()
             results.append(res)
-            success = True
-        print("Mempool sizes:\t", ("%7i "*len(self.nodes)) % tuple([r['size'] for r in results]), '\t',
-              "Mempool bytes:\t", ("%9i "*len(self.nodes)) % tuple([r['bytes'] for r in results]))
+        print("Mempool sizes:\t", ("%7i " * len(self.nodes)) % tuple([r['size'] for r in results]), '\t',
+              "Mempool bytes:\t", ("%9i " * len(self.nodes)) % tuple([r['bytes'] for r in results]))
         return [r['size'] for r in results]
 
     def generate_spam(self, value, txcount):
@@ -109,10 +125,11 @@ class StressTest(BitcoinTestFramework):
             addresses = self.node_addresses[node]
             for i in range(0, count):
                 now = time.time()
-                if i/(now-t) > rate:
-                    time.sleep(i/rate - (now-t))
-                if not (i%500):
-                    print("Node %2i\ttx %5i\tat %3.3f sec\t(%3.0f tx/sec)" % (node, i, time.time()-t, (i/(time.time()-t))))
+                if i / (now - t) > rate:
+                    time.sleep(i / rate - (now - t))
+                if not (i % 500):
+                    print("Node {:2d}\ttx {:5d}\tat {:3.3f} sec\t({:3.0f} tx/sec)".format(node,
+                                                                                          i, time.time() - t, (i / (time.time() - t))))
                 add = addresses[i % len(addresses)]
                 try:
                     self.nodes[node].sendtoaddress(add, value, '', '', False, 1)
@@ -121,18 +138,21 @@ class StressTest(BitcoinTestFramework):
                 except JSONRPCException:
                     print("Warning: this bitcoind appears to not support the 'fast' argument for sendtoaddress")
                     self.nodes[node].sendtoaddress(add, value, '', '', False)
-                except:
-                    print("Node %i had a fatal error on tx %i:" % (node, i))
+                except BaseException:
+                    print("Node {} had a fatal error on tx {}:".format(node, i))
                     traceback.print_exc()
                     break
         threads = [threading.Thread(target=helper, args=(n, txcount, MAX_GENERATION_RATE_PER_NODE))
                    for n in range(1, len(self.nodes))]
 
         t0 = time.time()
-        for thread in threads: thread.start()
-        for thread in threads: thread.join()
-        t1 = time.time(); print("Generating spam took %3.3f sec for %i tx (total %4.0f tx/sec)" \
-            % (t1-t0, (self.num_nodes-1)*txcount, (self.num_nodes-1)*txcount/(t1-t0)))
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
+        t1 = time.time()
+        print("Generating spam took {:3.3f} sec for {} tx (total {:4.0f} tx/sec)".format(t1 - t0,
+                                                                                         (self.num_nodes - 1) * txcount, (self.num_nodes - 1) * txcount / (t1 - t0)))
         startresults = results = self.check_mempools()
         onedone = False
         finishresults = []
@@ -146,39 +166,47 @@ class StressTest(BitcoinTestFramework):
             else:
                 timeout = 0
             oldresults = results
-            if not onedone and [r for r in results if abs(r - txcount * (self.num_nodes-1)) < 10]:
+            if not onedone and [r for r in results if abs(r - txcount * (self.num_nodes - 1)) < 10]:
                 finishresults = results
                 t1b = time.time()
                 onedone = True
-        t2 = time.time(); print("Mempool sync took %3.3f sec" % (t2-t1))
+        t2 = time.time()
+        print("Mempool sync took {:3.3f} sec".format(t2 - t1))
         if timeout >= 5:
             print("Warning: Not all transactions were fully propagated")
         if not finishresults:
             t1b = time.time()
             finishresults = results
             print("Warning: Number of mempool transactions was at least 10 less than expected")
-        deltas = [r-s for r,s in zip(finishresults, startresults)]
-        print("Per-node ATMP tx/sec: " + ("\t%4.0f" * self.num_nodes) % tuple([d/(t1b-t1) for d in deltas]))
-        print("Average mempool sync rate: \t%4.0f tx/sec" % (sum(deltas)/(t1b-t1)/len(deltas)))
+        deltas = [r - s for r, s in zip(finishresults, startresults)]
+        print("Per-node ATMP tx/sec: " + ("\t%4.0f" * self.num_nodes) % tuple([d / (t1b - t1) for d in deltas]))
+        print("Average mempool sync rate: \t{:4.0f} tx/sec".format(sum(deltas) / (t1b - t1) / len(deltas)))
 
         for i in range(2):
             t2a = time.time()
             oldheight = self.nodes[0].getblockcount()
-            if not i: print("Generating block ", end="")
+            if not i:
+                print("Generating block ", end="")
             self.nodes[0].generate(1)
             t2b = time.time()
-            if not i: print("took %3.3f sec" % (t2b-t2a))
+            if not i:
+                print("took {:3.3f} sec".format(t2b - t2a))
             for n in range(self.num_nodes):
                 while self.nodes[n].getblockcount() == oldheight:
                     time.sleep(0.05)
                 t2c = time.time()
-                if not i: print("%i:%6.3f   " % (n, t2c-t2b), end="")
-            if not i: print()
+                if not i:
+                    print("{}:{:6.3f}   ".format(n, t2c - t2b), end="")
+            if not i:
+                print()
             sync_blocks(self.nodes, timeout=180)
             t2c = time.time()
-            if not i: print("Propagating block took %3.3f sec -- %3.3f sec per hop" % (t2c-t2b, (t2c-t2b)/(self.num_nodes-1)))
+            if not i:
+                print("Propagating block took {:3.3f} sec -- {:3.3f} sec per hop".format(t2c -
+                                                                                         t2b, (t2c - t2b) / (self.num_nodes - 1)))
             blk = self.nodes[0].getblock(self.nodes[0].getbestblockhash(), 1)
-            if not i: print("Block has %i transactions and is %i bytes" % (len(blk['tx']), blk['size']))
+            if not i:
+                print("Block has {} transactions and is {} bytes".format(len(blk['tx']), blk['size']))
 
     def run_test(self):
         # Setup the p2p connections
@@ -186,22 +214,16 @@ class StressTest(BitcoinTestFramework):
 
         print(self.nodes[0].getmempoolinfo())
 
-        tx_per_node = int(TX_PER_BLOCK/(self.num_nodes-1))
+        tx_per_node = int(TX_PER_BLOCK / (self.num_nodes - 1))
         # We will need UTXOs to construct transactions in later tests.
         utxo_value = self.make_utxos(tx_per_node)
         spend_value = utxo_value
-            
+
         for i in range(5):
             spend_value = Decimal((spend_value * 100000000 - 192)) / Decimal(1e8)
-            print("Spam block generation round %i" % i)
+            print("Spam block generation round {}".format(i))
             self.generate_spam(spend_value, txcount=int(tx_per_node))
 
+
 if __name__ == '__main__':
-    if not [arg for arg in sys.argv if arg.startswith('--walletdir')]:
-        print("\n\nThis test will be slow at generating transactions unless " +
-            "you have a very fast SSD or a ramdisk for the wallet files.\n" +
-            "It is strongly recommended to use a ramdisk for the wallets. You can set that "
-            "up on Linux with this:\n\n"
-            "sudo mount -t tmpfs size=2G /tmp/tmpfs/\n" +
-            "python3 p2p_stresstest.py --walletdir=/tmp/tmpfs/test0\n\n\n")
     StressTest().main()
