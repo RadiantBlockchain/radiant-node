@@ -56,4 +56,4 @@ Response is an array with the same size as the input that has the execution resu
 
 ***
 
-*Bitcoin Cash Node Daemon version v22.0.0*
+*Bitcoin Cash Node Daemon version v22.1.0*

@@ -144,7 +144,7 @@ Bitcoin Cash Node JSON-RPC commands
 * [**`removeprunedfunds`**`  "txid"`](removeprunedfunds.md)
 * [**`rescanblockchain`**`  ("start_height") ("stop_height")`](rescanblockchain.md)
 * [**`sendmany`**`  "dummy" {"address":amount,...} ( minconf "comment" ["address",...] )`](sendmany.md)
-* [**`sendtoaddress`**`  "address" amount ( "comment" "comment_to" subtractfeefromamount )`](sendtoaddress.md)
+* [**`sendtoaddress`**`  "address" amount ( "comment" "comment_to" subtractfeefromamount coinsel)`](sendtoaddress.md)
 * [**`sethdseed`**`  ( "newkeypool" "seed" )`](sethdseed.md)
 * [**`setlabel`**`  "address" "label"`](setlabel.md)
 * [**`settxfee`**`  amount`](settxfee.md)
@@ -160,4 +160,4 @@ Bitcoin Cash Node JSON-RPC commands
 
 ***
 
-*Bitcoin Cash Node Daemon version v22.0.0*
+*Bitcoin Cash Node Daemon version v22.1.0*

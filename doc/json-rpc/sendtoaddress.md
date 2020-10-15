@@ -1,7 +1,7 @@
 `sendtoaddress` JSON-RPC command
 ================================
 
-**`sendtoaddress "address" amount ( "comment" "comment_to" subtractfeefromamount )`**
+**`sendtoaddress "address" amount ( "comment" "comment_to" subtractfeefromamount coinsel)`**
 
 ```
 Send an amount to a given address.
@@ -20,6 +20,11 @@ Arguments
                              transaction, just kept in your wallet.
 5. subtractfeefromamount  (boolean, optional, default=false) The fee will be deducted from the amount being sent.
                              The recipient will receive less bitcoins than you enter in the amount field.
+6. coinsel  (int, optional, default=0) Which coin selection
+algorithm to use. A value of 1 will use a faster algorithm suitable for stress tests or use with large wallets. This
+algorithm is likely to produce larger transactions on average.0 is a slower algorithm using BNB and a knapsack solver, but
+which can produce transactions with slightly better privacy and smaller transaction sizes. Values other than 0 or 1 are reserved
+for future algorithms.
 ```
 
 Result
@@ -41,4 +46,4 @@ Examples
 
 ***
 
-*Bitcoin Cash Node Daemon version v22.0.0*
+*Bitcoin Cash Node Daemon version v22.1.0*
