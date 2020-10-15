@@ -1,4 +1,4 @@
-# Bitcoin Cash Node RPC client version v22.0.0
+# Bitcoin Cash Node RPC client version v22.1.0
 
 | Usage                                                    | Description                                              |
 | :------------------------------------------------------- | :------------------------------------------------------- |
@@ -21,7 +21,7 @@ Options
 | `-rpcconnect=<ip>`        | Send commands to node running on &lt;ip&gt; (default: 127.0.0.1)                                                                                                                                                                                                                                                         |
 | `-rpccookiefile=<loc>`    | Location of the auth cookie. Relative paths will be prefixed by a net-specific datadir location. (default: data dir)                                                                                                                                                                                                     |
 | `-rpcpassword=<pw>`       | Password for JSON-RPC connections                                                                                                                                                                                                                                                                                        |
-| `-rpcport=<port>`         | Connect to JSON-RPC on &lt;port&gt; (default: 8332, testnet: 18332, regtest: 18443)                                                                                                                                                                                                                                      |
+| `-rpcport=<port>`         | Connect to JSON-RPC on &lt;port&gt; (default: 8332, testnet: 18332, testnet4: 28332, scalenet: 38332, regtest: 18443)                                                                                                                                                                                                    |
 | `-rpcuser=<user>`         | Username for JSON-RPC connections                                                                                                                                                                                                                                                                                        |
 | `-rpcwait`                | Wait for RPC server to start                                                                                                                                                                                                                                                                                             |
 | `-rpcwallet=<walletname>` | Send RPC for non-default wallet on RPC server (needs to exactly match corresponding -wallet option passed to bitcoind)                                                                                                                                                                                                   |
@@ -32,7 +32,9 @@ Options
 Chain selection options
 -----------------------
 
-| Argument   | Description                                                                                                                                                        |
-| :--------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `-regtest` | Enter regression test mode, which uses a special chain in which blocks can be solved instantly. This is intended for regression testing tools and app development. |
-| `-testnet` | Use the test chain                                                                                                                                                 |
+| Argument    | Description                                                                                                                                                        |
+| :---------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `-regtest`  | Enter regression test mode, which uses a special chain in which blocks can be solved instantly. This is intended for regression testing tools and app development. |
+| `-scalenet` | Use the scaling test chain                                                                                                                                         |
+| `-testnet`  | Use the test chain                                                                                                                                                 |
+| `-testnet4` | Use the test4 chain                                                                                                                                                |

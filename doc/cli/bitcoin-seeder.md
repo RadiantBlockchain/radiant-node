@@ -1,4 +1,4 @@
-# Bitcoin Cash Node Seeder v22.0.0
+# Bitcoin Cash Node Seeder v22.1.0
 
 | Usage                                                                                     |
 | :---------------------------------------------------------------------------------------- |
@@ -33,7 +33,9 @@ Connection options
 Chain selection options
 -----------------------
 
-| Argument   | Description                                                                                                                                                        |
-| :--------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `-regtest` | Enter regression test mode, which uses a special chain in which blocks can be solved instantly. This is intended for regression testing tools and app development. |
-| `-testnet` | Use the test chain                                                                                                                                                 |
+| Argument    | Description                                                                                                                                                        |
+| :---------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `-regtest`  | Enter regression test mode, which uses a special chain in which blocks can be solved instantly. This is intended for regression testing tools and app development. |
+| `-scalenet` | Use the scaling test chain                                                                                                                                         |
+| `-testnet`  | Use the test chain                                                                                                                                                 |
+| `-testnet4` | Use the test4 chain                                                                                                                                                |

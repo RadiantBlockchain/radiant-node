@@ -9,7 +9,7 @@ When called without an argument, returns the list of categories with status that
 When called with arguments, adds or removes categories from debug logging and return the lists above.
 The arguments are evaluated in order "include", "exclude".
 If an item is both included and excluded, it will thus end up being excluded.
-The valid logging categories are: net, tor, mempool, http, bench, zmq, db, rpc, estimatefee, addrman, selectcoins, reindex, cmpctblock, rand, prune, proxy, mempoolrej, libevent, coindb, qt, leveldb
+The valid logging categories are: net, tor, mempool, http, bench, zmq, db, rpc, estimatefee, addrman, selectcoins, reindex, cmpctblock, rand, prune, proxy, mempoolrej, libevent, coindb, qt, leveldb, finalization, parking
 In addition, the following are available as category names with special meanings:
   - "all",  "1" : represent all logging categories.
   - "none", "0" : even if other logging categories are specified, ignore all of them.
@@ -51,4 +51,4 @@ Examples
 
 ***
 
-*Bitcoin Cash Node Daemon version v22.0.0*
+*Bitcoin Cash Node Daemon version v22.1.0*
