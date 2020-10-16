@@ -385,7 +385,8 @@ public:
 
     ~ListCoinsTestingSetup() { wallet.reset(); }
 
-    CWalletTx &AddTx(CRecipient recipient, int coinsel=0) {
+    CWalletTx &AddTx(CRecipient recipient,
+                     CoinSelectionHint coinsel = CoinSelectionHint::Default) {
         CTransactionRef tx;
         CReserveKey reservekey(wallet.get());
         Amount fee;
@@ -492,7 +493,7 @@ BOOST_FIXTURE_TEST_CASE(FastTransaction, ListCoinsTestingSetup) {
     std::string coinbaseAddress = coinbaseKey.GetPubKey().GetID().ToString();
 
     for (uint8_t i=0; i<2; i++) {
-        int coinsel = i;
+        CoinSelectionHint coinsel(static_cast<CoinSelectionHint>(i));
 
         BOOST_CHECK(wallet->GetBalance() == 50 * COIN);
 
@@ -507,6 +508,22 @@ BOOST_FIXTURE_TEST_CASE(FastTransaction, ListCoinsTestingSetup) {
 
         BOOST_CHECK(wallet->GetBalance() == 50 * COIN);
     }
+}
+
+BOOST_FIXTURE_TEST_CASE(wallet_error_on_invalid_coinselection_hint, ListCoinsTestingSetup) {
+    CTransactionRef tx;
+    CReserveKey reservekey(wallet.get());
+    Amount fee;
+    int changePos = -1;
+    std::string error;
+    CCoinControl dummy;
+    CRecipient recipient{GetScriptForRawPubKey({}), 1 * COIN, true};
+
+    BOOST_CHECK_EQUAL(CreateTransactionResult::CT_INVALID_PARAMETER,
+            wallet->CreateTransaction(
+                *m_locked_chain, {recipient}, tx, reservekey, fee,
+                changePos, error, dummy, true,
+                CoinSelectionHint::Invalid));
 }
 
 BOOST_FIXTURE_TEST_CASE(wallet_disableprivkeys, TestChain100Setup) {

@@ -14,6 +14,26 @@ static constexpr Amount MIN_CHANGE{COIN / 100};
 //! final minimum change amount after paying for fees
 static constexpr Amount MIN_FINAL_CHANGE = MIN_CHANGE / 2;
 
+//! Hint on what attributes to prioritize when performing coin selection.
+enum class CoinSelectionHint {
+    //! The default case all-around coin selection algorithm.
+    Default = 0,
+
+    //! Over all other features, prioritize speed.
+    Fast = 1,
+
+    //! Value reserved for future algorithm that prioritizes speed.
+    FastReserved = 2,
+
+    //! Largest value in this enum represents invalid.
+    Invalid = 3
+};
+
+inline bool IsValidCoinSelectionHint(int c) {
+    return c >= static_cast<int>(CoinSelectionHint::Default)
+        && c < static_cast<int>(CoinSelectionHint::Invalid);
+}
+
 class CInputCoin {
 public:
     CInputCoin(const CTransactionRef &tx, unsigned int i) {
