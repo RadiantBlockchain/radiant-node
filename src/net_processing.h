@@ -11,6 +11,8 @@
 #include <sync.h>
 #include <validationinterface.h>
 
+#include <map>
+
 extern RecursiveMutex cs_main;
 
 class Config;
@@ -131,5 +133,26 @@ struct CNodeStateStats {
 bool GetNodeStateStats(NodeId nodeid, CNodeStateStats &stats);
 /** Increase a node's misbehavior score. */
 void Misbehaving(NodeId nodeid, int howmuch, const std::string &reason = "");
+
+// `internal` namespace exposed *FOR TESTS ONLY*
+// This namespace is for exposed internals not intended for public usage.
+// We would ideally have made these private to the net_processing.cpp
+// translation unit only, but since some tests need to see these functions
+// (see denialofservice_tests.cpp), we do this instead.
+namespace internal {
+struct COrphanTx {
+    CTransactionRef tx;
+    NodeId fromPeer;
+    int64_t nTimeExpire;
+};
+
+extern RecursiveMutex g_cs_orphans;
+extern std::map<TxId, COrphanTx> mapOrphanTransactions GUARDED_BY(g_cs_orphans);
+
+bool AddOrphanTx(const CTransactionRef &tx, NodeId peer);
+void EraseOrphansFor(NodeId peer);
+unsigned int LimitOrphanTxSize(unsigned int nMaxOrphans);
+void UpdateLastBlockAnnounceTime(NodeId node, int64_t time_in_seconds);
+} // namespace internal
 
 #endif // BITCOIN_NET_PROCESSING_H
