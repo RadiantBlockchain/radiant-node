@@ -40,20 +40,6 @@ struct CConnmanTest : public CConnman {
     }
 };
 
-// Tests these internal-to-net_processing.cpp methods:
-extern bool AddOrphanTx(const CTransactionRef &tx, NodeId peer);
-extern void EraseOrphansFor(NodeId peer);
-extern unsigned int LimitOrphanTxSize(unsigned int nMaxOrphans);
-
-struct COrphanTx {
-    CTransactionRef tx;
-    NodeId fromPeer;
-    int64_t nTimeExpire;
-};
-extern RecursiveMutex g_cs_orphans;
-extern std::map<uint256, COrphanTx>
-    mapOrphanTransactions GUARDED_BY(g_cs_orphans);
-
 static CService ip(uint32_t i) {
     struct in_addr s;
     s.s_addr = i;
@@ -61,8 +47,6 @@ static CService ip(uint32_t i) {
 }
 
 static NodeId id = 0;
-
-void UpdateLastBlockAnnounceTime(NodeId node, int64_t time_in_seconds);
 
 BOOST_FIXTURE_TEST_SUITE(denialofservice_tests, TestingSetup)
 
@@ -213,7 +197,7 @@ BOOST_AUTO_TEST_CASE(stale_tip_peer_management) {
 
     // Update the last announced block time for the last
     // peer, and check that the next newest node gets evicted.
-    UpdateLastBlockAnnounceTime(vNodes.back()->GetId(), GetTime());
+    internal::UpdateLastBlockAnnounceTime(vNodes.back()->GetId(), GetTime());
 
     peerLogic->CheckForStaleTipAndEvictPeers(consensusParams);
     for (int i = 0; i < nMaxOutbound - 1; ++i) {
@@ -465,11 +449,10 @@ BOOST_AUTO_TEST_CASE(DoS_DiscourageRolling) {
 }
 
 static CTransactionRef RandomOrphan() {
-    std::map<uint256, COrphanTx>::iterator it;
-    LOCK2(cs_main, g_cs_orphans);
-    it = mapOrphanTransactions.lower_bound(InsecureRand256());
-    if (it == mapOrphanTransactions.end()) {
-        it = mapOrphanTransactions.begin();
+    LOCK2(cs_main, internal::g_cs_orphans);
+    auto it = internal::mapOrphanTransactions.lower_bound(TxId{InsecureRand256()});
+    if (it == internal::mapOrphanTransactions.end()) {
+        it = internal::mapOrphanTransactions.begin();
     }
     return it->second.tx;
 }
@@ -491,7 +474,7 @@ BOOST_AUTO_TEST_CASE(DoS_mapOrphans) {
         tx.vout[0].scriptPubKey =
             GetScriptForDestination(key.GetPubKey().GetID());
 
-        AddOrphanTx(MakeTransactionRef(tx), i);
+        internal::AddOrphanTx(MakeTransactionRef(tx), i);
     }
 
     // ... and 50 that depend on other orphans:
@@ -507,7 +490,7 @@ BOOST_AUTO_TEST_CASE(DoS_mapOrphans) {
             GetScriptForDestination(key.GetPubKey().GetID());
         SignSignature(keystore, *txPrev, tx, 0, SigHashType());
 
-        AddOrphanTx(MakeTransactionRef(tx), i);
+        internal::AddOrphanTx(MakeTransactionRef(tx), i);
     }
 
     // This really-big orphan should be ignored:
@@ -530,24 +513,24 @@ BOOST_AUTO_TEST_CASE(DoS_mapOrphans) {
             tx.vin[j].scriptSig = tx.vin[0].scriptSig;
         }
 
-        BOOST_CHECK(!AddOrphanTx(MakeTransactionRef(tx), i));
+        BOOST_CHECK(!internal::AddOrphanTx(MakeTransactionRef(tx), i));
     }
 
-    LOCK2(cs_main, g_cs_orphans);
+    LOCK2(cs_main, internal::g_cs_orphans);
     // Test EraseOrphansFor:
     for (NodeId i = 0; i < 3; i++) {
-        size_t sizeBefore = mapOrphanTransactions.size();
-        EraseOrphansFor(i);
-        BOOST_CHECK(mapOrphanTransactions.size() < sizeBefore);
+        size_t sizeBefore = internal::mapOrphanTransactions.size();
+        internal::EraseOrphansFor(i);
+        BOOST_CHECK(internal::mapOrphanTransactions.size() < sizeBefore);
     }
 
     // Test LimitOrphanTxSize() function:
-    LimitOrphanTxSize(40);
-    BOOST_CHECK(mapOrphanTransactions.size() <= 40);
-    LimitOrphanTxSize(10);
-    BOOST_CHECK(mapOrphanTransactions.size() <= 10);
-    LimitOrphanTxSize(0);
-    BOOST_CHECK(mapOrphanTransactions.empty());
+    internal::LimitOrphanTxSize(40);
+    BOOST_CHECK(internal::mapOrphanTransactions.size() <= 40);
+    internal::LimitOrphanTxSize(10);
+    BOOST_CHECK(internal::mapOrphanTransactions.size() <= 10);
+    internal::LimitOrphanTxSize(0);
+    BOOST_CHECK(internal::mapOrphanTransactions.empty());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

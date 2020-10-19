@@ -121,17 +121,10 @@ static const unsigned int MAX_GETDATA_SZ = 1000;
 /// How many non standard orphan do we consider from a node before ignoring it.
 static constexpr uint32_t MAX_NON_STANDARD_ORPHAN_PER_NODE = 5;
 
-struct COrphanTx {
-    // When modifying, adapt the copy of this definition in tests/DoS_tests.
-    CTransactionRef tx;
-    NodeId fromPeer;
-    int64_t nTimeExpire;
-};
-
+namespace internal {
 RecursiveMutex g_cs_orphans;
 std::map<TxId, COrphanTx> mapOrphanTransactions GUARDED_BY(g_cs_orphans);
-
-void EraseOrphansFor(NodeId peer);
+}
 
 /**
  * Average delay between local address broadcasts in seconds.
@@ -246,12 +239,12 @@ struct IteratorComparator {
     }
 };
 std::map<COutPoint,
-         std::set<std::map<TxId, COrphanTx>::iterator, IteratorComparator>>
-    mapOrphanTransactionsByPrev GUARDED_BY(g_cs_orphans);
+         std::set<std::map<TxId, internal::COrphanTx>::iterator, IteratorComparator>>
+    mapOrphanTransactionsByPrev GUARDED_BY(internal::g_cs_orphans);
 
-static size_t vExtraTxnForCompactIt GUARDED_BY(g_cs_orphans) = 0;
+static size_t vExtraTxnForCompactIt GUARDED_BY(internal::g_cs_orphans) = 0;
 static std::vector<std::pair<TxHash, CTransactionRef>>
-    vExtraTxnForCompact GUARDED_BY(g_cs_orphans);
+    vExtraTxnForCompact GUARDED_BY(internal::g_cs_orphans);
 } // namespace
 
 namespace {
@@ -902,7 +895,7 @@ void RequestTx(CNodeState *state, const TxId &txid, int64_t nNow)
 
 // This function is used for testing the stale tip eviction logic, see
 // denialofservice_tests.cpp
-void UpdateLastBlockAnnounceTime(NodeId node, int64_t time_in_seconds) {
+void internal::UpdateLastBlockAnnounceTime(NodeId node, int64_t time_in_seconds) {
     LOCK(cs_main);
     CNodeState *state = State(node);
     if (state) {
@@ -951,7 +944,7 @@ void PeerLogicValidation::FinalizeNode(const Config &config, NodeId nodeid,
     for (const QueuedBlock &entry : state->vBlocksInFlight) {
         mapBlocksInFlight.erase(entry.hash);
     }
-    EraseOrphansFor(nodeid);
+    internal::EraseOrphansFor(nodeid);
     nPreferredDownload -= state->fPreferredDownload;
     nPeersWithValidatedDownloads -= (state->nBlocksInFlightValidHeaders != 0);
     assert(nPeersWithValidatedDownloads >= 0);
@@ -997,7 +990,7 @@ bool GetNodeStateStats(NodeId nodeid, CNodeStateStats &stats) {
 //
 
 static void AddToCompactExtraTransactions(const CTransactionRef &tx)
-    EXCLUSIVE_LOCKS_REQUIRED(g_cs_orphans) {
+    EXCLUSIVE_LOCKS_REQUIRED(internal::g_cs_orphans) {
     size_t max_extra_txn = gArgs.GetArg("-blockreconstructionextratxn",
                                         DEFAULT_BLOCK_RECONSTRUCTION_EXTRA_TXN);
     if (max_extra_txn <= 0) {
@@ -1013,7 +1006,7 @@ static void AddToCompactExtraTransactions(const CTransactionRef &tx)
     vExtraTxnForCompactIt = (vExtraTxnForCompactIt + 1) % max_extra_txn;
 }
 
-bool AddOrphanTx(const CTransactionRef &tx, NodeId peer)
+bool internal::AddOrphanTx(const CTransactionRef &tx, NodeId peer)
     EXCLUSIVE_LOCKS_REQUIRED(g_cs_orphans) {
     const TxId &txid = tx->GetId();
     if (mapOrphanTransactions.count(txid)) {
@@ -1044,21 +1037,21 @@ bool AddOrphanTx(const CTransactionRef &tx, NodeId peer)
     AddToCompactExtraTransactions(tx);
 
     LogPrint(BCLog::MEMPOOL, "stored orphan tx %s (mapsz %u outsz %u)\n",
-             txid.ToString(), mapOrphanTransactions.size(),
+             txid.ToString(), internal::mapOrphanTransactions.size(),
              mapOrphanTransactionsByPrev.size());
     return true;
 }
 
-static int EraseOrphanTx(const TxId &id) EXCLUSIVE_LOCKS_REQUIRED(g_cs_orphans) {
-    const auto it = mapOrphanTransactions.find(id);
-    if (it == mapOrphanTransactions.end()) {
+static int EraseOrphanTx(const TxId &id) EXCLUSIVE_LOCKS_REQUIRED(internal::g_cs_orphans) {
+    const auto it = internal::mapOrphanTransactions.find(id);
+    if (it == internal::mapOrphanTransactions.end()) {
         return 0;
     }
     // Note: parameter `id` may not be used beyond this point since it may point
     // to data we will erase, potentially. So we wrap the work we do here in the
     // lambda below, to ensure no future programmer inadvertently accesses `id`
     // while looping below.
-    return [&it]() EXCLUSIVE_LOCKS_REQUIRED(g_cs_orphans) {
+    return [&it]() EXCLUSIVE_LOCKS_REQUIRED(internal::g_cs_orphans) {
         for (const CTxIn &txin : it->second.tx->vin) {
             const auto itPrev = mapOrphanTransactionsByPrev.find(txin.prevout);
             if (itPrev == mapOrphanTransactionsByPrev.end()) {
@@ -1069,12 +1062,12 @@ static int EraseOrphanTx(const TxId &id) EXCLUSIVE_LOCKS_REQUIRED(g_cs_orphans) 
                 mapOrphanTransactionsByPrev.erase(itPrev);
             }
         }
-        mapOrphanTransactions.erase(it);
+        internal::mapOrphanTransactions.erase(it);
         return 1;
     }();
 }
 
-void EraseOrphansFor(NodeId peer) {
+void internal::EraseOrphansFor(NodeId peer) {
     LOCK(g_cs_orphans);
     int nErased = 0;
     auto iter = mapOrphanTransactions.begin();
@@ -1091,7 +1084,7 @@ void EraseOrphansFor(NodeId peer) {
     }
 }
 
-unsigned int LimitOrphanTxSize(unsigned int nMaxOrphans) {
+unsigned int internal::LimitOrphanTxSize(unsigned int nMaxOrphans) {
     LOCK(g_cs_orphans);
 
     unsigned int nEvicted = 0;
@@ -1229,7 +1222,7 @@ PeerLogicValidation::PeerLogicValidation(CConnman *connmanIn, BanMan *banman,
 void PeerLogicValidation::BlockConnected(
     const std::shared_ptr<const CBlock> &pblock, const CBlockIndex *pindex,
     const std::vector<CTransactionRef> &vtxConflicted) {
-    LOCK(g_cs_orphans);
+    LOCK(internal::g_cs_orphans);
 
     std::vector<TxId> vOrphanErase;
 
@@ -1436,8 +1429,8 @@ static bool AlreadyHave(const CInv &inv) EXCLUSIVE_LOCKS_REQUIRED(cs_main) {
 
             const TxId txid(inv.hash);
             {
-                LOCK(g_cs_orphans);
-                if (mapOrphanTransactions.count(txid)) {
+                LOCK(internal::g_cs_orphans);
+                if (internal::mapOrphanTransactions.count(txid)) {
                     return true;
                 }
             }
@@ -2837,7 +2830,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         CInv inv(MSG_TX, txid);
         pfrom->AddInventoryKnown(inv);
 
-        LOCK2(cs_main, g_cs_orphans);
+        LOCK2(cs_main, internal::g_cs_orphans);
 
         bool fMissingInputs = false;
         CValidationState state;
@@ -2962,14 +2955,14 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
                         RequestTx(State(pfrom->GetId()), _txid, nNow);
                     }
                 }
-                AddOrphanTx(ptx, pfrom->GetId());
+                internal::AddOrphanTx(ptx, pfrom->GetId());
 
                 // DoS prevention: do not allow mapOrphanTransactions to grow
                 // unbounded
                 unsigned int nMaxOrphanTx = (unsigned int)std::max(
                     int64_t(0), gArgs.GetArg("-maxorphantx",
                                              DEFAULT_MAX_ORPHAN_TRANSACTIONS));
-                unsigned int nEvicted = LimitOrphanTxSize(nMaxOrphanTx);
+                unsigned int nEvicted = internal::LimitOrphanTxSize(nMaxOrphanTx);
                 if (nEvicted > 0) {
                     LogPrint(BCLog::MEMPOOL,
                              "mapOrphan overflow, removed %u tx\n", nEvicted);
@@ -3131,7 +3124,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         bool fBlockReconstructed = false;
 
         {
-            LOCK2(cs_main, g_cs_orphans);
+            LOCK2(cs_main, internal::g_cs_orphans);
             // If AcceptBlockHeader returned true, it set pindex
             assert(pindex);
             UpdateBlockAvailability(pfrom->GetId(), pindex->GetBlockHash());
@@ -4878,7 +4871,7 @@ public:
     CNetProcessingCleanup() {}
     ~CNetProcessingCleanup() {
         // orphan transactions
-        mapOrphanTransactions.clear();
+        internal::mapOrphanTransactions.clear();
         mapOrphanTransactionsByPrev.clear();
     }
 } instance_of_cnetprocessingcleanup;
