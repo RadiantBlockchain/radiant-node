@@ -320,7 +320,7 @@ bool PaymentServer::handleURI(const CChainParams &params, const QString &s) {
     if (uri.hasQueryItem("r")) {
 #ifdef ENABLE_BIP70
         QByteArray temp;
-        temp.append(uri.queryItemValue("r"));
+        temp.append(uri.queryItemValue("r").toUtf8());
         QString decoded = QUrl::fromPercentEncoding(temp);
         QUrl fetchUrl(decoded, QUrl::StrictMode);
 
@@ -766,7 +766,15 @@ void PaymentServer::fetchPaymentACK(WalletModel *walletModel,
                       "key, refund_to not set";
     }
 
-    int length = payment.ByteSize();
+    const int length =
+#if GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION < 3001000
+            // ByteSizeLong() was added in 3.1.0, so before that version
+            // we use good old ByteSize(), which was deprecated in 3.4.0.
+            payment.ByteSize();
+#else
+            // protobuf sizes are guaranteed to fit inside an int
+            static_cast<int>(payment.ByteSizeLong());
+#endif
     netRequest.setHeader(QNetworkRequest::ContentLengthHeader, length);
     QByteArray serData(length, '\0');
     if (payment.SerializeToArray(serData.data(), length)) {
