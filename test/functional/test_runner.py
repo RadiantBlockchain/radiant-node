@@ -79,6 +79,7 @@ TEST_PARAMS = {
     "wallet_txn_clone.py": [["--mineblock"]],
     "wallet_createwallet.py": [["--usecli"]],
     "wallet_multiwallet.py": [["--usecli"]],
+    "bchn-txbroadcastinterval.py": [["--testoutbound"]]
 }
 
 # Used to limit the number of tests, when list of tests is not provided on command line
@@ -635,7 +636,7 @@ def get_all_scripts_from_disk(test_dir, non_scripts):
 def check_script_prefixes(all_scripts):
     """Check that no more than `EXPECTED_VIOLATION_COUNT` of the
        test scripts don't start with one of the allowed name prefixes."""
-    EXPECTED_VIOLATION_COUNT = 28
+    EXPECTED_VIOLATION_COUNT = 29
 
     # LEEWAY is provided as a transition measure, so that pull-requests
     # that introduce new tests that don't conform with the naming
