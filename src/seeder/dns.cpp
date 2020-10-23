@@ -131,10 +131,10 @@ ParseNameStatus parse_name(const uint8_t **inpos, const uint8_t *inend,
 int write_name(uint8_t **outpos, const uint8_t *outend, const char *name,
                int offset) {
     while (*name != 0) {
-        const char *dot = strchr(name, '.');
+        const char *const dot = std::strchr(name, '.');
         const char *fin = dot;
         if (!dot) {
-            fin = name + strlen(name);
+            fin = name + std::strlen(name);
         }
         if (fin - name > MAX_LABEL_LENGTH) {
             return -1;
@@ -146,7 +146,7 @@ int write_name(uint8_t **outpos, const uint8_t *outend, const char *name,
             return -2;
         }
         *((*outpos)++) = fin - name;
-        memcpy(*outpos, name, fin - name);
+        std::memcpy(*outpos, name, fin - name);
         *outpos += fin - name;
         if (!dot) {
             break;
@@ -172,7 +172,7 @@ int write_name(uint8_t **outpos, const uint8_t *outend, const char *name,
 static int write_record(uint8_t **outpos, const uint8_t *outend,
                         const char *name, int offset, dns_type typ,
                         dns_class cls, int ttl) {
-    uint8_t *oldpos = *outpos;
+    uint8_t *const oldpos = *outpos;
     int error = 0;
     // name
     int ret = write_name(outpos, outend, name, offset);
@@ -207,7 +207,7 @@ static int write_record_a(uint8_t **outpos, const uint8_t *outend,
     if (ip->v != 4) {
         return -6;
     }
-    uint8_t *oldpos = *outpos;
+    uint8_t *const oldpos = *outpos;
     int error = 0;
     int ret = write_record(outpos, outend, name, offset, TYPE_A, cls, ttl);
     if (ret) {
@@ -236,7 +236,7 @@ static int write_record_aaaa(uint8_t **outpos, const uint8_t *outend,
     if (ip->v != 6) {
         return -6;
     }
-    uint8_t *oldpos = *outpos;
+    uint8_t *const oldpos = *outpos;
     int error = 0;
     int ret = write_record(outpos, outend, name, offset, TYPE_AAAA, cls, ttl);
     if (ret) {
@@ -262,7 +262,7 @@ error:
 static int write_record_ns(uint8_t **outpos, const uint8_t *outend,
                            const char *name, int offset, dns_class cls, int ttl,
                            const char *ns) {
-    uint8_t *oldpos = *outpos;
+    uint8_t *const oldpos = *outpos;
     int ret = write_record(outpos, outend, name, offset, TYPE_NS, cls, ttl);
     if (ret) {
         return ret;
@@ -299,7 +299,7 @@ static int write_record_soa(uint8_t **outpos, const uint8_t *outend,
                             int ttl, const char *mname, const char *rname,
                             uint32_t serial, uint32_t refresh, uint32_t retry,
                             uint32_t expire, uint32_t minimum) {
-    uint8_t *oldpos = *outpos;
+    uint8_t *const oldpos = *outpos;
     int ret = write_record(outpos, outend, name, offset, TYPE_SOA, cls, ttl);
     if (ret) {
         return ret;
@@ -385,14 +385,14 @@ static ssize_t dnshandle(dns_opt_t *opt, const uint8_t *inbuf, size_t insize,
     outbuf[3] &= ~15;
     // check qr
     if (inbuf[2] & 128) {
-        /* fprintf(stdout, "Got response?\n"); */
+        /* std::fprintf(stdout, "Got response?\n"); */
         responseCode = DNSResponseCode::FORMAT_ERROR;
         goto error;
     }
 
     // check opcode
     if (((inbuf[2] & 120) >> 3) != 0) {
-        /* fprintf(stdout, "Opcode nonzero?\n"); */
+        /* std::fprintf(stdout, "Opcode nonzero?\n"); */
         responseCode = DNSResponseCode::NOT_IMPLEMENTED;
         goto error;
     }
@@ -404,13 +404,13 @@ static ssize_t dnshandle(dns_opt_t *opt, const uint8_t *inbuf, size_t insize,
     // check questions
     nquestion = (inbuf[4] << 8) + inbuf[5];
     if (nquestion == 0) {
-        /* fprintf(stdout, "No questions?\n"); */
+        /* std::fprintf(stdout, "No questions?\n"); */
         responseCode = DNSResponseCode::OK;
         goto error;
     }
 
     if (nquestion > 1) {
-        /* fprintf(stdout, "Multiple questions %i?\n", nquestion); */
+        /* std::fprintf(stdout, "Multiple questions %i?\n", nquestion); */
         responseCode = DNSResponseCode::NOT_IMPLEMENTED;
         goto error;
     }
@@ -432,7 +432,7 @@ static ssize_t dnshandle(dns_opt_t *opt, const uint8_t *inbuf, size_t insize,
             goto error;
         }
 
-        int namel = strlen(name), hostl = strlen(opt->host);
+        int namel = std::strlen(name), hostl = std::strlen(opt->host);
         if (strcasecmp(name, opt->host) &&
             (namel < hostl + 2 || name[namel - hostl - 1] != '.' ||
              strcasecmp(name + namel - hostl, opt->host))) {
@@ -446,7 +446,7 @@ static ssize_t dnshandle(dns_opt_t *opt, const uint8_t *inbuf, size_t insize,
         }
 
         // copy question to output
-        memcpy(outbuf + 12, inbuf + 12, inpos + 4 - (inbuf + 12));
+        std::memcpy(outbuf + 12, inbuf + 12, inpos + 4 - (inbuf + 12));
         // set counts
         outbuf[4] = 0;
         outbuf[5] = 1;
@@ -466,8 +466,8 @@ static ssize_t dnshandle(dns_opt_t *opt, const uint8_t *inbuf, size_t insize,
         uint8_t *outpos = outbuf + (inpos - inbuf);
         uint8_t *outend = outbuf + BUFLEN;
 
-        //   fprintf(stdout, "DNS: Request host='%s' type=%i class=%i\n", name,
-        //   typ, cls);
+        //   std::fprintf(stdout, "DNS: Request host='%s' type=%i class=%i\n", name,
+        //                typ, cls);
 
         // calculate max size of authority section
 
@@ -480,13 +480,13 @@ static ssize_t dnshandle(dns_opt_t *opt, const uint8_t *inbuf, size_t insize,
 
             newpos = outpos;
             write_record_soa(&newpos, outend, "", offset, CLASS_IN, opt->nsttl,
-                             opt->ns, opt->mbox, time(NULL), 604800, 86400,
+                             opt->ns, opt->mbox, std::time(nullptr), 604800, 86400,
                              2592000, 604800);
             if (max_auth_size < newpos - outpos) {
                 max_auth_size = newpos - outpos;
             }
-            //    fprintf(stdout, "Authority section will claim %i bytes max\n",
-            //    max_auth_size);
+            //    std::fprintf(stdout, "Authority section will claim %i bytes max\n",
+            //                 max_auth_size);
         }
 
         // Answer section
@@ -496,7 +496,7 @@ static ssize_t dnshandle(dns_opt_t *opt, const uint8_t *inbuf, size_t insize,
             (cls == CLASS_IN || cls == QCLASS_ANY)) {
             int ret2 = write_record_ns(&outpos, outend - max_auth_size, "",
                                        offset, CLASS_IN, opt->nsttl, opt->ns);
-            //    fprintf(stdout, "wrote NS record: %i\n", ret2);
+            //    std::fprintf(stdout, "wrote NS record: %i\n", ret2);
             if (!ret2) {
                 outbuf[7]++;
                 have_ns++;
@@ -509,8 +509,8 @@ static ssize_t dnshandle(dns_opt_t *opt, const uint8_t *inbuf, size_t insize,
             int ret2 =
                 write_record_soa(&outpos, outend - max_auth_size, "", offset,
                                  CLASS_IN, opt->nsttl, opt->ns, opt->mbox,
-                                 time(NULL), 604800, 86400, 2592000, 604800);
-            //    fprintf(stdout, "wrote SOA record: %i\n", ret2);
+                                 std::time(nullptr), 604800, 86400, 2592000, 604800);
+            //    std::fprintf(stdout, "wrote SOA record: %i\n", ret2);
             if (!ret2) {
                 outbuf[7]++;
             }
@@ -536,7 +536,7 @@ static ssize_t dnshandle(dns_opt_t *opt, const uint8_t *inbuf, size_t insize,
                         opt->datattl, &addr[n]);
                 }
 
-                //      fprintf(stdout, "wrote A record: %i\n", mustbreak);
+                //      std::fprintf(stdout, "wrote A record: %i\n", mustbreak);
                 if (mustbreak) {
                     break;
                 }
@@ -550,7 +550,7 @@ static ssize_t dnshandle(dns_opt_t *opt, const uint8_t *inbuf, size_t insize,
         if (!have_ns && outbuf[7]) {
             int ret2 = write_record_ns(&outpos, outend, "", offset, CLASS_IN,
                                        opt->nsttl, opt->ns);
-            //    fprintf(stdout, "wrote NS record: %i\n", ret2);
+            //    std::fprintf(stdout, "wrote NS record: %i\n", ret2);
             if (!ret2) {
                 outbuf[9]++;
             }
@@ -561,8 +561,8 @@ static ssize_t dnshandle(dns_opt_t *opt, const uint8_t *inbuf, size_t insize,
             // resolver should try next.
             int ret2 = write_record_soa(
                 &outpos, outend, "", offset, CLASS_IN, opt->nsttl, opt->ns,
-                opt->mbox, time(NULL), 604800, 86400, 2592000, 604800);
-            //    fprintf(stdout, "wrote SOA record: %i\n", ret2);
+                opt->mbox, std::time(nullptr), 604800, 86400, 2592000, 604800);
+            //    std::fprintf(stdout, "wrote SOA record: %i\n", ret2);
             if (!ret2) {
                 outbuf[9]++;
             }
@@ -613,7 +613,7 @@ int dnsserver(dns_opt_t *opt) {
         int sockopt = 1;
         setsockopt(listenSocket, IPPROTO_IPV6, DSTADDR_SOCKOPT, &sockopt,
                    sizeof sockopt);
-        memset((char *)&si_me, 0, sizeof(si_me));
+        std::memset((char *)&si_me, 0, sizeof(si_me));
         si_me.sin6_family = AF_INET6;
         si_me.sin6_port = htons(opt->port);
         si_me.sin6_addr = in6addr_any;
@@ -626,8 +626,9 @@ int dnsserver(dns_opt_t *opt) {
     uint8_t inbuf[BUFLEN], outbuf[BUFLEN];
     struct iovec iov[1] = {
         {
-            .iov_base = inbuf,
-            .iov_len = sizeof(inbuf),
+            // NB: Named struct initializers are a C++20 extension and not supported by all compilers.
+            /* .iov_base = */ inbuf,
+            /* .iov_len =  */ sizeof(inbuf),
         },
     };
 
@@ -643,9 +644,9 @@ int dnsserver(dns_opt_t *opt) {
     for (; 1; ++(opt->nRequests)) {
         ssize_t insize = recvmsg(listenSocket, &msg, 0);
         //    uint8_t *addr = (uint8_t*)&si_other.sin_addr.s_addr;
-        //    fprintf(stdout, "DNS: Request %llu from %i.%i.%i.%i:%i of %i
-        //    bytes\n", (unsigned long long)(opt->nRequests), addr[0], addr[1],
-        //    addr[2], addr[3], ntohs(si_other.sin_port), (int)insize);
+        //    std::fprintf(stdout, "DNS: Request %llu from %i.%i.%i.%i:%i of %i
+        //                 bytes\n", (unsigned long long)(opt->nRequests), addr[0], addr[1],
+        //                 addr[2], addr[3], ntohs(si_other.sin_port), (int)insize);
         if (insize <= 0) {
             continue;
         }

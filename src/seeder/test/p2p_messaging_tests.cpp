@@ -14,6 +14,7 @@
 #include <util/system.h>
 #include <version.h>
 
+#include <ctime>
 #include <memory>
 #include <ostream>
 #include <string>
@@ -81,7 +82,7 @@ BOOST_AUTO_TEST_CASE(seeder_node_version_test) {
                       ServiceFlags(NODE_NETWORK | NODE_BITCOIN_CASH));
 
     CDataStream versionMessage =
-        CreateVersionMessage(time(nullptr), vAddr[0], addrFrom,
+        CreateVersionMessage(std::time(nullptr), vAddr[0], addrFrom,
                              GetRequireHeight(), INIT_PROTO_VERSION);
 
     // Verify the version is set as the initial value

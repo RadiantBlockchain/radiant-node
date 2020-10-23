@@ -6,6 +6,7 @@
 #define BITCOIN_SEEDER_BITCOIN_H
 
 #include <chainparams.h>
+#include <compat.h>
 #include <protocol.h>
 #include <streams.h>
 
@@ -43,7 +44,7 @@ private:
     int64_t doneAfter;
     CAddress you;
 
-    int GetTimeout() { return you.IsTor() ? 120 : 30; }
+    int GetTimeout() const { return you.IsTor() ? 120 : 30; }
 
     void BeginMessage(const char *pszCommand);
 
@@ -66,13 +67,13 @@ public:
 
     bool Run();
 
-    int GetBan() { return ban; }
+    int GetBan() const { return ban; }
 
-    int GetClientVersion() { return nVersion; }
+    int GetClientVersion() const { return nVersion; }
 
-    std::string GetClientSubVersion() { return strSubVer; }
+    const std::string & GetClientSubVersion() const { return strSubVer; }
 
-    int GetStartingHeight() { return nStartingHeight; }
+    int GetStartingHeight() const { return nStartingHeight; }
 };
 
 bool TestNode(const CService &cip, int &ban, int &client, std::string &clientSV,

@@ -11,6 +11,10 @@
 #include <uint256.h>
 
 #include <algorithm>
+#include <cstddef>
+#include <cstdio>
+#include <cstring>
+#include <ctime>
 
 // The network magic to use.
 CMessageHeader::MessageMagic netMagic = {{0xe3, 0xe1, 0xf3, 0xe8}};
@@ -26,7 +30,7 @@ void CSeederNode::BeginMessage(const char *pszCommand) {
     nHeaderStart = vSend.size();
     vSend << CMessageHeader(netMagic, pszCommand, 0);
     nMessageStart = vSend.size();
-    // fprintf(stdout, "%s: SEND %s\n", ToString(you).c_str(), pszCommand);
+    // std::fprintf(stdout, "%s: SEND %s\n", ToString(you).c_str(), pszCommand);
 }
 
 void CSeederNode::AbortMessage() {
@@ -43,18 +47,18 @@ void CSeederNode::EndMessage() {
         return;
     }
     uint32_t nSize = vSend.size() - nMessageStart;
-    memcpy((char *)&vSend[nHeaderStart] +
-               offsetof(CMessageHeader, nMessageSize),
-           &nSize, sizeof(nSize));
+    std::memcpy((char *)&vSend[nHeaderStart] +
+                    offsetof(CMessageHeader, nMessageSize),
+                &nSize, sizeof(nSize));
     if (vSend.GetVersion() >= 209) {
         uint256 hash = Hash(vSend.begin() + nMessageStart, vSend.end());
         unsigned int nChecksum = 0;
-        memcpy(&nChecksum, &hash, sizeof(nChecksum));
+        std::memcpy(&nChecksum, &hash, sizeof(nChecksum));
         assert(nMessageStart - nHeaderStart >=
                offsetof(CMessageHeader, pchChecksum) + sizeof(nChecksum));
-        memcpy((char *)&vSend[nHeaderStart] +
-                   offsetof(CMessageHeader, pchChecksum),
-               &nChecksum, sizeof(nChecksum));
+        std::memcpy((char *)&vSend[nHeaderStart] +
+                        offsetof(CMessageHeader, pchChecksum),
+                    &nChecksum, sizeof(nChecksum));
     }
     nHeaderStart = allones;
     nMessageStart = allones;
@@ -71,20 +75,18 @@ void CSeederNode::Send() {
     if (nBytes > 0) {
         vSend.erase(vSend.begin(), vSend.begin() + nBytes);
     } else {
-        close(sock);
-        sock = INVALID_SOCKET;
+        CloseSocket(sock);
     }
 }
 
 void CSeederNode::PushVersion() {
-    int64_t nTime = time(nullptr);
-    uint64_t nLocalNonce = BITCOIN_SEED_NONCE;
-    int64_t nLocalServices = 0;
-    CService myService;
-    CAddress me(myService, ServiceFlags(NODE_NETWORK | NODE_BITCOIN_CASH));
+    const int64_t nTime = static_cast<int64_t>(std::time(nullptr)); // nTime sent as int64_t always
+    const uint64_t nLocalNonce = BITCOIN_SEED_NONCE;
+    const int64_t nLocalServices = 0;
+    const CAddress me(CService{}, ServiceFlags(NODE_NETWORK | NODE_BITCOIN_CASH));
     BeginMessage("version");
-    int nBestHeight = GetRequireHeight();
-    std::string ver = "/bitcoin-cash-seeder:0.15/";
+    const int nBestHeight = GetRequireHeight();
+    const std::string ver = "/bitcoin-cash-seeder:0.15/";
     vSend << PROTOCOL_VERSION << nLocalServices << nTime << you << me
           << nLocalNonce << ver << nBestHeight;
     EndMessage();
@@ -92,8 +94,8 @@ void CSeederNode::PushVersion() {
 
 PeerMessagingState CSeederNode::ProcessMessage(const std::string &strCommand,
                                                CDataStream &recv) {
-    // fprintf(stdout, "%s: RECV %s\n", ToString(you).c_str(),
-    // strCommand.c_str());
+    // std::fprintf(stdout, "%s: RECV %s\n", ToString(you).c_str(),
+    //              strCommand.c_str());
     if (strCommand == "version") {
         int64_t nTime;
         CAddress addrMe;
@@ -114,14 +116,14 @@ PeerMessagingState CSeederNode::ProcessMessage(const std::string &strCommand,
 
     if (strCommand == "verack") {
         vRecv.SetVersion(std::min(nVersion, PROTOCOL_VERSION));
-        // fprintf(stdout, "\n%s: version %i\n", ToString(you).c_str(),
-        // nVersion);
+        // std::fprintf(stdout, "\n%s: version %i\n", ToString(you).c_str(),
+        //              nVersion);
         if (vAddr) {
             BeginMessage("getaddr");
             EndMessage();
-            doneAfter = time(nullptr) + GetTimeout();
+            doneAfter = std::time(nullptr) + GetTimeout();
         } else {
-            doneAfter = time(nullptr) + 1;
+            doneAfter = std::time(nullptr) + 1;
         }
         return PeerMessagingState::AwaitingMessages;
     }
@@ -129,9 +131,9 @@ PeerMessagingState CSeederNode::ProcessMessage(const std::string &strCommand,
     if (strCommand == "addr" && vAddr) {
         std::vector<CAddress> vAddrNew;
         recv >> vAddrNew;
-        // fprintf(stdout, "%s: got %i addresses\n", ToString(you).c_str(),
-        //        (int)vAddrNew.size());
-        int64_t now = time(nullptr);
+        // std::fprintf(stdout, "%s: got %i addresses\n", ToString(you).c_str(),
+        //              (int)vAddrNew.size());
+        int64_t now = std::time(nullptr);
         std::vector<CAddress>::iterator it = vAddrNew.begin();
         if (vAddrNew.size() > 1) {
             if (doneAfter == 0 || doneAfter > now + 1) {
@@ -140,9 +142,9 @@ PeerMessagingState CSeederNode::ProcessMessage(const std::string &strCommand,
         }
         while (it != vAddrNew.end()) {
             CAddress &addr = *it;
-            // fprintf(stdout, "%s: got address %s\n",
-            // ToString(you).c_str(),
-            //        addr.ToString().c_str(), (int)(vAddr->size()));
+            // std::fprintf(stdout, "%s: got address %s\n",
+            //              ToString(you).c_str(),
+            //              addr.ToString().c_str(), (int)(vAddr->size()));
             it++;
             if (addr.nTime <= 100000000 || addr.nTime > now + 600) {
                 addr.nTime = now - 5 * 86400;
@@ -150,9 +152,9 @@ PeerMessagingState CSeederNode::ProcessMessage(const std::string &strCommand,
             if (addr.nTime > now - 604800) {
                 vAddr->push_back(addr);
             }
-            // fprintf(stdout, "%s: added address %s (#%i)\n",
-            // ToString(you).c_str(),
-            //        addr.ToString().c_str(), (int)(vAddr->size()));
+            // std::fprintf(stdout, "%s: added address %s (#%i)\n",
+            //              ToString(you).c_str(),
+            //              addr.ToString().c_str(), (int)(vAddr->size()));
             if (vAddr->size() > ADDR_SOFT_CAP) {
                 doneAfter = 1;
                 return PeerMessagingState::Finished;
@@ -172,9 +174,9 @@ bool CSeederNode::ProcessMessages() {
     do {
         CDataStream::iterator pstart = std::search(
             vRecv.begin(), vRecv.end(), BEGIN(netMagic), END(netMagic));
-        uint32_t nHeaderSize =
+        std::size_t nHeaderSize =
             GetSerializeSize(CMessageHeader(netMagic), vRecv.GetVersion());
-        if (vRecv.end() - pstart < nHeaderSize) {
+        if (std::size_t(vRecv.end() - pstart) < nHeaderSize) {
             if (vRecv.size() > nHeaderSize) {
                 vRecv.erase(vRecv.begin(), vRecv.end() - nHeaderSize);
             }
@@ -186,16 +188,16 @@ bool CSeederNode::ProcessMessages() {
         CMessageHeader hdr(netMagic);
         vRecv >> hdr;
         if (!hdr.IsValidWithoutConfig(netMagic)) {
-            // fprintf(stdout, "%s: BAD (invalid header)\n",
-            // ToString(you).c_str());
+            // std::fprintf(stdout, "%s: BAD (invalid header)\n",
+            //              ToString(you).c_str());
             ban = 100000;
             return true;
         }
         std::string strCommand = hdr.GetCommand();
         unsigned int nMessageSize = hdr.nMessageSize;
         if (nMessageSize > MAX_SIZE) {
-            // fprintf(stdout, "%s: BAD (message too large)\n",
-            // ToString(you).c_str());
+            // std::fprintf(stdout, "%s: BAD (message too large)\n",
+            //              ToString(you).c_str());
             ban = 100000;
             return true;
         }
@@ -205,8 +207,8 @@ bool CSeederNode::ProcessMessages() {
         }
         if (vRecv.GetVersion() >= 209) {
             uint256 hash = Hash(vRecv.begin(), vRecv.begin() + nMessageSize);
-            if (memcmp(hash.begin(), hdr.pchChecksum,
-                       CMessageHeader::CHECKSUM_SIZE) != 0) {
+            if (std::memcmp(hash.begin(), hdr.pchChecksum,
+                            CMessageHeader::CHECKSUM_SIZE) != 0) {
                 continue;
             }
         }
@@ -216,9 +218,9 @@ bool CSeederNode::ProcessMessages() {
         if (ProcessMessage(strCommand, vMsg) == PeerMessagingState::Finished) {
             return true;
         }
-        // fprintf(stdout, "%s: done processing %s\n",
-        // ToString(you).c_str(),
-        //        strCommand.c_str());
+        // std::fprintf(stdout, "%s: done processing %s\n",
+        //              ToString(you).c_str(),
+        //              strCommand.c_str());
     } while (1);
     return false;
 }
@@ -228,7 +230,7 @@ CSeederNode::CSeederNode(const CService &ip, std::vector<CAddress> *vAddrIn)
       nHeaderStart(-1), nMessageStart(-1), nVersion(0), nStartingHeight(0),
       vAddr(vAddrIn), ban(0), doneAfter(0),
       you(ip, ServiceFlags(NODE_NETWORK | NODE_BITCOIN_CASH)) {
-    if (time(nullptr) > 1329696000) {
+    if (std::time(nullptr) > 1329696000) {
         vSend.SetVersion(209);
         vRecv.SetVersion(209);
     }
@@ -264,7 +266,7 @@ bool CSeederNode::Run() {
     }
 
     if (!connected) {
-        // fprintf(stdout, "Cannot connect to %s\n", ToString(you).c_str());
+        // std::fprintf(stdout, "Cannot connect to %s\n", ToString(you).c_str());
         CloseSocket(sock);
         return false;
     }
@@ -274,9 +276,11 @@ bool CSeederNode::Run() {
 
     bool res = true;
     int64_t now;
-    while (now = time(nullptr), ban == 0 &&
-                                    (doneAfter == 0 || doneAfter > now) &&
-                                    sock != INVALID_SOCKET) {
+    auto Predicate = [&now, this] {
+        now = std::time(nullptr);
+        return ban == 0 && (doneAfter == 0 || doneAfter > now) && sock != INVALID_SOCKET;
+    };
+    while (Predicate()) {
         char pchBuf[0x10000];
         fd_set fdsetRecv;
         fd_set fdsetError;
@@ -303,15 +307,15 @@ bool CSeederNode::Run() {
         int nPos = vRecv.size();
         if (nBytes > 0) {
             vRecv.resize(nPos + nBytes);
-            memcpy(&vRecv[nPos], pchBuf, nBytes);
+            std::memcpy(&vRecv[nPos], pchBuf, nBytes);
         } else if (nBytes == 0) {
-            // fprintf(stdout, "%s: BAD (connection closed prematurely)\n",
-            //        ToString(you).c_str());
+            // std::fprintf(stdout, "%s: BAD (connection closed prematurely)\n",
+            //              ToString(you).c_str());
             res = false;
             break;
         } else {
-            // fprintf(stdout, "%s: BAD (connection error)\n",
-            // ToString(you).c_str());
+            // std::fprintf(stdout, "%s: BAD (connection error)\n",
+            //              ToString(you).c_str());
             res = false;
             break;
         }
@@ -320,9 +324,8 @@ bool CSeederNode::Run() {
     }
     if (sock == INVALID_SOCKET) {
         res = false;
-    }
-    close(sock);
-    sock = INVALID_SOCKET;
+    } else
+        CloseSocket(sock);
     return (ban == 0) && res;
 }
 
@@ -340,8 +343,8 @@ bool TestNode(const CService &cip, int &ban, int &clientV,
         clientV = node.GetClientVersion();
         clientSV = node.GetClientSubVersion();
         blocks = node.GetStartingHeight();
-        // fprintf(stdout, "%s: %s!!!\n", cip.ToString().c_str(), ret ? "GOOD" :
-        // "BAD");
+        // std::fprintf(stdout, "%s: %s!!!\n", cip.ToString().c_str(), ret ? "GOOD" :
+        //              "BAD");
         return ret;
     } catch (std::ios_base::failure &e) {
         ban = 0;

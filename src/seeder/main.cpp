@@ -18,10 +18,18 @@
 #include <atomic>
 #include <cinttypes>
 #include <csignal>
+#include <cstdio>
 #include <cstdlib>
+#include <cstring>
+#include <ctime>
+
 #include <pthread.h>
+#include <strings.h> // for strcasecmp
 
 const std::function<std::string(const char *)> G_TRANSLATION_FUN = nullptr;
+
+//! All globals in this file are private to this translation unit
+namespace {
 
 static const int CONTINUE_EXECUTION = -1;
 
@@ -39,32 +47,25 @@ static const std::string DEFAULT_IPV6_PROXY = "";
 
 class CDnsSeedOpts {
 public:
-    int nThreads;
-    int nPort;
-    int nDnsThreads;
-    bool fWipeBan;
-    bool fWipeIgnore;
-    std::string mbox;
-    std::string ns;
-    std::string host;
-    std::string tor;
-    std::string ipv4_proxy;
-    std::string ipv6_proxy;
+    int nThreads            = DEFAULT_NUM_THREADS;
+    int nPort               = DEFAULT_PORT;
+    int nDnsThreads         = DEFAULT_NUM_DNS_THREADS;
+    bool fWipeBan           = DEFAULT_WIPE_BAN;
+    bool fWipeIgnore        = DEFAULT_WIPE_IGNORE;
+    std::string mbox        = DEFAULT_EMAIL;
+    std::string ns          = DEFAULT_NAMESERVER;
+    std::string host        = DEFAULT_HOST;
+    std::string tor         = DEFAULT_TOR_PROXY;
+    std::string ipv4_proxy  = DEFAULT_IPV4_PROXY;
+    std::string ipv6_proxy  = DEFAULT_IPV6_PROXY;
     std::set<uint64_t> filter_whitelist;
-
-    CDnsSeedOpts()
-        : nThreads(DEFAULT_NUM_THREADS), nPort(DEFAULT_PORT),
-          nDnsThreads(DEFAULT_NUM_DNS_THREADS), fWipeBan(DEFAULT_WIPE_BAN),
-          fWipeIgnore(DEFAULT_WIPE_IGNORE), mbox(DEFAULT_EMAIL),
-          ns(DEFAULT_NAMESERVER), host(DEFAULT_HOST), tor(DEFAULT_TOR_PROXY),
-          ipv4_proxy(DEFAULT_IPV4_PROXY), ipv6_proxy(DEFAULT_IPV6_PROXY) {}
 
     int ParseCommandLine(int argc, char **argv) {
         SetupSeederArgs();
         std::string error;
         if (!gArgs.ParseParameters(argc, argv, error)) {
-            fprintf(stderr, "Error parsing command line arguments: %s\n",
-                    error.c_str());
+            std::fprintf(stderr, "Error parsing command line arguments: %s\n",
+                         error.c_str());
             return EXIT_FAILURE;
         }
         if (HelpRequested(gArgs) || gArgs.IsArgSet("-version")) {
@@ -77,7 +78,7 @@ public:
                     gArgs.GetHelpMessage();
             }
 
-            fprintf(stdout, "%s", strUsage.c_str());
+            std::fprintf(stdout, "%s", strUsage.c_str());
             return EXIT_SUCCESS;
         }
 
@@ -155,10 +156,6 @@ private:
     }
 };
 
-extern "C" {
-#include <seeder/dns.h>
-}
-
 CAddrDb db;
 
 extern "C" void *ThreadCrawler(void *data) {
@@ -167,10 +164,10 @@ extern "C" void *ThreadCrawler(void *data) {
         std::vector<CServiceResult> ips;
         int wait = 5;
         db.GetMany(ips, 16, wait);
-        int64_t now = time(nullptr);
+        int64_t now = std::time(nullptr);
         if (ips.empty()) {
             wait *= 1000;
-            wait += rand() % (500 * *nThreads);
+            wait += std::rand() % (500 * *nThreads);
             Sleep(wait);
             continue;
         }
@@ -194,24 +191,23 @@ extern "C" void *ThreadCrawler(void *data) {
     return nullptr;
 }
 
-extern "C" uint32_t GetIPList(void *thread, char *requestedHostname,
-                              addr_t *addr, uint32_t max, uint32_t ipv4,
-                              uint32_t ipv6);
+uint32_t GetIPList(void *thread, const char *requestedHostname,
+                   addr_t *addr, uint32_t max, uint32_t ipv4,
+                   uint32_t ipv6);
 
 class CDnsThread {
 public:
     struct FlagSpecificData {
-        int nIPv4, nIPv6;
+        int nIPv4 = 0, nIPv6 = 0;
         std::vector<addr_t> cache;
-        time_t cacheTime;
-        unsigned int cacheHits;
-        FlagSpecificData() : nIPv4(0), nIPv6(0), cacheTime(0), cacheHits(0) {}
+        std::time_t cacheTime = 0;
+        unsigned int cacheHits = 0;
     };
 
     dns_opt_t dns_opt; // must be first
     const int id;
     std::map<uint64_t, FlagSpecificData> perflag;
-    std::atomic<uint64_t> dbQueries;
+    std::atomic<uint64_t> dbQueries{0};
     std::set<uint64_t> filterWhitelist;
 
     void cacheHit(uint64_t requestedFlags, bool force = false) {
@@ -220,7 +216,7 @@ public:
             nets[NET_IPV4] = true;
             nets[NET_IPV6] = true;
         }
-        time_t now = time(nullptr);
+        std::time_t now = std::time(nullptr);
         FlagSpecificData &thisflag = perflag[requestedFlags];
         thisflag.cacheHits++;
         if (force ||
@@ -242,13 +238,13 @@ public:
                 if (ip.GetInAddr(&addr)) {
                     addr_t a;
                     a.v = 4;
-                    memcpy(&a.data.v4, &addr, 4);
+                    std::memcpy(&a.data.v4, &addr, 4);
                     thisflag.cache.push_back(a);
                     thisflag.nIPv4++;
                 } else if (ip.GetIn6Addr(&addr6)) {
                     addr_t a;
                     a.v = 6;
-                    memcpy(&a.data.v6, &addr6, 16);
+                    std::memcpy(&a.data.v6, &addr6, 16);
                     thisflag.cache.push_back(a);
                     thisflag.nIPv6++;
                 }
@@ -267,24 +263,22 @@ public:
         dns_opt.cb = GetIPList;
         dns_opt.port = opts->nPort;
         dns_opt.nRequests = 0;
-        dbQueries = 0;
-        perflag.clear();
         filterWhitelist = opts->filter_whitelist;
     }
 
     void run() { dnsserver(&dns_opt); }
 };
 
-extern "C" uint32_t GetIPList(void *data, char *requestedHostname, addr_t *addr,
-                              uint32_t max, uint32_t ipv4, uint32_t ipv6) {
+uint32_t GetIPList(void *data, const char *requestedHostname, addr_t *addr,
+                   uint32_t max, uint32_t ipv4, uint32_t ipv6) {
     CDnsThread *thread = (CDnsThread *)data;
 
     uint64_t requestedFlags = 0;
-    int hostlen = strlen(requestedHostname);
+    int hostlen = std::strlen(requestedHostname);
     if (hostlen > 1 && requestedHostname[0] == 'x' &&
         requestedHostname[1] != '0') {
         char *pEnd;
-        uint64_t flags = (uint64_t)strtoull(requestedHostname + 1, &pEnd, 16);
+        uint64_t flags = uint64_t(std::strtoull(requestedHostname + 1, &pEnd, 16));
         if (*pEnd == '.' && pEnd <= requestedHostname + 17 &&
             std::find(thread->filterWhitelist.begin(),
                       thread->filterWhitelist.end(),
@@ -308,7 +302,7 @@ extern "C" uint32_t GetIPList(void *data, char *requestedHostname, addr_t *addr,
     }
     uint32_t i = 0;
     while (i < max) {
-        uint32_t j = i + (rand() % (size - i));
+        uint32_t j = i + (std::rand() % (size - i));
         do {
             bool ok = (ipv4 && thisflag.cache[j].v == 4) ||
                       (ipv6 && thisflag.cache[j].v == 6);
@@ -328,7 +322,7 @@ extern "C" uint32_t GetIPList(void *data, char *requestedHostname, addr_t *addr,
     return max;
 }
 
-std::vector<CDnsThread *> dnsThread;
+std::vector<CDnsThread *> dnsThreads;
 
 extern "C" void *ThreadDNS(void *arg) {
     CDnsThread *thread = (CDnsThread *)arg;
@@ -336,7 +330,7 @@ extern "C" void *ThreadDNS(void *arg) {
     return nullptr;
 }
 
-int StatCompare(const CAddrReport &a, const CAddrReport &b) {
+bool StatCompare(const CAddrReport &a, const CAddrReport &b) noexcept {
     if (a.uptime[4] == b.uptime[4]) {
         if (a.uptime[3] == b.uptime[3]) {
             return a.clientVersion > b.clientVersion;
@@ -359,22 +353,22 @@ extern "C" void *ThreadDumper(void *) {
 
         {
             std::vector<CAddrReport> v = db.GetAll();
-            sort(v.begin(), v.end(), StatCompare);
+            std::sort(v.begin(), v.end(), StatCompare);
             FILE *f = fsbridge::fopen("dnsseed.dat.new", "w+");
             if (f) {
                 {
                     CAutoFile cf(f, SER_DISK, CLIENT_VERSION);
                     cf << db;
                 }
-                rename("dnsseed.dat.new", "dnsseed.dat");
+                std::rename("dnsseed.dat.new", "dnsseed.dat");
             }
             FILE *d = fsbridge::fopen("dnsseed.dump", "w");
-            fprintf(d, "# address                                        good  "
-                       "lastSuccess    %%(2h)   %%(8h)   %%(1d)   %%(7d)  "
-                       "%%(30d)  blocks      svcs  version\n");
+            std::fprintf(d, "# address                                        good  "
+                            "lastSuccess    %%(2h)   %%(8h)   %%(1d)   %%(7d)  "
+                            "%%(30d)  blocks      svcs  version\n");
             double stat[5] = {0, 0, 0, 0, 0};
             for (CAddrReport rep : v) {
-                fprintf(
+                std::fprintf(
                     d,
                     "%-47s  %4d  %11" PRId64
                     "  %6.2f%% %6.2f%% %6.2f%% %6.2f%% %6.2f%%  %6i  %08" PRIx64
@@ -390,12 +384,12 @@ extern "C" void *ThreadDumper(void *) {
                 stat[3] += rep.uptime[3];
                 stat[4] += rep.uptime[4];
             }
-            fclose(d);
+            std::fclose(d);
             FILE *ff = fsbridge::fopen("dnsstats.log", "a");
-            fprintf(ff, "%llu %g %g %g %g %g\n",
-                    (unsigned long long)(time(nullptr)), stat[0], stat[1],
-                    stat[2], stat[3], stat[4]);
-            fclose(ff);
+            std::fprintf(ff, "%llu %g %g %g %g %g\n",
+                         (unsigned long long)(std::time(nullptr)), stat[0], stat[1],
+                         stat[2], stat[3], stat[4]);
+            std::fclose(ff);
         }
     } while (1);
     return nullptr;
@@ -405,37 +399,39 @@ extern "C" void *ThreadStats(void *) {
     bool first = true;
     do {
         char c[256];
-        time_t tim = time(nullptr);
-        struct tm *tmp = localtime(&tim);
-        strftime(c, 256, "[%y-%m-%d %H:%M:%S]", tmp);
+        std::time_t tim = std::time(nullptr);
+        struct tm *tmp = std::localtime(&tim);
+        std::strftime(c, 256, "[%y-%m-%d %H:%M:%S]", tmp);
         CAddrDbStats stats;
         db.GetStats(stats);
         if (first) {
             first = false;
-            fprintf(stdout, "\n\n\n\x1b[3A");
+            std::fprintf(stdout, "\n\n\n\x1b[3A");
         } else {
-            fprintf(stdout, "\x1b[2K\x1b[u");
+            std::fprintf(stdout, "\x1b[2K\x1b[u");
         }
-        fprintf(stdout, "\x1b[s");
+        std::fprintf(stdout, "\x1b[s");
         uint64_t requests = 0;
         uint64_t queries = 0;
-        for (unsigned int i = 0; i < dnsThread.size(); i++) {
-            requests += dnsThread[i]->dns_opt.nRequests;
-            queries += dnsThread[i]->dbQueries;
+        for (const auto *dnsThread : dnsThreads) {
+            if (!dnsThread)
+                continue;
+            requests += dnsThread->dns_opt.nRequests;
+            queries += dnsThread->dbQueries;
         }
-        fprintf(stdout,
-                "%s %i/%i available (%i tried in %is, %i new, %i active), %i "
-                "banned; %llu DNS requests, %llu db queries\n",
-                c, stats.nGood, stats.nAvail, stats.nTracked, stats.nAge,
-                stats.nNew, stats.nAvail - stats.nTracked - stats.nNew,
-                stats.nBanned, (unsigned long long)requests,
-                (unsigned long long)queries);
+        std::fprintf(stdout,
+                     "%s %i/%i available (%i tried in %is, %i new, %i active), %i "
+                     "banned; %llu DNS requests, %llu db queries\n",
+                     c, stats.nGood, stats.nAvail, stats.nTracked, stats.nAge,
+                     stats.nNew, stats.nAvail - stats.nTracked - stats.nNew,
+                     stats.nBanned, (unsigned long long)requests,
+                     (unsigned long long)queries);
         Sleep(1000);
     } while (1);
     return nullptr;
 }
 
-const static unsigned int MAX_HOSTS_PER_SEED = 128;
+static constexpr unsigned int MAX_HOSTS_PER_SEED = 128;
 
 extern "C" void *ThreadSeeder(void *) {
     do {
@@ -452,99 +448,101 @@ extern "C" void *ThreadSeeder(void *) {
     return nullptr;
 }
 
+} // namespace
+
 int main(int argc, char **argv) {
     // The logger dump everything on the console by default.
     LogInstance().m_print_to_console = true;
 
-    signal(SIGPIPE, SIG_IGN);
-    setbuf(stdout, nullptr);
+    std::signal(SIGPIPE, SIG_IGN);
+    std::setbuf(stdout, nullptr);
     CDnsSeedOpts opts;
     int parseResults = opts.ParseCommandLine(argc, argv);
     if (parseResults != CONTINUE_EXECUTION) {
         return parseResults;
     }
 
-    fprintf(stdout, "Supporting whitelisted filters: ");
+    std::fprintf(stdout, "Supporting whitelisted filters: ");
     for (std::set<uint64_t>::const_iterator it = opts.filter_whitelist.begin();
          it != opts.filter_whitelist.end(); it++) {
         if (it != opts.filter_whitelist.begin()) {
-            fprintf(stdout, ",");
+            std::fprintf(stdout, ",");
         }
-        fprintf(stdout, "0x%lx", (unsigned long)*it);
+        std::fprintf(stdout, "0x%lx", (unsigned long)*it);
     }
-    fprintf(stdout, "\n");
+    std::fprintf(stdout, "\n");
     if (!opts.tor.empty()) {
         CService service(LookupNumeric(opts.tor.c_str(), 9050));
         if (service.IsValid()) {
-            fprintf(stdout, "Using Tor proxy at %s\n",
-                    service.ToStringIPPort().c_str());
+            std::fprintf(stdout, "Using Tor proxy at %s\n",
+                         service.ToStringIPPort().c_str());
             SetProxy(NET_ONION, proxyType(service));
         }
     }
     if (!opts.ipv4_proxy.empty()) {
         CService service(LookupNumeric(opts.ipv4_proxy.c_str(), 9050));
         if (service.IsValid()) {
-            fprintf(stdout, "Using IPv4 proxy at %s\n",
-                    service.ToStringIPPort().c_str());
+            std::fprintf(stdout, "Using IPv4 proxy at %s\n",
+                         service.ToStringIPPort().c_str());
             SetProxy(NET_IPV4, proxyType(service));
         }
     }
     if (!opts.ipv6_proxy.empty()) {
         CService service(LookupNumeric(opts.ipv6_proxy.c_str(), 9050));
         if (service.IsValid()) {
-            fprintf(stdout, "Using IPv6 proxy at %s\n",
-                    service.ToStringIPPort().c_str());
+            std::fprintf(stdout, "Using IPv6 proxy at %s\n",
+                         service.ToStringIPPort().c_str());
             SetProxy(NET_IPV6, proxyType(service));
         }
     }
     bool fDNS = true;
-    fprintf(stdout, "Using %s.\n", gArgs.GetChainName().c_str());
+    std::fprintf(stdout, "Using %s.\n", gArgs.GetChainName().c_str());
     netMagic = Params().NetMagic();
     if (opts.ns.empty()) {
-        fprintf(stdout, "No nameserver set. Not starting DNS server.\n");
+        std::fprintf(stdout, "No nameserver set. Not starting DNS server.\n");
         fDNS = false;
     }
     if (fDNS && opts.host.empty()) {
-        fprintf(stderr, "No hostname set. Please use -h.\n");
+        std::fprintf(stderr, "No hostname set. Please use -host.\n");
         return EXIT_FAILURE;
     }
     if (fDNS && opts.mbox.empty()) {
-        fprintf(stderr, "No e-mail address set. Please use -m.\n");
+        std::fprintf(stderr, "No e-mail address set. Please use -mbox.\n");
         return EXIT_FAILURE;
     }
     FILE *f = fsbridge::fopen("dnsseed.dat", "r");
     if (f) {
-        fprintf(stdout, "Loading dnsseed.dat...");
+        std::fprintf(stdout, "Loading dnsseed.dat...");
         CAutoFile cf(f, SER_DISK, CLIENT_VERSION);
         cf >> db;
         if (opts.fWipeBan) {
             db.banned.clear();
-            fprintf(stdout, "Ban list wiped...");
+            std::fprintf(stdout, "Ban list wiped...");
         }
         if (opts.fWipeIgnore) {
             db.ResetIgnores();
-            fprintf(stdout, "Ignore list wiped...");
+            std::fprintf(stdout, "Ignore list wiped...");
         }
-        fprintf(stdout, "done\n");
+        std::fprintf(stdout, "done\n");
     }
     pthread_t threadDns, threadSeed, threadDump, threadStats;
     if (fDNS) {
-        fprintf(stdout, "Starting %i DNS threads for %s on %s (port %i)...",
-                opts.nDnsThreads, opts.host.c_str(), opts.ns.c_str(),
-                opts.nPort);
-        dnsThread.clear();
+        std::fprintf(stdout, "Starting %i DNS threads for %s on %s (port %i)...",
+                     opts.nDnsThreads, opts.host.c_str(), opts.ns.c_str(),
+                     opts.nPort);
+        dnsThreads.reserve(opts.nDnsThreads);
         for (int i = 0; i < opts.nDnsThreads; i++) {
-            dnsThread.push_back(new CDnsThread(&opts, i));
-            pthread_create(&threadDns, nullptr, ThreadDNS, dnsThread[i]);
-            fprintf(stdout, ".");
+            dnsThreads.push_back(new CDnsThread(&opts, i));
+            pthread_create(&threadDns, nullptr, ThreadDNS, dnsThreads.back());
+            std::fprintf(stdout, ".");
             Sleep(20);
         }
-        fprintf(stdout, "done\n");
+        std::fprintf(stdout, "done\n");
     }
-    fprintf(stdout, "Starting seeder...");
+    std::fprintf(stdout, "Starting seeder...");
     pthread_create(&threadSeed, nullptr, ThreadSeeder, nullptr);
-    fprintf(stdout, "done\n");
-    fprintf(stdout, "Starting %i crawler threads...", opts.nThreads);
+    std::fprintf(stdout, "done\n");
+    std::fprintf(stdout, "Starting %i crawler threads...", opts.nThreads);
     pthread_attr_t attr_crawler;
     pthread_attr_init(&attr_crawler);
     pthread_attr_setstacksize(&attr_crawler, 0x20000);
@@ -553,7 +551,7 @@ int main(int argc, char **argv) {
         pthread_create(&thread, &attr_crawler, ThreadCrawler, &opts.nThreads);
     }
     pthread_attr_destroy(&attr_crawler);
-    fprintf(stdout, "done\n");
+    std::fprintf(stdout, "done\n");
     pthread_create(&threadStats, nullptr, ThreadStats, nullptr);
     pthread_create(&threadDump, nullptr, ThreadDumper, nullptr);
     void *res;
