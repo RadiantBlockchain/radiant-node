@@ -15,6 +15,7 @@
 
 #include <cmath>
 #include <cstdint>
+#include <ctime>
 #include <deque>
 #include <map>
 #include <set>
@@ -41,13 +42,11 @@ static inline std::string ToString(const CService &ip) {
 
 class CAddrStat {
 private:
-    float weight;
-    float count;
-    float reliability;
+    float weight{};
+    float count{};
+    float reliability{};
 
 public:
-    CAddrStat() : weight(0), count(0), reliability(0) {}
-
     void Update(bool good, int64_t age, double tau) {
         double f = exp(-age / tau);
         reliability = reliability * f + (good ? (1.0 - f) : 0);
@@ -67,8 +66,7 @@ public:
     friend class CAddrInfo;
 };
 
-class CAddrReport {
-public:
+struct CAddrReport {
     CService ip;
     int clientVersion;
     int blocks;
@@ -82,27 +80,23 @@ public:
 class CAddrInfo {
 private:
     CService ip;
-    uint64_t services;
-    int64_t lastTry;
-    int64_t ourLastTry;
-    int64_t ourLastSuccess;
-    int64_t ignoreTill;
+    uint64_t services{};
+    int64_t lastTry{};
+    int64_t ourLastTry{};
+    int64_t ourLastSuccess{};
+    int64_t ignoreTill{};
     CAddrStat stat2H;
     CAddrStat stat8H;
     CAddrStat stat1D;
     CAddrStat stat1W;
     CAddrStat stat1M;
-    int clientVersion;
-    int blocks;
-    int total;
-    int success;
+    int clientVersion{};
+    int blocks{};
+    int total{};
+    int success{};
     std::string clientSubVersion;
 
 public:
-    CAddrInfo()
-        : services(0), lastTry(0), ourLastTry(0), ourLastSuccess(0),
-          ignoreTill(0), clientVersion(0), blocks(0), total(0), success(0) {}
-
     CAddrReport GetReport() const {
         CAddrReport ret;
         ret.ip = ip;
@@ -250,8 +244,7 @@ public:
     }
 };
 
-class CAddrDbStats {
-public:
+struct CAddrDbStats {
     int nBanned;
     int nAvail;
     int nTracked;
@@ -309,7 +302,7 @@ protected:
     // Get_)
     void Bad_(const CService &ip, int ban);
     // look up id of an IP
-    int Lookup_(const CService &ip);
+    int Lookup_(const CService &ip) const;
     // get a random set of IPs (shared lock only)
     void GetIPs_(std::set<CNetAddr> &ips, uint64_t requestedFlags, uint32_t max,
                  const bool *nets);
@@ -326,7 +319,7 @@ public:
         stats.nGood = goodId.size();
         stats.nNew = unkId.size();
         if (ourId.size() > 0) {
-            stats.nAge = time(nullptr) - idToInfo.at(ourId.at(0)).ourLastTry;
+            stats.nAge = std::time(nullptr) - idToInfo.at(ourId.at(0)).ourLastTry;
         } else {
             stats.nAge = 0;
         }

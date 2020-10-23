@@ -4,10 +4,12 @@
 
 #include <seeder/db.h>
 
+#include <cstdio>
 #include <cstdlib>
+#include <ctime>
 
 void CAddrInfo::Update(bool good) {
-    int64_t now = time(nullptr);
+    int64_t now = std::time(nullptr);
     if (ourLastTry == 0) {
         ourLastTry = now - MIN_RETRY;
     }
@@ -28,7 +30,7 @@ void CAddrInfo::Update(bool good) {
     if (ign && (ignoreTill == 0 || ignoreTill < ign + now)) {
         ignoreTill = ign + now;
     }
-    //  fprintf(stdout, "%s: got %s result: success=%i/%i;
+    //  std::fprintf(stdout, "%s: got %s result: success=%i/%i;
     //  2H:%.2f%%-%.2f%%(%.2f) 8H:%.2f%%-%.2f%%(%.2f) 1D:%.2f%%-%.2f%%(%.2f)
     //  1W:%.2f%%-%.2f%%(%.2f) \n", ToString(ip).c_str(), good ? "good" : "bad",
     //  success, total, 100.0 * stat2H.reliability, 100.0 * (stat2H.reliability
@@ -40,7 +42,7 @@ void CAddrInfo::Update(bool good) {
 }
 
 bool CAddrDb::Get_(CServiceResult &ip, int &wait) {
-    int64_t now = time(nullptr);
+    int64_t now = std::time(nullptr);
     size_t tot = unkId.size() + ourId.size();
     if (tot == 0) {
         wait = 5;
@@ -48,7 +50,7 @@ bool CAddrDb::Get_(CServiceResult &ip, int &wait) {
     }
 
     do {
-        size_t rnd = rand() % tot;
+        size_t rnd = std::rand() % tot;
         int ret;
         if (rnd < unkId.size()) {
             std::set<int>::iterator it = unkId.end();
@@ -57,7 +59,7 @@ bool CAddrDb::Get_(CServiceResult &ip, int &wait) {
             unkId.erase(it);
         } else {
             ret = ourId.front();
-            if (time(nullptr) - idToInfo[ret].ourLastTry < MIN_RETRY) {
+            if (std::time(nullptr) - idToInfo[ret].ourLastTry < MIN_RETRY) {
                 return false;
             }
             ourId.pop_front();
@@ -77,9 +79,10 @@ bool CAddrDb::Get_(CServiceResult &ip, int &wait) {
     return true;
 }
 
-int CAddrDb::Lookup_(const CService &ip) {
-    if (ipToId.count(ip)) {
-        return ipToId[ip];
+int CAddrDb::Lookup_(const CService &ip) const {
+    auto it = ipToId.find(ip);
+    if (it != ipToId.end()) {
+        return it->second;
     }
     return -1;
 }
@@ -99,7 +102,7 @@ void CAddrDb::Good_(const CService &addr, int clientV, const std::string &client
     info.Update(true);
     if (info.IsReliable() && goodId.count(id) == 0) {
         goodId.insert(id);
-        //    fprintf(stdout, "%s: good; %i good nodes now\n",
+        //    std::fprintf(stdout, "%s: good; %i good nodes now\n",
         //    ToString(addr).c_str(), (int)goodId.size());
     }
     nDirty++;
@@ -114,16 +117,16 @@ void CAddrDb::Bad_(const CService &addr, int ban) {
     unkId.erase(id);
     CAddrInfo &info = idToInfo[id];
     info.Update(false);
-    uint32_t now = time(nullptr);
+    std::time_t now = std::time(nullptr);
     int ter = info.GetBanTime();
     if (ter) {
-        //    fprintf(stdout, "%s: terrible\n", ToString(addr).c_str());
+        //    std::fprintf(stdout, "%s: terrible\n", ToString(addr).c_str());
         if (ban < ter) {
             ban = ter;
         }
     }
     if (ban > 0) {
-        //    fprintf(stdout, "%s: ban for %i seconds\n",
+        //    std::fprintf(stdout, "%s: ban for %i seconds\n",
         //    ToString(addr).c_str(), ban);
         banned[info.ip] = ban + now;
         ipToId.erase(info.ip);
@@ -132,7 +135,7 @@ void CAddrDb::Bad_(const CService &addr, int ban) {
     } else {
         if (/*!info.IsReliable() && */ goodId.count(id) == 1) {
             goodId.erase(id);
-            //      fprintf(stdout, "%s: not good; %i good nodes left\n",
+            //      std::fprintf(stdout, "%s: not good; %i good nodes left\n",
             //      ToString(addr).c_str(), (int)goodId.size());
         }
         ourId.push_back(id);
@@ -146,8 +149,8 @@ void CAddrDb::Add_(const CAddress &addr, bool force) {
     }
     CService ipp(addr);
     if (banned.count(ipp)) {
-        time_t bantime = banned[ipp];
-        if (force || (bantime < time(nullptr) && addr.nTime > bantime)) {
+        std::time_t bantime = banned[ipp];
+        if (force || (bantime < std::time(nullptr) && static_cast<std::time_t>(addr.nTime) > bantime)) {
             banned.erase(ipp);
         } else {
             return;
@@ -158,7 +161,7 @@ void CAddrDb::Add_(const CAddress &addr, bool force) {
         if (addr.nTime > ai.lastTry || ai.services != addr.nServices) {
             ai.lastTry = addr.nTime;
             ai.services |= addr.nServices;
-            //      fprintf(stdout, "%s: updated\n", ToString(addr).c_str());
+            //      std::fprintf(stdout, "%s: updated\n", ToString(addr).c_str());
         }
         if (force) {
             ai.ignoreTill = 0;
@@ -176,7 +179,7 @@ void CAddrDb::Add_(const CAddress &addr, bool force) {
     int id = nId++;
     idToInfo[id] = ai;
     ipToId[ipp] = id;
-    //  fprintf(stdout, "%s: added\n", ToString(ipp).c_str(), ipToId[ipp]);
+    //  std::fprintf(stdout, "%s: added\n", ToString(ipp).c_str(), ipToId[ipp]);
     unkId.insert(id);
     nDirty++;
 }
@@ -222,7 +225,7 @@ void CAddrDb::GetIPs_(std::set<CNetAddr> &ips, uint64_t requestedFlags,
 
     std::set<int> ids;
     while (ids.size() < max) {
-        ids.insert(goodIdFiltered[rand() % goodIdFiltered.size()]);
+        ids.insert(goodIdFiltered[std::rand() % goodIdFiltered.size()]);
     }
 
     for (auto &id : ids) {
