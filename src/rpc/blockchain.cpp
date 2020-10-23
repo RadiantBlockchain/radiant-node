@@ -786,7 +786,7 @@ static UniValue getblockheader(const Config &config,
             "blockheader <hash>.\n"
             "\nArguments:\n"
             "1. \"hash_or_height\"  (numeric or string, required) The block hash or block height\n"
-            "2. verbose             (boolean, optional, default=true) true for a "
+            "2. verbose           (boolean, optional, default=true) true for a "
             "json object, false for the hex-encoded data\n"
             "\nResult (for verbose = true):\n"
             "{\n"
@@ -832,34 +832,30 @@ static UniValue getblockheader(const Config &config,
     const CBlockIndex *pindex{};
     const CBlockIndex *tip{};
 
-    LOCK(cs_main);
-    if (request.params[0].isNum()) {
-        const int height = request.params[0].get_int();
-        if (height < 0) {
-            throw JSONRPCError(
-                RPC_INVALID_PARAMETER,
-                strprintf("Target block height %d is negative", height));
-        }
-        tip = ::ChainActive().Tip();
-        if (height > tip->nHeight) {
-            throw JSONRPCError(
-                RPC_INVALID_PARAMETER,
-                strprintf("Target block height %d after current tip %d", height,
-                          tip->nHeight));
-        }
-
-        pindex = ::ChainActive()[height];
-    } else {
-        const BlockHash hash(ParseHashV(request.params[0], "hash_or_height"));
-        pindex = LookupBlockIndex(hash);
-        tip = ::ChainActive().Tip();
-        if (!pindex) {
-            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Block not found");
-        }
-        if (!::ChainActive().Contains(pindex)) {
-            throw JSONRPCError(RPC_INVALID_PARAMETER,
-                               strprintf("Block is not in chain %s",
-                                         Params().NetworkIDString()));
+    {
+        LOCK(cs_main);
+        if (request.params[0].isNum()) {
+            const int height = request.params[0].get_int();
+            if (height < 0) {
+                throw JSONRPCError(
+                    RPC_INVALID_PARAMETER,
+                    strprintf("Target block height %d is negative", height));
+            }
+            tip = ::ChainActive().Tip();
+            if (height > tip->nHeight) {
+                throw JSONRPCError(
+                    RPC_INVALID_PARAMETER,
+                    strprintf("Target block height %d after current tip %d", height,
+                              tip->nHeight));
+            }
+            pindex = ::ChainActive()[height];
+        } else {
+            const BlockHash hash(ParseHashV(request.params[0], "hash_or_height"));
+            pindex = LookupBlockIndex(hash);
+            if (!pindex) {
+                throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Block not found");
+            }
+            tip = ::ChainActive().Tip();
         }
     }
 
