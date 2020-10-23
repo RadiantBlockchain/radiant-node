@@ -116,4 +116,4 @@ While Bitcoin Cash Node believes that strong cohesion among neighoring projects 
 
 ## Making changes to this disclosure policy
 
-Note that any changes to this disclosure policy should be mirrored in a pull request to the [bitcoincashnode.org repo](https://github.com/bitcoin-cash-node/bchnode-web).
+Note that any changes to this disclosure policy should be mirrored in a pull request to the [Bitcoin Cash Node repository](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node).
