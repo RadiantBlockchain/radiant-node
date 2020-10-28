@@ -228,7 +228,9 @@ BOOST_AUTO_TEST_CASE(singlethreadedscheduler_ordered) {
     BOOST_CHECK_EQUAL(counter2, 100);
 }
 
-BOOST_AUTO_TEST_CASE(mockforward) {
+/* disabled for now. See discussion in https://github.com/bitcoin/bitcoin/pull/18174
+BOOST_AUTO_TEST_CASE(mockforward)
+{
     CScheduler scheduler;
 
     int counter{0};
@@ -271,5 +273,6 @@ BOOST_AUTO_TEST_CASE(mockforward) {
     // should be between 2 & 3 minutes from now
     BOOST_CHECK(delta > 2 * 60 && delta < 3 * 60);
 }
+*/
 
 BOOST_AUTO_TEST_SUITE_END()
