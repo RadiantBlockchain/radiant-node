@@ -15,6 +15,7 @@
 #include <list>
 #include <mutex>
 #include <string>
+#include <utility>
 
 static const bool DEFAULT_LOGTIMEMICROS = false;
 static const bool DEFAULT_LOGIPS = false;
@@ -76,7 +77,7 @@ private:
      */
     std::atomic<uint32_t> m_categories{0};
 
-    std::string LogTimestampStr(const std::string &str);
+    void PrependTimestampStr(std::string &str);
 
 public:
     bool m_print_to_console = false;
@@ -92,7 +93,8 @@ public:
     ~Logger();
 
     /** Send a string to the log output */
-    void LogPrintStr(const std::string &str);
+    void LogPrintStr(std::string &&str);
+    void LogPrintStr(const std::string &str) { LogPrintStr(std::string{str}); }
 
     /** Returns whether logs will be written to any output */
     bool Enabled() const { return m_print_to_console || m_print_to_file; }
@@ -148,7 +150,7 @@ static inline void LogPrintf(const char *fmt, const Args &... args) {
             log_msg = "Error \"" + std::string(fmterr.what()) +
                       "\" while formatting log message: " + fmt;
         }
-        LogInstance().LogPrintStr(log_msg);
+        LogInstance().LogPrintStr(std::move(log_msg));
     }
 }
 
