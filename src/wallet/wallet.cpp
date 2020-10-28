@@ -3035,7 +3035,7 @@ CreateTransactionResult CWallet::CreateTransaction(
     const std::vector<CRecipient> &vecSend, CTransactionRef &tx,
     CReserveKey &reservekey, Amount &nFeeRet, int &nChangePosInOut,
     std::string &strFailReason, const CCoinControl &coinControl, bool sign,
-    int coinsel) {
+    CoinSelectionHint coinsel) {
     Amount nValue = Amount::zero();
     int nChangePosRequest = nChangePosInOut;
     unsigned int nSubtractFeeFromAmount = 0;
@@ -3067,17 +3067,20 @@ CreateTransactionResult CWallet::CreateTransaction(
         LOCK(cs_wallet);
 
         std::vector<COutput> vAvailableCoins;
-        // coinsel == 2 is planned to be a future fast algorithm, so we will
-        // make 2 as fast as we can here to ease the upgrade transition
-        if (coinsel == 1 || coinsel == 2) {
+        // 'FastReserced' is planned to be a future fast algorithm, so we will
+        // make it as fast as we can here to ease the upgrade transition
+        if (coinsel == CoinSelectionHint::Fast || coinsel == CoinSelectionHint::FastReserved) {
             AvailableCoins(*locked_chain, vAvailableCoins, true, &coinControl,
                 SATOSHI,   // nMinimumAmount
                 MAX_MONEY, // nMaximumAmount
                 10 * nValue, // nMinimumSumAmount
                 0, 0, 9999999,
                 GetMinimumFeeRate(*this, coinControl, g_mempool));
-        } else {
+        } else if (coinsel == CoinSelectionHint::Default) {
             AvailableCoins(*locked_chain, vAvailableCoins, true, &coinControl);
+        } else {
+            strFailReason = _("Invalid coin selection hint");
+            return CreateTransactionResult::CT_INVALID_PARAMETER;
         }
 
         // Parameters for coin selection, init with dummy

@@ -1140,7 +1140,7 @@ public:
                       Amount &nFeeRet, int &nChangePosInOut,
                       std::string &strFailReason,
                       const CCoinControl &coin_control, bool sign = true,
-                      int coinsel = 0);
+                      CoinSelectionHint coinsel = CoinSelectionHint::Default);
     bool CommitTransaction(
         CTransactionRef tx, mapValue_t mapValue,
         std::vector<std::pair<std::string, std::string>> orderForm,

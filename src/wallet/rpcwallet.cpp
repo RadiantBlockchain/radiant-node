@@ -350,7 +350,7 @@ static CTransactionRef SendMoney(interfaces::Chain::Lock &locked_chain,
                                  const CTxDestination &address, Amount nValue,
                                  bool fSubtractFeeFromAmount,
                                  const CCoinControl &coinControl,
-                                 mapValue_t mapValue, int coinsel) {
+                                 mapValue_t mapValue, CoinSelectionHint coinsel) {
     if (pwallet->GetBroadcastTransactions() && !g_connman) {
         throw JSONRPCError(
             RPC_CLIENT_P2P_DISABLED,
@@ -511,14 +511,13 @@ static UniValue sendtoaddress(const Config &config,
 
     CCoinControl coinControl;
 
-    int coinsel = 0;
+    CoinSelectionHint coinsel(CoinSelectionHint::Default);
     if (!request.params[5].isNull()) {
-        // RPC API is an int to allow for multiple speed settings in the future
-        coinsel = (request.params[5].get_int());
-    }
-    // coinsel==2 will be another fast algorithm, for which we maintain forwards compatibility
-    if (coinsel < 0 || coinsel > 2) {
-        throw JSONRPCError(RPC_TYPE_ERROR, "Unsupported coin selection algorithm");
+        int c = (request.params[5].get_int());
+        if (!IsValidCoinSelectionHint(c)) {
+            throw JSONRPCError(RPC_TYPE_ERROR, "Unsupported coin selection algorithm");
+        }
+        coinsel = static_cast<CoinSelectionHint>(c);
     }
 
     EnsureWalletIsUnlocked(pwallet);
