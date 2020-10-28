@@ -8,7 +8,9 @@ Tests that the getblocktemplatelight background 'cleaner' thread indeed
 cleans expired data from the gbt/ directory.
 """
 
+import glob
 import os
+import threading
 
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import assert_equal, assert_raises_rpc_error, wait_until
@@ -69,17 +71,7 @@ class GBTLightBGCleanerTest(BitcoinTestFramework):
             "40a373caf0ab3c2b46cd05625b8d545c295b93d7a88acf3fa1400",
         ]
 
-        gbtl = []
-
-        # generate a bunch of unique job_ids
         node = self.nodes[0]
-        txs_tmp = txs
-        n_iters = self._cache_size * 3  # intentionally overfill past cache size
-        assert n_iters
-        for _ in range(n_iters):
-            gbtl.append(node.getblocktemplatelight({}, txs_tmp))
-            txs_tmp += txs
-
         gbt_dir = os.path.join(os.path.join(node.datadir, 'regtest'), 'gbt')
         trash_dir = os.path.join(gbt_dir, 'trash')
 
@@ -88,6 +80,39 @@ class GBTLightBGCleanerTest(BitcoinTestFramework):
 
         self.log.info("gbt_dir: {}".format(gbt_dir))
         self.log.info("trash_dir: {}".format(trash_dir))
+
+        gbtl = []
+        seen_jobs_in_gbt_dir = set()
+        seen_jobs_in_trash_dir = set()
+        stop_flag = threading.Event()
+
+        def poll_thread():
+            """This thread is necessary to scan the gbt_dir and trash_dir and not miss any files.
+            It is a workaround to very slow gitlab CI (especially on aarch64)."""
+            nonlocal seen_jobs_in_trash_dir, seen_jobs_in_gbt_dir
+            while not stop_flag.wait(0.100):  # poll every 100ms
+                trashed_jobs = set(os.path.basename(x) for x in glob.glob(trash_path_for_job("*")))
+                gbt_dir_jobs = set(os.path.basename(x) for x in glob.glob(path_for_job("*")))
+                seen_jobs_in_trash_dir |= trashed_jobs
+                seen_jobs_in_gbt_dir |= gbt_dir_jobs
+
+        # start the poller thread -- this is necessary to work around CI bugs brought on by slowness on aarch64
+        pthr = threading.Thread(target=poll_thread, daemon=True)
+        pthr.start()
+
+        try:
+            # generate a bunch of unique job_ids
+            txs_tmp = txs
+            n_iters = self._cache_size * 3  # intentionally overfill past cache size
+            assert n_iters
+            for _ in range(n_iters):
+                gbtl.append(node.getblocktemplatelight({}, txs_tmp))
+                txs_tmp += txs
+        finally:
+            # Ensure subordinate poller thread is stopped, joined
+            stop_flag.set()
+            pthr.join()
+
         assert os.path.isdir(gbt_dir)
         assert os.path.isdir(trash_dir)
 
@@ -95,11 +120,19 @@ class GBTLightBGCleanerTest(BitcoinTestFramework):
 
         assert len(job_ids) == n_iters
 
-        assert all(os.path.exists(path_for_job(x)) for x in job_ids)
-        assert not any(os.path.exists(trash_path_for_job(x)) for x in job_ids)
+        # constrain the set now to the jobs we expect just in case there is monkey business
+        # with the gbt dir or trash dir having gotten extra files above, somehow.
+        seen_jobs_in_trash_dir &= job_ids
+        seen_jobs_in_gbt_dir &= job_ids
 
-        trashed_ids = set()
-        removed_ids = set()
+        # Note: due to a possible race condition in the case of this test executing slowly,
+        # the job_id file may be gone now and moved to trash -- so also check the set `seen_jobs_in_gbt_dir`
+        assert all(os.path.exists(path_for_job(x)) or x in seen_jobs_in_gbt_dir
+                   for x in job_ids)
+
+        trashed_ids = set() | seen_jobs_in_trash_dir
+        removed_ids = set() | {x for x in seen_jobs_in_trash_dir
+                               if not os.path.exists(path_for_job(x))}
 
         def predicate():
             for j in job_ids:
