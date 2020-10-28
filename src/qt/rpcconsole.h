@@ -74,6 +74,7 @@ public:
     }
 
     QString tabTitle(TabTypes tab_type) const;
+    QKeySequence tabShortcut(TabTypes tab_type) const;
 
 protected:
     virtual bool eventFilter(QObject *obj, QEvent *event) override;
