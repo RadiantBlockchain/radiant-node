@@ -147,48 +147,54 @@ BCLog::Logger::~Logger() {
     }
 }
 
-std::string BCLog::Logger::LogTimestampStr(const std::string &str) {
-    std::string strStamped;
+void BCLog::Logger::PrependTimestampStr(std::string &str) {
+    if (!m_log_timestamps || !m_started_new_line)
+        return;
 
-    if (!m_log_timestamps) {
-        return str;
+    const int64_t nTimeMicros = GetTimeMicros();
+    std::string tmpStr = FormatISO8601DateTime(nTimeMicros / 1000000);
+    if (m_log_time_micros) {
+        tmpStr.pop_back(); // pop off the trailing Z
+        tmpStr += strprintf(".%06dZ", nTimeMicros % 1000000);
     }
-
-    if (m_started_new_line) {
-        int64_t nTimeMicros = GetTimeMicros();
-        strStamped = FormatISO8601DateTime(nTimeMicros / 1000000);
-        if (m_log_time_micros) {
-            strStamped.pop_back();
-            strStamped += strprintf(".%06dZ", nTimeMicros % 1000000);
-        }
-        int64_t mocktime = GetMockTime();
-        if (mocktime) {
-            strStamped +=
-                " (mocktime: " + FormatISO8601DateTime(mocktime) + ")";
-        }
-        strStamped += ' ' + str;
-    } else {
-        strStamped = str;
+    const int64_t mocktime = GetMockTime();
+    if (mocktime) {
+        tmpStr +=
+            " (mocktime: " + FormatISO8601DateTime(mocktime) + ")";
     }
-
-    return strStamped;
+    // reserve space in tmp buffer for appending: ' ' + str
+    tmpStr.reserve(tmpStr.size() + 1 + str.size());
+    tmpStr += ' ';
+    tmpStr += str; // finally, add the log line after having prepended the timestamp
+    str = std::move(tmpStr);  // move line buffer back onto out value
 }
 
-void BCLog::Logger::LogPrintStr(const std::string &str)
+void BCLog::Logger::LogPrintStr(std::string &&str)
 {
-    std::string str_prefixed = str;
+    if (!m_print_to_console && !m_print_to_file)
+        return; // Nothing to do!
 
     if (m_log_threadnames && m_started_new_line) {
-        str_prefixed.insert(0, "[" + util::ThreadGetInternalName() + "] ");
+        // below does: str = "[" + threadName + "] " + str; (but with less copying)
+        std::string tmp;
+        const auto &threadName = util::ThreadGetInternalName();
+        tmp.reserve(str.size() + threadName.size() + 3); // reserve space
+        tmp += '[';
+        tmp += threadName;
+        tmp += "] ";
+        tmp += str;
+        str = std::move(tmp); // move tmp back onto str for efficiency
     }
 
-    str_prefixed = LogTimestampStr(str_prefixed);
+    const bool hadNL = !str.empty() && str.back() == '\n';
 
-    m_started_new_line = !str.empty() && str[str.size()-1] == '\n';
+    PrependTimestampStr(str);
+
+    m_started_new_line = hadNL;
 
     if (m_print_to_console) {
         // print to console
-        fwrite(str_prefixed.data(), 1, str_prefixed.size(), stdout);
+        FileWriteStr(str, stdout);
         fflush(stdout);
     }
     if (m_print_to_file) {
@@ -196,7 +202,7 @@ void BCLog::Logger::LogPrintStr(const std::string &str)
 
         // Buffer if we haven't opened the log yet.
         if (m_fileout == nullptr) {
-            m_msgs_before_open.push_back(str_prefixed);
+            m_msgs_before_open.emplace_back(std::move(str));
         } else {
             // Reopen the log file, if requested.
             if (m_reopen_file) {
@@ -209,7 +215,7 @@ void BCLog::Logger::LogPrintStr(const std::string &str)
                     m_fileout = new_fileout;
                 }
             }
-            FileWriteStr(str_prefixed, m_fileout);
+            FileWriteStr(str, m_fileout);
         }
     }
 }
