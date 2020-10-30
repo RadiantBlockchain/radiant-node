@@ -976,6 +976,24 @@ void SetupServerArgs() {
                   CURRENCY_UNIT, FormatMoney(DEFAULT_MIN_RELAY_TX_FEE_PER_KB)),
         true, OptionsCategory::NODE_RELAY);
     gArgs.AddArg(
+        "-txbroadcastinterval=<ms>",
+        strprintf("Average time (in ms) between broadcasts of transaction inv "
+                  "messages. Higher values reduce outbound bandwidth "
+                  "dramatically by batching inv messages and reducing protocol "
+                  "overhead. Lower values will help transactions propagate "
+                  "faster. A value of 500 ms will begin to batch invs when tx "
+                  "throughput approaches 2 tx/sec. (default: %d)",
+                  DEFAULT_INV_BROADCAST_INTERVAL),
+        true, OptionsCategory::NODE_RELAY);
+    gArgs.AddArg(
+        "-txbroadcastrate=<tx/sec/mb>",
+        strprintf("Rate at which transaction invs can be broadcast, in terms "
+                  "of the maximum block size. For example, a value of 7 with a "
+                  "blocksize limit of 32 MB will result in a tx inv broadcast "
+                  "rate of at most 224 tx/sec. (default: %d)",
+                  DEFAULT_INV_BROADCAST_RATE),
+        true, OptionsCategory::NODE_RELAY);
+    gArgs.AddArg(
         "-whitelistrelay",
         strprintf("Accept relayed transactions received from whitelisted "
                   "peers even when not relaying transactions (default: %d)",
@@ -1852,6 +1870,18 @@ bool AppInitParameterInteraction(Config &config) {
         // High fee check is done afterward in WalletParameterInteraction()
         ::minRelayTxFee = CFeeRate(n);
     }
+
+    int64_t nTxBroadcastInterval = gArgs.GetArg("-txbroadcastinterval", DEFAULT_INV_BROADCAST_INTERVAL);
+    if (nTxBroadcastInterval < 0) {
+        return InitError(_("Transaction broadcast interval must not be configured with a negative value."));
+    }
+    config.SetInvBroadcastInterval(nTxBroadcastInterval);
+
+    int64_t nTxBroadcastRate = gArgs.GetArg("-txbroadcastrate", DEFAULT_INV_BROADCAST_RATE);
+    if (nTxBroadcastRate < 0) {
+        return InitError(_("Transaction broadcast rate must not be configured with a negative value."));
+    }
+    config.SetInvBroadcastRate(nTxBroadcastRate);
 
     // Sanity check argument for min fee for including tx in block
     // TODO: Harmonize which arguments need sanity checking and where that

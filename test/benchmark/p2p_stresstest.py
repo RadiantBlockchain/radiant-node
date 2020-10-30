@@ -63,6 +63,7 @@ class StressTest(BitcoinTestFramework):
         self.num_nodes = NUM_NODES
         self.extra_args = [["-blockmaxsize=32000000",
                             "-checkmempool=0",
+                            "-txbroadcastrate=999999",
                             "-debugexclude=net",
                             "-debugexclude=mempool"]] * self.num_nodes
 

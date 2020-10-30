@@ -52,8 +52,8 @@ static const int PING_INTERVAL = 2 * 60;
  * inactivity).
  */
 static const int TIMEOUT_INTERVAL = 20 * 60;
-/** Run the feeler connection loop once every 2 minutes or 120 seconds. **/
-static const int FEELER_INTERVAL = 120;
+/** Run the feeler connection loop once every 2 minutes or 120,000 ms. **/
+static const int FEELER_INTERVAL = 120000;
 /** The maximum number of entries in an 'inv' protocol message */
 static const unsigned int MAX_INV_SZ = 50000;
 static_assert(MAX_PROTOCOL_MESSAGE_LENGTH > MAX_INV_SZ * sizeof(CInv),
@@ -324,7 +324,7 @@ public:
      * Works assuming that a single interval is used.
      * Variable intervals will result in privacy decrease.
      */
-    int64_t PoissonNextSendInbound(int64_t now, int average_interval_seconds);
+    int64_t PoissonNextSendInbound(int64_t now, int average_interval_ms);
 
 private:
     struct ListenSocket {
@@ -901,7 +901,7 @@ public:
  * Return a timestamp in the future (in microseconds) for exponentially
  * distributed events.
  */
-int64_t PoissonNextSend(int64_t now, int average_interval_seconds);
+int64_t PoissonNextSend(int64_t now, int average_interval_ms);
 
 std::string getSubVersionEB(uint64_t MaxBlockSize);
 std::string userAgent(const Config &config);
