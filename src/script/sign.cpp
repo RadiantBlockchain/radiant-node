@@ -50,37 +50,6 @@ static bool GetCScript(const SigningProvider &provider,
     return false;
 }
 
-/*
-// This function is currently unused but has been left in place, yet
-// commented-out, to prevent compile-time warnings. It is anticipated to be
-// needed again in the future.
-static bool GetPubKey(const SigningProvider &provider, SignatureData &sigdata,
-                      const CKeyID &address, CPubKey &pubkey) {
-    // Look for pubkey in all partial sigs
-    const auto it = sigdata.signatures.find(address);
-    if (it != sigdata.signatures.end()) {
-        pubkey = it->second.first;
-        return true;
-    }
-    // Look for pubkey in pubkey list
-    const auto &pk_it = sigdata.misc_pubkeys.find(address);
-    if (pk_it != sigdata.misc_pubkeys.end()) {
-        pubkey = pk_it->second.first;
-        return true;
-    }
-    // Query the underlying provider
-    if (provider.GetPubKey(address, pubkey)) {
-        KeyOriginInfo info;
-        if (provider.GetKeyOrigin(address, info)) {
-            sigdata.misc_pubkeys.emplace(
-                address, std::make_pair(pubkey, std::move(info)));
-        }
-        return true;
-    }
-    return false;
-}
-*/
-
 static bool CreateSig(const BaseSignatureCreator &creator,
                       SignatureData &sigdata, const SigningProvider &provider,
                       std::vector<uint8_t> &sig_out, const CPubKey &pubkey,
