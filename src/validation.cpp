@@ -3995,6 +3995,21 @@ bool ProcessNewBlockHeaders(const Config &config,
     }
 
     NotifyHeaderTip();
+
+    // During initial header synch, log the header download progress
+    if (IsInitialBlockDownload()) {
+        if (ppindex && *ppindex) {
+            const CBlockIndex *const pindex = *ppindex;
+            const auto nTimeDiff = GetAdjustedTime() - pindex->GetBlockTime();
+            if (nTimeDiff > 0) {
+                const double chainHeightGuess = pindex->nHeight + nTimeDiff / double(config.GetChainParams()
+                                                                                     .GetConsensus().nPowTargetSpacing);
+                const double percentProg = pindex->nHeight / chainHeightGuess * 100.0;
+                LogPrintf("Synchronizing headers, height: %d, progress: %.1f%%\n", pindex->nHeight, percentProg);
+            }
+        }
+    }
+
     return true;
 }
 
