@@ -11,8 +11,8 @@ Bitcoin Core or other projects that publish translations under compatible
 licenses until a specific process is established.
 
 
-Translations in Bitcoin Core
-----------------------------
+Translations in Bitcoin Cash Node
+---------------------------------
 
 The Bitcoin-Core project has been designed to support multiple localisations. This makes adding new phrases, and completely new languages easily achievable. For managing all application translations, Bitcoin-Core makes use of the Transifex online translation management tool.
 
@@ -31,8 +31,8 @@ We use automated scripts to help extract translations in both Qt, and non-Qt sou
 
 To regenerate the `bitcoin_en.ts` file, run the following commands:
 ```sh
-cd <build-dir>/src/
-make translate
+cd <build-dir>
+ninja translate
 ```
 
 `contrib/bitcoin-qt.pro` takes care of generating `.qm` (binary compiled) files from `.ts` (source files) files. It’s mostly automated, and you shouldn’t need to worry about it.
