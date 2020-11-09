@@ -30,6 +30,7 @@
 
 class CBlockIndex;
 class Config;
+namespace mempool { class BatchUpdater; }
 
 extern RecursiveMutex cs_main;
 
@@ -493,6 +494,8 @@ private:
     void trackPackageRemoved(const CFeeRate &rate) EXCLUSIVE_LOCKS_REQUIRED(cs);
 
     bool m_is_loaded GUARDED_BY(cs){false};
+
+    std::unique_ptr<mempool::BatchUpdater> batchUpdater;
 
 public:
     // public only for testing
