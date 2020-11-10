@@ -2615,6 +2615,14 @@ bool AppInitMain(Config &config, RPCServer &rpcServer,
 
     // Step 12: start node
 
+    //// Ensure g_best_block (used by mining RPC) is initialized
+    {
+        LOCK2(cs_main, g_best_block_mutex);
+        if (auto *tip = ::ChainActive().Tip()) {
+            g_best_block = tip->GetBlockHash();
+        }
+    }
+
     int chain_active_height;
 
     //// debug print
