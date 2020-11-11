@@ -95,13 +95,15 @@ static UniValue getnetworkhashps(const Config &config,
                                  const JSONRPCRequest &request) {
     if (request.fHelp || request.params.size() > 2) {
         throw std::runtime_error(
-            "getnetworkhashps ( nblocks height )\n"
-            "\nReturns the estimated network hashes per second based on the "
-            "last n blocks.\n"
-            "Pass in [blocks] to override # of blocks, -1 specifies since last "
-            "difficulty change.\n"
-            "Pass in [height] to estimate the network speed at the time when a "
-            "certain block was found.\n"
+            RPCHelpMan{"getnetworkhashps",
+                "\nReturns the estimated network hashes per second based on the last n blocks.\n"
+                "Pass in [nblocks] to override # of blocks, -1 specifies since last difficulty change.\n"
+                "Pass in [height] to estimate the network speed at the time when a certain block was found.\n",
+                {
+                    {"nblocks", RPCArg::Type::NUM, true},
+                    {"height", RPCArg::Type::NUM, true},
+                }}
+                .ToString() +
             "\nArguments:\n"
             "1. nblocks     (numeric, optional, default=120) The number of "
             "blocks, or -1 for blocks since last difficulty change.\n"
@@ -194,9 +196,14 @@ static UniValue generatetoaddress(const Config &config,
     if (request.fHelp || request.params.size() < 2 ||
         request.params.size() > 3) {
         throw std::runtime_error(
-            "generatetoaddress nblocks address (maxtries)\n"
-            "\nMine blocks immediately to a specified address (before the RPC "
-            "call returns)\n"
+            RPCHelpMan{"generatetoaddress",
+                "\nMine blocks immediately to a specified address (before the RPC call returns)\n",
+                {
+                    {"nblocks", RPCArg::Type::NUM, false},
+                    {"address", RPCArg::Type::STR, false},
+                    {"maxtries", RPCArg::Type::NUM, true},
+                }}
+                .ToString() +
             "\nArguments:\n"
             "1. nblocks      (numeric, required) How many blocks are generated "
             "immediately.\n"
@@ -235,8 +242,9 @@ static UniValue getmininginfo(const Config &config,
                               const JSONRPCRequest &request) {
     if (request.fHelp || request.params.size() != 0) {
         throw std::runtime_error(
-            "getmininginfo\n"
-            "\nReturns a json object containing mining-related information."
+            RPCHelpMan{"getmininginfo",
+                "\nReturns a json object containing mining-related information.", {}}
+                .ToString() +
             "\nResult:\n"
             "{\n"
             "  \"blocks\": nnn,             (numeric) The current block\n"
@@ -279,9 +287,14 @@ static UniValue prioritisetransaction(const Config &config,
                                       const JSONRPCRequest &request) {
     if (request.fHelp || request.params.size() != 3) {
         throw std::runtime_error(
-            "prioritisetransaction \"txid\" dummy fee_delta\n"
-            "Accepts the transaction into mined blocks at a higher (or lower) "
-            "priority\n"
+            RPCHelpMan{"prioritisetransaction",
+                "Accepts the transaction into mined blocks at a higher (or lower) priority\n",
+                {
+                    {"txid", RPCArg::Type::STR, false},
+                    {"dummy", RPCArg::Type::NUM, false},
+                    {"fee_delta", RPCArg::Type::NUM, false},
+                }}
+                .ToString() +
             "\nArguments:\n"
             "1. \"txid\"       (string, required) The transaction id.\n"
             "2. dummy          (numeric, optional) API-Compatibility for "
