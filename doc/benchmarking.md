@@ -1,5 +1,4 @@
-Benchmarking
-============
+# Benchmarking
 
 Bitcoin Cash Node has an internal benchmarking framework, with benchmarks
 for cryptographic algorithms (e.g. SHA1, SHA256, SHA512, RIPEMD160),
@@ -45,6 +44,41 @@ Sleep100ms, 5, 10, 5.00483, 0.100091, 0.100108, 0.100095
 Trig, 5, 12000000, 2.17942, 3.60625e-08, 3.64305e-08, 3.63656e-08
 
 ```
+
+## LFS dependency
+
+The benchmark framework uses Git LFS (Large File Storage) to store benchmark
+test samples.
+
+Before cloning the project, you should install git-lfs.
+
+- On Debian/Ubuntu: `sudo apt install git-lfs`
+- On OS X: `brew install git-lfs` or `port install git-lfs`
+
+Then run `git lfs install` to make Git aware that Git LFS is now available on
+the system.
+
+### Troubleshooting LFS
+
+If you did not install git-lfs before cloning the Bitcoin Cash Node project,
+then you will run into compilation issues when building the benchmark tools.
+
+To fix this, run the following git commands in the project directory:
+```
+git lfs install
+git lfs pull
+```
+
+Example of LFS compilation issue:
+```
+.. -c ../src/bench/data/block413567.cpp
+../src/bench/data/block413567.cpp:1:1: error: unknown type name 'version'
+version https://git-lfs.github.com/spec/v1
+^
+..
+```
+
+## Further iprovements
 
 More benchmarks are needed for, in no particular order:
 
