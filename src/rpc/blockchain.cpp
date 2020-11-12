@@ -918,8 +918,11 @@ static UniValue getblockheader(const Config &config,
 static CBlock GetBlockChecked(const Config &config,
                               const CBlockIndex *pblockindex) {
     CBlock block;
-    if (IsBlockPruned(pblockindex)) {
-        throw JSONRPCError(RPC_MISC_ERROR, "Block not available (pruned data)");
+    {
+        LOCK(cs_main);
+        if (IsBlockPruned(pblockindex)) {
+            throw JSONRPCError(RPC_MISC_ERROR, "Block not available (pruned data)");
+        }
     }
 
     if (!ReadBlockFromDisk(block, pblockindex,
@@ -2117,37 +2120,41 @@ static UniValue getblockstats(const Config &config,
                            "1000 '[\"minfeerate\",\"avgfeerate\"]'"));
     }
 
-    LOCK(cs_main);
+    CBlockIndex *pindex{};
 
-    CBlockIndex *pindex;
-    if (request.params[0].isNum()) {
-        const int height = request.params[0].get_int();
-        const int current_tip = ::ChainActive().Height();
-        if (height < 0) {
-            throw JSONRPCError(
-                RPC_INVALID_PARAMETER,
-                strprintf("Target block height %d is negative", height));
-        }
-        if (height > current_tip) {
-            throw JSONRPCError(
-                RPC_INVALID_PARAMETER,
-                strprintf("Target block height %d after current tip %d", height,
-                          current_tip));
-        }
+    {
+        LOCK(cs_main);
 
-        pindex = ::ChainActive()[height];
-    } else {
-        const BlockHash hash(ParseHashV(request.params[0], "hash_or_height"));
-        pindex = LookupBlockIndex(hash);
-        if (!pindex) {
-            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Block not found");
-        }
-        if (!::ChainActive().Contains(pindex)) {
-            throw JSONRPCError(RPC_INVALID_PARAMETER,
-                               strprintf("Block is not in chain %s",
-                                         Params().NetworkIDString()));
+        if (request.params[0].isNum()) {
+            const int height = request.params[0].get_int();
+            const int current_tip = ::ChainActive().Height();
+            if (height < 0) {
+                throw JSONRPCError(
+                    RPC_INVALID_PARAMETER,
+                    strprintf("Target block height %d is negative", height));
+            }
+            if (height > current_tip) {
+                throw JSONRPCError(
+                    RPC_INVALID_PARAMETER,
+                    strprintf("Target block height %d after current tip %d", height,
+                              current_tip));
+            }
+
+            pindex = ::ChainActive()[height];
+        } else {
+            const BlockHash hash(ParseHashV(request.params[0], "hash_or_height"));
+            pindex = LookupBlockIndex(hash);
+            if (!pindex) {
+                throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Block not found");
+            }
+            if (!::ChainActive().Contains(pindex)) {
+                throw JSONRPCError(RPC_INVALID_PARAMETER,
+                                   strprintf("Block is not in chain %s",
+                                             Params().NetworkIDString()));
+            }
         }
     }
+    // Note: all of the below code has been verified to not require cs_main
 
     assert(pindex != nullptr);
 
@@ -2191,7 +2198,31 @@ static UniValue getblockstats(const Config &config,
     std::vector<std::pair<Amount, int64_t>> feerate_array;
     std::vector<int64_t> txsize_array;
 
-    const Consensus::Params &params = config.GetChainParams().GetConsensus();
+    // Reserve for the above vectors only if we use them
+    if (do_mediantxsize) txsize_array.reserve(block.vtx.size());
+    if (do_medianfee) fee_array.reserve(block.vtx.size());
+    if (do_feerate_percentiles) feerate_array.reserve(block.vtx.size());
+
+    // We cache the input txs as we see them as a performance optimization.
+    // This optimizes the situation where the loop_inputs loop below may read
+    // the same tx multiple times when it is fetching input txs.
+    //
+    // We trade memory for speed here -- but even on 250 MB ScaleNet blocks,
+    // this didn't use more than ~300MB peak memory including heap holes, in my
+    // testing (Darwin, clang-10). Tested on ScaleNet blocks: 16029 16026 16037
+    // 16130 16179 15813 16124. Note that for embedded/RPi on very limited
+    // memory and no swap, this may just throw bad_alloc and the client will
+    // receive a JSON-RPC error response.
+    //
+    // Given that this code has been tuned to allow for large blocks, this is
+    // an acceptable tradeoff. Note that on RPi *without* this optimization,
+    // for a ~250 MB block with 300k inputs, this operation would take
+    // *minutes* anyway! (As compared to ~10 seconds *with* this optimization
+    // and enough memory.)
+    //
+    // So we can conclude that the memory-for-speed tradeoff is acceptable
+    // here, hence this cache.
+    std::map<TxId, CTransactionRef> cachedInputTxs;
 
     for (const auto &tx : block.vtx) {
         outputs += tx->vout.size();
@@ -2230,19 +2261,30 @@ static UniValue getblockstats(const Config &config,
                                    "One or more of the selected stats requires "
                                    "-txindex enabled");
             }
-
             Amount tx_total_in = Amount::zero();
             for (const CTxIn &in : tx->vin) {
-                CTransactionRef tx_in;
-                BlockHash hashBlock;
-                if (!GetTransaction(in.prevout.GetTxId(), tx_in, params,
-                                    hashBlock, false)) {
-                    throw JSONRPCError(RPC_INTERNAL_ERROR,
-                                       std::string("Unexpected internal error "
-                                                   "(tx index seems corrupt)"));
+                const auto &txid = in.prevout.GetTxId();
+                auto it = cachedInputTxs.find(txid); // see if our temp cache has the input tx
+                if (it == cachedInputTxs.end()) {
+                    // cache miss, use the txindex now to look up the input
+                    BlockHash hashBlock;
+                    CTransactionRef txRef;
+                    // NB: g_txindex->FindTx() is always thread-safe and needs no locks.
+                    if (!g_txindex->FindTx(txid, hashBlock, txRef)) {
+                        // Note that technically this exception can be thrown even if it's not
+                        // corrupt but the index hasn't caught up to this block yet (a freshly
+                        // spun-up node after IBD may be in that situation). However, since
+                        // legacy code calling into RPC may depend on this this exact error
+                        // string, we will leave this misleading string here untouched.
+                        throw JSONRPCError(RPC_INTERNAL_ERROR,
+                                            std::string("Unexpected internal error "
+                                                        "(tx index seems corrupt)"));
+                    }
+                    // add to cache, assign `it` so it has a valid value for below code
+                    it = cachedInputTxs.emplace(txid, std::move(txRef)).first;
                 }
-
-                CTxOut prevoutput = tx_in->vout[in.prevout.GetN()];
+                const auto &tx_in = it->second;
+                const auto &prevoutput = tx_in->vout[in.prevout.GetN()];
 
                 tx_total_in += prevoutput.nValue;
                 utxo_size_inc -=
@@ -2272,65 +2314,68 @@ static UniValue getblockstats(const Config &config,
     CalculatePercentilesBySize(feerate_percentiles, feerate_array, total_size);
 
     UniValue feerates_res(UniValue::VARR);
+    feerates_res.reserve(NUM_GETBLOCKSTATS_PERCENTILES);
     for (int64_t i = 0; i < NUM_GETBLOCKSTATS_PERCENTILES; i++) {
         feerates_res.push_back(ValueFromAmount(feerate_percentiles[i]));
     }
 
-    UniValue ret_all(UniValue::VOBJ);
-    ret_all.pushKV("avgfee",
+    UniValue::Object ret;
+    ret.reserve(25); // not critical but be sure to update this reserve size if adding/removing entries below.
+    ret.emplace_back("avgfee",
                    ValueFromAmount((block.vtx.size() > 1)
                                        ? totalfee / int((block.vtx.size() - 1))
                                        : Amount::zero()));
-    ret_all.pushKV("avgfeerate",
+    ret.emplace_back("avgfeerate",
                    ValueFromAmount((total_size > 0) ? totalfee / total_size
                                                     : Amount::zero()));
-    ret_all.pushKV("avgtxsize", (block.vtx.size() > 1)
+    ret.emplace_back("avgtxsize", (block.vtx.size() > 1)
                                     ? total_size / (block.vtx.size() - 1)
                                     : 0);
-    ret_all.pushKV("blockhash", pindex->GetBlockHash().GetHex());
-    ret_all.pushKV("feerate_percentiles", feerates_res);
-    ret_all.pushKV("height", (int64_t)pindex->nHeight);
-    ret_all.pushKV("ins", inputs);
-    ret_all.pushKV("maxfee", ValueFromAmount(maxfee));
-    ret_all.pushKV("maxfeerate", ValueFromAmount(maxfeerate));
-    ret_all.pushKV("maxtxsize", maxtxsize);
-    ret_all.pushKV("medianfee",
+    ret.emplace_back("blockhash", pindex->GetBlockHash().GetHex());
+    ret.emplace_back("feerate_percentiles", std::move(feerates_res));
+    ret.emplace_back("height", (int64_t)pindex->nHeight);
+    ret.emplace_back("ins", inputs);
+    ret.emplace_back("maxfee", ValueFromAmount(maxfee));
+    ret.emplace_back("maxfeerate", ValueFromAmount(maxfeerate));
+    ret.emplace_back("maxtxsize", maxtxsize);
+    ret.emplace_back("medianfee",
                    ValueFromAmount(CalculateTruncatedMedian(fee_array)));
-    ret_all.pushKV("mediantime", pindex->GetMedianTimePast());
-    ret_all.pushKV("mediantxsize", CalculateTruncatedMedian(txsize_array));
-    ret_all.pushKV(
+    ret.emplace_back("mediantime", pindex->GetMedianTimePast());
+    ret.emplace_back("mediantxsize", CalculateTruncatedMedian(txsize_array));
+    ret.emplace_back(
         "minfee",
         ValueFromAmount((minfee == MAX_MONEY) ? Amount::zero() : minfee));
-    ret_all.pushKV("minfeerate",
+    ret.emplace_back("minfeerate",
                    ValueFromAmount((minfeerate == MAX_MONEY) ? Amount::zero()
                                                              : minfeerate));
-    ret_all.pushKV("mintxsize", mintxsize == blockMaxSize ? 0 : mintxsize);
-    ret_all.pushKV("outs", outputs);
-    ret_all.pushKV("subsidy", ValueFromAmount(GetBlockSubsidy(
+    ret.emplace_back("mintxsize", mintxsize == blockMaxSize ? 0 : mintxsize);
+    ret.emplace_back("outs", outputs);
+    ret.emplace_back("subsidy", ValueFromAmount(GetBlockSubsidy(
                                   pindex->nHeight, Params().GetConsensus())));
-    ret_all.pushKV("time", pindex->GetBlockTime());
-    ret_all.pushKV("total_out", ValueFromAmount(total_out));
-    ret_all.pushKV("total_size", total_size);
-    ret_all.pushKV("totalfee", ValueFromAmount(totalfee));
-    ret_all.pushKV("txs", (int64_t)block.vtx.size());
-    ret_all.pushKV("utxo_increase", outputs - inputs);
-    ret_all.pushKV("utxo_size_inc", utxo_size_inc);
+    ret.emplace_back("time", pindex->GetBlockTime());
+    ret.emplace_back("total_out", ValueFromAmount(total_out));
+    ret.emplace_back("total_size", total_size);
+    ret.emplace_back("totalfee", ValueFromAmount(totalfee));
+    ret.emplace_back("txs", (int64_t)block.vtx.size());
+    ret.emplace_back("utxo_increase", outputs - inputs);
+    ret.emplace_back("utxo_size_inc", utxo_size_inc);
 
-    if (do_all) {
-        return ret_all;
-    }
-
-    UniValue ret(UniValue::VOBJ);
-    for (const std::string &stat : stats) {
-        const UniValue &value = ret_all[stat];
-        if (value.isNull()) {
-            throw JSONRPCError(
-                RPC_INVALID_PARAMETER,
-                strprintf("Invalid selected statistic %s", stat));
+    if (!do_all) {
+        // in this branch, we must return only the keys the client asked for
+        UniValue::Object fullData(std::move(ret));
+        ret.clear();
+        ret.reserve(stats.size());
+        for (const std::string &stat : stats) {
+            UniValue *value = fullData.locate(stat);
+            if (!value || value->isNull()) {
+                throw JSONRPCError(
+                    RPC_INVALID_PARAMETER,
+                    strprintf("Invalid selected statistic %s", stat));
+            }
+            ret.emplace_back(stat, std::move(*value));
         }
-        ret.pushKV(stat, value);
     }
-    return ret;
+    return ret; // compiler will invoke Univalue(Univalue::Object &&) move-constructor.
 }
 
 static UniValue savemempool(const Config &config,
