@@ -915,16 +915,16 @@ static UniValue getblockheader(const Config &config,
     return ret;
 }
 
-static CBlock GetBlockChecked(const Config &config,
-                              const CBlockIndex *pblockindex) {
-    CBlock block;
-    {
-        LOCK(cs_main);
-        if (IsBlockPruned(pblockindex)) {
-            throw JSONRPCError(RPC_MISC_ERROR, "Block not available (pruned data)");
-        }
+/// Requires cs_main
+static void ThrowIfPrunedBlock(const CBlockIndex *pblockindex) EXCLUSIVE_LOCKS_REQUIRED(cs_main) {
+    if (IsBlockPruned(pblockindex)) {
+        throw JSONRPCError(RPC_MISC_ERROR, "Block not available (pruned data)");
     }
+}
 
+/// Lock-free -- will throw if block not found or was pruned, etc. Guaranteed to return a valid block or fail.
+static CBlock ReadBlockChecked(const Config &config, const CBlockIndex *pblockindex) {
+    CBlock block;
     if (!ReadBlockFromDisk(block, pblockindex,
                            config.GetChainParams().GetConsensus())) {
         // Block not found on disk. This could be because we have the block
@@ -1007,8 +1007,6 @@ static UniValue getblock(const Config &config, const JSONRPCRequest &request) {
                                        "214adbda81d7e2a3dd146f6ed09\""));
     }
 
-    LOCK(cs_main);
-
     BlockHash hash(ParseHashV(request.params[0], "blockhash"));
 
     int verbosity = 1;
@@ -1020,12 +1018,17 @@ static UniValue getblock(const Config &config, const JSONRPCRequest &request) {
         }
     }
 
-    const CBlockIndex *pblockindex = LookupBlockIndex(hash);
-    if (!pblockindex) {
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Block not found");
+    const CBlockIndex *pblockindex{};
+    {
+        LOCK(cs_main);
+        pblockindex = LookupBlockIndex(hash);
+        if (!pblockindex) {
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Block not found");
+        }
+        ThrowIfPrunedBlock(pblockindex);
     }
 
-    const CBlock block = GetBlockChecked(config, pblockindex);
+    const CBlock block = ReadBlockChecked(config, pblockindex);
 
     if (verbosity <= 0) {
         CDataStream ssBlock(SER_NETWORK,
@@ -2153,10 +2156,11 @@ static UniValue getblockstats(const Config &config,
                                              Params().NetworkIDString()));
             }
         }
+        assert(pindex != nullptr);
+        ThrowIfPrunedBlock(pindex);
     }
     // Note: all of the below code has been verified to not require cs_main
 
-    assert(pindex != nullptr);
 
     std::set<std::string> stats;
     if (!request.params[1].isNull()) {
@@ -2165,7 +2169,7 @@ static UniValue getblockstats(const Config &config,
         }
     }
 
-    const CBlock block = GetBlockChecked(config, pindex);
+    const CBlock block = ReadBlockChecked(config, pindex);
 
     // Calculate everything if nothing selected (default)
     const bool do_all = stats.size() == 0;
