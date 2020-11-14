@@ -523,7 +523,7 @@ public:
         vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_testnet4, pnSeed6_testnet4 + ARRAYLEN(pnSeed6_testnet4));
 
         fDefaultConsistencyChecks = false;
-        fRequireStandard = false;
+        fRequireStandard = true;
         m_is_test_chain = true;
 
         checkpointData = {
