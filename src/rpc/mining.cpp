@@ -1117,9 +1117,10 @@ bool GetTxsFromCache(const JobId &jobId, CBlock &block) {
 }
 
 void LoadTxsFromFile(const JobId &jobId, CBlock &block) {
-    static const std::string errNoData{"job_id data not available"},
-                             errDataEmpty{"job_id data is empty"},
-                             errDataBad{"job_id data is invalid"};
+    const char *const errNoData = "job_id data not available";
+    const char *const errDataEmpty = "job_id data is empty";
+    const char *const errDataBad = "job_id data is invalid";
+
     const auto jobIdStr = jobId.GetHex();
     fs::path filename = GetJobDataDir() / jobIdStr;
     if (!fs::exists(filename)) {

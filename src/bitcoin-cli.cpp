@@ -288,19 +288,16 @@ public:
         if (!args.empty()) {
             throw std::runtime_error("-getinfo takes no arguments");
         }
-        UniValue result(UniValue::VARR);
-        result.push_back(
-            JSONRPCRequestObj("getnetworkinfo", NullUniValue, ID_NETWORKINFO));
-        result.push_back(JSONRPCRequestObj("getblockchaininfo", NullUniValue,
-                                           ID_BLOCKCHAININFO));
-        result.push_back(
-            JSONRPCRequestObj("getwalletinfo", NullUniValue, ID_WALLETINFO));
+        UniValue::Array result;
+        result.emplace_back(JSONRPCRequestObj("getnetworkinfo", UniValue(), ID_NETWORKINFO));
+        result.emplace_back(JSONRPCRequestObj("getblockchaininfo", UniValue(), ID_BLOCKCHAININFO));
+        result.emplace_back(JSONRPCRequestObj("getwalletinfo", UniValue(), ID_WALLETINFO));
         return result;
     }
 
     /** Collect values from the batch and form a simulated `getinfo` reply. */
     UniValue ProcessReply(const UniValue &batch_in) override {
-        UniValue result(UniValue::VOBJ);
+        UniValue::Object result;
         std::vector<UniValue> batch = JSONRPCProcessBatchReply(batch_in, 3);
         // Errors in getnetworkinfo() and getblockchaininfo() are fatal, pass
         // them on getwalletinfo() is allowed to fail in case there is no
@@ -311,45 +308,31 @@ public:
         if (!batch[ID_BLOCKCHAININFO]["error"].isNull()) {
             return std::move(batch[ID_BLOCKCHAININFO]);
         }
-        result.pushKV("version", batch[ID_NETWORKINFO]["result"]["version"]);
-        result.pushKV("protocolversion",
-                      batch[ID_NETWORKINFO]["result"]["protocolversion"]);
+        result.emplace_back("version", batch[ID_NETWORKINFO]["result"]["version"]);
+        result.emplace_back("protocolversion", batch[ID_NETWORKINFO]["result"]["protocolversion"]);
         if (!batch[ID_WALLETINFO].isNull()) {
-            result.pushKV("walletversion",
-                          batch[ID_WALLETINFO]["result"]["walletversion"]);
-            result.pushKV("balance", batch[ID_WALLETINFO]["result"]["balance"]);
+            result.emplace_back("walletversion", batch[ID_WALLETINFO]["result"]["walletversion"]);
+            result.emplace_back("balance", batch[ID_WALLETINFO]["result"]["balance"]);
         }
-        result.pushKV("blocks", batch[ID_BLOCKCHAININFO]["result"]["blocks"]);
-        result.pushKV("timeoffset",
-                      batch[ID_NETWORKINFO]["result"]["timeoffset"]);
-        result.pushKV("connections",
-                      batch[ID_NETWORKINFO]["result"]["connections"]);
-        result.pushKV("proxy",
-                      batch[ID_NETWORKINFO]["result"]["networks"][0]["proxy"]);
-        result.pushKV("difficulty",
-                      batch[ID_BLOCKCHAININFO]["result"]["difficulty"]);
-        result.pushKV(
-            "testnet",
-            UniValue(batch[ID_BLOCKCHAININFO]["result"]["chain"].get_str() ==
-                     "test"));
+        result.emplace_back("blocks", batch[ID_BLOCKCHAININFO]["result"]["blocks"]);
+        result.emplace_back("timeoffset", batch[ID_NETWORKINFO]["result"]["timeoffset"]);
+        result.emplace_back("connections", batch[ID_NETWORKINFO]["result"]["connections"]);
+        result.emplace_back("proxy", batch[ID_NETWORKINFO]["result"]["networks"][0]["proxy"]);
+        result.emplace_back("difficulty", batch[ID_BLOCKCHAININFO]["result"]["difficulty"]);
+        result.emplace_back("testnet", batch[ID_BLOCKCHAININFO]["result"]["chain"].get_str() == "test");
         if (!batch[ID_WALLETINFO].isNull()) {
-            result.pushKV("walletversion",
-                          batch[ID_WALLETINFO]["result"]["walletversion"]);
-            result.pushKV("balance", batch[ID_WALLETINFO]["result"]["balance"]);
-            result.pushKV("keypoololdest",
-                          batch[ID_WALLETINFO]["result"]["keypoololdest"]);
-            result.pushKV("keypoolsize",
-                          batch[ID_WALLETINFO]["result"]["keypoolsize"]);
+            result.emplace_back("walletversion", batch[ID_WALLETINFO]["result"]["walletversion"]);
+            result.emplace_back("balance", batch[ID_WALLETINFO]["result"]["balance"]);
+            result.emplace_back("keypoololdest", batch[ID_WALLETINFO]["result"]["keypoololdest"]);
+            result.emplace_back("keypoolsize", batch[ID_WALLETINFO]["result"]["keypoolsize"]);
             if (!batch[ID_WALLETINFO]["result"]["unlocked_until"].isNull()) {
-                result.pushKV("unlocked_until",
-                              batch[ID_WALLETINFO]["result"]["unlocked_until"]);
+                result.emplace_back("unlocked_until", batch[ID_WALLETINFO]["result"]["unlocked_until"]);
             }
-            result.pushKV("paytxfee",
-                          batch[ID_WALLETINFO]["result"]["paytxfee"]);
+            result.emplace_back("paytxfee", batch[ID_WALLETINFO]["result"]["paytxfee"]);
         }
-        result.pushKV("relayfee", batch[ID_NETWORKINFO]["result"]["relayfee"]);
-        result.pushKV("warnings", batch[ID_NETWORKINFO]["result"]["warnings"]);
-        return JSONRPCReplyObj(result, NullUniValue, 1);
+        result.emplace_back("relayfee", batch[ID_NETWORKINFO]["result"]["relayfee"]);
+        result.emplace_back("warnings", batch[ID_NETWORKINFO]["result"]["warnings"]);
+        return JSONRPCReplyObj(std::move(result), UniValue(), 1);
     }
 };
 
@@ -358,13 +341,10 @@ class DefaultRequestHandler : public BaseRequestHandler {
 public:
     UniValue PrepareRequest(const std::string &method,
                             const std::vector<std::string> &args) override {
-        UniValue params;
         if (gArgs.GetBoolArg("-named", DEFAULT_NAMED)) {
-            params = RPCConvertNamedValues(method, args);
-        } else {
-            params = RPCConvertValues(method, args);
+            return JSONRPCRequestObj(std::string(method), RPCConvertNamedValues(method, args), 1);
         }
-        return JSONRPCRequestObj(method, params, 1);
+        return JSONRPCRequestObj(std::string(method), RPCConvertValues(method, args), 1);
     }
 
     UniValue ProcessReply(const UniValue &reply) override {

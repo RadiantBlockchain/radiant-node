@@ -10,36 +10,42 @@
 
 #include <univalue.h>
 
-void JSONRPCRequest::parse(const UniValue &valRequest) {
+void JSONRPCRequest::parse(UniValue&& valRequest) {
     // Parse request
     if (!valRequest.isObject()) {
         throw JSONRPCError(RPC_INVALID_REQUEST, "Invalid Request object");
     }
-    const UniValue::Object &request = valRequest.get_obj();
+    UniValue::Object& request = valRequest.get_obj();
 
     // Parse id now so errors from here on will have the id
-    id = request["id"];
+    if (auto idFound = request.locate("id")) {
+        id = std::move(*idFound);
+    } else {
+        id.setNull();
+    }
 
     // Parse method
-    const UniValue& valMethod = request["method"];
-    if (valMethod.isNull()) {
+    auto methodFound = request.locate("method");
+    if (!methodFound) {
         throw JSONRPCError(RPC_INVALID_REQUEST, "Missing method");
     }
-    if (!valMethod.isStr()) {
+    if (!methodFound->isStr()) {
         throw JSONRPCError(RPC_INVALID_REQUEST, "Method must be a string");
     }
-    strMethod = valMethod.get_str();
+    strMethod = std::move(methodFound->get_str());
     LogPrint(BCLog::RPC, "ThreadRPCServer method=%s\n",
              SanitizeString(strMethod));
 
     // Parse params
-    const UniValue& valParams = request["params"];
-    if (valParams.isArray() || valParams.isObject()) {
-        params = valParams;
-    } else if (valParams.isNull()) {
-        params.setArray();
+    if (auto paramsFound = request.locate("params")) {
+        if (paramsFound->isArray() || paramsFound->isObject()) {
+            params = std::move(*paramsFound);
+        } else if (paramsFound->isNull()) {
+            params.setArray();
+        } else {
+            throw JSONRPCError(RPC_INVALID_REQUEST, "Params must be an array or object");
+        }
     } else {
-        throw JSONRPCError(RPC_INVALID_REQUEST,
-                           "Params must be an array or object");
+        params.setArray();
     }
 }

@@ -742,10 +742,24 @@ public:
     // value is of unexpected type
 
     bool get_bool() const;
-    const std::string& get_str() const;
     int get_int() const;
     int64_t get_int64() const;
     double get_real() const;
+
+    /**
+     * VSTR: Returns a std::string reference to this value.
+     * Other types: Throws std::runtime_error.
+     *
+     * Destroying the string (e.g. destroying the UniValue wrapper or
+     * assigning a different type to it) invalidates the returned reference.
+     *
+     * Complexity: constant.
+     *
+     * Compatible with the upstream UniValue API.
+     * Non-const overload is a Bitcoin Cash Node extension.
+     */
+    const std::string& get_str() const;
+    std::string& get_str();
 
     /**
      * VOBJ: Returns a UniValue::Object reference to this value.

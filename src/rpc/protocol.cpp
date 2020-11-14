@@ -1,5 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -24,37 +25,37 @@
  * 1.2 spec: http://jsonrpc.org/historical/json-rpc-over-http.html
  */
 
-UniValue JSONRPCRequestObj(const std::string &strMethod, const UniValue &params,
-                           const UniValue &id) {
-    UniValue request(UniValue::VOBJ);
-    request.pushKV("method", strMethod);
-    request.pushKV("params", params);
-    request.pushKV("id", id);
+UniValue::Object JSONRPCRequestObj(std::string&& strMethod, UniValue&& params, UniValue&& id) {
+    UniValue::Object request;
+    request.reserve(3);
+    request.emplace_back("method", std::move(strMethod));
+    request.emplace_back("params", std::move(params));
+    request.emplace_back("id", std::move(id));
     return request;
 }
 
-UniValue JSONRPCReplyObj(const UniValue &result, const UniValue &error,
-                         const UniValue &id) {
-    UniValue reply(UniValue::VOBJ);
+UniValue::Object JSONRPCReplyObj(UniValue&& result, UniValue&& error, UniValue&& id) {
+    UniValue::Object reply;
+    reply.reserve(3);
     if (!error.isNull()) {
-        reply.pushKV("result", NullUniValue);
+        reply.emplace_back("result", UniValue::VNULL);
     } else {
-        reply.pushKV("result", result);
+        reply.emplace_back("result", std::move(result));
     }
-    reply.pushKV("error", error);
-    reply.pushKV("id", id);
+    reply.emplace_back("error", std::move(error));
+    reply.emplace_back("id", std::move(id));
     return reply;
 }
 
-std::string JSONRPCReply(const UniValue &result, const UniValue &error,
-                         const UniValue &id) {
-    return UniValue::stringify(JSONRPCReplyObj(result, error, id)) + '\n';
+std::string JSONRPCReply(UniValue&& result, UniValue&& error, UniValue&& id) {
+    return UniValue::stringify(JSONRPCReplyObj(std::move(result), std::move(error), std::move(id))) + '\n';
 }
 
-UniValue JSONRPCError(int code, const std::string &message) {
-    UniValue error(UniValue::VOBJ);
-    error.pushKV("code", code);
-    error.pushKV("message", message);
+UniValue::Object JSONRPCError::toObj() && {
+    UniValue::Object error;
+    error.reserve(2);
+    error.emplace_back("code", code);
+    error.emplace_back("message", std::move(message));
     return error;
 }
 

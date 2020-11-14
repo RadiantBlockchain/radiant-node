@@ -37,8 +37,8 @@ UniValue CallRPC(const std::string &args)
     BOOST_CHECK(tableRPC[strMethod]);
     try {
         return tableRPC[strMethod]->call(config, request);
-    } catch (const UniValue &objError) {
-        throw std::runtime_error(objError["message"].get_str());
+    } catch (const JSONRPCError &error) {
+        throw std::runtime_error(error.message);
     }
 }
 
@@ -288,8 +288,7 @@ static UniValue ValueFromString(const std::string &str) {
 }
 
 BOOST_AUTO_TEST_CASE(rpc_parse_monetary_values) {
-    BOOST_CHECK_THROW(AmountFromValue(ValueFromString("-0.00000001")),
-                      UniValue);
+    BOOST_CHECK_THROW(AmountFromValue(ValueFromString("-0.00000001")), JSONRPCError);
     BOOST_CHECK_EQUAL(AmountFromValue(ValueFromString("0")), Amount::zero());
     BOOST_CHECK_EQUAL(AmountFromValue(ValueFromString("0.00000000")),
                       Amount::zero());
@@ -332,28 +331,26 @@ BOOST_AUTO_TEST_CASE(rpc_parse_monetary_values) {
         COIN);
 
     // should fail
-    BOOST_CHECK_THROW(AmountFromValue(ValueFromString("1e-9")), UniValue);
+    BOOST_CHECK_THROW(AmountFromValue(ValueFromString("1e-9")), JSONRPCError);
     // should fail
-    BOOST_CHECK_THROW(AmountFromValue(ValueFromString("0.000000019")),
-                      UniValue);
+    BOOST_CHECK_THROW(AmountFromValue(ValueFromString("0.000000019")), JSONRPCError);
     // should pass, cut trailing 0
     BOOST_CHECK_EQUAL(AmountFromValue(ValueFromString("0.00000001000000")),
                       SATOSHI);
     // should fail
-    BOOST_CHECK_THROW(AmountFromValue(ValueFromString("19e-9")), UniValue);
+    BOOST_CHECK_THROW(AmountFromValue(ValueFromString("19e-9")), JSONRPCError);
     // should pass, leading 0 is present
     BOOST_CHECK_EQUAL(AmountFromValue(ValueFromString("0.19e-6")),
                       19 * SATOSHI);
 
     // overflow error
-    BOOST_CHECK_THROW(AmountFromValue(ValueFromString("92233720368.54775808")),
-                      UniValue);
+    BOOST_CHECK_THROW(AmountFromValue(ValueFromString("92233720368.54775808")), JSONRPCError);
     // overflow error
-    BOOST_CHECK_THROW(AmountFromValue(ValueFromString("1e+11")), UniValue);
+    BOOST_CHECK_THROW(AmountFromValue(ValueFromString("1e+11")), JSONRPCError);
     // overflow error signless
-    BOOST_CHECK_THROW(AmountFromValue(ValueFromString("1e11")), UniValue);
+    BOOST_CHECK_THROW(AmountFromValue(ValueFromString("1e11")), JSONRPCError);
     // overflow error
-    BOOST_CHECK_THROW(AmountFromValue(ValueFromString("93e+9")), UniValue);
+    BOOST_CHECK_THROW(AmountFromValue(ValueFromString("93e+9")), JSONRPCError);
 }
 
 BOOST_AUTO_TEST_CASE(rpc_ban) {

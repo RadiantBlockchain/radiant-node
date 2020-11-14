@@ -1,5 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -124,13 +125,18 @@ enum RPCErrorCode {
     RPC_FORBIDDEN_BY_SAFE_MODE = -2,
 };
 
-UniValue JSONRPCRequestObj(const std::string &strMethod, const UniValue &params,
-                           const UniValue &id);
-UniValue JSONRPCReplyObj(const UniValue &result, const UniValue &error,
-                         const UniValue &id);
-std::string JSONRPCReply(const UniValue &result, const UniValue &error,
-                         const UniValue &id);
-UniValue JSONRPCError(int code, const std::string &message);
+UniValue::Object JSONRPCRequestObj(std::string&& strMethod, UniValue&& params, UniValue&& id);
+UniValue::Object JSONRPCReplyObj(UniValue&& result, UniValue&& error, UniValue&& id);
+std::string JSONRPCReply(UniValue&& result, UniValue&& error, UniValue&& id);
+/** JSON-RPC error that can be thrown as an exception. */
+struct JSONRPCError {
+    RPCErrorCode code;
+    std::string message;
+    JSONRPCError(RPCErrorCode _code, const std::string& _message) : code(_code), message(_message) {}
+    JSONRPCError(RPCErrorCode _code, std::string&& _message) noexcept : code(_code), message(std::move(_message)) {}
+    /** Converts the error to a UniValue::Object. Error message is moved. */
+    UniValue::Object toObj() &&;
+};
 
 /** Generate a new RPC authentication cookie and write it to disk */
 bool GenerateAuthCookie(std::string *cookie_out);
