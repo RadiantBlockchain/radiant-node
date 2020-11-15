@@ -50,9 +50,9 @@ Network upgrades
     * [OP_REVERSEBYTES](https://upgradespecs.bitcoincashnode.org/2020-05-15-op_reversebytes/) is added as of [v0.21.0](release-notes/release-notes-0.21.0.md) ([D5283](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/commit/9bd868e48eb0cc63063fd1776d2e84277a510a6b)).
     * Default in-mempool ancestors/descendants limits increase as of [v0.21.0](release-notes/release-notes-0.21.0.md) ([D5244](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/commit/3a535f346e0b66cefddc47e8f8b9328b50e91f94)).
     * Automatic Replay Protection has been rescheduled to November 15th 2020 in [v0.21.0](release-notes/release-notes-0.21.0.md) ([D5253](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/commit/c4fd03771c42f9955ae938c0325687215b1aac4d)).
-* **[November 15th 2020](https://upgradespecs.bitcoincashnode.org/2020-11-15-upgrade/)** (*Axion*) upgrade implementation completed in v22.0.0:
-    * [ASERT Difficulty Adjustment Algorithm](https://upgradespecs.bitcoincashnode.org/2020-11-15-asert/) takes effect as of v22.0.0 ([MR!692](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/merge_requests/692)).
-    * Automatic Replay Protection has been unscheduled in v22.0.0 ([MR!709](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/merge_requests/709), [MR!715](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/merge_requests/715)).
+* **[November 15th 2020](https://upgradespecs.bitcoincashnode.org/2020-11-15-upgrade/)** (*Axion*) upgrade implementation completed in [v22.0.0](release-notes/release-notes-22.0.0.md):
+    * [ASERT Difficulty Adjustment Algorithm](https://upgradespecs.bitcoincashnode.org/2020-11-15-asert/) takes effect as of [v22.0.0](release-notes/release-notes-22.0.0.md) ([MR!692](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/merge_requests/692)).
+    * Automatic Replay Protection has been unscheduled in [v22.0.0](release-notes/release-notes-22.0.0.md) ([MR!709](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/merge_requests/709), [MR!715](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/merge_requests/715)).
 
 Other
 -----
