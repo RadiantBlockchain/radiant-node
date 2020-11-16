@@ -250,6 +250,9 @@ public:
                 // Phonon activation.
                 {635259, BlockHash::fromHex("00000000000000000033dfef1fc2d6a5d5"
                                             "520b078c55193a9bf498c5b27530f7")},
+                // Axion activation.
+                {661648, BlockHash::fromHex("0000000000000000029e471c41818d24b8"
+                                            "b74c911071c4ef0b4a0509f9b5a8ce")},
             }};
 
         // Data as of block
@@ -404,6 +407,9 @@ public:
                 {1378461, BlockHash::fromHex(
                               "0000000099f5509b5f36b1926bcf82b21d936ebeade"
                               "e811030dfbbb7fae915d7")},
+                // Axion activation.
+                {1421482, BlockHash::fromHex(
+                              "0000000023e0680a8a062b3cc289a4a341124ce7fcb6340ede207e194d73b60a")},
             }};
 
         // Data as of block
@@ -530,6 +536,8 @@ public:
             /* .mapCheckpoints = */ {
                 {0, genesis.GetHash()},
                 {5000, BlockHash::fromHex("000000009f092d074574a216faec682040a853c4f079c33dfd2c3ef1fd8108c4")},
+                // Axion activation.
+                {16845, BlockHash::fromHex("00000000fb325b8f34fe80c96a5f708a08699a68bbab82dba4474d86bd743077")},
             }};
 
         // Data as of block
@@ -661,6 +669,8 @@ public:
             /* .mapCheckpoints = */ {
                 {0, genesis.GetHash()},
                 {45, BlockHash::fromHex("00000000d75a7c9098d02b321e9900b16ecbd552167e65683fe86e5ecf88b320")},
+                // scalenet periodically reorgs to height 10,000
+                {10000, BlockHash::fromHex("00000000b711dc753130e5083888d106f99b920b1b8a492eb5ac41d40e482905")},
             }};
 
         chainTxData = {0, 0, 0};
