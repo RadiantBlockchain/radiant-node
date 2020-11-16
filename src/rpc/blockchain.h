@@ -36,7 +36,7 @@ UniValue blockToJSON(const CBlock &block, const CBlockIndex *tip,
                      const CBlockIndex *blockindex, bool txDetails = false);
 
 /** Mempool information to JSON */
-UniValue MempoolInfoToJSON(const CTxMemPool &pool);
+UniValue MempoolInfoToJSON(const Config &config, const CTxMemPool &pool);
 
 /** Mempool to JSON */
 UniValue MempoolToJSON(const CTxMemPool &pool, bool verbose = false);

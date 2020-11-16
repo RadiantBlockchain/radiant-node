@@ -4818,12 +4818,7 @@ bool PeerLogicValidation::SendMessages(const Config &config, CNode *pto,
     if (pto->nVersion >= FEEFILTER_VERSION &&
         gArgs.GetBoolArg("-feefilter", DEFAULT_FEEFILTER) &&
         !pto->HasPermission(PF_FORCERELAY)) {
-        Amount currentFilter =
-            g_mempool
-                .GetMinFee(
-                    gArgs.GetArg("-maxmempool", DEFAULT_MAX_MEMPOOL_SIZE) *
-                    1000000)
-                .GetFeePerK();
+        Amount currentFilter = g_mempool.GetMinFee(config.GetMaxMemPoolSize()).GetFeePerK();
         int64_t timeNow = GetTimeMicros();
         if (timeNow > pto->nextSendTimeFeeFilter) {
             static CFeeRate default_feerate =
