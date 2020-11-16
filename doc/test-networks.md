@@ -81,7 +81,7 @@ Overview Table for BCHN-supported Test Networks
 | POW limit                    |  2^224      |  2^224       |  2^224      |
 | ASERT half-life              |  1 hour     |  1 hour      |  2 days     |
 | Allow min diff blocks        |  yes        |  yes         |  yes        |
-| Require standard txs         |  no         |  no          |  no         |
+| Require standard txs         |  no         |  yes         |  no         |
 | Default consist. chks.       |  no         |  no          |  no         |
 | Halving interval (blks)      |  210000     |  210000      |  210000     |
 | BIP16 height                 |  514        |  1           |  1          |
@@ -94,6 +94,7 @@ Overview Table for BCHN-supported Test Networks
 | Nov 15 2018 HF height        |  1267996    |  4000        |  4000       |
 | Nov 15 2019 HF height        |  1341711    |  5000        |  5000       |
 | May 15 2020 HF height        |  1378460    |  0 (Note 1)  |  0 (Note 1) |
+| Nov 15 2020 HF height        |  1421482    |  16845       |  variable (Note 2) |
 | Base58 prefix: pubkey        |  1, 111     |  1, 111      |  1, 111     |
 | Base58 prefix: script        |  1, 196     |  1, 196      |  1, 196     |
 | Base58 prefix: seckey        |  1, 239     |  1, 239      |  1, 239     |
@@ -102,6 +103,12 @@ Overview Table for BCHN-supported Test Networks
 
 Note 1: set to 0 because historical sigop code has been removed from BCHN
         See chainparams.cpp for more detailed comments.
+
+Note 2: scalenet is intended to be periodically reorganized down to a
+        height of 10000 whose earlier than the November 2020 MTP activation
+        time. The height at which the Axion upgrade takes effect is thus
+        variable (it is block 16869 now, but may be different once the
+        network is reset).
 
 
 Further references
