@@ -8,6 +8,7 @@
 
 #include <amount.h>
 #include <feerate.h>
+#include <policy/policy.h>
 
 #include <boost/noncopyable.hpp>
 
@@ -24,6 +25,8 @@ class Config : public boost::noncopyable {
 public:
     virtual bool SetMaxBlockSize(uint64_t maxBlockSize) = 0;
     virtual uint64_t GetMaxBlockSize() const = 0;
+    virtual void SetMaxMemPoolSize(uint64_t maxMemPoolSize) = 0;
+    virtual uint64_t GetMaxMemPoolSize() const = 0;
     virtual void SetInvBroadcastRate(uint64_t rate) = 0;
     virtual uint64_t GetInvBroadcastRate() const = 0;
     virtual void SetInvBroadcastInterval(uint64_t interval) = 0;
@@ -41,7 +44,9 @@ public:
     GlobalConfig();
     bool SetMaxBlockSize(uint64_t maxBlockSize) override;
     uint64_t GetMaxBlockSize() const override;
-    void SetInvBroadcastRate(uint64_t rate) override{ nInvBroadcastRate = rate; }
+    void SetMaxMemPoolSize(uint64_t maxMemPoolSize) override { nMaxMemPoolSize = maxMemPoolSize; }
+    uint64_t GetMaxMemPoolSize() const override { return nMaxMemPoolSize; }
+    void SetInvBroadcastRate(uint64_t rate) override { nInvBroadcastRate = rate; }
     uint64_t GetInvBroadcastRate() const override { return nInvBroadcastRate; }
     void SetInvBroadcastInterval(uint64_t interval) override { nInvBroadcastInterval = interval; }
     uint64_t GetInvBroadcastInterval() const override { return nInvBroadcastInterval; }
@@ -60,6 +65,9 @@ private:
 
     /** The largest block size this node will accept. */
     uint64_t nMaxBlockSize;
+
+    /** The maximum amount of RAM to be used in the mempool before TrimToSize is called. */
+    uint64_t nMaxMemPoolSize;
 };
 
 // Dummy for subclassing in unittests
@@ -70,6 +78,8 @@ public:
     DummyConfig(std::unique_ptr<CChainParams> chainParamsIn);
     bool SetMaxBlockSize(uint64_t) override { return false; }
     uint64_t GetMaxBlockSize() const override { return 0; }
+    void SetMaxMemPoolSize(uint64_t) override {}
+    uint64_t GetMaxMemPoolSize() const override {return 0; }
     void SetInvBroadcastRate(uint64_t) override {}
     uint64_t GetInvBroadcastRate() const override { return 0; }
     void SetInvBroadcastInterval(uint64_t) override {}

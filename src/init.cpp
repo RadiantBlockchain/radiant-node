@@ -485,10 +485,12 @@ void SetupServerArgs() {
     gArgs.AddArg("-loadblock=<file>",
                  "Imports blocks from external blk000??.dat file on startup",
                  false, OptionsCategory::OPTIONS);
-    gArgs.AddArg("-maxmempool=<n>",
-                 strprintf("Keep the transaction memory pool below <n> "
-                           "megabytes (default: %u)",
-                           DEFAULT_MAX_MEMPOOL_SIZE),
+    gArgs.AddArg("-maxmempool=<n>", strprintf("Keep the transaction memory pool below <n> "
+                 "megabytes (default: %u, testnet: %u, testnet4: %u, scalenet: %u)",
+                 DEFAULT_MAX_MEMPOOL_SIZE_PER_MB * defaultChainParams->GetConsensus().nDefaultMaxBlockSize / ONE_MEGABYTE,
+                 DEFAULT_MAX_MEMPOOL_SIZE_PER_MB * testnetChainParams->GetConsensus().nDefaultMaxBlockSize / ONE_MEGABYTE,
+                 DEFAULT_MAX_MEMPOOL_SIZE_PER_MB * testnet4ChainParams->GetConsensus().nDefaultMaxBlockSize / ONE_MEGABYTE,
+                 DEFAULT_MAX_MEMPOOL_SIZE_PER_MB * scalenetChainParams->GetConsensus().nDefaultMaxBlockSize / ONE_MEGABYTE),
                  false, OptionsCategory::OPTIONS);
     gArgs.AddArg("-maxorphantx=<n>",
                  strprintf("Keep at most <n> unconnectable transactions in "
@@ -1768,17 +1770,6 @@ bool AppInitParameterInteraction(Config &config) {
                   chainparams.GetConsensus().nMinimumChainWork.GetHex());
     }
 
-    // mempool limits
-    int64_t nMempoolSizeMax =
-        gArgs.GetArg("-maxmempool", DEFAULT_MAX_MEMPOOL_SIZE) * 1000000;
-    int64_t nMempoolSizeMin =
-        gArgs.GetArg("-limitdescendantsize", DEFAULT_DESCENDANT_SIZE_LIMIT) *
-        1000 * 40;
-    if (nMempoolSizeMax < 0 || nMempoolSizeMax < nMempoolSizeMin) {
-        return InitError(strprintf(_("-maxmempool must be at least %d MB"),
-                                   std::ceil(nMempoolSizeMin / 1000000.0)));
-    }
-
     // -par=0 means autodetect, but nScriptCheckThreads==0 means no concurrency
     nScriptCheckThreads = gArgs.GetArg("-par", DEFAULT_SCRIPTCHECK_THREADS);
     if (nScriptCheckThreads <= 0) {
@@ -1805,6 +1796,18 @@ bool AppInitParameterInteraction(Config &config) {
         auto msg = _("Max generated block size (blockmaxsize) cannot exceed "
                      "the excessive block size (excessiveblocksize)");
         return InitError(msg);
+    }
+
+    // mempool limits
+    int64_t nMempoolSizeMax = ONE_MEGABYTE * gArgs.GetArg("-maxmempool", DEFAULT_MAX_MEMPOOL_SIZE_PER_MB *
+                                                     config.GetMaxBlockSize() / ONE_MEGABYTE);
+
+    int64_t nMempoolSizeMin = gArgs.GetArg("-limitdescendantsize", DEFAULT_DESCENDANT_SIZE_LIMIT) * 1000 * 40;
+    if (nMempoolSizeMax < 0 || nMempoolSizeMax < nMempoolSizeMin) {
+        return InitError(strprintf(_("-maxmempool must be at least %d MB"),
+                                   std::ceil(nMempoolSizeMin / 1000000.0)));
+    } else {
+         config.SetMaxMemPoolSize((uint64_t)nMempoolSizeMax);
     }
 
     // block pruning; get the amount of disk space (in MiB) to allot for block &
@@ -2319,8 +2322,7 @@ bool AppInitMain(Config &config, RPCServer &rpcServer,
     nTotalCache -= nCoinDBCache;
     // the rest goes to in-memory cache
     nCoinCacheUsage = nTotalCache;
-    int64_t nMempoolSizeMax =
-        gArgs.GetArg("-maxmempool", DEFAULT_MAX_MEMPOOL_SIZE) * 1000000;
+    int64_t nMempoolSizeMax = config.GetMaxMemPoolSize();
     LogPrintf("Cache configuration:\n");
     LogPrintf("* Using %.1fMiB for block index database\n",
               nBlockTreeDBCache * (1.0 / 1024 / 1024));

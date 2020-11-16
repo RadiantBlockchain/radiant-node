@@ -684,11 +684,7 @@ AcceptToMemoryPoolWorker(const Config &config, CTxMemPool &pool,
 
         unsigned int nVirtualSize = entry.GetTxVirtualSize();
 
-        Amount mempoolRejectFee =
-            pool.GetMinFee(
-                    gArgs.GetArg("-maxmempool", DEFAULT_MAX_MEMPOOL_SIZE) *
-                    1000000)
-                .GetFee(nVirtualSize);
+        Amount mempoolRejectFee = pool.GetMinFee(config.GetMaxMemPoolSize()).GetFee(nVirtualSize);
         if (!bypass_limits && mempoolRejectFee > Amount::zero() &&
             nModifiedFees < mempoolRejectFee) {
             return state.DoS(
@@ -760,10 +756,8 @@ AcceptToMemoryPoolWorker(const Config &config, CTxMemPool &pool,
 
         // Trim mempool and check if tx was trimmed.
         if (!bypass_limits) {
-            pool.LimitSize(
-                gArgs.GetArg("-maxmempool", DEFAULT_MAX_MEMPOOL_SIZE) * 1000000,
-                gArgs.GetArg("-mempoolexpiry", DEFAULT_MEMPOOL_EXPIRY) * 60 *
-                    60);
+            pool.LimitSize(config.GetMaxMemPoolSize(),
+                           gArgs.GetArg("-mempoolexpiry", DEFAULT_MEMPOOL_EXPIRY) * 60 * 60);
             if (!pool.exists(txid)) {
                 return state.DoS(0, false, REJECT_INSUFFICIENTFEE,
                                  "mempool full");
@@ -2022,8 +2016,8 @@ static bool FlushStateToDisk(const CChainParams &chainparams,
             if (nLastFlush == 0) {
                 nLastFlush = nNow;
             }
-            int64_t nMempoolSizeMax =
-                gArgs.GetArg("-maxmempool", DEFAULT_MAX_MEMPOOL_SIZE) * 1000000;
+            const Config &config = GetConfig();
+            int64_t nMempoolSizeMax = config.GetMaxMemPoolSize();
             int64_t cacheSize = pcoinsTip->DynamicMemoryUsage();
             int64_t nTotalSpace =
                 nCoinCacheUsage +

@@ -1578,14 +1578,13 @@ static UniValue getchaintips(const Config &config,
     return res;
 }
 
-UniValue MempoolInfoToJSON(const CTxMemPool &pool) {
+UniValue MempoolInfoToJSON(const Config &config, const CTxMemPool &pool) {
     UniValue ret(UniValue::VOBJ);
     ret.pushKV("loaded", pool.IsLoaded());
     ret.pushKV("size", (int64_t)pool.size());
     ret.pushKV("bytes", (int64_t)pool.GetTotalTxSize());
     ret.pushKV("usage", (int64_t)pool.DynamicMemoryUsage());
-    size_t maxmempool =
-        gArgs.GetArg("-maxmempool", DEFAULT_MAX_MEMPOOL_SIZE) * 1000000;
+    size_t maxmempool = config.GetMaxMemPoolSize();
     ret.pushKV("maxmempool", (int64_t)maxmempool);
     ret.pushKV(
         "mempoolminfee",
@@ -1625,7 +1624,7 @@ static UniValue getmempoolinfo(const Config &config,
             HelpExampleRpc("getmempoolinfo", ""));
     }
 
-    return MempoolInfoToJSON(::g_mempool);
+    return MempoolInfoToJSON(config, ::g_mempool);
 }
 
 static UniValue preciousblock(const Config &config,

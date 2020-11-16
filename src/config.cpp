@@ -8,7 +8,8 @@
 #include <consensus/consensus.h> // DEFAULT_MAX_BLOCK_SIZE
 
 GlobalConfig::GlobalConfig()
-    : useCashAddr(DEFAULT_USE_CASHADDR), nMaxBlockSize(DEFAULT_MAX_BLOCK_SIZE) {}
+    : useCashAddr(DEFAULT_USE_CASHADDR), nMaxBlockSize(DEFAULT_MAX_BLOCK_SIZE),
+      nMaxMemPoolSize(DEFAULT_MAX_BLOCK_SIZE * DEFAULT_MAX_MEMPOOL_SIZE_PER_MB) {}
 
 bool GlobalConfig::SetMaxBlockSize(uint64_t maxBlockSize) {
     // Do not allow maxBlockSize to be set below historic 1MB limit
