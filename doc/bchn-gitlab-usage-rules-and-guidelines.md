@@ -118,13 +118,19 @@ Occasionally, developers may ask for review of WIP items in the understanding th
 
 NOTE: MR = "Merge Request"
 
+- "benchmark" : issue/MR is classified as relating to product benchmarks
+
 - "bug" : issue/MR is classified as relating to some product deficiency (either w.r.t. a specification or design, or as experienced by a user)
+
+- "consensus" : issue/MR is classified as relating to consensus change
+
+- "consensus-sensitive" : issue/MR is classified as relating to consensus relevant functionality, but not intending a change to consensus
 
 - "enhancement" : issue/MR is classified as relating to an improvement of the product which is not yet covered by a specification or design
 
 - "backport" : issue/MR is classified as relating to an backport of a fix or enhancement from some upstream source (e.g. Bitcoin Core or Bitcoin ABC)
 
-- "build": issue/MR issue/MR is classified as relating to the software build system
+- "build": issue/MR is classified as relating to the software build system
 
 - "devenv": issue/MR is classified as relating to development environment
 
@@ -156,7 +162,7 @@ NOTE: MR = "Merge Request"
 
 - "user-interface": issue/MR relates to a user interface (not only graphical!)
 
-- "seeder": issue/MR relates to bitcoin-seeder component
+- "bitcoin-seeder": issue/MR relates to bitcoin-seeder component
 
 - "HODL" : issue/MR is on hold until further notice, usually because of a technical problem
 
@@ -167,6 +173,12 @@ NOTE: MR = "Merge Request"
 - "gitian": issue/MR that touches on the gitian build system, or requires a gitian build as part of its test plan
 
 - "bounty": issue/MR has an associated open or in-progress bounty. NOTE: The label should be removed once a bounty is awarded.
+
+- "engineering-change-proposal": issue is a proposal for an engineering change to the BCHN software or infrastructure
+
+- "bitcoin-tx": issue/MR is classified as relating to bitcoin-tx tool
+
+- "SECURITY": issue/MR is considered security relevant
 
 
 ### Historical labels considered to be deprecated until further notice
