@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -55,19 +56,22 @@ static bool CreateSig(const BaseSignatureCreator &creator,
                       std::vector<uint8_t> &sig_out, const CPubKey &pubkey,
                       const CScript &scriptcode) {
     CKeyID keyid = pubkey.GetID();
-    const auto it = sigdata.signatures.find(keyid);
-    if (it != sigdata.signatures.end()) {
+    const auto it = sigdata.signatures.lower_bound(keyid);
+    if (it != sigdata.signatures.end() && it->first == keyid) {
         sig_out = it->second.second;
         return true;
     }
     KeyOriginInfo info;
     if (provider.GetKeyOrigin(keyid, info)) {
-        sigdata.misc_pubkeys.emplace(keyid,
-                                     std::make_pair(pubkey, std::move(info)));
+        sigdata.misc_pubkeys.emplace(std::piecewise_construct,
+                                     std::forward_as_tuple(keyid),
+                                     std::forward_as_tuple(pubkey, std::move(info)));
     }
     if (creator.CreateSig(provider, sig_out, keyid, scriptcode)) {
-        auto i = sigdata.signatures.emplace(keyid, SigPair(pubkey, sig_out));
-        assert(i.second);
+        sigdata.signatures.emplace_hint(it,
+                                        std::piecewise_construct,
+                                        std::forward_as_tuple(keyid),
+                                        std::forward_as_tuple(pubkey, sig_out));
         return true;
     }
     return false;
@@ -216,7 +220,9 @@ bool SignatureExtractorChecker::CheckSig(const std::vector<uint8_t> &scriptSig,
                                          uint32_t flags) const {
     if (checker.CheckSig(scriptSig, vchPubKey, scriptCode, flags)) {
         CPubKey pubkey(vchPubKey);
-        sigdata.signatures.emplace(pubkey.GetID(), SigPair(pubkey, scriptSig));
+        sigdata.signatures.emplace(std::piecewise_construct,
+                                   std::forward_as_tuple(pubkey.GetID()),
+                                   std::forward_as_tuple(pubkey, scriptSig));
         return true;
     }
     return false;
