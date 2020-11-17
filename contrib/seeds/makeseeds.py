@@ -7,9 +7,9 @@
 #
 
 import collections
-import dns.resolver
 import re
 import sys
+import dns.resolver
 
 NSEEDS = 512
 
@@ -37,7 +37,11 @@ PATTERN_ONION = re.compile(
 # Used to only select nodes with a user agent string compatible with the
 # Bitcoin Cash specification.
 PATTERN_AGENT = re.compile(
-      r"^(/Bitcoin Cash Node:22\.(\d+)\.(\d+)[^/]*/|/Flowee:1[^/]*/|/kth:0\.4\.(\d+)[^/]*/|/bchd:0\.16\.(\d+)[^/]*/|/Bitcoin Verde:1\.3\.(\d+)[^/]*/|/BCH Unlimited:1\.9\.(\d+)[^/]*/)")
+    r"^(/Bitcoin Cash Node:22\.(\d+)\.(\d+)[^/]*/"
+    r"|/Flowee:1[^/]*/|/kth:0\.6\.(\d+)[^/]*/"
+    r"|/bchd:0\.17\.(\d+)[^/]*/"
+    r"|/Bitcoin Verde:2\.(\d+)\.(\d+)[^/]*/"
+    r"|/BCH Unlimited:1\.9\.(\d+)[^/]*/)")
 
 
 def parseline(line):
@@ -160,7 +164,7 @@ def filterbyasn(ips, max_per_asn, max_total):
                 prefix = '.origin6'
 
             asn = int([x.to_text() for x in dns.resolver.query('.'.join(
-                       reversed(ipaddr.split('.'))) + prefix + '.asn.cymru.com',
+                reversed(ipaddr.split('.'))) + prefix + '.asn.cymru.com',
                 'TXT').response.answer][0].split('\"')[1].split(' ')[0])
             if asn not in asn_count:
                 asn_count[asn] = 0
