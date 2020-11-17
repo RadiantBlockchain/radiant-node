@@ -26,6 +26,7 @@
 #include <sync.h>
 #include <txdb.h>
 #include <txmempool.h>
+#include <undo.h>
 #include <util/strencodings.h>
 #include <util/system.h>
 #include <validation.h>
@@ -915,7 +916,7 @@ static UniValue getblockheader(const Config &config,
     return ret;
 }
 
-/// Requires cs_main
+/// Requires cs_main; called by getblock() and getblockstats()
 static void ThrowIfPrunedBlock(const CBlockIndex *pblockindex) EXCLUSIVE_LOCKS_REQUIRED(cs_main) {
     if (IsBlockPruned(pblockindex)) {
         throw JSONRPCError(RPC_MISC_ERROR, "Block not available (pruned data)");
@@ -2036,6 +2037,28 @@ static inline bool SetHasKeys(const std::set<T> &set, const Tk &key,
 static constexpr size_t PER_UTXO_OVERHEAD =
     sizeof(COutPoint) + sizeof(uint32_t) + sizeof(bool);
 
+/// Lock-free -- will throw if undo rev??.dat file not found or was pruned, etc.
+/// Guaranteed to return a valid undo or fail.
+static CBlockUndo ReadUndoChecked(const CBlockIndex *pblockindex) {
+    CBlockUndo undo;
+    // Note: we special-case block 0 to preserve RPC compatibility with previous
+    // incarnations of `getblockstats` that did not use the undo mechanism to grab
+    // stats. Those earlier versions would return stats for block 0. So, we return
+    // empty undo for genesis (genesis has no actual undo file on disk but an empty
+    // CBlockUndo is a perfect simulacrum of its undo file if it were to have one)
+    if (pblockindex->nHeight != 0 && !UndoReadFromDisk(undo, pblockindex)) {
+        // Undo not found on disk. This could be because we have the block
+        // header in our index but don't have the block (for example if a
+        // non-whitelisted node sends us an unrequested long chain of valid
+        // blocks, we add the headers to our index, but don't accept the block).
+        // This can also happen if in the extremely rare event that the undo file
+        // was pruned from underneath us as we were executing getblockstats().
+        throw JSONRPCError(RPC_MISC_ERROR, "Can't read undo data from disk");
+    }
+
+    return undo;
+}
+
 static UniValue getblockstats(const Config &config,
                               const JSONRPCRequest &request) {
     if (request.fHelp || request.params.size() < 1 ||
@@ -2044,8 +2067,7 @@ static UniValue getblockstats(const Config &config,
             RPCHelpMan{"getblockstats",
                 "\nCompute per block statistics for a given window. All amounts are in "
                 + CURRENCY_UNIT + ".\n"
-                "It won't work for some heights with pruning.\n"
-                "It won't work without -txindex for utxo_size_inc, *fee or *feerate stats.\n",
+                "It won't work for some heights with pruning.\n",
                 {
                     {"hash_or_height", RPCArg::Type::NUM, false},
                     {"stats", RPCArg::Type::ARR,
@@ -2202,33 +2224,17 @@ static UniValue getblockstats(const Config &config,
     std::vector<std::pair<Amount, int64_t>> feerate_array;
     std::vector<int64_t> txsize_array;
 
+    // read the undo file so we can calculate fees -- but only if loop_inputs is true
+    // (since if it's false we won't need this data and we shouldn't spend time deserializing it)
+    const CBlockUndo &&blockUndo = loop_inputs ? ReadUndoChecked(pindex) : CBlockUndo{};
+
     // Reserve for the above vectors only if we use them
     if (do_mediantxsize) txsize_array.reserve(block.vtx.size());
     if (do_medianfee) fee_array.reserve(block.vtx.size());
     if (do_feerate_percentiles) feerate_array.reserve(block.vtx.size());
 
-    // We cache the input txs as we see them as a performance optimization.
-    // This optimizes the situation where the loop_inputs loop below may read
-    // the same tx multiple times when it is fetching input txs.
-    //
-    // We trade memory for speed here -- but even on 250 MB ScaleNet blocks,
-    // this didn't use more than ~300MB peak memory including heap holes, in my
-    // testing (Darwin, clang-10). Tested on ScaleNet blocks: 16029 16026 16037
-    // 16130 16179 15813 16124. Note that for embedded/RPi on very limited
-    // memory and no swap, this may just throw bad_alloc and the client will
-    // receive a JSON-RPC error response.
-    //
-    // Given that this code has been tuned to allow for large blocks, this is
-    // an acceptable tradeoff. Note that on RPi *without* this optimization,
-    // for a ~250 MB block with 300k inputs, this operation would take
-    // *minutes* anyway! (As compared to ~10 seconds *with* this optimization
-    // and enough memory.)
-    //
-    // So we can conclude that the memory-for-speed tradeoff is acceptable
-    // here, hence this cache.
-    std::map<TxId, CTransactionRef> cachedInputTxs;
-
-    for (const auto &tx : block.vtx) {
+    for (size_t i_tx = 0; i_tx < block.vtx.size(); ++i_tx) {
+        const auto &tx = block.vtx[i_tx];
         outputs += tx->vout.size();
         Amount tx_total_out = Amount::zero();
         if (loop_outputs) {
@@ -2260,35 +2266,11 @@ static UniValue getblockstats(const Config &config,
         }
 
         if (loop_inputs) {
-            if (!g_txindex) {
-                throw JSONRPCError(RPC_INVALID_PARAMETER,
-                                   "One or more of the selected stats requires "
-                                   "-txindex enabled");
-            }
             Amount tx_total_in = Amount::zero();
-            for (const CTxIn &in : tx->vin) {
-                const auto &txid = in.prevout.GetTxId();
-                auto it = cachedInputTxs.find(txid); // see if our temp cache has the input tx
-                if (it == cachedInputTxs.end()) {
-                    // cache miss, use the txindex now to look up the input
-                    BlockHash hashBlock;
-                    CTransactionRef txRef;
-                    // NB: g_txindex->FindTx() is always thread-safe and needs no locks.
-                    if (!g_txindex->FindTx(txid, hashBlock, txRef)) {
-                        // Note that technically this exception can be thrown even if it's not
-                        // corrupt but the index hasn't caught up to this block yet (a freshly
-                        // spun-up node after IBD may be in that situation). However, since
-                        // legacy code calling into RPC may depend on this this exact error
-                        // string, we will leave this misleading string here untouched.
-                        throw JSONRPCError(RPC_INTERNAL_ERROR,
-                                            std::string("Unexpected internal error "
-                                                        "(tx index seems corrupt)"));
-                    }
-                    // add to cache, assign `it` so it has a valid value for below code
-                    it = cachedInputTxs.emplace(txid, std::move(txRef)).first;
-                }
-                const auto &tx_in = it->second;
-                const auto &prevoutput = tx_in->vout[in.prevout.GetN()];
+            const auto &txundo = blockUndo.vtxundo.at(i_tx - 1); // checked access here, guard against programming errors
+            // We use the block undo info to find the inputs to this tx and use that information to calculate fees
+            for (const Coin &coin : txundo.vprevout) {
+                const CTxOut &prevoutput = coin.GetTxOut();
 
                 tx_total_in += prevoutput.nValue;
                 utxo_size_inc -=
