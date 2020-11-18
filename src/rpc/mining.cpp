@@ -46,7 +46,7 @@
  * or from the last difficulty change if 'lookup' is nonpositive. If 'height' is
  * nonnegative, compute the estimate at the time when a given block was found.
  */
-static UniValue GetNetworkHashPS(int lookup, int height) {
+static double GetNetworkHashPS(int lookup, int height) {
     CBlockIndex *pb = ::ChainActive().Tip();
 
     if (height >= 0 && height < ::ChainActive().Height()) {
@@ -139,7 +139,7 @@ UniValue generateBlocks(const Config &config,
     const uint64_t nExcessiveBlockSize = config.GetMaxBlockSize();
 
     unsigned int nExtraNonce = 0;
-    UniValue blockHashes(UniValue::VARR);
+    UniValue::Array blockHashes;
     while (nHeight < nHeightEnd && !ShutdownRequested()) {
         std::unique_ptr<CBlockTemplate> pblocktemplate(
             BlockAssembler(config, g_mempool)
@@ -179,7 +179,7 @@ UniValue generateBlocks(const Config &config,
                                "ProcessNewBlock, block not accepted");
         }
         ++nHeight;
-        blockHashes.push_back(pblock->GetHash().GetHex());
+        blockHashes.emplace_back(pblock->GetHash().GetHex());
 
         // Mark script as important because it was used at least for one
         // coinbase output if the script came from the wallet.
@@ -267,16 +267,16 @@ static UniValue getmininginfo(const Config &config,
 
     LOCK(cs_main);
 
-    UniValue obj(UniValue::VOBJ);
+    UniValue::Object obj;
     obj.reserve(8);
-    obj.pushKV("blocks", int(::ChainActive().Height()), false);
-    obj.pushKV("currentblocksize", uint64_t(nLastBlockSize), false);
-    obj.pushKV("currentblocktx", uint64_t(nLastBlockTx), false);
-    obj.pushKV("difficulty", double(GetDifficulty(::ChainActive().Tip())), false);
-    obj.pushKV("networkhashps", getnetworkhashps(config, request), false);
-    obj.pushKV("pooledtx", uint64_t(g_mempool.size()), false);
-    obj.pushKV("chain", config.GetChainParams().NetworkIDString(), false);
-    obj.pushKV("warnings", GetWarnings("statusbar"), false);
+    obj.emplace_back("blocks", ::ChainActive().Height());
+    obj.emplace_back("currentblocksize", nLastBlockSize);
+    obj.emplace_back("currentblocktx", nLastBlockTx);
+    obj.emplace_back("difficulty", GetDifficulty(::ChainActive().Tip()));
+    obj.emplace_back("networkhashps", getnetworkhashps(config, request));
+    obj.emplace_back("pooledtx", g_mempool.size());
+    obj.emplace_back("chain", config.GetChainParams().NetworkIDString());
+    obj.emplace_back("warnings", GetWarnings("statusbar"));
 
     return obj;
 }
@@ -724,12 +724,13 @@ static UniValue getblocktemplatecommon(bool fLight, const Config &config, const 
     UpdateTime(pblock, config.GetChainParams().GetConsensus(), pindexPrev);
     pblock->nNonce = 0;
 
-    UniValue aCaps(UniValue::VARR);
-    aCaps.push_back("proposal");
+    UniValue::Array aCaps;
+    aCaps.reserve(1);
+    aCaps.emplace_back("proposal");
 
     uint160 jobId; // fLight version only, ends up in results["job_id"]
     UniValue::Array merkle; // fLight version only, ends up in results["merkle"]
-    UniValue transactions(UniValue::VARR); // !fLight version only, ends up in results["transactions"]
+    UniValue::Array transactions; // !fLight version only, ends up in results["transactions"]
     if (fLight) {
         assert(pvtx && (!tmpBlockTxsWithAdditionalTxs || pvtx == tmpBlockTxsWithAdditionalTxs.get()));
         if (plightresult && pvtx == &pblock->vtx) {
@@ -781,60 +782,59 @@ static UniValue getblocktemplatecommon(bool fLight, const Config &config, const 
                 continue;
             }
 
-            UniValue entry(UniValue::VOBJ);
-            entry.pushKV("data", EncodeHexTx(tx), false);
-            entry.pushKV("txid", tx.GetId().GetHex(), false);
-            entry.pushKV("hash", tx.GetHash().GetHex(), false);
-            entry.pushKV("fee", pblocktemplate->entries[index_in_template].fees / SATOSHI, false);
-            int64_t nTxSigOps = pblocktemplate->entries[index_in_template].sigOpCount;
-            entry.pushKV("sigops", nTxSigOps, false);
+            UniValue::Object entry;
+            entry.reserve(5);
+            entry.emplace_back("data", EncodeHexTx(tx));
+            entry.emplace_back("txid", tx.GetId().GetHex());
+            entry.emplace_back("hash", tx.GetHash().GetHex());
+            entry.emplace_back("fee", pblocktemplate->entries[index_in_template].fees / SATOSHI);
+            entry.emplace_back("sigops", pblocktemplate->entries[index_in_template].sigOpCount);
 
-            transactions.push_back(std::move(entry));
+            transactions.emplace_back(std::move(entry));
             index_in_template++;
         }
     }
 
-    UniValue aux(UniValue::VOBJ);
-    aux.pushKV("flags", HexStr(COINBASE_FLAGS.begin(), COINBASE_FLAGS.end()));
+    UniValue::Object aux;
+    aux.reserve(1);
+    aux.emplace_back("flags", HexStr(COINBASE_FLAGS.begin(), COINBASE_FLAGS.end()));
 
     arith_uint256 hashTarget = arith_uint256().SetCompact(pblock->nBits);
 
-    UniValue aMutable(UniValue::VARR);
-    aMutable.push_back("time");
+    UniValue::Array aMutable;
+    aMutable.emplace_back("time");
     if (!fLight) {
-        aMutable.push_back("transactions");
+        aMutable.emplace_back("transactions");
     } else {
-        aMutable.push_back("job_id");
-        aMutable.push_back("merkle");
+        aMutable.emplace_back("job_id");
+        aMutable.emplace_back("merkle");
     }
-    aMutable.push_back("prevblock");
+    aMutable.emplace_back("prevblock");
 
-    UniValue result(UniValue::VOBJ);
-    result.pushKV("capabilities", std::move(aCaps), false);
+    UniValue::Object result;
+    result.emplace_back("capabilities", std::move(aCaps));
 
-    result.pushKV("version", pblock->nVersion, false);
+    result.emplace_back("version", pblock->nVersion);
 
-    result.pushKV("previousblockhash", pblock->hashPrevBlock.GetHex(), false);
+    result.emplace_back("previousblockhash", pblock->hashPrevBlock.GetHex());
     if (!fLight) {
-        result.pushKV("transactions", std::move(transactions), false);
+        result.emplace_back("transactions", std::move(transactions));
     } else {
-        result.pushKV("job_id", jobId.GetHex(), false);
-        result.pushKV("merkle", std::move(merkle), false);
+        result.emplace_back("job_id", jobId.GetHex());
+        result.emplace_back("merkle", std::move(merkle));
     }
-    result.pushKV("coinbaseaux", std::move(aux), false);
-    result.pushKV("coinbasevalue", int64_t(pblock->vtx[0]->vout[0].nValue / SATOSHI), false);
-    result.pushKV("longpollid",
-                  ::ChainActive().Tip()->GetBlockHash().GetHex() + i64tostr(nTransactionsUpdatedLast),
-                  false);
-    result.pushKV("target", hashTarget.GetHex(), false);
-    result.pushKV("mintime", int64_t(pindexPrev->GetMedianTimePast()) + 1, false);
-    result.pushKV("mutable", std::move(aMutable), false);
-    result.pushKV("noncerange", "00000000ffffffff", false);
-    result.pushKV("sigoplimit", GetMaxBlockSigChecksCount(config.GetMaxBlockSize()), false);
-    result.pushKV("sizelimit", config.GetMaxBlockSize(), false);
-    result.pushKV("curtime", pblock->GetBlockTime(), false);
-    result.pushKV("bits", strprintf("%08x", pblock->nBits), false);
-    result.pushKV("height", int64_t(pindexPrev->nHeight) + 1, false);
+    result.emplace_back("coinbaseaux", std::move(aux));
+    result.emplace_back("coinbasevalue", pblock->vtx[0]->vout[0].nValue / SATOSHI);
+    result.emplace_back("longpollid", ::ChainActive().Tip()->GetBlockHash().GetHex() + i64tostr(nTransactionsUpdatedLast));
+    result.emplace_back("target", hashTarget.GetHex());
+    result.emplace_back("mintime", pindexPrev->GetMedianTimePast() + 1);
+    result.emplace_back("mutable", std::move(aMutable));
+    result.emplace_back("noncerange", "00000000ffffffff");
+    result.emplace_back("sigoplimit", GetMaxBlockSigChecksCount(config.GetMaxBlockSize()));
+    result.emplace_back("sizelimit", config.GetMaxBlockSize());
+    result.emplace_back("curtime", pblock->GetBlockTime());
+    result.emplace_back("bits", strprintf("%08x", pblock->nBits));
+    result.emplace_back("height", pindexPrev->nHeight + 1);
 
     if (fLight) {
         // Note: this must be called with cs_main held (which is the case here)
