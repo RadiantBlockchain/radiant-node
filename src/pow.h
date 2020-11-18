@@ -51,8 +51,7 @@ arith_uint256 CalculateASERT(const arith_uint256 &refTarget,
 uint32_t GetNextASERTWorkRequired(const CBlockIndex *pindexPrev,
                                   const CBlockHeader *pblock,
                                   const Consensus::Params &params,
-                                  const CBlockIndex *pindexAnchorBlock)
-                                  noexcept;
+                                  const CBlockIndex *pindexAnchorBlock) noexcept;
 
 /**
  * ASERT caches a special block index for efficiency. If block indices are
