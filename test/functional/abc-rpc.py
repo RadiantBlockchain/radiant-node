@@ -15,7 +15,7 @@ from test_framework.cdefs import (
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import assert_equal, assert_raises_rpc_error
 
-BLOCKSIZE_TOO_LOW = "Invalid parameter, excessiveblock must be larger than {}".format(
+BLOCKSIZE_TOO_LOW = "Invalid parameter, maxBlockSize must be larger than {}".format(
     LEGACY_MAX_BLOCK_SIZE)
 
 
