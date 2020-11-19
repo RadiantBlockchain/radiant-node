@@ -26,6 +26,7 @@
 #include <sync.h>
 #include <txdb.h>
 #include <txmempool.h>
+#include <undo.h>
 #include <util/strencodings.h>
 #include <util/system.h>
 #include <validation.h>
@@ -915,13 +916,16 @@ static UniValue getblockheader(const Config &config,
     return ret;
 }
 
-static CBlock GetBlockChecked(const Config &config,
-                              const CBlockIndex *pblockindex) {
-    CBlock block;
+/// Requires cs_main; called by getblock() and getblockstats()
+static void ThrowIfPrunedBlock(const CBlockIndex *pblockindex) EXCLUSIVE_LOCKS_REQUIRED(cs_main) {
     if (IsBlockPruned(pblockindex)) {
         throw JSONRPCError(RPC_MISC_ERROR, "Block not available (pruned data)");
     }
+}
 
+/// Lock-free -- will throw if block not found or was pruned, etc. Guaranteed to return a valid block or fail.
+static CBlock ReadBlockChecked(const Config &config, const CBlockIndex *pblockindex) {
+    CBlock block;
     if (!ReadBlockFromDisk(block, pblockindex,
                            config.GetChainParams().GetConsensus())) {
         // Block not found on disk. This could be because we have the block
@@ -1004,8 +1008,6 @@ static UniValue getblock(const Config &config, const JSONRPCRequest &request) {
                                        "214adbda81d7e2a3dd146f6ed09\""));
     }
 
-    LOCK(cs_main);
-
     BlockHash hash(ParseHashV(request.params[0], "blockhash"));
 
     int verbosity = 1;
@@ -1017,12 +1019,17 @@ static UniValue getblock(const Config &config, const JSONRPCRequest &request) {
         }
     }
 
-    const CBlockIndex *pblockindex = LookupBlockIndex(hash);
-    if (!pblockindex) {
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Block not found");
+    const CBlockIndex *pblockindex{};
+    {
+        LOCK(cs_main);
+        pblockindex = LookupBlockIndex(hash);
+        if (!pblockindex) {
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Block not found");
+        }
+        ThrowIfPrunedBlock(pblockindex);
     }
 
-    const CBlock block = GetBlockChecked(config, pblockindex);
+    const CBlock block = ReadBlockChecked(config, pblockindex);
 
     if (verbosity <= 0) {
         CDataStream ssBlock(SER_NETWORK,
@@ -2029,6 +2036,28 @@ static inline bool SetHasKeys(const std::set<T> &set, const Tk &key,
 static constexpr size_t PER_UTXO_OVERHEAD =
     sizeof(COutPoint) + sizeof(uint32_t) + sizeof(bool);
 
+/// Lock-free -- will throw if undo rev??.dat file not found or was pruned, etc.
+/// Guaranteed to return a valid undo or fail.
+static CBlockUndo ReadUndoChecked(const CBlockIndex *pblockindex) {
+    CBlockUndo undo;
+    // Note: we special-case block 0 to preserve RPC compatibility with previous
+    // incarnations of `getblockstats` that did not use the undo mechanism to grab
+    // stats. Those earlier versions would return stats for block 0. So, we return
+    // empty undo for genesis (genesis has no actual undo file on disk but an empty
+    // CBlockUndo is a perfect simulacrum of its undo file if it were to have one)
+    if (pblockindex->nHeight != 0 && !UndoReadFromDisk(undo, pblockindex)) {
+        // Undo not found on disk. This could be because we have the block
+        // header in our index but don't have the block (for example if a
+        // non-whitelisted node sends us an unrequested long chain of valid
+        // blocks, we add the headers to our index, but don't accept the block).
+        // This can also happen if in the extremely rare event that the undo file
+        // was pruned from underneath us as we were executing getblockstats().
+        throw JSONRPCError(RPC_MISC_ERROR, "Can't read undo data from disk");
+    }
+
+    return undo;
+}
+
 static UniValue getblockstats(const Config &config,
                               const JSONRPCRequest &request) {
     if (request.fHelp || request.params.size() < 1 ||
@@ -2037,8 +2066,7 @@ static UniValue getblockstats(const Config &config,
             RPCHelpMan{"getblockstats",
                 "\nCompute per block statistics for a given window. All amounts are in "
                 + CURRENCY_UNIT + ".\n"
-                "It won't work for some heights with pruning.\n"
-                "It won't work without -txindex for utxo_size_inc, *fee or *feerate stats.\n",
+                "It won't work for some heights with pruning.\n",
                 {
                     {"hash_or_height", RPCArg::Type::NUM, false},
                     {"stats", RPCArg::Type::ARR,
@@ -2116,39 +2144,44 @@ static UniValue getblockstats(const Config &config,
                            "1000 '[\"minfeerate\",\"avgfeerate\"]'"));
     }
 
-    LOCK(cs_main);
+    CBlockIndex *pindex{};
 
-    CBlockIndex *pindex;
-    if (request.params[0].isNum()) {
-        const int height = request.params[0].get_int();
-        const int current_tip = ::ChainActive().Height();
-        if (height < 0) {
-            throw JSONRPCError(
-                RPC_INVALID_PARAMETER,
-                strprintf("Target block height %d is negative", height));
-        }
-        if (height > current_tip) {
-            throw JSONRPCError(
-                RPC_INVALID_PARAMETER,
-                strprintf("Target block height %d after current tip %d", height,
-                          current_tip));
-        }
+    {
+        LOCK(cs_main);
 
-        pindex = ::ChainActive()[height];
-    } else {
-        const BlockHash hash(ParseHashV(request.params[0], "hash_or_height"));
-        pindex = LookupBlockIndex(hash);
-        if (!pindex) {
-            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Block not found");
+        if (request.params[0].isNum()) {
+            const int height = request.params[0].get_int();
+            const int current_tip = ::ChainActive().Height();
+            if (height < 0) {
+                throw JSONRPCError(
+                    RPC_INVALID_PARAMETER,
+                    strprintf("Target block height %d is negative", height));
+            }
+            if (height > current_tip) {
+                throw JSONRPCError(
+                    RPC_INVALID_PARAMETER,
+                    strprintf("Target block height %d after current tip %d", height,
+                              current_tip));
+            }
+
+            pindex = ::ChainActive()[height];
+        } else {
+            const BlockHash hash(ParseHashV(request.params[0], "hash_or_height"));
+            pindex = LookupBlockIndex(hash);
+            if (!pindex) {
+                throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Block not found");
+            }
+            if (!::ChainActive().Contains(pindex)) {
+                throw JSONRPCError(RPC_INVALID_PARAMETER,
+                                   strprintf("Block is not in chain %s",
+                                             Params().NetworkIDString()));
+            }
         }
-        if (!::ChainActive().Contains(pindex)) {
-            throw JSONRPCError(RPC_INVALID_PARAMETER,
-                               strprintf("Block is not in chain %s",
-                                         Params().NetworkIDString()));
-        }
+        assert(pindex != nullptr);
+        ThrowIfPrunedBlock(pindex);
     }
+    // Note: all of the below code has been verified to not require cs_main
 
-    assert(pindex != nullptr);
 
     std::set<std::string> stats;
     if (!request.params[1].isNull()) {
@@ -2157,7 +2190,7 @@ static UniValue getblockstats(const Config &config,
         }
     }
 
-    const CBlock block = GetBlockChecked(config, pindex);
+    const CBlock block = ReadBlockChecked(config, pindex);
 
     // Calculate everything if nothing selected (default)
     const bool do_all = stats.size() == 0;
@@ -2190,9 +2223,17 @@ static UniValue getblockstats(const Config &config,
     std::vector<std::pair<Amount, int64_t>> feerate_array;
     std::vector<int64_t> txsize_array;
 
-    const Consensus::Params &params = config.GetChainParams().GetConsensus();
+    // read the undo file so we can calculate fees -- but only if loop_inputs is true
+    // (since if it's false we won't need this data and we shouldn't spend time deserializing it)
+    const CBlockUndo &&blockUndo = loop_inputs ? ReadUndoChecked(pindex) : CBlockUndo{};
 
-    for (const auto &tx : block.vtx) {
+    // Reserve for the above vectors only if we use them
+    if (do_mediantxsize) txsize_array.reserve(block.vtx.size());
+    if (do_medianfee) fee_array.reserve(block.vtx.size());
+    if (do_feerate_percentiles) feerate_array.reserve(block.vtx.size());
+
+    for (size_t i_tx = 0; i_tx < block.vtx.size(); ++i_tx) {
+        const auto &tx = block.vtx[i_tx];
         outputs += tx->vout.size();
         Amount tx_total_out = Amount::zero();
         if (loop_outputs) {
@@ -2224,24 +2265,11 @@ static UniValue getblockstats(const Config &config,
         }
 
         if (loop_inputs) {
-            if (!g_txindex) {
-                throw JSONRPCError(RPC_INVALID_PARAMETER,
-                                   "One or more of the selected stats requires "
-                                   "-txindex enabled");
-            }
-
             Amount tx_total_in = Amount::zero();
-            for (const CTxIn &in : tx->vin) {
-                CTransactionRef tx_in;
-                BlockHash hashBlock;
-                if (!GetTransaction(in.prevout.GetTxId(), tx_in, params,
-                                    hashBlock, false)) {
-                    throw JSONRPCError(RPC_INTERNAL_ERROR,
-                                       std::string("Unexpected internal error "
-                                                   "(tx index seems corrupt)"));
-                }
-
-                CTxOut prevoutput = tx_in->vout[in.prevout.GetN()];
+            const auto &txundo = blockUndo.vtxundo.at(i_tx - 1); // checked access here, guard against programming errors
+            // We use the block undo info to find the inputs to this tx and use that information to calculate fees
+            for (const Coin &coin : txundo.vprevout) {
+                const CTxOut &prevoutput = coin.GetTxOut();
 
                 tx_total_in += prevoutput.nValue;
                 utxo_size_inc -=
@@ -2271,65 +2299,68 @@ static UniValue getblockstats(const Config &config,
     CalculatePercentilesBySize(feerate_percentiles, feerate_array, total_size);
 
     UniValue feerates_res(UniValue::VARR);
+    feerates_res.reserve(NUM_GETBLOCKSTATS_PERCENTILES);
     for (int64_t i = 0; i < NUM_GETBLOCKSTATS_PERCENTILES; i++) {
         feerates_res.push_back(ValueFromAmount(feerate_percentiles[i]));
     }
 
-    UniValue ret_all(UniValue::VOBJ);
-    ret_all.pushKV("avgfee",
+    UniValue::Object ret;
+    ret.reserve(25); // not critical but be sure to update this reserve size if adding/removing entries below.
+    ret.emplace_back("avgfee",
                    ValueFromAmount((block.vtx.size() > 1)
                                        ? totalfee / int((block.vtx.size() - 1))
                                        : Amount::zero()));
-    ret_all.pushKV("avgfeerate",
+    ret.emplace_back("avgfeerate",
                    ValueFromAmount((total_size > 0) ? totalfee / total_size
                                                     : Amount::zero()));
-    ret_all.pushKV("avgtxsize", (block.vtx.size() > 1)
+    ret.emplace_back("avgtxsize", (block.vtx.size() > 1)
                                     ? total_size / (block.vtx.size() - 1)
                                     : 0);
-    ret_all.pushKV("blockhash", pindex->GetBlockHash().GetHex());
-    ret_all.pushKV("feerate_percentiles", feerates_res);
-    ret_all.pushKV("height", (int64_t)pindex->nHeight);
-    ret_all.pushKV("ins", inputs);
-    ret_all.pushKV("maxfee", ValueFromAmount(maxfee));
-    ret_all.pushKV("maxfeerate", ValueFromAmount(maxfeerate));
-    ret_all.pushKV("maxtxsize", maxtxsize);
-    ret_all.pushKV("medianfee",
+    ret.emplace_back("blockhash", pindex->GetBlockHash().GetHex());
+    ret.emplace_back("feerate_percentiles", std::move(feerates_res));
+    ret.emplace_back("height", (int64_t)pindex->nHeight);
+    ret.emplace_back("ins", inputs);
+    ret.emplace_back("maxfee", ValueFromAmount(maxfee));
+    ret.emplace_back("maxfeerate", ValueFromAmount(maxfeerate));
+    ret.emplace_back("maxtxsize", maxtxsize);
+    ret.emplace_back("medianfee",
                    ValueFromAmount(CalculateTruncatedMedian(fee_array)));
-    ret_all.pushKV("mediantime", pindex->GetMedianTimePast());
-    ret_all.pushKV("mediantxsize", CalculateTruncatedMedian(txsize_array));
-    ret_all.pushKV(
+    ret.emplace_back("mediantime", pindex->GetMedianTimePast());
+    ret.emplace_back("mediantxsize", CalculateTruncatedMedian(txsize_array));
+    ret.emplace_back(
         "minfee",
         ValueFromAmount((minfee == MAX_MONEY) ? Amount::zero() : minfee));
-    ret_all.pushKV("minfeerate",
+    ret.emplace_back("minfeerate",
                    ValueFromAmount((minfeerate == MAX_MONEY) ? Amount::zero()
                                                              : minfeerate));
-    ret_all.pushKV("mintxsize", mintxsize == blockMaxSize ? 0 : mintxsize);
-    ret_all.pushKV("outs", outputs);
-    ret_all.pushKV("subsidy", ValueFromAmount(GetBlockSubsidy(
+    ret.emplace_back("mintxsize", mintxsize == blockMaxSize ? 0 : mintxsize);
+    ret.emplace_back("outs", outputs);
+    ret.emplace_back("subsidy", ValueFromAmount(GetBlockSubsidy(
                                   pindex->nHeight, Params().GetConsensus())));
-    ret_all.pushKV("time", pindex->GetBlockTime());
-    ret_all.pushKV("total_out", ValueFromAmount(total_out));
-    ret_all.pushKV("total_size", total_size);
-    ret_all.pushKV("totalfee", ValueFromAmount(totalfee));
-    ret_all.pushKV("txs", (int64_t)block.vtx.size());
-    ret_all.pushKV("utxo_increase", outputs - inputs);
-    ret_all.pushKV("utxo_size_inc", utxo_size_inc);
+    ret.emplace_back("time", pindex->GetBlockTime());
+    ret.emplace_back("total_out", ValueFromAmount(total_out));
+    ret.emplace_back("total_size", total_size);
+    ret.emplace_back("totalfee", ValueFromAmount(totalfee));
+    ret.emplace_back("txs", (int64_t)block.vtx.size());
+    ret.emplace_back("utxo_increase", outputs - inputs);
+    ret.emplace_back("utxo_size_inc", utxo_size_inc);
 
-    if (do_all) {
-        return ret_all;
-    }
-
-    UniValue ret(UniValue::VOBJ);
-    for (const std::string &stat : stats) {
-        const UniValue &value = ret_all[stat];
-        if (value.isNull()) {
-            throw JSONRPCError(
-                RPC_INVALID_PARAMETER,
-                strprintf("Invalid selected statistic %s", stat));
+    if (!do_all) {
+        // in this branch, we must return only the keys the client asked for
+        UniValue::Object fullData(std::move(ret));
+        ret.clear();
+        ret.reserve(stats.size());
+        for (const std::string &stat : stats) {
+            UniValue *value = fullData.locate(stat);
+            if (!value || value->isNull()) {
+                throw JSONRPCError(
+                    RPC_INVALID_PARAMETER,
+                    strprintf("Invalid selected statistic %s", stat));
+            }
+            ret.emplace_back(stat, std::move(*value));
         }
-        ret.pushKV(stat, value);
     }
-    return ret;
+    return ret; // compiler will invoke Univalue(Univalue::Object &&) move-constructor.
 }
 
 static UniValue savemempool(const Config &config,
