@@ -906,7 +906,7 @@ UniValue SignTransaction(interfaces::Chain &, CMutableTransaction &mtx,
                     std::string err("Previous output scriptPubKey mismatch:\n");
                     err = err + ScriptToAsmStr(coin.GetTxOut().scriptPubKey) +
                           "\nvs:\n" + ScriptToAsmStr(scriptPubKey);
-                    throw JSONRPCError(RPC_DESERIALIZATION_ERROR, err);
+                    throw JSONRPCError(RPC_DESERIALIZATION_ERROR, std::move(err));
                 }
 
                 CTxOut txout;

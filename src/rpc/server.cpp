@@ -161,18 +161,16 @@ void RPCTypeCheckObj(const UniValue::Object &o,
 
         if (!(t.second.typeAny || v.type() == t.second.type ||
               (fAllowNull && v.isNull()))) {
-            std::string err = strprintf("Expected type %s for %s, got %s",
-                                        uvTypeName(t.second.type), t.first,
-                                        uvTypeName(v.type()));
-            throw JSONRPCError(RPC_TYPE_ERROR, err);
+            throw JSONRPCError(RPC_TYPE_ERROR, strprintf("Expected type %s for %s, got %s",
+                                                         uvTypeName(t.second.type), t.first,
+                                                         uvTypeName(v.type())));
         }
     }
 
     if (fStrict) {
         for (auto &kv : o) {
             if (typesExpected.count(kv.first) == 0) {
-                std::string err = strprintf("Unexpected key %s", kv.first);
-                throw JSONRPCError(RPC_TYPE_ERROR, err);
+                throw JSONRPCError(RPC_TYPE_ERROR, strprintf("Unexpected key %s", kv.first));
             }
         }
     }
@@ -370,17 +368,19 @@ static UniValue getrpcinfo(const Config &config,
     }
 
     LOCK(g_rpc_server_info.mutex);
-    UniValue active_commands(UniValue::VARR);
-    for (const RPCCommandExecutionInfo &info :
-         g_rpc_server_info.active_commands) {
-        UniValue entry(UniValue::VOBJ);
-        entry.pushKV("method", info.method);
-        entry.pushKV("duration", GetTimeMicros() - info.start);
-        active_commands.push_back(entry);
+    UniValue::Array active_commands;
+    active_commands.reserve(g_rpc_server_info.active_commands.size());
+    for (const RPCCommandExecutionInfo &info : g_rpc_server_info.active_commands) {
+        UniValue::Object entry;
+        entry.reserve(2);
+        entry.emplace_back("method", info.method);
+        entry.emplace_back("duration", GetTimeMicros() - info.start);
+        active_commands.emplace_back(std::move(entry));
     }
 
-    UniValue result(UniValue::VOBJ);
-    result.pushKV("active_commands", active_commands);
+    UniValue::Object result;
+    result.reserve(1);
+    result.emplace_back("active_commands", std::move(active_commands));
 
     return result;
 }
@@ -490,31 +490,23 @@ bool IsDeprecatedRPCEnabled(const ArgsManager &args,
            enabled_methods.end();
 }
 
-static UniValue JSONRPCExecOne(Config &config, RPCServer &rpcServer,
-                               JSONRPCRequest jreq, const UniValue &req) {
-    UniValue rpc_result(UniValue::VOBJ);
-
+static UniValue::Object JSONRPCExecOne(Config &config, RPCServer &rpcServer, JSONRPCRequest jreq, UniValue &&req) {
     try {
-        jreq.parse(req);
-
-        UniValue result = rpcServer.ExecuteCommand(config, jreq);
-        rpc_result = JSONRPCReplyObj(result, NullUniValue, jreq.id);
-    } catch (const UniValue &objError) {
-        rpc_result = JSONRPCReplyObj(NullUniValue, objError, jreq.id);
+        jreq.parse(std::move(req));
+        // id is copied rather than moved, so it's still there for exception handlers below
+        return JSONRPCReplyObj(rpcServer.ExecuteCommand(config, jreq), UniValue(), UniValue(jreq.id));
+    } catch (JSONRPCError &error) {
+        return JSONRPCReplyObj(UniValue(), std::move(error).toObj(), std::move(jreq.id));
     } catch (const std::exception &e) {
-        rpc_result = JSONRPCReplyObj(
-            NullUniValue, JSONRPCError(RPC_PARSE_ERROR, e.what()), jreq.id);
+        return JSONRPCReplyObj(UniValue(), JSONRPCError(RPC_PARSE_ERROR, e.what()).toObj(), std::move(jreq.id));
     }
-
-    return rpc_result;
 }
 
-std::string JSONRPCExecBatch(Config &config, RPCServer &rpcServer,
-                             const JSONRPCRequest &jreq, const UniValue &vReq) {
+std::string JSONRPCExecBatch(Config &config, RPCServer &rpcServer, const JSONRPCRequest &jreq, UniValue::Array &&vReq) {
     UniValue::Array ret;
     ret.reserve(vReq.size());
-    for (size_t i = 0; i < vReq.size(); i++) {
-        ret.push_back(JSONRPCExecOne(config, rpcServer, jreq, vReq[i]));
+    for (UniValue& req: vReq) {
+        ret.emplace_back(JSONRPCExecOne(config, rpcServer, jreq, std::move(req)));
     }
 
     return UniValue::stringify(ret) + '\n';

@@ -492,19 +492,10 @@ void RPCExecutor::request(const QString &command,
         }
 
         Q_EMIT reply(RPCConsole::CMD_REPLY, QString::fromStdString(result));
-    } catch (UniValue &objError) {
+    } catch (const JSONRPCError &error) {
         // Nice formatting for standard-format error
-        try {
-            int code = objError["code"].get_int();
-            const std::string& message = objError["message"].get_str();
-            Q_EMIT reply(RPCConsole::CMD_ERROR,
-                         QString::fromStdString(message) + " (code " + QString::number(code) + ")");
-        } catch (const std::runtime_error &) {
-            // raised when converting to invalid type, i.e. missing code or
-            // message. Show raw JSON object.
-            Q_EMIT reply(RPCConsole::CMD_ERROR,
-                         QString::fromStdString(UniValue::stringify(objError)));
-        }
+        Q_EMIT reply(RPCConsole::CMD_ERROR,
+                     QString::fromStdString(error.message) + " (code " + QString::number(error.code) + ")");
     } catch (const std::exception &e) {
         Q_EMIT reply(RPCConsole::CMD_ERROR,
                      QString("Error: ") + QString::fromStdString(e.what()));

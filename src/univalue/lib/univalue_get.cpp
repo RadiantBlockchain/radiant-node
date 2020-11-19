@@ -82,13 +82,6 @@ bool UniValue::get_bool() const
     return getBool();
 }
 
-const std::string& UniValue::get_str() const
-{
-    if (!isStr())
-        throw std::runtime_error("JSON value is not a string as expected");
-    return getValStr();
-}
-
 int UniValue::get_int() const
 {
     if (!isNum())
@@ -117,6 +110,19 @@ double UniValue::get_real() const
     if (!ParseDouble(getValStr(), &retval))
         throw std::runtime_error("JSON double out of range");
     return retval;
+}
+
+const std::string& UniValue::get_str() const
+{
+    if (!isStr())
+        throw std::runtime_error("JSON value is not a string as expected");
+    return val;
+}
+std::string& UniValue::get_str()
+{
+    if (!isStr())
+        throw std::runtime_error("JSON value is not a string as expected");
+    return val;
 }
 
 const UniValue::Object& UniValue::get_obj() const

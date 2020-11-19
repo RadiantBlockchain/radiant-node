@@ -1,5 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -190,9 +191,9 @@ CRPCConvertTable::CRPCConvertTable() {
 
 static CRPCConvertTable rpcCvtTable;
 
-UniValue RPCConvertValues(const std::string &strMethod,
-                          const std::vector<std::string> &strParams) {
-    UniValue params(UniValue::VARR);
+UniValue::Array RPCConvertValues(const std::string &strMethod, const std::vector<std::string> &strParams) {
+    UniValue::Array params;
+    params.reserve(strParams.size());
 
     for (unsigned int idx = 0; idx < strParams.size(); idx++) {
         const std::string &strVal = strParams[idx];
@@ -200,19 +201,19 @@ UniValue RPCConvertValues(const std::string &strMethod,
         UniValue json_value;
         if (rpcCvtTable.convert(strMethod, idx) && json_value.read(strVal)) {
             // parse string as JSON, insert bool/number/object/etc. value
-            params.push_back(json_value);
+            params.push_back(std::move(json_value));
         } else {
             // insert string value directly
-            params.push_back(strVal);
+            params.emplace_back(strVal);
         }
     }
 
     return params;
 }
 
-UniValue RPCConvertNamedValues(const std::string &strMethod,
-                               const std::vector<std::string> &strParams) {
-    UniValue params(UniValue::VOBJ);
+UniValue::Object RPCConvertNamedValues(const std::string &strMethod, const std::vector<std::string> &strParams) {
+    UniValue::Object params;
+    params.reserve(strParams.size());
 
     for (const std::string &s : strParams) {
         size_t pos = s.find('=');
@@ -228,10 +229,10 @@ UniValue RPCConvertNamedValues(const std::string &strMethod,
         UniValue json_value;
         if (!rpcCvtTable.convert(strMethod, name) || !json_value.read(value)) {
             // insert string value directly
-            params.pushKV(name, value);
+            params.emplace_back(std::move(name), std::move(value));
         } else {
             // parse string as JSON, insert bool/number/object/etc. value
-            params.pushKV(name, json_value);
+            params.emplace_back(std::move(name), std::move(json_value));
         }
     }
 

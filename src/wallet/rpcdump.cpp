@@ -1353,19 +1353,21 @@ static UniValue ProcessImport(CWallet *const pwallet, const UniValue &data,
             }
         }
 
-        UniValue result = UniValue(UniValue::VOBJ);
-        result.pushKV("success", UniValue(success));
+        UniValue::Object result;
+        result.reserve(1);
+        result.emplace_back("success", success);
         return result;
-    } catch (const UniValue &e) {
-        UniValue result = UniValue(UniValue::VOBJ);
-        result.pushKV("success", UniValue(false));
-        result.pushKV("error", e);
+    } catch (JSONRPCError &e) {
+        UniValue::Object result;
+        result.reserve(2);
+        result.emplace_back("success", false);
+        result.emplace_back("error", std::move(e).toObj());
         return result;
     } catch (...) {
-        UniValue result = UniValue(UniValue::VOBJ);
-        result.pushKV("success", UniValue(false));
-        result.pushKV("error",
-                      JSONRPCError(RPC_MISC_ERROR, "Missing required fields"));
+        UniValue::Object result;
+        result.reserve(2);
+        result.emplace_back("success", false);
+        result.emplace_back("error", JSONRPCError(RPC_MISC_ERROR, "Missing required fields").toObj());
         return result;
     }
 }
@@ -1554,10 +1556,10 @@ UniValue importmulti(const Config &, const JSONRPCRequest &mainRequest) {
                     results[i].locate("error")) {
                     response.push_back(std::move(results[i]));
                 } else {
-                    UniValue result = UniValue(UniValue::VOBJ);
+                    UniValue::Object result;
                     result.reserve(2);
-                    result.pushKV("success", UniValue(false), false);
-                    result.pushKV(
+                    result.emplace_back("success", false);
+                    result.emplace_back(
                         "error",
                         JSONRPCError(
                             RPC_MISC_ERROR,
@@ -1576,9 +1578,8 @@ UniValue importmulti(const Config &, const JSONRPCRequest &mainRequest) {
                                 "options).",
                                 GetImportTimestamp(request, now),
                                 scannedTime - TIMESTAMP_WINDOW - 1,
-                                TIMESTAMP_WINDOW)),
-                        false);
-                    response.push_back(std::move(result));
+                                TIMESTAMP_WINDOW)).toObj());
+                    response.emplace_back(std::move(result));
                 }
                 ++i;
             }

@@ -178,11 +178,11 @@ void RPCNestedTests::rpcNestedTests() {
     // invalid argument
     QVERIFY_EXCEPTION_THROWN(RPCConsole::RPCExecuteCommandLine(
                                  *node, result, "getblockchaininfo(True)"),
-                             UniValue);
+                             JSONRPCError);
     // method not found
     QVERIFY_EXCEPTION_THROWN(RPCConsole::RPCExecuteCommandLine(
                                  *node, result, "a(getblockchaininfo(True))"),
-                             UniValue);
+                             JSONRPCError);
     // don't tollerate empty arguments when using ,
     QVERIFY_EXCEPTION_THROWN(RPCConsole::RPCExecuteCommandLine(
                                  *node, result, "rpcNestedTest abc,,abc"),

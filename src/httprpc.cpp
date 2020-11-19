@@ -1,4 +1,5 @@
 // Copyright (c) 2015-2016 The Bitcoin Core developers
+// Copyright (c) 2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -70,19 +71,17 @@ static std::string strRPCCORSDomain;
 /* Stored RPC timer interface (for unregistration) */
 static std::unique_ptr<HTTPRPCTimerInterface> httpRPCTimerInterface;
 
-static void JSONErrorReply(HTTPRequest *req, const UniValue &objError,
-                           const UniValue &id) {
+static void JSONErrorReply(HTTPRequest* req, JSONRPCError&& error, UniValue&& id) {
     // Send error reply from json-rpc error object.
     int nStatus = HTTP_INTERNAL_SERVER_ERROR;
-    int code = objError["code"].get_int();
 
-    if (code == RPC_INVALID_REQUEST) {
+    if (error.code == RPC_INVALID_REQUEST) {
         nStatus = HTTP_BAD_REQUEST;
-    } else if (code == RPC_METHOD_NOT_FOUND) {
+    } else if (error.code == RPC_METHOD_NOT_FOUND) {
         nStatus = HTTP_NOT_FOUND;
     }
 
-    std::string strReply = JSONRPCReply(NullUniValue, objError, id);
+    std::string strReply = JSONRPCReply(UniValue(), std::move(error).toObj(), std::move(id));
 
     req->WriteHeader("Content-Type", "application/json");
     req->WriteReply(nStatus, strReply);
@@ -331,27 +330,25 @@ bool HTTPRPCRequestProcessor::ProcessHTTPRequest(HTTPRequest *req) {
         std::string strReply;
         // singleton request
         if (valRequest.isObject()) {
-            jreq.parse(valRequest);
-
-            UniValue result = rpcServer.ExecuteCommand(config, jreq);
+            jreq.parse(std::move(valRequest));
 
             // Send reply
-            strReply = JSONRPCReply(result, NullUniValue, jreq.id);
+            // (id is copied rather than moved, so it's still there for exception handlers below)
+            strReply = JSONRPCReply(rpcServer.ExecuteCommand(config, jreq), UniValue(), UniValue(jreq.id));
         } else if (valRequest.isArray()) {
             // array of requests
-            strReply = JSONRPCExecBatch(config, rpcServer, jreq,
-                                        valRequest);
+            strReply = JSONRPCExecBatch(config, rpcServer, jreq, std::move(valRequest.get_array()));
         } else {
             throw JSONRPCError(RPC_PARSE_ERROR, "Top-level object parse error");
         }
 
         req->WriteHeader("Content-Type", "application/json");
         req->WriteReply(HTTP_OK, strReply);
-    } catch (const UniValue &objError) {
-        JSONErrorReply(req, objError, jreq.id);
+    } catch (JSONRPCError &error) {
+        JSONErrorReply(req, std::move(error), std::move(jreq.id));
         return false;
     } catch (const std::exception &e) {
-        JSONErrorReply(req, JSONRPCError(RPC_PARSE_ERROR, e.what()), jreq.id);
+        JSONErrorReply(req, JSONRPCError(RPC_PARSE_ERROR, e.what()), std::move(jreq.id));
         return false;
     }
     return true;
