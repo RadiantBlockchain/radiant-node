@@ -7,10 +7,9 @@
 #ifndef __UNIVALUE_H__
 #define __UNIVALUE_H__
 
-#include <stdint.h>
-#include <string.h>
-
 #include <cassert>
+#include <cstdint>
+#include <cstring>
 #include <map>
 #include <string>
 #include <type_traits>
@@ -430,10 +429,14 @@ public:
     UniValue(VType initialType, const std::string& initialStr) : typ(initialType), val(initialStr) {}
     UniValue(VType initialType, std::string&& initialStr) noexcept : typ(initialType), val(std::move(initialStr)) {}
     UniValue(bool val_) { setBool(val_); }
-    UniValue(uint64_t val_) { setInt(val_); }
-    UniValue(int64_t val_) { setInt(val_); }
-    UniValue(unsigned val_) { setInt(val_); }
+    UniValue(short val_) { setInt(val_); }
     UniValue(int val_) { setInt(val_); }
+    UniValue(long val_) { setInt(val_); }
+    UniValue(long long val_) { setInt(val_); }
+    UniValue(unsigned short val_) { setInt(val_); }
+    UniValue(unsigned val_) { setInt(val_); }
+    UniValue(unsigned long val_) { setInt(val_); }
+    UniValue(unsigned long long val_) { setInt(val_); }
     UniValue(double val_) { setFloat(val_); }
     UniValue(const std::string& val_) : typ(VSTR), val(val_) {}
     UniValue(std::string&& val_) noexcept : typ(VSTR), val(std::move(val_)) {}
@@ -442,7 +445,6 @@ public:
     UniValue(Array&& array) : typ(VARR), values(std::move(array)) {}
     explicit UniValue(const Object& object) : typ(VOBJ), entries(object) {}
     UniValue(Object&& object) : typ(VOBJ), entries(std::move(object)) {}
-
     explicit UniValue(const UniValue&) = default;
     UniValue(UniValue&&) noexcept = default;
     UniValue& operator=(const UniValue&) = default;
@@ -452,10 +454,14 @@ public:
     void setBool(bool val);
     void setNumStr(const std::string& val);
     void setNumStr(std::string&& val) noexcept;
-    void setInt(uint64_t val);
-    void setInt(int64_t val);
-    void setInt(unsigned val_) { setInt(uint64_t(val_)); }
-    void setInt(int val_) { setInt(int64_t(val_)); }
+    void setInt(short val_);
+    void setInt(int val_);
+    void setInt(long val_);
+    void setInt(long long val_);
+    void setInt(unsigned short val_);
+    void setInt(unsigned val_);
+    void setInt(unsigned long val_);
+    void setInt(unsigned long long val_);
     void setFloat(double val);
     void setStr(const std::string& val);
     void setStr(std::string&& val) noexcept;
@@ -698,7 +704,8 @@ public:
      *
      * This is a Bitcoin Cash Node extension of the UniValue API.
      */
-    template<typename Value> static std::string stringify(const Value& value, unsigned int prettyIndent = 0) {
+    template<typename Value>
+    static std::string stringify(const Value& value, unsigned int prettyIndent = 0) {
         std::string s; // we do it this way for RVO to work on all compilers
         Stream ss{s};
         s.reserve(1024);
@@ -711,7 +718,7 @@ public:
     bool read(const std::string& rawStr) { return read(rawStr.data(), rawStr.size()); }
 
 private:
-    UniValue::VType typ;
+    UniValue::VType typ = VNULL;
     std::string val;                       // numbers are stored as C++ strings
     Object entries;
     Array values;
@@ -735,9 +742,9 @@ private:
     static void stringify(Stream & stream, const UniValue::Array& value, unsigned int prettyIndent, unsigned int indentLevel);
     static void stringify(Stream & stream, const UniValue::Object& value, unsigned int prettyIndent, unsigned int indentLevel);
 
-    // Used by the various setInt() and setFloat() overloads
-    template<typename Num>
-    void setIntOrFloat(Num numVal);
+    // Used by the setInt() overloads
+    template<typename Integer>
+    void setInt64(Integer val);
 
 public:
     // Strict type-specific getters, these throw std::runtime_error if the
