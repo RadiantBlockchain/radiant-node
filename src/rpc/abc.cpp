@@ -32,17 +32,17 @@ static UniValue setexcessiveblock(Config &config,
                                   const JSONRPCRequest &request) {
     if (request.fHelp || request.params.size() != 1) {
         throw std::runtime_error(
-            "setexcessiveblock blockSize\n"
+            "setexcessiveblock maxBlockSize\n"
             "\nSet the excessive block size. Excessive blocks will not be used "
             "in the active chain or relayed. This discourages the propagation "
             "of blocks that you consider excessively large."
             "\nArguments\n"
-            "1. blockSize  (integer, required) Excessive block size in bytes.  "
+            "1. maxBlockSize  (integer, required) Excessive block size in bytes.  "
             "Must be greater than " +
             std::to_string(LEGACY_MAX_BLOCK_SIZE) +
             ".\n"
             "\nResult\n"
-            "  blockSize (integer) excessive block size in bytes\n"
+            "  maxBlockSize (integer) excessive block size in bytes\n"
             "\nExamples:\n" +
             HelpExampleCli("setexcessiveblock", "128000000") +
             HelpExampleRpc("setexcessiveblock", "128000000"));
@@ -52,7 +52,7 @@ static UniValue setexcessiveblock(Config &config,
         throw JSONRPCError(
             RPC_INVALID_PARAMETER,
             std::string(
-                "Invalid parameter, excessiveblock must be an integer"));
+                "Invalid parameter, maxBlockSize must be an integer"));
     }
 
     int64_t ebs = request.params[0].get_int64();
@@ -62,7 +62,7 @@ static UniValue setexcessiveblock(Config &config,
         throw JSONRPCError(
             RPC_INVALID_PARAMETER,
             std::string(
-                "Invalid parameter, excessiveblock must be larger than ") +
+                "Invalid parameter, maxBlockSize must be larger than ") +
                 std::to_string(LEGACY_MAX_BLOCK_SIZE));
     }
 

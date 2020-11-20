@@ -25,7 +25,6 @@ enable this behavior, use`-logthreadnames=1`.
 
 ## Deprecated functionality
 
-...
 
 ## Removed functionality
 
@@ -39,6 +38,20 @@ enable this behavior, use`-logthreadnames=1`.
 
 The `getblockstats` RPC is faster for fee calculation by using BlockUndo data. Also, `-txindex` is no longer required
 and `getblockstats` works for all non-pruned blocks.
+
+A discrepancy was noticed in the argument and result value names of
+`getexcessiveblock` and `setexcessiveblock` RPC calls between the interface
+documentation, actual required argument names, error message and name of
+returned result. A two-step procedure will be followed to correct this.
+
+1. In this release, the RPC help and error messages for the `setexcessiveblock`
+   command have been corrected to `maxBlockSize` to align the name of the
+   argument, previously `blockSize`, with the name required when the
+   "named argument" form of the call is used.
+
+2. In a future release, the parameter name `maxBlockSize` introduced by
+   this version will be renamed to 'excessiveBlockSize' in order to make it
+   the same as the result value of the `getexcessiveblock` RPC call.
 
 ## Regressions
 

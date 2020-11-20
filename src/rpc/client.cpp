@@ -158,7 +158,7 @@ static const CRPCConvertParam vRPCConvertParams[] = {
     {"getnodeaddresses", 0, "count"},
     {"stop", 0, "wait"},
     // ABC specific RPC
-    {"setexcessiveblock", 0, "blockSize"},
+    {"setexcessiveblock", 0, "maxBlockSize"},
 };
 
 class CRPCConvertTable {
