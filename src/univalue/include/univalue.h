@@ -429,9 +429,10 @@ public:
     explicit UniValue(VType initialType = VNULL) noexcept : typ(initialType) {}
     UniValue(VType initialType, const std::string& initialStr) : typ(initialType), val(initialStr) {}
     UniValue(VType initialType, std::string&& initialStr) noexcept : typ(initialType), val(std::move(initialStr)) {}
+    UniValue(bool val_) { setBool(val_); }
     UniValue(uint64_t val_) { setInt(val_); }
     UniValue(int64_t val_) { setInt(val_); }
-    UniValue(bool val_) { setBool(val_); }
+    UniValue(unsigned val_) { setInt(val_); }
     UniValue(int val_) { setInt(val_); }
     UniValue(double val_) { setFloat(val_); }
     UniValue(const std::string& val_) : typ(VSTR), val(val_) {}
@@ -453,6 +454,7 @@ public:
     void setNumStr(std::string&& val) noexcept;
     void setInt(uint64_t val);
     void setInt(int64_t val);
+    void setInt(unsigned val_) { setInt(uint64_t(val_)); }
     void setInt(int val_) { setInt(int64_t(val_)); }
     void setFloat(double val);
     void setStr(const std::string& val);
