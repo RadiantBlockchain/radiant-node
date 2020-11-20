@@ -768,9 +768,10 @@ public:
     /** Sets the current loaded state */
     void SetIsLoaded(bool loaded);
 
-    auto size() const {
+    uint64_t size() const {
         LOCK(cs);
-        return mapTx.size();
+        // Note: decltype(mapTx.size()) varies on different platforms so best to explicitly cast.
+        return uint64_t(mapTx.size());
     }
 
     uint64_t GetTotalTxSize() const {
