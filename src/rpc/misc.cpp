@@ -152,9 +152,10 @@ static UniValue createmultisig(const Config &config,
     const CTxDestination dest =
         AddAndGetDestinationForScript(keystore, inner, output_type);
 
-    UniValue result(UniValue::VOBJ);
-    result.pushKV("address", EncodeDestination(dest, config));
-    result.pushKV("redeemScript", HexStr(inner.begin(), inner.end()));
+    UniValue::Object result;
+    result.reserve(2);
+    result.emplace_back("address", EncodeDestination(dest, config));
+    result.emplace_back("redeemScript", HexStr(inner.begin(), inner.end()));
 
     return result;
 }
@@ -199,9 +200,9 @@ static UniValue verifymessage(const Config &config,
 
     LOCK(cs_main);
 
-    std::string strAddress = request.params[0].get_str();
-    std::string strSign = request.params[1].get_str();
-    std::string strMessage = request.params[2].get_str();
+    const std::string &strAddress = request.params[0].get_str();
+    const std::string &strSign = request.params[1].get_str();
+    const std::string &strMessage = request.params[2].get_str();
 
     CTxDestination destination =
         DecodeDestination(strAddress, config.GetChainParams());
@@ -266,8 +267,8 @@ static UniValue signmessagewithprivkey(const Config &config,
                            "\"privkey\", \"my message\""));
     }
 
-    std::string strPrivkey = request.params[0].get_str();
-    std::string strMessage = request.params[1].get_str();
+    const std::string &strPrivkey = request.params[0].get_str();
+    const std::string &strMessage = request.params[1].get_str();
 
     CKey key = DecodeSecret(strPrivkey);
     if (!key.IsValid()) {
@@ -325,15 +326,16 @@ static UniValue setmocktime(const Config &config,
     return UniValue();
 }
 
-static UniValue RPCLockedMemoryInfo() {
+static UniValue::Object RPCLockedMemoryInfo() {
     LockedPool::Stats stats = LockedPoolManager::Instance().stats();
-    UniValue obj(UniValue::VOBJ);
-    obj.pushKV("used", uint64_t(stats.used));
-    obj.pushKV("free", uint64_t(stats.free));
-    obj.pushKV("total", uint64_t(stats.total));
-    obj.pushKV("locked", uint64_t(stats.locked));
-    obj.pushKV("chunks_used", uint64_t(stats.chunks_used));
-    obj.pushKV("chunks_free", uint64_t(stats.chunks_free));
+    UniValue::Object obj;
+    obj.reserve(6);
+    obj.emplace_back("used", stats.used);
+    obj.emplace_back("free", stats.free);
+    obj.emplace_back("total", stats.total);
+    obj.emplace_back("locked", stats.locked);
+    obj.emplace_back("chunks_used", stats.chunks_used);
+    obj.emplace_back("chunks_free", stats.chunks_free);
     return obj;
 }
 
@@ -402,8 +404,9 @@ static UniValue getmemoryinfo(const Config &config,
     std::string mode =
         request.params[0].isNull() ? "stats" : request.params[0].get_str();
     if (mode == "stats") {
-        UniValue obj(UniValue::VOBJ);
-        obj.pushKV("locked", RPCLockedMemoryInfo());
+        UniValue::Object obj;
+        obj.reserve(1);
+        obj.emplace_back("locked", RPCLockedMemoryInfo());
         return obj;
     } else if (mode == "mallocinfo") {
 #ifdef HAVE_MALLOC_INFO
@@ -414,7 +417,7 @@ static UniValue getmemoryinfo(const Config &config,
             "mallocinfo is only available when compiled with glibc 2.10+");
 #endif
     } else {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, "unknown mode " + mode);
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "unknown mode " + std::move(mode));
     }
 }
 
@@ -518,10 +521,11 @@ static UniValue logging(const Config &config, const JSONRPCRequest &request) {
         }
     }
 
-    UniValue result(UniValue::VOBJ);
+    UniValue::Object result;
     std::vector<CLogCategoryActive> vLogCatActive = ListActiveLogCategories();
-    for (const auto &logCatActive : vLogCatActive) {
-        result.pushKV(logCatActive.category, logCatActive.active);
+    result.reserve(vLogCatActive.size());
+    for (auto &logCatActive : vLogCatActive) {
+        result.emplace_back(std::move(logCatActive.category), logCatActive.active);
     }
 
     return result;

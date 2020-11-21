@@ -48,7 +48,7 @@ static UniValue getconnectioncount(const Config &config,
             "Error: Peer-to-peer functionality missing or disabled");
     }
 
-    return int(g_connman->GetNodeCount(CConnman::CONNECTIONS_ALL));
+    return g_connman->GetNodeCount(CConnman::CONNECTIONS_ALL);
 }
 
 static UniValue ping(const Config &config, const JSONRPCRequest &request) {
@@ -167,82 +167,90 @@ static UniValue getpeerinfo(const Config &config,
     std::vector<CNodeStats> vstats;
     g_connman->GetNodeStats(vstats);
 
-    UniValue ret(UniValue::VARR);
+    UniValue::Array ret;
+    ret.reserve(vstats.size());
 
-    for (const CNodeStats &stats : vstats) {
-        UniValue obj(UniValue::VOBJ);
+    for (CNodeStats &stats : vstats) {
         CNodeStateStats statestats;
         bool fStateStats = GetNodeStateStats(stats.nodeid, statestats);
-        obj.pushKV("id", stats.nodeid);
-        obj.pushKV("addr", stats.addrName);
-        if (!(stats.addrLocal.empty())) {
-            obj.pushKV("addrlocal", stats.addrLocal);
+        bool addrlocal = !stats.addrLocal.empty();
+        bool addrbind = stats.addrBind.IsValid();
+        bool pingtime = stats.dPingTime > 0.0;
+        bool minping = stats.dMinPing < double(std::numeric_limits<int64_t>::max()) / 1e6;
+        bool pingwait = stats.dPingWait > 0.0;
+        UniValue::Object obj;
+        obj.reserve(20 + addrlocal + addrbind + pingtime + minping + pingwait + fStateStats * 4);
+        obj.emplace_back("id", stats.nodeid);
+        obj.emplace_back("addr", std::move(stats.addrName));
+        if (addrlocal) {
+            obj.emplace_back("addrlocal", std::move(stats.addrLocal));
         }
-        if (stats.addrBind.IsValid()) {
-            obj.pushKV("addrbind", stats.addrBind.ToString());
+        if (addrbind) {
+            obj.emplace_back("addrbind", stats.addrBind.ToString());
         }
-        obj.pushKV("services", strprintf("%016x", stats.nServices));
-        obj.pushKV("relaytxes", stats.fRelayTxes);
-        obj.pushKV("lastsend", stats.nLastSend);
-        obj.pushKV("lastrecv", stats.nLastRecv);
-        obj.pushKV("bytessent", stats.nSendBytes);
-        obj.pushKV("bytesrecv", stats.nRecvBytes);
-        obj.pushKV("conntime", stats.nTimeConnected);
-        obj.pushKV("timeoffset", stats.nTimeOffset);
-        if (stats.dPingTime > 0.0) {
-            obj.pushKV("pingtime", stats.dPingTime);
+        obj.emplace_back("services", strprintf("%016x", stats.nServices));
+        obj.emplace_back("relaytxes", stats.fRelayTxes);
+        obj.emplace_back("lastsend", stats.nLastSend);
+        obj.emplace_back("lastrecv", stats.nLastRecv);
+        obj.emplace_back("bytessent", stats.nSendBytes);
+        obj.emplace_back("bytesrecv", stats.nRecvBytes);
+        obj.emplace_back("conntime", stats.nTimeConnected);
+        obj.emplace_back("timeoffset", stats.nTimeOffset);
+        if (pingtime) {
+            obj.emplace_back("pingtime", stats.dPingTime);
         }
-        if (stats.dMinPing <
-            static_cast<double>(std::numeric_limits<int64_t>::max()) / 1e6) {
-            obj.pushKV("minping", stats.dMinPing);
+        if (minping) {
+            obj.emplace_back("minping", stats.dMinPing);
         }
-        if (stats.dPingWait > 0.0) {
-            obj.pushKV("pingwait", stats.dPingWait);
+        if (pingwait) {
+            obj.emplace_back("pingwait", stats.dPingWait);
         }
-        obj.pushKV("version", stats.nVersion);
+        obj.emplace_back("version", stats.nVersion);
         // Use the sanitized form of subver here, to avoid tricksy remote peers
         // from corrupting or modifying the JSON output by putting special
         // characters in their ver message.
-        obj.pushKV("subver", stats.cleanSubVer);
-        obj.pushKV("inbound", stats.fInbound);
-        obj.pushKV("addnode", stats.m_manual_connection);
-        obj.pushKV("startingheight", stats.nStartingHeight);
+        obj.emplace_back("subver", std::move(stats.cleanSubVer));
+        obj.emplace_back("inbound", stats.fInbound);
+        obj.emplace_back("addnode", stats.m_manual_connection);
+        obj.emplace_back("startingheight", stats.nStartingHeight);
         if (fStateStats) {
-            obj.pushKV("banscore", statestats.nMisbehavior);
-            obj.pushKV("synced_headers", statestats.nSyncHeight);
-            obj.pushKV("synced_blocks", statestats.nCommonHeight);
-            UniValue heights(UniValue::VARR);
+            obj.emplace_back("banscore", statestats.nMisbehavior);
+            obj.emplace_back("synced_headers", statestats.nSyncHeight);
+            obj.emplace_back("synced_blocks", statestats.nCommonHeight);
+            UniValue::Array heights;
+            heights.reserve(statestats.vHeightInFlight.size());
             for (const int height : statestats.vHeightInFlight) {
-                heights.push_back(height);
+                heights.emplace_back(height);
             }
-            obj.pushKV("inflight", heights);
+            obj.emplace_back("inflight", std::move(heights));
         }
-        obj.pushKV("whitelisted", stats.m_legacyWhitelisted);
-        UniValue permissions(UniValue::VARR);
-        for (const auto &permission :
-             NetPermissions::ToStrings(stats.m_permissionFlags)) {
-            permissions.push_back(permission);
+        obj.emplace_back("whitelisted", stats.m_legacyWhitelisted);
+        auto permissionStrings = NetPermissions::ToStrings(stats.m_permissionFlags);
+        UniValue::Array permissions;
+        permissions.reserve(permissionStrings.size());
+        for (auto &permission : permissionStrings) {
+            permissions.emplace_back(std::move(permission));
         }
-        obj.pushKV("permissions", permissions);
-        obj.pushKV("minfeefilter", ValueFromAmount(stats.minFeeFilter));
+        obj.emplace_back("permissions", std::move(permissions));
+        obj.emplace_back("minfeefilter", ValueFromAmount(stats.minFeeFilter));
 
-        UniValue sendPerMsgCmd(UniValue::VOBJ);
+        UniValue::Object sendPerMsgCmd;
         for (const mapMsgCmdSize::value_type &i : stats.mapSendBytesPerMsgCmd) {
             if (i.second > 0) {
-                sendPerMsgCmd.pushKV(i.first, i.second);
+                sendPerMsgCmd.emplace_back(i);
             }
         }
-        obj.pushKV("bytessent_per_msg", sendPerMsgCmd);
+        obj.emplace_back("bytessent_per_msg", std::move(sendPerMsgCmd));
 
-        UniValue recvPerMsgCmd(UniValue::VOBJ);
+        UniValue::Object recvPerMsgCmd;
         for (const mapMsgCmdSize::value_type &i : stats.mapRecvBytesPerMsgCmd) {
             if (i.second > 0) {
-                recvPerMsgCmd.pushKV(i.first, i.second);
+                recvPerMsgCmd.emplace_back(i);
             }
         }
-        obj.pushKV("bytesrecv_per_msg", recvPerMsgCmd);
+        obj.emplace_back("bytesrecv_per_msg", std::move(recvPerMsgCmd));
 
-        ret.push_back(obj);
+        ret.emplace_back(obj);
     }
 
     return ret;
@@ -285,7 +293,7 @@ static UniValue addnode(const Config &config, const JSONRPCRequest &request) {
             "Error: Peer-to-peer functionality missing or disabled");
     }
 
-    std::string strNode = request.params[0].get_str();
+    const std::string &strNode = request.params[0].get_str();
 
     if (strCommand == "onetry") {
         CAddress addr;
@@ -294,11 +302,10 @@ static UniValue addnode(const Config &config, const JSONRPCRequest &request) {
         return UniValue();
     }
 
-    if ((strCommand == "add") && (!g_connman->AddNode(strNode))) {
+    if (strCommand == "add" && !g_connman->AddNode(strNode)) {
         throw JSONRPCError(RPC_CLIENT_NODE_ALREADY_ADDED,
                            "Error: Node already added");
-    } else if ((strCommand == "remove") &&
-               (!g_connman->RemoveAddedNode(strNode))) {
+    } else if (strCommand == "remove" && !g_connman->RemoveAddedNode(strNode)) {
         throw JSONRPCError(RPC_CLIENT_NODE_NOT_ADDED,
                            "Error: Node has not been added.");
     }
@@ -412,9 +419,11 @@ static UniValue getaddednodeinfo(const Config &config,
 
     if (!request.params[0].isNull()) {
         bool found = false;
-        for (const AddedNodeInfo &info : vInfo) {
+        for (AddedNodeInfo &info : vInfo) {
             if (info.strAddedNode == request.params[0].get_str()) {
-                vInfo.assign(1, info);
+                AddedNodeInfo selected = std::move(info);
+                vInfo.resize(1);
+                vInfo.front() = std::move(selected);
                 found = true;
                 break;
             }
@@ -425,21 +434,22 @@ static UniValue getaddednodeinfo(const Config &config,
         }
     }
 
-    UniValue ret(UniValue::VARR);
+    UniValue::Array ret;
+    ret.reserve(vInfo.size());
 
-    for (const AddedNodeInfo &info : vInfo) {
-        UniValue obj(UniValue::VOBJ);
-        obj.pushKV("addednode", info.strAddedNode);
-        obj.pushKV("connected", info.fConnected);
-        UniValue addresses(UniValue::VARR);
+    for (AddedNodeInfo &info : vInfo) {
+        UniValue::Object obj;
+        obj.emplace_back("addednode", std::move(info.strAddedNode));
+        obj.emplace_back("connected", info.fConnected);
+        UniValue::Array addresses;
         if (info.fConnected) {
-            UniValue address(UniValue::VOBJ);
-            address.pushKV("address", info.resolvedAddress.ToString());
-            address.pushKV("connected", info.fInbound ? "inbound" : "outbound");
-            addresses.push_back(address);
+            UniValue::Object address;
+            address.emplace_back("address", info.resolvedAddress.ToString());
+            address.emplace_back("connected", info.fInbound ? "inbound" : "outbound");
+            addresses.emplace_back(std::move(address));
         }
-        obj.pushKV("addresses", addresses);
-        ret.push_back(obj);
+        obj.emplace_back("addresses", std::move(addresses));
+        ret.emplace_back(std::move(obj));
     }
 
     return ret;
@@ -487,43 +497,43 @@ static UniValue getnettotals(const Config &config,
             "Error: Peer-to-peer functionality missing or disabled");
     }
 
-    UniValue obj(UniValue::VOBJ);
-    obj.pushKV("totalbytesrecv", g_connman->GetTotalBytesRecv());
-    obj.pushKV("totalbytessent", g_connman->GetTotalBytesSent());
-    obj.pushKV("timemillis", GetTimeMillis());
+    UniValue::Object obj;
+    obj.reserve(4);
 
-    UniValue outboundLimit(UniValue::VOBJ);
-    outboundLimit.pushKV("timeframe", g_connman->GetMaxOutboundTimeframe());
-    outboundLimit.pushKV("target", g_connman->GetMaxOutboundTarget());
-    outboundLimit.pushKV("target_reached",
-                         g_connman->OutboundTargetReached(false));
-    outboundLimit.pushKV("serve_historical_blocks",
-                         !g_connman->OutboundTargetReached(true));
-    outboundLimit.pushKV("bytes_left_in_cycle",
-                         g_connman->GetOutboundTargetBytesLeft());
-    outboundLimit.pushKV("time_left_in_cycle",
-                         g_connman->GetMaxOutboundTimeLeftInCycle());
-    obj.pushKV("uploadtarget", outboundLimit);
+    obj.emplace_back("totalbytesrecv", g_connman->GetTotalBytesRecv());
+    obj.emplace_back("totalbytessent", g_connman->GetTotalBytesSent());
+    obj.emplace_back("timemillis", GetTimeMillis());
+
+    UniValue::Object outboundLimit;
+    outboundLimit.reserve(6);
+    outboundLimit.emplace_back("timeframe", g_connman->GetMaxOutboundTimeframe());
+    outboundLimit.emplace_back("target", g_connman->GetMaxOutboundTarget());
+    outboundLimit.emplace_back("target_reached", g_connman->OutboundTargetReached(false));
+    outboundLimit.emplace_back("serve_historical_blocks", !g_connman->OutboundTargetReached(true));
+    outboundLimit.emplace_back("bytes_left_in_cycle", g_connman->GetOutboundTargetBytesLeft());
+    outboundLimit.emplace_back("time_left_in_cycle", g_connman->GetMaxOutboundTimeLeftInCycle());
+    obj.emplace_back("uploadtarget", std::move(outboundLimit));
+
     return obj;
 }
 
-static UniValue GetNetworksInfo() {
-    UniValue networks(UniValue::VARR);
+static UniValue::Array GetNetworksInfo() {
+    UniValue::Array networks;
     for (int n = 0; n < NET_MAX; ++n) {
         enum Network network = static_cast<enum Network>(n);
         if (network == NET_UNROUTABLE || network == NET_INTERNAL) {
             continue;
         }
         proxyType proxy;
-        UniValue obj(UniValue::VOBJ);
         GetProxy(network, proxy);
-        obj.pushKV("name", GetNetworkName(network));
-        obj.pushKV("limited", !IsReachable(network));
-        obj.pushKV("reachable", IsReachable(network));
-        obj.pushKV("proxy", proxy.IsValid() ? proxy.proxy.ToStringIPPort()
-                                            : std::string());
-        obj.pushKV("proxy_randomize_credentials", proxy.randomize_credentials);
-        networks.push_back(obj);
+        UniValue::Object obj;
+        obj.reserve(5);
+        obj.emplace_back("name", GetNetworkName(network));
+        obj.emplace_back("limited", !IsReachable(network));
+        obj.emplace_back("reachable", IsReachable(network));
+        obj.emplace_back("proxy", proxy.IsValid() ? proxy.proxy.ToStringIPPort() : std::string());
+        obj.emplace_back("proxy_randomize_credentials", proxy.randomize_credentials);
+        networks.emplace_back(std::move(obj));
     }
     return networks;
 }
@@ -598,39 +608,38 @@ static UniValue getnetworkinfo(const Config &config,
     }
 
     LOCK(cs_main);
-    UniValue obj(UniValue::VOBJ);
-    obj.pushKV("version", CLIENT_VERSION);
-    obj.pushKV("subversion", userAgent(config));
-    obj.pushKV("protocolversion", PROTOCOL_VERSION);
+    UniValue::Object obj;
+    obj.reserve(g_connman ? 13 : 10);
+    obj.emplace_back("version", CLIENT_VERSION);
+    obj.emplace_back("subversion", userAgent(config));
+    obj.emplace_back("protocolversion", PROTOCOL_VERSION);
     if (g_connman) {
-        obj.pushKV("localservices",
-                   strprintf("%016x", g_connman->GetLocalServices()));
+        obj.emplace_back("localservices", strprintf("%016x", g_connman->GetLocalServices()));
     }
-    obj.pushKV("localrelay", fRelayTxes);
-    obj.pushKV("timeoffset", GetTimeOffset());
+    obj.emplace_back("localrelay", fRelayTxes);
+    obj.emplace_back("timeoffset", GetTimeOffset());
     if (g_connman) {
-        obj.pushKV("networkactive", g_connman->GetNetworkActive());
-        obj.pushKV("connections",
-                   int(g_connman->GetNodeCount(CConnman::CONNECTIONS_ALL)));
+        obj.emplace_back("networkactive", g_connman->GetNetworkActive());
+        obj.emplace_back("connections", g_connman->GetNodeCount(CConnman::CONNECTIONS_ALL));
     }
-    obj.pushKV("networks", GetNetworksInfo());
-    obj.pushKV("relayfee", ValueFromAmount(::minRelayTxFee.GetFeePerK()));
-    obj.pushKV("excessutxocharge",
-               ValueFromAmount(config.GetExcessUTXOCharge()));
-    UniValue localAddresses(UniValue::VARR);
+    obj.emplace_back("networks", GetNetworksInfo());
+    obj.emplace_back("relayfee", ValueFromAmount(::minRelayTxFee.GetFeePerK()));
+    obj.emplace_back("excessutxocharge", ValueFromAmount(config.GetExcessUTXOCharge()));
+    UniValue::Array localAddresses;
     {
         LOCK(cs_mapLocalHost);
-        for (const std::pair<const CNetAddr, LocalServiceInfo> &item :
-             mapLocalHost) {
-            UniValue rec(UniValue::VOBJ);
-            rec.pushKV("address", item.first.ToString());
-            rec.pushKV("port", item.second.nPort);
-            rec.pushKV("score", item.second.nScore);
-            localAddresses.push_back(rec);
+        localAddresses.reserve(mapLocalHost.size());
+        for (const std::pair<const CNetAddr, LocalServiceInfo> &item : mapLocalHost) {
+            UniValue::Object rec;
+            rec.reserve(3);
+            rec.emplace_back("address", item.first.ToString());
+            rec.emplace_back("port", item.second.nPort);
+            rec.emplace_back("score", item.second.nScore);
+            localAddresses.emplace_back(std::move(rec));
         }
     }
-    obj.pushKV("localaddresses", localAddresses);
-    obj.pushKV("warnings", GetWarnings("statusbar"));
+    obj.emplace_back("localaddresses", std::move(localAddresses));
+    obj.emplace_back("warnings", GetWarnings("statusbar"));
     return obj;
 }
 
@@ -752,19 +761,19 @@ static UniValue listbanned(const Config&,
     BanTables banMap;
     g_banman->GetBanned(banMap);
 
-    UniValue bannedAddresses(UniValue::VARR);
+    UniValue::Array bannedAddresses;
     const auto allBans = banMap.toAggregatedMap();
     bannedAddresses.reserve(allBans.size());
     for (const auto &entry : allBans) {
         const CBanEntry &banEntry = entry.second;
-        UniValue rec(UniValue::VOBJ);
+        UniValue::Object rec;
         rec.reserve(4);
-        rec.pushKV("address", entry.first.ToString(), false);
-        rec.pushKV("banned_until", banEntry.nBanUntil, false);
-        rec.pushKV("ban_created", banEntry.nCreateTime, false);
-        rec.pushKV("ban_reason", "manually added", false); //! For backward compatibility
+        rec.emplace_back("address", entry.first.ToString());
+        rec.emplace_back("banned_until", banEntry.nBanUntil);
+        rec.emplace_back("ban_created", banEntry.nCreateTime);
+        rec.emplace_back("ban_reason", "manually added"); //! For backward compatibility
 
-        bannedAddresses.push_back(std::move(rec));
+        bannedAddresses.emplace_back(std::move(rec));
     }
 
     return bannedAddresses;
@@ -882,19 +891,21 @@ static UniValue getnodeaddresses(const Config &config,
                                "Address count out of range");
         }
     }
+
     // returns a shuffled list of CAddress
     std::vector<CAddress> vAddr = g_connman->GetAddresses();
-    UniValue ret(UniValue::VARR);
-
     int address_return_count = std::min<int>(count, vAddr.size());
+    UniValue::Array ret;
+    ret.reserve(address_return_count);
     for (int i = 0; i < address_return_count; ++i) {
-        UniValue obj(UniValue::VOBJ);
         const CAddress &addr = vAddr[i];
-        obj.pushKV("time", int(addr.nTime));
-        obj.pushKV("services", uint64_t(addr.nServices));
-        obj.pushKV("address", addr.ToStringIP());
-        obj.pushKV("port", addr.GetPort());
-        ret.push_back(obj);
+        UniValue::Object obj;
+        obj.reserve(4);
+        obj.emplace_back("time", addr.nTime);
+        obj.emplace_back("services", addr.nServices);
+        obj.emplace_back("address", addr.ToStringIP());
+        obj.emplace_back("port", addr.GetPort());
+        ret.emplace_back(std::move(obj));
     }
     return ret;
 }

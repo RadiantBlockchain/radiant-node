@@ -23,8 +23,9 @@ static UniValue getexcessiveblock(const Config &config,
             HelpExampleRpc("getexcessiveblock", ""));
     }
 
-    UniValue ret(UniValue::VOBJ);
-    ret.pushKV("excessiveBlockSize", config.GetMaxBlockSize());
+    UniValue::Object ret;
+    ret.reserve(1);
+    ret.emplace_back("excessiveBlockSize", config.GetMaxBlockSize());
     return ret;
 }
 
@@ -74,7 +75,7 @@ static UniValue setexcessiveblock(Config &config,
     // settingsToUserAgentString();
     std::ostringstream ret;
     ret << "Excessive Block set to " << ebs << " bytes.";
-    return UniValue(ret.str());
+    return ret.str();
 }
 
 // clang-format off
