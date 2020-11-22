@@ -82,48 +82,50 @@ static int ComputeNextBlockAndDepth(const CBlockIndex *tip,
     return blockindex == tip ? 1 : -1;
 }
 
-UniValue blockheaderToJSON(const CBlockIndex *tip,
-                           const CBlockIndex *blockindex) {
-    UniValue result(UniValue::VOBJ);
-    result.pushKV("hash", blockindex->GetBlockHash().GetHex(), false);
+UniValue::Object blockheaderToJSON(const CBlockIndex *tip, const CBlockIndex *blockindex) {
     const CBlockIndex *pnext;
     int confirmations = ComputeNextBlockAndDepth(tip, blockindex, pnext);
-    result.pushKV("confirmations", confirmations, false);
-    result.pushKV("height", blockindex->nHeight, false);
-    result.pushKV("version", blockindex->nVersion, false);
-    result.pushKV("versionHex", strprintf("%08x", blockindex->nVersion), false);
-    result.pushKV("merkleroot", blockindex->hashMerkleRoot.GetHex(), false);
-    result.pushKV("time", int64_t(blockindex->nTime), false);
-    result.pushKV("mediantime", int64_t(blockindex->GetMedianTimePast()), false);
-    result.pushKV("nonce", uint64_t(blockindex->nNonce), false);
-    result.pushKV("bits", strprintf("%08x", blockindex->nBits), false);
-    result.pushKV("difficulty", GetDifficulty(blockindex), false);
-    result.pushKV("chainwork", blockindex->nChainWork.GetHex(), false);
-    result.pushKV("nTx", uint64_t(blockindex->nTx), false);
-
-    if (blockindex->pprev) {
-        result.pushKV("previousblockhash",
-                      blockindex->pprev->GetBlockHash().GetHex(), false);
+    bool previousblockhash = blockindex->pprev;
+    bool nextblockhash = pnext;
+    UniValue::Object result;
+    result.reserve(13 + previousblockhash + nextblockhash);
+    result.emplace_back("hash", blockindex->GetBlockHash().GetHex());
+    result.emplace_back("confirmations", confirmations);
+    result.emplace_back("height", blockindex->nHeight);
+    result.emplace_back("version", blockindex->nVersion);
+    result.emplace_back("versionHex", strprintf("%08x", blockindex->nVersion));
+    result.emplace_back("merkleroot", blockindex->hashMerkleRoot.GetHex());
+    result.emplace_back("time", blockindex->nTime);
+    result.emplace_back("mediantime", blockindex->GetMedianTimePast());
+    result.emplace_back("nonce", blockindex->nNonce);
+    result.emplace_back("bits", strprintf("%08x", blockindex->nBits));
+    result.emplace_back("difficulty", GetDifficulty(blockindex));
+    result.emplace_back("chainwork", blockindex->nChainWork.GetHex());
+    result.emplace_back("nTx", blockindex->nTx);
+    if (previousblockhash) {
+        result.emplace_back("previousblockhash", blockindex->pprev->GetBlockHash().GetHex());
     }
-    if (pnext) {
-        result.pushKV("nextblockhash", pnext->GetBlockHash().GetHex(), false);
+    if (nextblockhash) {
+        result.emplace_back("nextblockhash", pnext->GetBlockHash().GetHex());
     }
     return result;
 }
 
-UniValue blockToJSON(const CBlock &block, const CBlockIndex *tip,
-                     const CBlockIndex *blockindex, bool txDetails) {
-    UniValue result(UniValue::VOBJ);
-    result.pushKV("hash", blockindex->GetBlockHash().GetHex(), false);
+UniValue::Object blockToJSON(const CBlock &block, const CBlockIndex *tip, const CBlockIndex *blockindex, bool txDetails) {
     const CBlockIndex *pnext;
     int confirmations = ComputeNextBlockAndDepth(tip, blockindex, pnext);
-    result.pushKV("confirmations", confirmations, false);
-    result.pushKV("size", (int)::GetSerializeSize(block, PROTOCOL_VERSION), false);
-    result.pushKV("height", blockindex->nHeight, false);
-    result.pushKV("version", block.nVersion, false);
-    result.pushKV("versionHex", strprintf("%08x", block.nVersion), false);
-    result.pushKV("merkleroot", block.hashMerkleRoot.GetHex(), false);
-    UniValue txs(UniValue::VARR);
+    bool previousblockhash = blockindex->pprev;
+    bool nextblockhash = pnext;
+    UniValue::Object result;
+    result.reserve(15 + previousblockhash + nextblockhash);
+    result.emplace_back("hash", blockindex->GetBlockHash().GetHex());
+    result.emplace_back("confirmations", confirmations);
+    result.emplace_back("size", ::GetSerializeSize(block, PROTOCOL_VERSION));
+    result.emplace_back("height", blockindex->nHeight);
+    result.emplace_back("version", block.nVersion);
+    result.emplace_back("versionHex", strprintf("%08x", block.nVersion));
+    result.emplace_back("merkleroot", block.hashMerkleRoot.GetHex());
+    UniValue::Array txs;
     txs.reserve(block.vtx.size());
     for (const auto &tx : block.vtx) {
         if (txDetails) {
@@ -131,24 +133,22 @@ UniValue blockToJSON(const CBlock &block, const CBlockIndex *tip,
             TxToUniv(*tx, uint256(), objTx, true, RPCSerializationFlags());
             txs.push_back(std::move(objTx));
         } else {
-            txs.push_back(tx->GetId().GetHex());
+            txs.emplace_back(tx->GetId().GetHex());
         }
     }
-    result.pushKV("tx", std::move(txs), false);
-    result.pushKV("time", block.GetBlockTime(), false);
-    result.pushKV("mediantime", int64_t(blockindex->GetMedianTimePast()), false);
-    result.pushKV("nonce", uint64_t(block.nNonce), false);
-    result.pushKV("bits", strprintf("%08x", block.nBits), false);
-    result.pushKV("difficulty", GetDifficulty(blockindex), false);
-    result.pushKV("chainwork", blockindex->nChainWork.GetHex(), false);
-    result.pushKV("nTx", uint64_t(blockindex->nTx), false);
-
-    if (blockindex->pprev) {
-        result.pushKV("previousblockhash",
-                      blockindex->pprev->GetBlockHash().GetHex(), false);
+    result.emplace_back("tx", std::move(txs));
+    result.emplace_back("time", block.GetBlockTime());
+    result.emplace_back("mediantime", blockindex->GetMedianTimePast());
+    result.emplace_back("nonce", block.nNonce);
+    result.emplace_back("bits", strprintf("%08x", block.nBits));
+    result.emplace_back("difficulty", GetDifficulty(blockindex));
+    result.emplace_back("chainwork", blockindex->nChainWork.GetHex());
+    result.emplace_back("nTx", blockindex->nTx);
+    if (previousblockhash) {
+        result.emplace_back("previousblockhash", blockindex->pprev->GetBlockHash().GetHex());
     }
-    if (pnext) {
-        result.pushKV("nextblockhash", pnext->GetBlockHash().GetHex(), false);
+    if (nextblockhash) {
+        result.emplace_back("nextblockhash", pnext->GetBlockHash().GetHex());
     }
     return result;
 }
@@ -204,7 +204,7 @@ UniValue getfinalizedblockhash(const Config &config,
     if (blockIndexFinalized) {
         return blockIndexFinalized->GetBlockHash().GetHex();
     }
-    return UniValue(UniValue::VSTR);
+    return std::string();
 }
 
 void RPCNotifyBlockChange(bool ibd, const CBlockIndex *pindex) {
@@ -264,9 +264,10 @@ static UniValue waitfornewblock(const Config &config,
         }
         block = latestblock;
     }
-    UniValue ret(UniValue::VOBJ);
-    ret.pushKV("hash", block.hash.GetHex(), false);
-    ret.pushKV("height", block.height, false);
+    UniValue::Object ret;
+    ret.reserve(2);
+    ret.emplace_back("hash", block.hash.GetHex());
+    ret.emplace_back("height", block.height);
     return ret;
 }
 
@@ -325,9 +326,10 @@ static UniValue waitforblock(const Config &config,
         block = latestblock;
     }
 
-    UniValue ret(UniValue::VOBJ);
-    ret.pushKV("hash", block.hash.GetHex(), false);
-    ret.pushKV("height", block.height, false);
+    UniValue::Object ret;
+    ret.reserve(2);
+    ret.emplace_back("hash", block.hash.GetHex());
+    ret.emplace_back("height", block.height);
     return ret;
 }
 
@@ -382,9 +384,10 @@ static UniValue waitforblockheight(const Config &config,
         }
         block = latestblock;
     }
-    UniValue ret(UniValue::VOBJ);
-    ret.pushKV("hash", block.hash.GetHex(), false);
-    ret.pushKV("height", block.height, false);
+    UniValue::Object ret;
+    ret.reserve(2);
+    ret.emplace_back("hash", block.hash.GetHex());
+    ret.emplace_back("height", block.height);
     return ret;
 }
 
@@ -475,77 +478,78 @@ static std::string EntryDescriptionString() {
            "       ... ]\n";
 }
 
-static void entryToJSON(const CTxMemPool &pool, UniValue &info,
-                        const CTxMemPoolEntry &e)
+static UniValue::Object entryToJSON(const CTxMemPool &pool, const CTxMemPoolEntry &e)
     EXCLUSIVE_LOCKS_REQUIRED(pool.cs) {
     AssertLockHeld(pool.cs);
 
-    UniValue fees(UniValue::VOBJ);
-    fees.pushKV("base", ValueFromAmount(e.GetFee()), false);
-    fees.pushKV("modified", ValueFromAmount(e.GetModifiedFee()), false);
-    fees.pushKV("ancestor", ValueFromAmount(e.GetModFeesWithAncestors()), false);
-    fees.pushKV("descendant", ValueFromAmount(e.GetModFeesWithDescendants()), false);
-    info.pushKV("fees", std::move(fees), false);
+    UniValue::Object info;
+    info.reserve(14);
 
-    info.pushKV("size", (int)e.GetTxSize(), false);
-    info.pushKV("fee", ValueFromAmount(e.GetFee()), false);
-    info.pushKV("modifiedfee", ValueFromAmount(e.GetModifiedFee()), false);
-    info.pushKV("time", e.GetTime(), false);
-    info.pushKV("height", (int)e.GetHeight(), false);
-    info.pushKV("descendantcount", e.GetCountWithDescendants(), false);
-    info.pushKV("descendantsize", e.GetSizeWithDescendants(), false);
-    info.pushKV("descendantfees", e.GetModFeesWithDescendants() / SATOSHI, false);
-    info.pushKV("ancestorcount", e.GetCountWithAncestors(), false);
-    info.pushKV("ancestorsize", e.GetSizeWithAncestors(), false);
-    info.pushKV("ancestorfees", e.GetModFeesWithAncestors() / SATOSHI, false);
+    UniValue::Object fees;
+    fees.reserve(4);
+    fees.emplace_back("base", ValueFromAmount(e.GetFee()));
+    fees.emplace_back("modified", ValueFromAmount(e.GetModifiedFee()));
+    fees.emplace_back("ancestor", ValueFromAmount(e.GetModFeesWithAncestors()));
+    fees.emplace_back("descendant", ValueFromAmount(e.GetModFeesWithDescendants()));
+    info.emplace_back("fees", std::move(fees));
+
+    info.emplace_back("size", e.GetTxSize());
+    info.emplace_back("fee", ValueFromAmount(e.GetFee()));
+    info.emplace_back("modifiedfee", ValueFromAmount(e.GetModifiedFee()));
+    info.emplace_back("time", e.GetTime());
+    info.emplace_back("height", e.GetHeight());
+    info.emplace_back("descendantcount", e.GetCountWithDescendants());
+    info.emplace_back("descendantsize", e.GetSizeWithDescendants());
+    info.emplace_back("descendantfees", e.GetModFeesWithDescendants() / SATOSHI);
+    info.emplace_back("ancestorcount", e.GetCountWithAncestors());
+    info.emplace_back("ancestorsize", e.GetSizeWithAncestors());
+    info.emplace_back("ancestorfees", e.GetModFeesWithAncestors() / SATOSHI);
+
     const CTransaction &tx = e.GetTx();
+
     std::set<std::string> setDepends;
     for (const CTxIn &txin : tx.vin) {
         if (pool.exists(txin.prevout.GetTxId())) {
             setDepends.insert(txin.prevout.GetTxId().ToString());
         }
     }
-
-    UniValue depends(UniValue::VARR);
+    UniValue::Array depends;
     depends.reserve(setDepends.size());
     for (const std::string &dep : setDepends) {
-        depends.push_back(dep);
+        depends.emplace_back(dep);
     }
+    info.emplace_back("depends", std::move(depends));
 
-    info.pushKV("depends", std::move(depends), false);
-
-    UniValue spent(UniValue::VARR);
+    UniValue::Array spent;
     const CTxMemPool::txiter &it = pool.mapTx.find(tx.GetId());
     const CTxMemPool::setEntries &setChildren = pool.GetMemPoolChildren(it);
     spent.reserve(setChildren.size());
     for (CTxMemPool::txiter childiter : setChildren) {
-        spent.push_back(childiter->GetTx().GetId().ToString());
+        spent.emplace_back(childiter->GetTx().GetId().ToString());
     }
+    info.emplace_back("spentby", std::move(spent));
 
-    info.pushKV("spentby", std::move(spent), false);
+    return info;
 }
 
 UniValue MempoolToJSON(const CTxMemPool &pool, bool verbose) {
-    UniValue ret;
     if (verbose) {
+        UniValue::Object ret;
         LOCK(pool.cs);
-        ret.setObject();
         ret.reserve(pool.mapTx.size());
         for (const CTxMemPoolEntry &e : pool.mapTx) {
             const uint256 &txid = e.GetTx().GetId();
-            UniValue info(UniValue::VOBJ);
-            entryToJSON(pool, info, e);
-            ret.pushKV(txid.ToString(), std::move(info), false);
+            ret.emplace_back(txid.ToString(), entryToJSON(pool, e));
         }
-    } else {
-        std::vector<uint256> vtxids;
-        pool.queryHashes(vtxids);
+        return ret;
+    }
 
-        ret.setArray();
-        ret.reserve(vtxids.size());
-        for (const uint256 &txid : vtxids) {
-            ret.push_back(txid.ToString());
-        }
+    std::vector<uint256> vtxids;
+    pool.queryHashes(vtxids);
+    UniValue::Array ret;
+    ret.reserve(vtxids.size());
+    for (const uint256 &txid : vtxids) {
+        ret.emplace_back(txid.ToString());
     }
     return ret;
 }
@@ -643,24 +647,21 @@ static UniValue getmempoolancestors(const Config &config,
     g_mempool.CalculateMemPoolAncestors(*it, setAncestors, noLimit, noLimit,
                                         noLimit, noLimit, dummy, false);
 
-    UniValue ret;
     if (!fVerbose) {
-        ret.setArray();
+        UniValue::Array ret;
         ret.reserve(setAncestors.size());
         for (CTxMemPool::txiter ancestorIt : setAncestors) {
-            ret.push_back(ancestorIt->GetTx().GetId().ToString());
+            ret.emplace_back(ancestorIt->GetTx().GetId().ToString());
         }
+        return ret;
+    }
 
-    } else {
-        ret.setObject();
-        ret.reserve(setAncestors.size());
-        for (CTxMemPool::txiter ancestorIt : setAncestors) {
-            const CTxMemPoolEntry &e = *ancestorIt;
-            const TxId &_txid = e.GetTx().GetId();
-            UniValue info(UniValue::VOBJ);
-            entryToJSON(::g_mempool, info, e);
-            ret.pushKV(_txid.ToString(), std::move(info), false);
-        }
+    UniValue::Object ret;
+    ret.reserve(setAncestors.size());
+    for (CTxMemPool::txiter ancestorIt : setAncestors) {
+        const CTxMemPoolEntry &e = *ancestorIt;
+        const TxId &_txid = e.GetTx().GetId();
+        ret.emplace_back(_txid.ToString(), entryToJSON(::g_mempool, e));
     }
     return ret;
 }
@@ -719,24 +720,21 @@ static UniValue getmempooldescendants(const Config &config,
     // CTxMemPool::CalculateDescendants will include the given tx
     setDescendants.erase(it);
 
-    UniValue ret;
     if (!fVerbose) {
-        ret.setArray();
+        UniValue::Array ret;
         ret.reserve(setDescendants.size());
         for (CTxMemPool::txiter descendantIt : setDescendants) {
-            ret.push_back(descendantIt->GetTx().GetId().ToString());
+            ret.emplace_back(descendantIt->GetTx().GetId().ToString());
         }
+        return ret;
+    }
 
-    } else {
-        ret.setObject();
-        ret.reserve(setDescendants.size());
-        for (CTxMemPool::txiter descendantIt : setDescendants) {
-            const CTxMemPoolEntry &e = *descendantIt;
-            const TxId &_txid = e.GetTx().GetId();
-            UniValue info(UniValue::VOBJ);
-            entryToJSON(::g_mempool, info, e);
-            ret.pushKV(_txid.ToString(), std::move(info), false);
-        }
+    UniValue::Object ret;
+    ret.reserve(setDescendants.size());
+    for (CTxMemPool::txiter descendantIt : setDescendants) {
+        const CTxMemPoolEntry &e = *descendantIt;
+        const TxId &_txid = e.GetTx().GetId();
+        ret.emplace_back(_txid.ToString(), entryToJSON(::g_mempool, e));
     }
     return ret;
 }
@@ -774,9 +772,7 @@ static UniValue getmempoolentry(const Config &config,
     }
 
     const CTxMemPoolEntry &e = *it;
-    UniValue info(UniValue::VOBJ);
-    entryToJSON(::g_mempool, info, e);
-    return info;
+    return entryToJSON(::g_mempool, e);
 }
 
 static UniValue getblockhash(const Config &config,
@@ -904,16 +900,13 @@ static UniValue getblockheader(const Config &config,
         fVerbose = request.params[1].get_bool();
     }
 
-    UniValue ret;
     if (!fVerbose) {
         CDataStream ssBlock(SER_NETWORK, PROTOCOL_VERSION);
         ssBlock << pindex->GetBlockHeader();
-        ret = HexStr(ssBlock.begin(), ssBlock.end());
-    } else {
-        ret = blockheaderToJSON(tip, pindex);
+        return HexStr(ssBlock.begin(), ssBlock.end());
     }
 
-    return ret;
+    return blockheaderToJSON(tip, pindex);
 }
 
 /// Requires cs_main; called by getblock() and getblockstats()
@@ -1183,7 +1176,7 @@ static UniValue pruneblockchain(const Config &config,
     }
 
     PruneBlockFilesManual(height);
-    return uint64_t(height);
+    return height;
 }
 
 static UniValue gettxoutsetinfo(const Config &config,
@@ -1214,22 +1207,22 @@ static UniValue gettxoutsetinfo(const Config &config,
             HelpExampleRpc("gettxoutsetinfo", ""));
     }
 
-    UniValue ret(UniValue::VOBJ);
-
     CCoinsStats stats;
     FlushStateToDisk();
-    if (GetUTXOStats(pcoinsdbview.get(), stats)) {
-        ret.pushKV("height", int64_t(stats.nHeight), false);
-        ret.pushKV("bestblock", stats.hashBlock.GetHex(), false);
-        ret.pushKV("transactions", int64_t(stats.nTransactions), false);
-        ret.pushKV("txouts", int64_t(stats.nTransactionOutputs), false);
-        ret.pushKV("bogosize", int64_t(stats.nBogoSize), false);
-        ret.pushKV("hash_serialized", stats.hashSerialized.GetHex(), false);
-        ret.pushKV("disk_size", stats.nDiskSize, false);
-        ret.pushKV("total_amount", ValueFromAmount(stats.nTotalAmount), false);
-    } else {
+    if (!GetUTXOStats(pcoinsdbview.get(), stats)) {
         throw JSONRPCError(RPC_INTERNAL_ERROR, "Unable to read UTXO set");
     }
+
+    UniValue::Object ret;
+    ret.reserve(8);
+    ret.emplace_back("height", stats.nHeight);
+    ret.emplace_back("bestblock", stats.hashBlock.GetHex());
+    ret.emplace_back("transactions", stats.nTransactions);
+    ret.emplace_back("txouts", stats.nTransactionOutputs);
+    ret.emplace_back("bogosize", stats.nBogoSize);
+    ret.emplace_back("hash_serialized", stats.hashSerialized.GetHex());
+    ret.emplace_back("disk_size", stats.nDiskSize);
+    ret.emplace_back("total_amount", ValueFromAmount(stats.nTotalAmount));
     return ret;
 }
 
@@ -1286,8 +1279,6 @@ UniValue gettxout(const Config &config, const JSONRPCRequest &request) {
 
     LOCK(cs_main);
 
-    UniValue ret(UniValue::VOBJ);
-
     TxId txid(ParseHashV(request.params[0], "txid"));
     int n = request.params[1].get_int();
     COutPoint out(txid, n);
@@ -1310,17 +1301,15 @@ UniValue gettxout(const Config &config, const JSONRPCRequest &request) {
     }
 
     const CBlockIndex *pindex = LookupBlockIndex(pcoinsTip->GetBestBlock());
-    ret.pushKV("bestblock", pindex->GetBlockHash().GetHex(), false);
-    if (coin.GetHeight() == MEMPOOL_HEIGHT) {
-        ret.pushKV("confirmations", 0, false);
-    } else {
-        ret.pushKV("confirmations", int64_t(pindex->nHeight - coin.GetHeight() + 1), false);
-    }
-    ret.pushKV("value", ValueFromAmount(coin.GetTxOut().nValue), false);
+    UniValue::Object ret;
+    ret.reserve(5);
+    ret.emplace_back("bestblock", pindex->GetBlockHash().GetHex());
+    ret.emplace_back("confirmations", coin.GetHeight() == MEMPOOL_HEIGHT ? 0 : pindex->nHeight - coin.GetHeight() + 1);
+    ret.emplace_back("value", ValueFromAmount(coin.GetTxOut().nValue));
     UniValue o(UniValue::VOBJ);
     ScriptPubKeyToUniv(coin.GetTxOut().scriptPubKey, o, true);
-    ret.pushKV("scriptPubKey", std::move(o), false);
-    ret.pushKV("coinbase", coin.IsCoinBase(), false);
+    ret.emplace_back("scriptPubKey", std::move(o));
+    ret.emplace_back("coinbase", coin.IsCoinBase());
 
     return ret;
 }
@@ -1413,38 +1402,38 @@ UniValue getblockchaininfo(const Config &config,
     LOCK(cs_main);
 
     const CBlockIndex *tip = ::ChainActive().Tip();
-    UniValue obj(UniValue::VOBJ);
-    obj.pushKV("chain", config.GetChainParams().NetworkIDString());
-    obj.pushKV("blocks", int(::ChainActive().Height()));
-    obj.pushKV("headers", pindexBestHeader ? pindexBestHeader->nHeight : -1);
-    obj.pushKV("bestblockhash", tip->GetBlockHash().GetHex());
-    obj.pushKV("difficulty", double(GetDifficulty(tip)));
-    obj.pushKV("mediantime", int64_t(tip->GetMedianTimePast()));
-    obj.pushKV("verificationprogress",
-               GuessVerificationProgress(Params().TxData(), tip));
-    obj.pushKV("initialblockdownload", IsInitialBlockDownload());
-    obj.pushKV("chainwork", tip->nChainWork.GetHex());
-    obj.pushKV("size_on_disk", CalculateCurrentUsage());
-    obj.pushKV("pruned", fPruneMode);
+    bool automatic_pruning = fPruneMode && gArgs.GetArg("-prune", 0) != 1;
+    UniValue::Object obj;
+    obj.reserve(fPruneMode ? automatic_pruning ? 15 : 14 : 12);
+
+    obj.emplace_back("chain", config.GetChainParams().NetworkIDString());
+    obj.emplace_back("blocks", ::ChainActive().Height());
+    obj.emplace_back("headers", pindexBestHeader ? pindexBestHeader->nHeight : -1);
+    obj.emplace_back("bestblockhash", tip->GetBlockHash().GetHex());
+    obj.emplace_back("difficulty", GetDifficulty(tip));
+    obj.emplace_back("mediantime", tip->GetMedianTimePast());
+    obj.emplace_back("verificationprogress", GuessVerificationProgress(Params().TxData(), tip));
+    obj.emplace_back("initialblockdownload", IsInitialBlockDownload());
+    obj.emplace_back("chainwork", tip->nChainWork.GetHex());
+    obj.emplace_back("size_on_disk", CalculateCurrentUsage());
+    obj.emplace_back("pruned", fPruneMode);
 
     if (fPruneMode) {
         const CBlockIndex *block = tip;
         assert(block);
-        while (block->pprev && (block->pprev->nStatus.hasData())) {
+        while (block->pprev && block->pprev->nStatus.hasData()) {
             block = block->pprev;
         }
 
-        obj.pushKV("pruneheight", block->nHeight);
+        obj.emplace_back("pruneheight", block->nHeight);
 
-        // if 0, execution bypasses the whole if block.
-        bool automatic_pruning = (gArgs.GetArg("-prune", 0) != 1);
-        obj.pushKV("automatic_pruning", automatic_pruning);
+        obj.emplace_back("automatic_pruning", automatic_pruning);
         if (automatic_pruning) {
-            obj.pushKV("prune_target_size", nPruneTarget);
+            obj.emplace_back("prune_target_size", nPruneTarget);
         }
     }
 
-    obj.pushKV("warnings", GetWarnings("statusbar"));
+    obj.emplace_back("warnings", GetWarnings("statusbar"));
     return obj;
 }
 
@@ -1540,17 +1529,16 @@ static UniValue getchaintips(const Config &config,
     setTips.insert(::ChainActive().Tip());
 
     /* Construct the output array.  */
-    UniValue res(UniValue::VARR);
+    UniValue::Array res;
+    res.reserve(setTips.size());
     for (const CBlockIndex *block : setTips) {
-        UniValue obj(UniValue::VOBJ);
-        obj.pushKV("height", block->nHeight);
-        obj.pushKV("hash", block->phashBlock->GetHex());
+        UniValue::Object obj;
+        obj.reserve(4);
+        obj.emplace_back("height", block->nHeight);
+        obj.emplace_back("hash", block->phashBlock->GetHex());
+        obj.emplace_back("branchlen", block->nHeight - ::ChainActive().FindFork(block)->nHeight);
 
-        const int branchLen =
-            block->nHeight - ::ChainActive().FindFork(block)->nHeight;
-        obj.pushKV("branchlen", branchLen);
-
-        std::string status;
+        const char *status;
         if (::ChainActive().Contains(block)) {
             // This block is part of the currently active chain.
             status = "active";
@@ -1577,28 +1565,25 @@ static UniValue getchaintips(const Config &config,
             // No clue.
             status = "unknown";
         }
-        obj.pushKV("status", status);
+        obj.emplace_back("status", status);
 
-        res.push_back(obj);
+        res.emplace_back(std::move(obj));
     }
 
     return res;
 }
 
-UniValue MempoolInfoToJSON(const Config &config, const CTxMemPool &pool) {
-    UniValue ret(UniValue::VOBJ);
-    ret.pushKV("loaded", pool.IsLoaded());
-    ret.pushKV("size", (int64_t)pool.size());
-    ret.pushKV("bytes", (int64_t)pool.GetTotalTxSize());
-    ret.pushKV("usage", (int64_t)pool.DynamicMemoryUsage());
-    size_t maxmempool = config.GetMaxMemPoolSize();
-    ret.pushKV("maxmempool", (int64_t)maxmempool);
-    ret.pushKV(
-        "mempoolminfee",
-        ValueFromAmount(std::max(pool.GetMinFee(maxmempool), ::minRelayTxFee)
-                            .GetFeePerK()));
-    ret.pushKV("minrelaytxfee", ValueFromAmount(::minRelayTxFee.GetFeePerK()));
-
+UniValue::Object MempoolInfoToJSON(const Config &config, const CTxMemPool &pool) {
+    UniValue::Object ret;
+    ret.reserve(7);
+    ret.emplace_back("loaded", pool.IsLoaded());
+    ret.emplace_back("size", pool.size());
+    ret.emplace_back("bytes", pool.GetTotalTxSize());
+    ret.emplace_back("usage", pool.DynamicMemoryUsage());
+    auto maxmempool = config.GetMaxMemPoolSize();
+    ret.emplace_back("maxmempool", maxmempool);
+    ret.emplace_back("mempoolminfee", ValueFromAmount(std::max(pool.GetMinFee(maxmempool), ::minRelayTxFee).GetFeePerK()));
+    ret.emplace_back("minrelaytxfee", ValueFromAmount(::minRelayTxFee.GetFeePerK()));
     return ret;
 }
 
@@ -1691,8 +1676,7 @@ UniValue finalizeblock(const Config &config, const JSONRPCRequest &request) {
             HelpExampleRpc("finalizeblock", "\"blockhash\""));
     }
 
-    std::string strHash = request.params[0].get_str();
-    BlockHash hash(uint256S(strHash));
+    const BlockHash hash(ParseHashV(request.params[0], "blockhash"));
     CValidationState state;
 
     {
@@ -1772,8 +1756,7 @@ UniValue parkblock(const Config &config, const JSONRPCRequest &request) {
                                  HelpExampleRpc("parkblock", "\"blockhash\""));
     }
 
-    const std::string strHash = request.params[0].get_str();
-    const BlockHash hash(uint256S(strHash));
+    const BlockHash hash(ParseHashV(request.params[0], "blockhash"));
     CValidationState state;
 
     CBlockIndex *pblockindex;
@@ -1856,8 +1839,7 @@ UniValue unparkblock(const Config &config, const JSONRPCRequest &request) {
             HelpExampleRpc("unparkblock", "\"blockhash\""));
     }
 
-    const std::string strHash = request.params[0].get_str();
-    const BlockHash hash(uint256S(strHash));
+    const BlockHash hash(ParseHashV(request.params[0], "blockhash"));
 
     {
         LOCK(cs_main);
@@ -1963,19 +1945,19 @@ static UniValue getchaintxstats(const Config &config,
         pindex->GetMedianTimePast() - pindexPast->GetMedianTimePast();
     int nTxDiff = pindex->GetChainTxCount() - pindexPast->GetChainTxCount();
 
-    UniValue ret(UniValue::VOBJ);
-    ret.pushKV("time", pindex->GetBlockTime());
-    ret.pushKV("txcount", pindex->GetChainTxCount());
-    ret.pushKV("window_final_block_hash", pindex->GetBlockHash().GetHex());
-    ret.pushKV("window_block_count", blockcount);
+    UniValue::Object ret;
+    ret.reserve(blockcount > 0 ? nTimeDiff > 0 ? 7 : 6 : 4);
+    ret.emplace_back("time", pindex->GetBlockTime());
+    ret.emplace_back("txcount", pindex->GetChainTxCount());
+    ret.emplace_back("window_final_block_hash", pindex->GetBlockHash().GetHex());
+    ret.emplace_back("window_block_count", blockcount);
     if (blockcount > 0) {
-        ret.pushKV("window_tx_count", nTxDiff);
-        ret.pushKV("window_interval", nTimeDiff);
+        ret.emplace_back("window_tx_count", nTxDiff);
+        ret.emplace_back("window_interval", nTimeDiff);
         if (nTimeDiff > 0) {
-            ret.pushKV("txrate", double(nTxDiff) / nTimeDiff);
+            ret.emplace_back("txrate", double(nTxDiff) / nTimeDiff);
         }
     }
-
     return ret;
 }
 
@@ -2298,7 +2280,7 @@ static UniValue getblockstats(const Config &config,
     Amount feerate_percentiles[NUM_GETBLOCKSTATS_PERCENTILES] = { Amount::zero() };
     CalculatePercentilesBySize(feerate_percentiles, feerate_array, total_size);
 
-    UniValue feerates_res(UniValue::VARR);
+    UniValue::Array feerates_res;
     feerates_res.reserve(NUM_GETBLOCKSTATS_PERCENTILES);
     for (int64_t i = 0; i < NUM_GETBLOCKSTATS_PERCENTILES; i++) {
         feerates_res.push_back(ValueFromAmount(feerate_percentiles[i]));
@@ -2318,7 +2300,7 @@ static UniValue getblockstats(const Config &config,
                                     : 0);
     ret.emplace_back("blockhash", pindex->GetBlockHash().GetHex());
     ret.emplace_back("feerate_percentiles", std::move(feerates_res));
-    ret.emplace_back("height", (int64_t)pindex->nHeight);
+    ret.emplace_back("height", pindex->nHeight);
     ret.emplace_back("ins", inputs);
     ret.emplace_back("maxfee", ValueFromAmount(maxfee));
     ret.emplace_back("maxfeerate", ValueFromAmount(maxfeerate));
@@ -2341,25 +2323,26 @@ static UniValue getblockstats(const Config &config,
     ret.emplace_back("total_out", ValueFromAmount(total_out));
     ret.emplace_back("total_size", total_size);
     ret.emplace_back("totalfee", ValueFromAmount(totalfee));
-    ret.emplace_back("txs", (int64_t)block.vtx.size());
+    ret.emplace_back("txs", block.vtx.size());
     ret.emplace_back("utxo_increase", outputs - inputs);
     ret.emplace_back("utxo_size_inc", utxo_size_inc);
 
     if (!do_all) {
         // in this branch, we must return only the keys the client asked for
-        UniValue::Object fullData(std::move(ret));
-        ret.clear();
-        ret.reserve(stats.size());
+        UniValue::Object selected;
+        selected.reserve(stats.size());
         for (const std::string &stat : stats) {
-            UniValue *value = fullData.locate(stat);
+            UniValue *value = ret.locate(stat);
             if (!value || value->isNull()) {
                 throw JSONRPCError(
                     RPC_INVALID_PARAMETER,
                     strprintf("Invalid selected statistic %s", stat));
             }
-            ret.emplace_back(stat, std::move(*value));
+            selected.emplace_back(stat, std::move(*value));
         }
+        return selected;
     }
+
     return ret; // compiler will invoke Univalue(Univalue::Object &&) move-constructor.
 }
 
@@ -2536,16 +2519,19 @@ static UniValue scantxoutset(const Config &config,
 
     RPCTypeCheck(request.params, {UniValue::VSTR, UniValue::VARR});
 
-    UniValue result(UniValue::VOBJ);
     if (request.params[0].get_str() == "status") {
         CoinsViewScanReserver reserver;
         if (reserver.reserve()) {
             // no scan in progress
             return UniValue();
         }
-        result.pushKV("progress", g_scan_progress.load());
+        UniValue::Object result;
+        result.reserve(1);
+        result.emplace_back("progress", g_scan_progress.load());
         return result;
-    } else if (request.params[0].get_str() == "abort") {
+    }
+
+    if (request.params[0].get_str() == "abort") {
         CoinsViewScanReserver reserver;
         if (reserver.reserve()) {
             // reserve was possible which means no scan was running
@@ -2554,7 +2540,9 @@ static UniValue scantxoutset(const Config &config,
         // set the abort flag
         g_should_abort_scan = true;
         return true;
-    } else if (request.params[0].get_str() == "start") {
+    }
+
+    if (request.params[0].get_str() == "start") {
         CoinsViewScanReserver reserver;
         if (!reserver.reserve()) {
             throw JSONRPCError(
@@ -2616,7 +2604,6 @@ static UniValue scantxoutset(const Config &config,
         }
 
         // Scan the unspent transaction output set for inputs
-        UniValue unspents(UniValue::VARR);
         std::map<COutPoint, Coin> coins;
         g_should_abort_scan = false;
         g_scan_progress = 0;
@@ -2630,9 +2617,12 @@ static UniValue scantxoutset(const Config &config,
         }
         bool res = FindScriptPubKey(g_scan_progress, g_should_abort_scan, count,
                                     pcursor.get(), needles, coins);
-        result.pushKV("success", res, false);
-        result.pushKV("searched_items", count, false);
+        UniValue::Object result;
+        result.reserve(4);
+        result.emplace_back("success", res);
+        result.emplace_back("searched_items", count);
 
+        UniValue::Array unspents;
         unspents.reserve(coins.size());
 
         for (const auto &it : coins) {
@@ -2641,22 +2631,22 @@ static UniValue scantxoutset(const Config &config,
             const CTxOut &txo = coin.GetTxOut();
             total_in += txo.nValue;
 
-            UniValue unspent(UniValue::VOBJ);
-            unspent.pushKV("txid", outpoint.GetTxId().GetHex(), false);
-            unspent.pushKV("vout", int32_t(outpoint.GetN()), false);
-            unspent.pushKV("scriptPubKey", HexStr(txo.scriptPubKey.begin(), txo.scriptPubKey.end()),
-                           false);
-            unspent.pushKV("amount", ValueFromAmount(txo.nValue), false);
-            unspent.pushKV("height", int32_t(coin.GetHeight()), false);
+            UniValue::Object unspent;
+            unspent.reserve(5);
+            unspent.emplace_back("txid", outpoint.GetTxId().GetHex());
+            unspent.emplace_back("vout", outpoint.GetN());
+            unspent.emplace_back("scriptPubKey", HexStr(txo.scriptPubKey.begin(), txo.scriptPubKey.end()));
+            unspent.emplace_back("amount", ValueFromAmount(txo.nValue));
+            unspent.emplace_back("height", coin.GetHeight());
 
-            unspents.push_back(std::move(unspent));
+            unspents.emplace_back(std::move(unspent));
         }
-        result.pushKV("unspents", std::move(unspents), false);
-        result.pushKV("total_amount", ValueFromAmount(total_in), false);
-    } else {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid command");
+        result.emplace_back("unspents", std::move(unspents));
+        result.emplace_back("total_amount", ValueFromAmount(total_in));
+        return result;
     }
-    return result;
+
+    throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid command");
 }
 
 // clang-format off
