@@ -77,22 +77,6 @@ class WalletTest(BitcoinTestFramework):
         assert_equal(len(self.nodes[1].listunspent()), 1)
         assert_equal(len(self.nodes[2].listunspent()), 0)
 
-        self.log.info("test gettxout")
-        confirmed_txid, confirmed_index = utxos[0]["txid"], utxos[0]["vout"]
-        # First, outputs that are unspent both in the chain and in the
-        # mempool should appear with or without include_mempool
-        txout = self.nodes[0].gettxout(
-            txid=confirmed_txid, n=confirmed_index, include_mempool=False)
-        assert_equal(txout['value'], 50)
-        txout = self.nodes[0].gettxout(
-            txid=confirmed_txid, n=confirmed_index, include_mempool=True)
-        assert_equal(txout['value'], 50)
-
-        # Send 21 BCH from 0 to 2 using sendtoaddress call.
-        self.nodes[0].sendtoaddress(self.nodes[2].getnewaddress(), 11)
-        mempool_txid = self.nodes[0].sendtoaddress(
-            self.nodes[2].getnewaddress(), 10)
-
         self.log.info("test sendtoaddress balance checks")
         # Check that sendtoaddress fails with insufficient funds when you
         # try to send more money than the wallet has
@@ -112,6 +96,26 @@ class WalletTest(BitcoinTestFramework):
         assert_equal(self.nodes[1].getbalance(), 50)
         self.nodes[1].sendtoaddress(self.nodes[1].getnewaddress(), 49.99999800)
         assert self.nodes[1].getbalance() < 50
+
+        # Have node1 mine a block, thus it will collect its own fee.
+        self.nodes[1].generate(1)
+        self.sync_all([self.nodes[0:3]])
+
+        self.log.info("test gettxout")
+        confirmed_txid, confirmed_index = utxos[0]["txid"], utxos[0]["vout"]
+        # First, outputs that are unspent both in the chain and in the
+        # mempool should appear with or without include_mempool
+        txout = self.nodes[0].gettxout(
+            txid=confirmed_txid, n=confirmed_index, include_mempool=False)
+        assert_equal(txout['value'], 50)
+        txout = self.nodes[0].gettxout(
+            txid=confirmed_txid, n=confirmed_index, include_mempool=True)
+        assert_equal(txout['value'], 50)
+
+        # Send 21 BCH from 0 to 2 using sendtoaddress call.
+        self.nodes[0].sendtoaddress(self.nodes[2].getnewaddress(), 11)
+        mempool_txid = self.nodes[0].sendtoaddress(
+            self.nodes[2].getnewaddress(), 10)
 
         self.log.info("test gettxout (second part)")
         # utxo spent in mempool should be visible if you exclude mempool
