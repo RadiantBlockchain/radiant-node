@@ -370,9 +370,9 @@ void BitcoinGUI::createActions() {
 
     openRPCConsoleAction =
         new QAction(platformStyle->TextColorIcon(":/icons/debugwindow"),
-                    tr("&Debug window"), this);
+                    tr("No&de window"), this);
     openRPCConsoleAction->setStatusTip(
-        tr("Open debugging and diagnostic console"));
+        tr("Open node debugging and diagnostic console"));
     // initially disable the debug window menu item
     openRPCConsoleAction->setEnabled(false);
     openRPCConsoleAction->setObjectName("openRPCConsoleAction");
