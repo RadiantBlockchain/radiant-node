@@ -180,7 +180,7 @@ static UniValue getrawtransaction(const Config &config,
     bool fVerbose = false;
     if (!request.params[1].isNull()) {
         fVerbose = request.params[1].isNum()
-                       ? (request.params[1].get_int() != 0)
+                       ? request.params[1].get_int() != 0
                        : request.params[1].get_bool();
     }
 
@@ -354,8 +354,7 @@ static UniValue gettxoutproof(const Config &config,
     CDataStream ssMB(SER_NETWORK, PROTOCOL_VERSION);
     CMerkleBlock mb(block, setTxIds);
     ssMB << mb;
-    std::string strHex = HexStr(ssMB.begin(), ssMB.end());
-    return strHex;
+    return HexStr(ssMB.begin(), ssMB.end());
 }
 
 static UniValue verifytxoutproof(const Config &,
@@ -382,7 +381,7 @@ static UniValue verifytxoutproof(const Config &,
     CMerkleBlock merkleBlock;
     ssMB >> merkleBlock;
 
-    UniValue res(UniValue::VARR);
+    UniValue::Array res;
 
     std::vector<uint256> vMatch;
     std::vector<size_t> vIndex;
@@ -402,7 +401,7 @@ static UniValue verifytxoutproof(const Config &,
     // Check if proof is valid, only add results if so
     if (pindex->nTx == merkleBlock.txn.GetNumTransactions()) {
         for (const uint256 &hash : vMatch) {
-            res.push_back(hash.GetHex());
+            res.emplace_back(hash.GetHex());
         }
     }
 
@@ -726,17 +725,17 @@ static UniValue decodescript(const Config &config,
 }
 
 /**
- * Pushes a JSON object for script verification or signing errors to vErrorsRet.
+ * Returns a JSON object for script verification or signing errors.
  */
-static void TxInErrorToJSON(const CTxIn &txin, UniValue &vErrorsRet,
-                            const std::string &strMessage) {
-    UniValue entry(UniValue::VOBJ);
-    entry.pushKV("txid", txin.prevout.GetTxId().ToString(), false);
-    entry.pushKV("vout", uint64_t(txin.prevout.GetN()), false);
-    entry.pushKV("scriptSig", HexStr(txin.scriptSig.begin(), txin.scriptSig.end()), false);
-    entry.pushKV("sequence", uint64_t(txin.nSequence), false);
-    entry.pushKV("error", strMessage, false);
-    vErrorsRet.push_back(std::move(entry));
+static UniValue::Object TxInErrorToJSON(const CTxIn& txin, std::string&& strMessage) {
+    UniValue::Object entry;
+    entry.reserve(5);
+    entry.emplace_back("txid", txin.prevout.GetTxId().ToString());
+    entry.emplace_back("vout", txin.prevout.GetN());
+    entry.emplace_back("scriptSig", HexStr(txin.scriptSig.begin(), txin.scriptSig.end()));
+    entry.emplace_back("sequence", txin.nSequence);
+    entry.emplace_back("error", std::move(strMessage));
+    return entry;
 }
 
 static UniValue combinerawtransaction(const Config &,
@@ -842,10 +841,8 @@ static UniValue combinerawtransaction(const Config &,
     return EncodeHexTx(CTransaction(mergedTx));
 }
 
-UniValue SignTransaction(interfaces::Chain &, CMutableTransaction &mtx,
-                         const UniValue &prevTxsUnival,
-                         CBasicKeyStore *keystore, bool is_temp_keystore,
-                         const UniValue &hashType) {
+UniValue::Object SignTransaction(interfaces::Chain &, CMutableTransaction &mtx, const UniValue &prevTxsUnival,
+                                 CBasicKeyStore *keystore, bool is_temp_keystore, const UniValue &hashType) {
     // Fetch previous transactions (inputs):
     CCoinsView viewDummy;
     CCoinsViewCache view(&viewDummy);
@@ -951,7 +948,7 @@ UniValue SignTransaction(interfaces::Chain &, CMutableTransaction &mtx,
     }
 
     // Script verification errors.
-    UniValue vErrors(UniValue::VARR);
+    UniValue::Array vErrors;
 
     // Use CTransaction for the constant parts of the transaction to avoid
     // rehashing.
@@ -961,7 +958,7 @@ UniValue SignTransaction(interfaces::Chain &, CMutableTransaction &mtx,
         CTxIn &txin = mtx.vin[i];
         const Coin &coin = view.AccessCoin(txin.prevout);
         if (coin.IsSpent()) {
-            TxInErrorToJSON(txin, vErrors, "Input not found or already spent");
+            vErrors.emplace_back(TxInErrorToJSON(txin, "Input not found or already spent"));
             continue;
         }
 
@@ -987,22 +984,21 @@ UniValue SignTransaction(interfaces::Chain &, CMutableTransaction &mtx,
             if (serror == ScriptError::INVALID_STACK_OPERATION) {
                 // Unable to sign input and verification failed (possible
                 // attempt to partially sign).
-                TxInErrorToJSON(txin, vErrors,
-                                "Unable to sign input, invalid stack size "
-                                "(possibly missing key)");
+                vErrors.emplace_back(TxInErrorToJSON(txin, "Unable to sign input, invalid stack size (possibly missing key)"));
             } else {
-                TxInErrorToJSON(txin, vErrors, ScriptErrorString(serror));
+                vErrors.emplace_back(TxInErrorToJSON(txin, ScriptErrorString(serror)));
             }
         }
     }
 
     bool fComplete = vErrors.empty();
 
-    UniValue result(UniValue::VOBJ);
-    result.pushKV("hex", EncodeHexTx(CTransaction(mtx)), false);
-    result.pushKV("complete", fComplete, false);
-    if (!vErrors.empty()) {
-        result.pushKV("errors", std::move(vErrors), false);
+    UniValue::Object result;
+    result.reserve(fComplete ? 2 : 3);
+    result.emplace_back("hex", EncodeHexTx(CTransaction(mtx)));
+    result.emplace_back("complete", fComplete);
+    if (!fComplete) {
+        result.emplace_back("errors", std::move(vErrors));
     }
 
     return result;
@@ -1241,10 +1237,6 @@ static UniValue testmempoolaccept(const Config &config,
         max_raw_tx_fee = Amount::zero();
     }
 
-    UniValue result(UniValue::VARR);
-    UniValue result_0(UniValue::VOBJ);
-    result_0.pushKV("txid", txid.GetHex(), false);
-
     CValidationState state;
     bool missing_inputs;
     bool test_accept_res;
@@ -1254,24 +1246,27 @@ static UniValue testmempoolaccept(const Config &config,
             config, g_mempool, state, std::move(tx), &missing_inputs,
             false /* bypass_limits */, max_raw_tx_fee, true /* test_accept */);
     }
-    result_0.pushKV("allowed", test_accept_res, false);
+
+    UniValue::Array result;
+    result.reserve(1);
+    UniValue::Object result_0;
+    result_0.reserve(test_accept_res ? 2 : 3);
+    result_0.emplace_back("txid", txid.GetHex());
+    result_0.emplace_back("allowed", test_accept_res);
     if (!test_accept_res) {
         if (state.IsInvalid()) {
-            result_0.pushKV("reject-reason",
-                            strprintf("%i: %s", state.GetRejectCode(),
-                                      state.GetRejectReason()), false);
+            result_0.emplace_back("reject-reason", strprintf("%i: %s", state.GetRejectCode(), state.GetRejectReason()));
         } else if (missing_inputs) {
-            result_0.pushKV("reject-reason", "missing-inputs", false);
+            result_0.emplace_back("reject-reason", "missing-inputs");
         } else {
-            result_0.pushKV("reject-reason", state.GetRejectReason(), false);
+            result_0.emplace_back("reject-reason", state.GetRejectReason());
         }
     }
-
-    result.push_back(std::move(result_0));
+    result.emplace_back(std::move(result_0));
     return result;
 }
 
-static std::string WriteHDKeypath(std::vector<uint32_t> &keypath) {
+static std::string WriteHDKeypath(const std::vector<uint32_t> &keypath) {
     std::string keypath_str = "m";
     for (uint32_t num : keypath) {
         keypath_str += "/";
@@ -1417,152 +1412,156 @@ static UniValue decodepsbt(const Config &,
                            strprintf("TX decode failed %s", error));
     }
 
-    UniValue result(UniValue::VOBJ);
+    UniValue::Object result;
 
     // Add the decoded tx
     UniValue tx_univ(UniValue::VOBJ);
     TxToUniv(CTransaction(*psbtx.tx), uint256(), tx_univ, false);
-    result.pushKV("tx", tx_univ);
+    result.emplace_back("tx", std::move(tx_univ));
 
     // Unknown data
-    if (psbtx.unknown.size() > 0) {
-        UniValue unknowns(UniValue::VOBJ);
-        for (auto entry : psbtx.unknown) {
-            unknowns.pushKV(HexStr(entry.first), HexStr(entry.second));
+    if (!psbtx.unknown.empty()) {
+        UniValue::Object unknowns;
+        unknowns.reserve(psbtx.unknown.size());
+        for (const auto &entry : psbtx.unknown) {
+            unknowns.emplace_back(HexStr(entry.first), HexStr(entry.second));
         }
-        result.pushKV("unknown", unknowns);
+        result.emplace_back("unknown", std::move(unknowns));
     }
 
     // inputs
     Amount total_in = Amount::zero();
     bool have_all_utxos = true;
-    UniValue inputs(UniValue::VARR);
+    UniValue::Array inputs;
+    inputs.reserve(psbtx.inputs.size());
     for (size_t i = 0; i < psbtx.inputs.size(); ++i) {
         const PSBTInput &input = psbtx.inputs[i];
-        UniValue in(UniValue::VOBJ);
+        UniValue::Object in;
         // UTXOs
         if (!input.utxo.IsNull()) {
             const CTxOut &txout = input.utxo;
 
-            UniValue out(UniValue::VOBJ);
+            UniValue::Object out;
+            out.reserve(2);
 
-            out.pushKV("amount", ValueFromAmount(txout.nValue));
+            out.emplace_back("amount", ValueFromAmount(txout.nValue));
             total_in += txout.nValue;
 
             UniValue o(UniValue::VOBJ);
             ScriptToUniv(txout.scriptPubKey, o, true);
-            out.pushKV("scriptPubKey", o);
-            in.pushKV("utxo", out);
+            out.emplace_back("scriptPubKey", std::move(o));
+            in.emplace_back("utxo", std::move(out));
         } else {
             have_all_utxos = false;
         }
 
         // Partial sigs
         if (!input.partial_sigs.empty()) {
-            UniValue partial_sigs(UniValue::VOBJ);
+            UniValue::Object partial_sigs;
             for (const auto &sig : input.partial_sigs) {
-                partial_sigs.pushKV(HexStr(sig.second.first),
-                                    HexStr(sig.second.second));
+                partial_sigs.emplace_back(HexStr(sig.second.first), HexStr(sig.second.second));
             }
-            in.pushKV("partial_signatures", partial_sigs);
+            in.emplace_back("partial_signatures", std::move(partial_sigs));
         }
 
         // Sighash
         uint8_t sighashbyte = input.sighash_type.getRawSigHashType() & 0xff;
         if (sighashbyte > 0) {
-            in.pushKV("sighash", SighashToStr(sighashbyte));
+            in.emplace_back("sighash", SighashToStr(sighashbyte));
         }
 
         // Redeem script
         if (!input.redeem_script.empty()) {
             UniValue r(UniValue::VOBJ);
             ScriptToUniv(input.redeem_script, r, false);
-            in.pushKV("redeem_script", r);
+            in.emplace_back("redeem_script", std::move(r));
         }
 
         // keypaths
         if (!input.hd_keypaths.empty()) {
-            UniValue keypaths(UniValue::VARR);
-            for (auto entry : input.hd_keypaths) {
-                UniValue keypath(UniValue::VOBJ);
-                keypath.pushKV("pubkey", HexStr(entry.first));
-
-                keypath.pushKV(
-                    "master_fingerprint",
-                    strprintf("%08x", ReadBE32(entry.second.fingerprint)));
-                keypath.pushKV("path", WriteHDKeypath(entry.second.path));
-                keypaths.push_back(keypath);
+            UniValue::Array keypaths;
+            keypaths.reserve(input.hd_keypaths.size());
+            for (const auto &entry : input.hd_keypaths) {
+                UniValue::Object keypath;
+                keypath.reserve(3);
+                keypath.emplace_back("pubkey", HexStr(entry.first));
+                keypath.emplace_back("master_fingerprint", strprintf("%08x", ReadBE32(entry.second.fingerprint)));
+                keypath.emplace_back("path", WriteHDKeypath(entry.second.path));
+                keypaths.emplace_back(std::move(keypath));
             }
-            in.pushKV("bip32_derivs", keypaths);
+            in.emplace_back("bip32_derivs", std::move(keypaths));
         }
 
         // Final scriptSig
         if (!input.final_script_sig.empty()) {
-            UniValue scriptsig(UniValue::VOBJ);
-            scriptsig.pushKV("asm",
-                             ScriptToAsmStr(input.final_script_sig, true));
-            scriptsig.pushKV("hex", HexStr(input.final_script_sig));
-            in.pushKV("final_scriptSig", scriptsig);
+            UniValue::Object scriptsig;
+            scriptsig.reserve(2);
+            scriptsig.emplace_back("asm", ScriptToAsmStr(input.final_script_sig, true));
+            scriptsig.emplace_back("hex", HexStr(input.final_script_sig));
+            in.emplace_back("final_scriptSig", std::move(scriptsig));
         }
 
         // Unknown data
-        if (input.unknown.size() > 0) {
-            UniValue unknowns(UniValue::VOBJ);
-            for (auto entry : input.unknown) {
-                unknowns.pushKV(HexStr(entry.first), HexStr(entry.second));
+        if (!input.unknown.empty()) {
+            UniValue::Object unknowns;
+            unknowns.reserve(input.unknown.size());
+            for (const auto &entry : input.unknown) {
+                unknowns.emplace_back(HexStr(entry.first), HexStr(entry.second));
             }
-            in.pushKV("unknown", unknowns);
+            in.emplace_back("unknown", std::move(unknowns));
         }
 
-        inputs.push_back(in);
+        inputs.emplace_back(std::move(in));
     }
-    result.pushKV("inputs", inputs);
+    result.emplace_back("inputs", std::move(inputs));
 
     // outputs
     Amount output_value = Amount::zero();
-    UniValue outputs(UniValue::VARR);
+    UniValue::Array outputs;
+    outputs.reserve(psbtx.outputs.size());
     for (size_t i = 0; i < psbtx.outputs.size(); ++i) {
         const PSBTOutput &output = psbtx.outputs[i];
-        UniValue out(UniValue::VOBJ);
+        UniValue::Object out;
         // Redeem script
         if (!output.redeem_script.empty()) {
             UniValue r(UniValue::VOBJ);
             ScriptToUniv(output.redeem_script, r, false);
-            out.pushKV("redeem_script", r);
+            out.emplace_back("redeem_script", std::move(r));
         }
 
         // keypaths
         if (!output.hd_keypaths.empty()) {
-            UniValue keypaths(UniValue::VARR);
-            for (auto entry : output.hd_keypaths) {
-                UniValue keypath(UniValue::VOBJ);
-                keypath.pushKV("pubkey", HexStr(entry.first));
-                keypath.pushKV(
-                    "master_fingerprint",
-                    strprintf("%08x", ReadBE32(entry.second.fingerprint)));
-                keypath.pushKV("path", WriteHDKeypath(entry.second.path));
-                keypaths.push_back(keypath);
+            UniValue::Array keypaths;
+            keypaths.reserve(output.hd_keypaths.size());
+            for (const auto &entry : output.hd_keypaths) {
+                UniValue::Object keypath;
+                keypath.reserve(3);
+                keypath.emplace_back("pubkey", HexStr(entry.first));
+                keypath.emplace_back("master_fingerprint", strprintf("%08x", ReadBE32(entry.second.fingerprint)));
+                keypath.emplace_back("path", WriteHDKeypath(entry.second.path));
+                keypaths.emplace_back(std::move(keypath));
             }
-            out.pushKV("bip32_derivs", keypaths);
+            out.emplace_back("bip32_derivs", std::move(keypaths));
         }
 
         // Unknown data
-        if (output.unknown.size() > 0) {
-            UniValue unknowns(UniValue::VOBJ);
-            for (auto entry : output.unknown) {
-                unknowns.pushKV(HexStr(entry.first), HexStr(entry.second));
+        if (!output.unknown.empty()) {
+            UniValue::Object unknowns;
+            unknowns.reserve(output.unknown.size());
+            for (const auto &entry : output.unknown) {
+                unknowns.emplace_back(HexStr(entry.first), HexStr(entry.second));
             }
-            out.pushKV("unknown", unknowns);
+            out.emplace_back("unknown", std::move(unknowns));
         }
 
-        outputs.push_back(out);
+        outputs.emplace_back(std::move(out));
 
         // Fee calculation
         output_value += psbtx.tx->vout[i].nValue;
     }
-    result.pushKV("outputs", outputs);
+    result.emplace_back("outputs", std::move(outputs));
     if (have_all_utxos) {
-        result.pushKV("fee", ValueFromAmount(total_in - output_value));
+        result.emplace_back("fee", ValueFromAmount(total_in - output_value));
     }
 
     return result;
@@ -1697,7 +1696,8 @@ static UniValue finalizepsbt(const Config &,
             SignPSBTInput(DUMMY_SIGNING_PROVIDER, psbtx, i, SigHashType());
     }
 
-    UniValue result(UniValue::VOBJ);
+    UniValue::Object result;
+    result.reserve(2);
     CDataStream ssTx(SER_NETWORK, PROTOCOL_VERSION);
     bool extract = request.params[1].isNull() || request.params[1].get_bool();
     if (complete && extract) {
@@ -1706,12 +1706,12 @@ static UniValue finalizepsbt(const Config &,
             mtx.vin[i].scriptSig = psbtx.inputs[i].final_script_sig;
         }
         ssTx << mtx;
-        result.pushKV("hex", HexStr(ssTx.begin(), ssTx.end()), false);
+        result.emplace_back("hex", HexStr(ssTx.begin(), ssTx.end()));
     } else {
         ssTx << psbtx;
-        result.pushKV("psbt", EncodeBase64(reinterpret_cast<uint8_t *>(ssTx.data()), ssTx.size()), false);
+        result.emplace_back("psbt", EncodeBase64(reinterpret_cast<uint8_t *>(ssTx.data()), ssTx.size()));
     }
-    result.pushKV("complete", complete, false);
+    result.emplace_back("complete", complete);
 
     return result;
 }
