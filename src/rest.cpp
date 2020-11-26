@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -193,9 +194,10 @@ static bool rest_headers(Config &config, HTTPRequest *req,
             return true;
         }
         case RetFormat::JSON: {
-            UniValue jsonHeaders(UniValue::VARR);
+            UniValue::Array jsonHeaders;
+            jsonHeaders.reserve(headers.size());
             for (const CBlockIndex *pindex : headers) {
-                jsonHeaders.push_back(blockheaderToJSON(tip, pindex));
+                jsonHeaders.emplace_back(blockheaderToJSON(tip, pindex));
             }
             std::string strJSON = UniValue::stringify(jsonHeaders) + "\n";
             req->WriteHeader("Content-Type", "application/json");
@@ -269,8 +271,7 @@ static bool rest_block(const Config &config, HTTPRequest *req,
         }
 
         case RetFormat::JSON: {
-            UniValue objBlock =
-                blockToJSON(block, tip, pblockindex, showTxDetails);
+            UniValue::Object objBlock = blockToJSON(block, tip, pblockindex, showTxDetails);
             std::string strJSON = UniValue::stringify(objBlock) + "\n";
             req->WriteHeader("Content-Type", "application/json");
             req->WriteReply(HTTP_OK, strJSON);
@@ -332,7 +333,7 @@ static bool rest_mempool_info(Config &config, HTTPRequest *req,
 
     switch (rf) {
         case RetFormat::JSON: {
-            UniValue mempoolInfoObject = MempoolInfoToJSON(config, ::g_mempool);
+            UniValue::Object mempoolInfoObject = MempoolInfoToJSON(config, ::g_mempool);
 
             std::string strJSON = UniValue::stringify(mempoolInfoObject) + "\n";
             req->WriteHeader("Content-Type", "application/json");

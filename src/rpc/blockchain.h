@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Bitcoin developers
+// Copyright (c) 2017-2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -32,18 +32,16 @@ double GetDifficulty(const CBlockIndex *blockindex);
 void RPCNotifyBlockChange(bool ibd, const CBlockIndex *pindex);
 
 /** Block description to JSON */
-UniValue blockToJSON(const CBlock &block, const CBlockIndex *tip,
-                     const CBlockIndex *blockindex, bool txDetails = false);
+UniValue::Object blockToJSON(const CBlock &block, const CBlockIndex *tip, const CBlockIndex *blockindex, bool txDetails = false);
 
 /** Mempool information to JSON */
-UniValue MempoolInfoToJSON(const Config &config, const CTxMemPool &pool);
+UniValue::Object MempoolInfoToJSON(const Config &config, const CTxMemPool &pool);
 
 /** Mempool to JSON */
 UniValue MempoolToJSON(const CTxMemPool &pool, bool verbose = false);
 
 /** Block header to JSON */
-UniValue blockheaderToJSON(const CBlockIndex *tip,
-                           const CBlockIndex *blockindex);
+UniValue::Object blockheaderToJSON(const CBlockIndex *tip, const CBlockIndex *blockindex);
 
 /** Used by getblockstats to get feerates at different percentiles by weight  */
 void CalculatePercentilesBySize(Amount result[NUM_GETBLOCKSTATS_PERCENTILES], std::vector<std::pair<Amount, int64_t>>& scores, int64_t total_size);
