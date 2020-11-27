@@ -1024,9 +1024,9 @@ UniValue dumpwallet(const Config &config, const JSONRPCRequest &request) {
     file << "# End of dump\n";
     file.close();
 
-    UniValue reply(UniValue::VOBJ);
-    reply.pushKV("filename", filepath.string());
-
+    UniValue::Object reply;
+    reply.reserve(1);
+    reply.emplace_back("filename", filepath.string());
     return reply;
 }
 
