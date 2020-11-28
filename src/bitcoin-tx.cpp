@@ -105,11 +105,7 @@ static void SetupBitcoinTxArgs() {
 // This function returns either one of EXIT_ codes when it's expected to stop
 // the process or CONTINUE_EXECUTION when it's expected to continue further.
 //
-static int AppInitRawTx(int argc, char *argv[]) {
-    // FIXME: Ideally, we'd like to build the config here, but that's currently
-    // not possible as the whole application has too much global state. However,
-    // this is a first step.
-    auto &config = const_cast<Config &>(GetConfig());
+static int AppInitRawTx(int argc, char *argv[], Config &config) {
 
     //
     // Parameters
@@ -764,9 +760,8 @@ static void MutateTx(CMutableTransaction &tx, const std::string &command,
     }
 }
 
-static void OutputTxJSON(const CTransaction &tx) {
-    UniValue entry(UniValue::VOBJ);
-    TxToUniv(tx, uint256(), entry);
+static void OutputTxJSON(const Config &config, const CTransaction &tx) {
+    UniValue::Object entry = TxToUniv(config, tx, uint256());
 
     std::string jsonOutput = UniValue::stringify(entry, 4);
     fprintf(stdout, "%s\n", jsonOutput.c_str());
@@ -785,9 +780,9 @@ static void OutputTxHex(const CTransaction &tx) {
     fprintf(stdout, "%s\n", strHex.c_str());
 }
 
-static void OutputTx(const CTransaction &tx) {
+static void OutputTx(const Config &config, const CTransaction &tx) {
     if (gArgs.GetBoolArg("-json", false)) {
-        OutputTxJSON(tx);
+        OutputTxJSON(config, tx);
     } else if (gArgs.GetBoolArg("-txid", false)) {
         OutputTxHash(tx);
     } else {
@@ -816,8 +811,7 @@ static std::string readStdin() {
     return ret;
 }
 
-static int CommandLineRawTx(int argc, char *argv[],
-                            const CChainParams &chainParams) {
+static int CommandLineRawTx(int argc, char *argv[], const Config &config, const CChainParams &chainParams) {
     std::string strPrint;
     int nRet = 0;
     try {
@@ -867,7 +861,7 @@ static int CommandLineRawTx(int argc, char *argv[],
             MutateTx(tx, key, value, chainParams);
         }
 
-        OutputTx(CTransaction(tx));
+        OutputTx(config, CTransaction(tx));
     } catch (const std::exception &e) {
         strPrint = std::string("error: ") + e.what();
         nRet = EXIT_FAILURE;
@@ -884,10 +878,15 @@ static int CommandLineRawTx(int argc, char *argv[],
 }
 
 int main(int argc, char *argv[]) {
+
+    auto &config = const_cast<Config &>(GetConfig());
+    // TODO: Once GetConfig() is removed, replace the line above with the line below:
+    //GlobalConfig config;
+
     SetupEnvironment();
 
     try {
-        int ret = AppInitRawTx(argc, argv);
+        int ret = AppInitRawTx(argc, argv, config);
         if (ret != CONTINUE_EXECUTION) {
             return ret;
         }
@@ -901,7 +900,7 @@ int main(int argc, char *argv[]) {
 
     int ret = EXIT_FAILURE;
     try {
-        ret = CommandLineRawTx(argc, argv, Params());
+        ret = CommandLineRawTx(argc, argv, config, Params());
     } catch (const std::exception &e) {
         PrintExceptionContinue(&e, "CommandLineRawTx()");
     } catch (...) {

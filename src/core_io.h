@@ -1,4 +1,5 @@
 // Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -7,6 +8,7 @@
 
 #include <attributes.h>
 #include <script/sighashtype.h>
+#include <univalue.h>
 
 #include <string>
 #include <vector>
@@ -15,12 +17,12 @@ struct Amount;
 class CBlock;
 class CBlockHeader;
 class CMutableTransaction;
+class Config;
 class CScript;
 class CTransaction;
 struct PartiallySignedTransaction;
 class uint160;
 class uint256;
-class UniValue;
 
 // core_read.cpp
 CScript ParseScript(const std::string &s);
@@ -57,10 +59,10 @@ UniValue ValueFromAmount(const Amount &amount);
 std::string FormatScript(const CScript &script);
 std::string EncodeHexTx(const CTransaction &tx, const int serializeFlags = 0);
 std::string SighashToStr(uint8_t sighash_type);
-void ScriptPubKeyToUniv(const CScript &scriptPubKey, UniValue &out,
-                        bool fIncludeHex);
-void ScriptToUniv(const CScript &script, UniValue &out, bool include_address);
-void TxToUniv(const CTransaction &tx, const uint256 &hashBlock, UniValue &entry,
-              bool include_hex = true, int serialize_flags = 0);
+UniValue::Object ScriptPubKeyToUniv(const Config &config, const CScript &scriptPubKey, bool fIncludeHex,
+                                    bool fIncludeP2SH = false);
+UniValue::Object ScriptToUniv(const Config &config, const CScript &script, bool include_address);
+UniValue::Object TxToUniv(const Config &config, const CTransaction &tx, const uint256 &hashBlock, bool include_hex = true,
+                          int serialize_flags = 0);
 
 #endif // BITCOIN_CORE_IO_H

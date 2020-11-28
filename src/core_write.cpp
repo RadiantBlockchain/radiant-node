@@ -1,4 +1,5 @@
 // Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2020 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -15,8 +16,6 @@
 #include <util/moneystr.h>
 #include <util/strencodings.h>
 #include <util/system.h>
-
-#include <univalue.h>
 
 UniValue ValueFromAmount(const Amount &amount) {
     bool sign = amount < Amount::zero();
@@ -176,102 +175,116 @@ std::string EncodeHexTx(const CTransaction &tx, const int serializeFlags) {
     return HexStr(ssTx.begin(), ssTx.end());
 }
 
-void ScriptToUniv(const CScript &script, UniValue &out, bool include_address) {
-    out.pushKV("asm", ScriptToAsmStr(script));
-    out.pushKV("hex", HexStr(script.begin(), script.end()));
+UniValue::Object ScriptToUniv(const Config &config, const CScript &script, bool include_address) {
+    CTxDestination address;
+    bool extracted = include_address && ExtractDestination(script, address);
+
+    UniValue::Object out;
+    out.reserve(3 + extracted);
+    out.emplace_back("asm", ScriptToAsmStr(script));
+    out.emplace_back("hex", HexStr(script.begin(), script.end()));
 
     std::vector<std::vector<uint8_t>> solns;
-    txnouttype type = Solver(script, solns);
-    out.pushKV("type", GetTxnOutputType(type));
+    out.emplace_back("type", GetTxnOutputType(Solver(script, solns)));
 
-    CTxDestination address;
-    if (include_address && ExtractDestination(script, address)) {
-        out.pushKV("address", EncodeDestination(address, GetConfig()));
+    if (extracted) {
+        out.emplace_back("address", EncodeDestination(address, config));
     }
+
+    return out;
 }
 
-void ScriptPubKeyToUniv(const CScript &scriptPubKey, UniValue &out,
-                        bool fIncludeHex) {
+UniValue::Object ScriptPubKeyToUniv(const Config &config, const CScript &scriptPubKey, bool fIncludeHex, bool fIncludeP2SH) {
+    UniValue::Object out;
+    out.emplace_back("asm", ScriptToAsmStr(scriptPubKey));
+    if (fIncludeHex) {
+        out.emplace_back("hex", HexStr(scriptPubKey.begin(), scriptPubKey.end()));
+    }
+
     txnouttype type;
     std::vector<CTxDestination> addresses;
     int nRequired;
+    bool extracted = ExtractDestinations(scriptPubKey, type, addresses, nRequired);
 
-    out.pushKV("asm", ScriptToAsmStr(scriptPubKey), false);
-    if (fIncludeHex) {
-        out.pushKV("hex", HexStr(scriptPubKey.begin(), scriptPubKey.end()), false);
+    if (extracted) {
+        out.emplace_back("reqSigs", nRequired);
     }
 
-    if (!ExtractDestinations(scriptPubKey, type, addresses, nRequired)) {
-        out.pushKV("type", GetTxnOutputType(type), false);
-        return;
+    out.emplace_back("type", GetTxnOutputType(type));
+
+    if (extracted) {
+        UniValue::Array a;
+        a.reserve(addresses.size());
+        for (const CTxDestination &addr : addresses) {
+            a.emplace_back(EncodeDestination(addr, config));
+        }
+        out.emplace_back("addresses", std::move(a));
     }
 
-    out.pushKV("reqSigs", nRequired, false);
-    out.pushKV("type", GetTxnOutputType(type), false);
-
-    UniValue a(UniValue::VARR);
-    a.reserve(addresses.size());
-    for (const CTxDestination &addr : addresses) {
-        a.push_back(EncodeDestination(addr, GetConfig()));
+    if (fIncludeP2SH && type != TX_SCRIPTHASH) {
+        // P2SH cannot be wrapped in a P2SH. If this script is already a P2SH,
+        // don't return the address for a P2SH of the P2SH.
+        out.emplace_back("p2sh", EncodeDestination(CScriptID(scriptPubKey), config));
     }
-    out.pushKV("addresses", std::move(a), false);
+
+    return out;
 }
 
-void TxToUniv(const CTransaction &tx, const uint256 &hashBlock, UniValue &entry,
-              bool include_hex, int serialize_flags) {
-    entry.pushKV("txid", tx.GetId().GetHex(), false);
-    entry.pushKV("hash", tx.GetHash().GetHex(), false);
-    entry.pushKV("version", tx.nVersion, false);
-    entry.pushKV("size", (int)::GetSerializeSize(tx, PROTOCOL_VERSION), false);
-    entry.pushKV("locktime", (int64_t)tx.nLockTime, false);
+UniValue::Object TxToUniv(const Config &config, const CTransaction &tx, const uint256 &hashBlock, bool include_hex,
+                          int serialize_flags) {
+    bool include_blockhash = !hashBlock.IsNull();
 
-    UniValue vin(UniValue::VARR);
+    UniValue::Object entry;
+    entry.reserve(7 + include_blockhash + include_hex);
+    entry.emplace_back("txid", tx.GetId().GetHex());
+    entry.emplace_back("hash", tx.GetHash().GetHex());
+    entry.emplace_back("version", tx.nVersion);
+    entry.emplace_back("size", ::GetSerializeSize(tx, PROTOCOL_VERSION));
+    entry.emplace_back("locktime", tx.nLockTime);
+
+    UniValue::Array vin;
     vin.reserve(tx.vin.size());
-    for (unsigned int i = 0; i < tx.vin.size(); i++) {
-        const CTxIn &txin = tx.vin[i];
-        UniValue in(UniValue::VOBJ);
+    for (const CTxIn &txin : tx.vin) {
+        UniValue::Object in;
         if (tx.IsCoinBase()) {
-            in.pushKV("coinbase", HexStr(txin.scriptSig.begin(), txin.scriptSig.end()), false);
+            in.reserve(2);
+            in.emplace_back("coinbase", HexStr(txin.scriptSig.begin(), txin.scriptSig.end()));
         } else {
-            in.pushKV("txid", txin.prevout.GetTxId().GetHex(), false);
-            in.pushKV("vout", int64_t(txin.prevout.GetN()), false);
-            UniValue o(UniValue::VOBJ);
-            o.pushKV("asm", ScriptToAsmStr(txin.scriptSig, true), false);
-            o.pushKV("hex", HexStr(txin.scriptSig.begin(), txin.scriptSig.end()), false);
-            in.pushKV("scriptSig", std::move(o), false);
+            in.reserve(4);
+            in.emplace_back("txid", txin.prevout.GetTxId().GetHex());
+            in.emplace_back("vout", txin.prevout.GetN());
+            UniValue::Object o;
+            o.reserve(2);
+            o.emplace_back("asm", ScriptToAsmStr(txin.scriptSig, true));
+            o.emplace_back("hex", HexStr(txin.scriptSig.begin(), txin.scriptSig.end()));
+            in.emplace_back("scriptSig", std::move(o));
         }
-
-        in.pushKV("sequence", (int64_t)txin.nSequence, false);
-        vin.push_back(std::move(in));
+        in.emplace_back("sequence", txin.nSequence);
+        vin.emplace_back(std::move(in));
     }
+    entry.emplace_back("vin", std::move(vin));
 
-    entry.pushKV("vin", std::move(vin), false);
-
-    UniValue vout(UniValue::VARR);
+    UniValue::Array vout;
     vout.reserve(tx.vout.size());
-    for (unsigned int i = 0; i < tx.vout.size(); i++) {
-        const CTxOut &txout = tx.vout[i];
-
-        UniValue out(UniValue::VOBJ);
-
-        out.pushKV("value", ValueFromAmount(txout.nValue), false);
-        out.pushKV("n", int64_t(i), false);
-
-        UniValue o(UniValue::VOBJ);
-        ScriptPubKeyToUniv(txout.scriptPubKey, o, true);
-        out.pushKV("scriptPubKey", std::move(o), false);
-        vout.push_back(std::move(out));
+    for (const CTxOut &txout : tx.vout) {
+        UniValue::Object out;
+        out.reserve(3);
+        out.emplace_back("value", ValueFromAmount(txout.nValue));
+        out.emplace_back("n", vout.size());
+        out.emplace_back("scriptPubKey", ScriptPubKeyToUniv(config, txout.scriptPubKey, true));
+        vout.emplace_back(std::move(out));
     }
+    entry.emplace_back("vout", std::move(vout));
 
-    entry.pushKV("vout", std::move(vout), false);
-
-    if (!hashBlock.IsNull()) {
-        entry.pushKV("blockhash", hashBlock.GetHex(), false);
+    if (include_blockhash) {
+        entry.emplace_back("blockhash", hashBlock.GetHex());
     }
 
     if (include_hex) {
         // The hex-encoded transaction. Used the name "hex" to be consistent
         // with the verbose output of "getrawtransaction".
-        entry.pushKV("hex", EncodeHexTx(tx, serialize_flags), false);
+        entry.emplace_back("hex", EncodeHexTx(tx, serialize_flags));
     }
+
+    return entry;
 }

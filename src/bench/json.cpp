@@ -8,6 +8,7 @@
 
 #include <chain.h>
 #include <chainparams.h>
+#include <config.h>
 #include <validation.h>
 #include <streams.h>
 #include <consensus/validation.h>
@@ -30,7 +31,7 @@ static void JSONReadWriteBlock(const std::vector<uint8_t> &data, unsigned int pr
     const auto blockHash = block.GetHash();
     blockindex.phashBlock = &blockHash;
     blockindex.nBits = block.nBits;
-    const auto blockuv = blockToJSON(block, &blockindex, &blockindex, /*verbose*/ true);
+    const auto blockuv = blockToJSON(GetConfig(), block, &blockindex, &blockindex, /*verbose*/ true);
 
     if (write) {
         while (state.KeepRunning()) {
