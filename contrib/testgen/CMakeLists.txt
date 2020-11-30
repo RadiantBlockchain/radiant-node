@@ -9,8 +9,9 @@ else()
     find_program_or_fail(CSPLIT_EXECUTABLE csplit)
 endif()
 
-# This project can take advantage of C++14.
-set(CMAKE_CXX_STANDARD 14)
+# This project must use C++17
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(gen_asert_test_vectors
     EXCLUDE_FROM_ALL

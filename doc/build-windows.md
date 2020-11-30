@@ -22,7 +22,7 @@ Other options which may work, but which have not been extensively tested are
 * On Windows, using a native compiler tool chain such as
   [Visual Studio](https://www.visualstudio.com).
 
-In any case please make sure that the compiler supports C++14.
+In any case please make sure that the compiler supports C++17.
 
 **Note** These notes cover building binaries from source, for running Bitcoin
 Cash Node natively under Windows. If you just want to run Bitcoin Cash Node,

@@ -522,7 +522,7 @@ enum class ParseScriptContext {
  * return true.
  */
 bool Const(const std::string &str, Span<const char> &sp) {
-    if ((size_t)sp.size() >= str.size() &&
+    if (sp.size() >= str.size() &&
         std::equal(str.begin(), str.end(), sp.begin())) {
         sp = sp.subspan(str.size());
         return true;
@@ -535,7 +535,7 @@ bool Const(const std::string &str, Span<const char> &sp) {
  * argument(s).
  */
 bool Func(const std::string &str, Span<const char> &sp) {
-    if ((size_t)sp.size() >= str.size() + 2 && sp[str.size()] == '(' &&
+    if (sp.size() >= str.size() + 2 && sp[str.size()] == '(' &&
         sp[sp.size() - 1] == ')' &&
         std::equal(str.begin(), str.end(), sp.begin())) {
         sp = sp.subspan(str.size() + 1, sp.size() - str.size() - 2);

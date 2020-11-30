@@ -27,7 +27,7 @@ See [dependencies.md](dependencies.md) or your OS specific guide in build-*.md.
 If you wish to compile the dependencies from source yourself, please see
 instructions in [depends](/depends/README.md).
 
-Please make sure that your compiler supports C++14.
+Please make sure that your compiler supports C++17.
 
 Assuming you have all the necessary dependencies installed the commands below will
 build the node, with the `bitcoin-qt` GUI-client as well.
