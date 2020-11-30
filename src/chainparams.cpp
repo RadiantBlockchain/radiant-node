@@ -174,8 +174,6 @@ public:
         // we'll fall back to using them as a oneshot if they don't support the
         // service bits we want, but we should get them updated to support all
         // service bits wanted by any release ASAP to avoid it where possible.
-        // Bitcoin ABC seeder
-        vSeeds.emplace_back("seed.bitcoinabc.org");
         // bitcoinforks seeders
         vSeeds.emplace_back("seed-bch.bitcoinforks.org");
         // BU backed seeder
@@ -361,8 +359,6 @@ public:
         vFixedSeeds.clear();
         vSeeds.clear();
         // nodes with support for servicebits filtering should be at the top
-        // Bitcoin ABC seeder
-        vSeeds.emplace_back("testnet-seed.bitcoinabc.org");
         // bitcoinforks seeders
         vSeeds.emplace_back("testnet-seed-bch.bitcoinforks.org");
         // BCHD
