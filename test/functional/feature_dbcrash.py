@@ -31,7 +31,7 @@ import random
 import time
 
 from test_framework.blocktools import create_confirmed_utxos
-from test_framework.cdefs import DEFAULT_MAX_BLOCK_SIZE
+from test_framework.cdefs import DEFAULT_EXCESSIVE_BLOCK_SIZE
 from test_framework.messages import (
     COIN,
     COutPoint,
@@ -69,7 +69,7 @@ class ChainstateWriteCrashTest(BitcoinTestFramework):
         # Node3 is a normal node with default args, except will mine full blocks
         # and non-standard txs (e.g. txs with "dust" outputs)
         self.node3_args = [
-            "-blockmaxsize={}".format(DEFAULT_MAX_BLOCK_SIZE), "-acceptnonstdtxn"]
+            "-blockmaxsize={}".format(DEFAULT_EXCESSIVE_BLOCK_SIZE), "-acceptnonstdtxn"]
         self.extra_args = [self.node0_args, self.node1_args,
                            self.node2_args, self.node3_args]
 

@@ -25,7 +25,7 @@ static UniValue getexcessiveblock(const Config &config,
 
     UniValue::Object ret;
     ret.reserve(1);
-    ret.emplace_back("excessiveBlockSize", config.GetMaxBlockSize());
+    ret.emplace_back("excessiveBlockSize", config.GetExcessiveBlockSize());
     return ret;
 }
 
@@ -68,7 +68,7 @@ static UniValue setexcessiveblock(Config &config,
     }
 
     // Set the new max block size.
-    if (!config.SetMaxBlockSize(ebs)) {
+    if (!config.SetExcessiveBlockSize(ebs)) {
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Unexpected error");
     }
 

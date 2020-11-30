@@ -17,32 +17,32 @@ BOOST_AUTO_TEST_CASE(max_block_size) {
     GlobalConfig config;
 
     // Too small.
-    BOOST_CHECK(!config.SetMaxBlockSize(0));
-    BOOST_CHECK(!config.SetMaxBlockSize(12345));
-    BOOST_CHECK(!config.SetMaxBlockSize(LEGACY_MAX_BLOCK_SIZE - 1));
-    BOOST_CHECK(!config.SetMaxBlockSize(LEGACY_MAX_BLOCK_SIZE));
+    BOOST_CHECK(!config.SetExcessiveBlockSize(0));
+    BOOST_CHECK(!config.SetExcessiveBlockSize(12345));
+    BOOST_CHECK(!config.SetExcessiveBlockSize(LEGACY_MAX_BLOCK_SIZE - 1));
+    BOOST_CHECK(!config.SetExcessiveBlockSize(LEGACY_MAX_BLOCK_SIZE));
 
     // LEGACY_MAX_BLOCK_SIZE + 1
-    BOOST_CHECK(config.SetMaxBlockSize(LEGACY_MAX_BLOCK_SIZE + 1));
-    BOOST_CHECK_EQUAL(config.GetMaxBlockSize(), LEGACY_MAX_BLOCK_SIZE + 1);
+    BOOST_CHECK(config.SetExcessiveBlockSize(LEGACY_MAX_BLOCK_SIZE + 1));
+    BOOST_CHECK_EQUAL(config.GetExcessiveBlockSize(), LEGACY_MAX_BLOCK_SIZE + 1);
 
     // 2MB
-    BOOST_CHECK(config.SetMaxBlockSize(2 * ONE_MEGABYTE));
-    BOOST_CHECK_EQUAL(config.GetMaxBlockSize(), 2 * ONE_MEGABYTE);
+    BOOST_CHECK(config.SetExcessiveBlockSize(2 * ONE_MEGABYTE));
+    BOOST_CHECK_EQUAL(config.GetExcessiveBlockSize(), 2 * ONE_MEGABYTE);
 
     // 8MB
-    BOOST_CHECK(config.SetMaxBlockSize(8 * ONE_MEGABYTE));
-    BOOST_CHECK_EQUAL(config.GetMaxBlockSize(), 8 * ONE_MEGABYTE);
+    BOOST_CHECK(config.SetExcessiveBlockSize(8 * ONE_MEGABYTE));
+    BOOST_CHECK_EQUAL(config.GetExcessiveBlockSize(), 8 * ONE_MEGABYTE);
 
     // Invalid size keep config.
-    BOOST_CHECK(!config.SetMaxBlockSize(54321));
-    BOOST_CHECK_EQUAL(config.GetMaxBlockSize(), 8 * ONE_MEGABYTE);
+    BOOST_CHECK(!config.SetExcessiveBlockSize(54321));
+    BOOST_CHECK_EQUAL(config.GetExcessiveBlockSize(), 8 * ONE_MEGABYTE);
 
     // Setting it back down
-    BOOST_CHECK(config.SetMaxBlockSize(7 * ONE_MEGABYTE));
-    BOOST_CHECK_EQUAL(config.GetMaxBlockSize(), 7 * ONE_MEGABYTE);
-    BOOST_CHECK(config.SetMaxBlockSize(ONE_MEGABYTE + 1));
-    BOOST_CHECK_EQUAL(config.GetMaxBlockSize(), ONE_MEGABYTE + 1);
+    BOOST_CHECK(config.SetExcessiveBlockSize(7 * ONE_MEGABYTE));
+    BOOST_CHECK_EQUAL(config.GetExcessiveBlockSize(), 7 * ONE_MEGABYTE);
+    BOOST_CHECK(config.SetExcessiveBlockSize(ONE_MEGABYTE + 1));
+    BOOST_CHECK_EQUAL(config.GetExcessiveBlockSize(), ONE_MEGABYTE + 1);
 }
 
 BOOST_AUTO_TEST_CASE(chain_params) {

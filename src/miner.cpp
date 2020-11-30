@@ -64,7 +64,7 @@ uint64_t CTxMemPoolModifiedEntry::GetVirtualSizeWithAncestors() const {
 }
 
 BlockAssembler::Options::Options()
-    : nExcessiveBlockSize(DEFAULT_MAX_BLOCK_SIZE),
+    : nExcessiveBlockSize(DEFAULT_EXCESSIVE_BLOCK_SIZE),
       nMaxGeneratedBlockSize(DEFAULT_MAX_GENERATED_BLOCK_SIZE),
       blockMinFeeRate(DEFAULT_BLOCK_MIN_TX_FEE_PER_KB) {}
 
@@ -94,7 +94,7 @@ static BlockAssembler::Options DefaultOptions(const Config &config) {
     // If both are given, restrict both.
     BlockAssembler::Options options;
 
-    options.nExcessiveBlockSize = config.GetMaxBlockSize();
+    options.nExcessiveBlockSize = config.GetExcessiveBlockSize();
 
     if (gArgs.IsArgSet("-blockmaxsize")) {
         options.nMaxGeneratedBlockSize =
@@ -220,7 +220,7 @@ BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn) {
 
     CValidationState state;
     if (!TestBlockValidity(state, chainparams, *pblock, pindexPrev,
-                           BlockValidationOptions(nMaxGeneratedBlockSize)
+                           BlockValidationOptions(GetConfig())
                                .withCheckPoW(false)
                                .withCheckMerkleRoot(false))) {
         throw std::runtime_error(strprintf("%s: TestBlockValidity failed: %s",

@@ -138,7 +138,7 @@ public:
         consensus.tachyonActivationTime = 1621080000;
 
         // Default limit for block size (in bytes)
-        consensus.nDefaultMaxBlockSize = DEFAULT_MAX_BLOCK_SIZE;
+        consensus.nDefaultExcessiveBlockSize = DEFAULT_EXCESSIVE_BLOCK_SIZE;
 
         /**
          * The message start string is designed to be unlikely to occur in
@@ -333,7 +333,7 @@ public:
         consensus.tachyonActivationTime = 1621080000;
 
         // Default limit for block size (in bytes)
-        consensus.nDefaultMaxBlockSize = DEFAULT_MAX_BLOCK_SIZE;
+        consensus.nDefaultExcessiveBlockSize = DEFAULT_EXCESSIVE_BLOCK_SIZE;
 
         diskMagic[0] = 0x0b;
         diskMagic[1] = 0x11;
@@ -491,8 +491,8 @@ public:
         // May 15, 2021 12:00:00 UTC tentative protocol upgrade
         consensus.tachyonActivationTime = 1621080000;
 
-        // Default limit for block size (in bytes)
-        consensus.nDefaultMaxBlockSize = 2000000;
+        // Default limit for block size (in bytes) (testnet4 is smaller at 2MB)
+        consensus.nDefaultExcessiveBlockSize = 2 * ONE_MEGABYTE;
 
         diskMagic[0] = 0xcd;
         diskMagic[1] = 0x22;
@@ -620,7 +620,7 @@ public:
         consensus.tachyonActivationTime = 1621080000;
 
         // Default limit for block size (in bytes)
-        consensus.nDefaultMaxBlockSize = 256*1000*1000;
+        consensus.nDefaultExcessiveBlockSize = 256 * ONE_MEGABYTE;
 
         diskMagic[0] = 0xba;
         diskMagic[1] = 0xc2;
@@ -739,7 +739,7 @@ public:
         consensus.tachyonActivationTime = 1621080000;
 
         // Default limit for block size (in bytes)
-        consensus.nDefaultMaxBlockSize = DEFAULT_MAX_BLOCK_SIZE;
+        consensus.nDefaultExcessiveBlockSize = DEFAULT_EXCESSIVE_BLOCK_SIZE;
 
         diskMagic[0] = 0xfa;
         diskMagic[1] = 0xbf;

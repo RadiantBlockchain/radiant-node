@@ -17,7 +17,7 @@ static constexpr uint64_t MIN_TX_SIZE = 100;
 /** The maximum allowed size for a block, before the UAHF */
 static constexpr uint64_t LEGACY_MAX_BLOCK_SIZE = ONE_MEGABYTE;
 /** Default setting for maximum allowed size for a block, in bytes */
-static constexpr uint64_t DEFAULT_MAX_BLOCK_SIZE = 32 * ONE_MEGABYTE;
+static constexpr uint64_t DEFAULT_EXCESSIVE_BLOCK_SIZE = 32 * ONE_MEGABYTE;
 /** Allowed number of signature check operations per transaction. */
 static constexpr uint64_t MAX_TX_SIGCHECKS = 3000;
 /**

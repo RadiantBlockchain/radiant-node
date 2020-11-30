@@ -231,7 +231,7 @@ static void TestPackageSelection(const CChainParams &chainparams,
 
 void TestCoinbaseMessageEB(uint64_t eb, const std::string &cbmsg) {
     GlobalConfig config;
-    config.SetMaxBlockSize(eb);
+    config.SetExcessiveBlockSize(eb);
 
     CScript scriptPubKey =
         CScript() << ParseHex("04678afdb0fe5548271967f1a67130b7105cd6a828e03909"
@@ -246,7 +246,7 @@ void TestCoinbaseMessageEB(uint64_t eb, const std::string &cbmsg) {
 
     // IncrementExtraNonce creates a valid coinbase and merkleRoot
     unsigned int extraNonce = 0;
-    IncrementExtraNonce(pblock, ::ChainActive().Tip(), config.GetMaxBlockSize(),
+    IncrementExtraNonce(pblock, ::ChainActive().Tip(), config.GetExcessiveBlockSize(),
                         extraNonce);
     unsigned int nHeight = ::ChainActive().Tip()->nHeight + 1;
     std::vector<uint8_t> vec(cbmsg.begin(), cbmsg.end());
@@ -693,7 +693,7 @@ BOOST_AUTO_TEST_CASE(BlockAssembler_construction) {
     LOCK(cs_main);
 
     // Test around historical 1MB (plus one byte because that's mandatory)
-    config.SetMaxBlockSize(ONE_MEGABYTE + 1);
+    config.SetExcessiveBlockSize(ONE_MEGABYTE + 1);
     CheckBlockMaxSize(config, 0, 1000);
     CheckBlockMaxSize(config, 1000, 1000);
     CheckBlockMaxSize(config, 1001, 1001);
@@ -705,17 +705,17 @@ BOOST_AUTO_TEST_CASE(BlockAssembler_construction) {
     CheckBlockMaxSize(config, ONE_MEGABYTE, ONE_MEGABYTE - 999);
 
     // Test around default cap
-    config.SetMaxBlockSize(DEFAULT_MAX_BLOCK_SIZE);
+    config.SetExcessiveBlockSize(DEFAULT_EXCESSIVE_BLOCK_SIZE);
 
     // Now we can use the default max block size.
-    CheckBlockMaxSize(config, DEFAULT_MAX_BLOCK_SIZE - 1001,
-                      DEFAULT_MAX_BLOCK_SIZE - 1001);
-    CheckBlockMaxSize(config, DEFAULT_MAX_BLOCK_SIZE - 1000,
-                      DEFAULT_MAX_BLOCK_SIZE - 1000);
-    CheckBlockMaxSize(config, DEFAULT_MAX_BLOCK_SIZE - 999,
-                      DEFAULT_MAX_BLOCK_SIZE - 1000);
-    CheckBlockMaxSize(config, DEFAULT_MAX_BLOCK_SIZE,
-                      DEFAULT_MAX_BLOCK_SIZE - 1000);
+    CheckBlockMaxSize(config, DEFAULT_EXCESSIVE_BLOCK_SIZE - 1001,
+                      DEFAULT_EXCESSIVE_BLOCK_SIZE - 1001);
+    CheckBlockMaxSize(config, DEFAULT_EXCESSIVE_BLOCK_SIZE - 1000,
+                      DEFAULT_EXCESSIVE_BLOCK_SIZE - 1000);
+    CheckBlockMaxSize(config, DEFAULT_EXCESSIVE_BLOCK_SIZE - 999,
+                      DEFAULT_EXCESSIVE_BLOCK_SIZE - 1000);
+    CheckBlockMaxSize(config, DEFAULT_EXCESSIVE_BLOCK_SIZE,
+                      DEFAULT_EXCESSIVE_BLOCK_SIZE - 1000);
 
     // If the parameter is not specified, we use
     // DEFAULT_MAX_GENERATED_BLOCK_SIZE

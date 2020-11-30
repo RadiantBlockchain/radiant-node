@@ -46,9 +46,9 @@ BOOST_AUTO_TEST_CASE(excessiveblock_rpc) {
 
     // Default can be higher than 1MB in future - test it too
     BOOST_CHECK_NO_THROW(CallRPC(std::string("setexcessiveblock ") +
-                                 std::to_string(DEFAULT_MAX_BLOCK_SIZE)));
+                                 std::to_string(DEFAULT_EXCESSIVE_BLOCK_SIZE)));
     BOOST_CHECK_NO_THROW(CallRPC(std::string("setexcessiveblock ") +
-                                 std::to_string(DEFAULT_MAX_BLOCK_SIZE * 8)));
+                                 std::to_string(DEFAULT_EXCESSIVE_BLOCK_SIZE * 8)));
 
     BOOST_CHECK_NO_THROW(
         CallRPC(std::string("setexcessiveblock ") +

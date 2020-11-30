@@ -23,8 +23,10 @@ class CChainParams;
 
 class Config : public boost::noncopyable {
 public:
-    virtual bool SetMaxBlockSize(uint64_t maxBlockSize) = 0;
-    virtual uint64_t GetMaxBlockSize() const = 0;
+    /** The largest block size this node will accept. */
+    virtual bool SetExcessiveBlockSize(uint64_t maxBlockSize) = 0;
+    virtual uint64_t GetExcessiveBlockSize() const = 0;
+    /** The maximum amount of RAM to be used in the mempool before TrimToSize is called. */
     virtual void SetMaxMemPoolSize(uint64_t maxMemPoolSize) = 0;
     virtual uint64_t GetMaxMemPoolSize() const = 0;
     virtual void SetInvBroadcastRate(uint64_t rate) = 0;
@@ -42,8 +44,8 @@ public:
 class GlobalConfig final : public Config {
 public:
     GlobalConfig();
-    bool SetMaxBlockSize(uint64_t maxBlockSize) override;
-    uint64_t GetMaxBlockSize() const override;
+    bool SetExcessiveBlockSize(uint64_t maxBlockSize) override;
+    uint64_t GetExcessiveBlockSize() const override;
     void SetMaxMemPoolSize(uint64_t maxMemPoolSize) override { nMaxMemPoolSize = maxMemPoolSize; }
     uint64_t GetMaxMemPoolSize() const override { return nMaxMemPoolSize; }
     void SetInvBroadcastRate(uint64_t rate) override { nInvBroadcastRate = rate; }
@@ -64,7 +66,7 @@ private:
     uint64_t nInvBroadcastInterval;
 
     /** The largest block size this node will accept. */
-    uint64_t nMaxBlockSize;
+    uint64_t nExcessiveBlockSize;
 
     /** The maximum amount of RAM to be used in the mempool before TrimToSize is called. */
     uint64_t nMaxMemPoolSize;
@@ -76,8 +78,8 @@ public:
     DummyConfig();
     DummyConfig(const std::string &net);
     DummyConfig(std::unique_ptr<CChainParams> chainParamsIn);
-    bool SetMaxBlockSize(uint64_t) override { return false; }
-    uint64_t GetMaxBlockSize() const override { return 0; }
+    bool SetExcessiveBlockSize(uint64_t) override { return false; }
+    uint64_t GetExcessiveBlockSize() const override { return 0; }
     void SetMaxMemPoolSize(uint64_t) override {}
     uint64_t GetMaxMemPoolSize() const override {return 0; }
     void SetInvBroadcastRate(uint64_t) override {}
@@ -91,7 +93,7 @@ public:
     void SetCashAddrEncoding(bool) override {}
     bool UseCashAddrEncoding() const override { return false; }
 
-    void SetExcessUTXOCharge(Amount amt) override {}
+    void SetExcessUTXOCharge(Amount) override {}
     Amount GetExcessUTXOCharge() const override { return Amount::zero(); }
 
 private:

@@ -44,8 +44,8 @@ struct Params {
     int axionActivationTime;
     /** Unix time used for tentative MTP activation of 15 May 2021 12:00:00 UTC upgrade */
     int tachyonActivationTime;
-    /** Default blocksize limit -- can be overridden with a command-line switch */
-    uint64_t nDefaultMaxBlockSize;
+    /** Default blocksize limit -- can be overridden with the -excessiveblocksize= command-line switch */
+    uint64_t nDefaultExcessiveBlockSize;
 
     /** Proof of work parameters */
     uint256 powLimit;

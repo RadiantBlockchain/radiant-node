@@ -136,7 +136,7 @@ UniValue generateBlocks(const Config &config,
         nHeightEnd = nHeight + nGenerate;
     }
 
-    const uint64_t nExcessiveBlockSize = config.GetMaxBlockSize();
+    const uint64_t nExcessiveBlockSize = config.GetExcessiveBlockSize();
 
     unsigned int nExtraNonce = 0;
     UniValue::Array blockHashes;
@@ -830,8 +830,8 @@ static UniValue getblocktemplatecommon(bool fLight, const Config &config, const 
     result.emplace_back("mintime", pindexPrev->GetMedianTimePast() + 1);
     result.emplace_back("mutable", std::move(aMutable));
     result.emplace_back("noncerange", "00000000ffffffff");
-    result.emplace_back("sigoplimit", GetMaxBlockSigChecksCount(config.GetMaxBlockSize()));
-    result.emplace_back("sizelimit", config.GetMaxBlockSize());
+    result.emplace_back("sigoplimit", GetMaxBlockSigChecksCount(config.GetExcessiveBlockSize()));
+    result.emplace_back("sizelimit", config.GetExcessiveBlockSize());
     result.emplace_back("curtime", pblock->GetBlockTime());
     result.emplace_back("bits", strprintf("%08x", pblock->nBits));
     result.emplace_back("height", pindexPrev->nHeight + 1);

@@ -5,25 +5,25 @@
 #include <config.h>
 
 #include <chainparams.h>
-#include <consensus/consensus.h> // DEFAULT_MAX_BLOCK_SIZE
+#include <consensus/consensus.h> // DEFAULT_EXCESSIVE_BLOCK_SIZE
 
 GlobalConfig::GlobalConfig()
-    : useCashAddr(DEFAULT_USE_CASHADDR), nMaxBlockSize(DEFAULT_MAX_BLOCK_SIZE),
-      nMaxMemPoolSize(DEFAULT_MAX_BLOCK_SIZE * DEFAULT_MAX_MEMPOOL_SIZE_PER_MB) {}
+    : useCashAddr(DEFAULT_USE_CASHADDR), nExcessiveBlockSize(DEFAULT_EXCESSIVE_BLOCK_SIZE),
+      nMaxMemPoolSize(DEFAULT_EXCESSIVE_BLOCK_SIZE * DEFAULT_MAX_MEMPOOL_SIZE_PER_MB) {}
 
-bool GlobalConfig::SetMaxBlockSize(uint64_t maxBlockSize) {
+bool GlobalConfig::SetExcessiveBlockSize(uint64_t blockSize) {
     // Do not allow maxBlockSize to be set below historic 1MB limit
     // It cannot be equal either because of the "must be big" UAHF rule.
-    if (maxBlockSize <= LEGACY_MAX_BLOCK_SIZE) {
+    if (blockSize <= LEGACY_MAX_BLOCK_SIZE) {
         return false;
     }
 
-    nMaxBlockSize = maxBlockSize;
+    nExcessiveBlockSize = blockSize;
     return true;
 }
 
-uint64_t GlobalConfig::GetMaxBlockSize() const {
-    return nMaxBlockSize;
+uint64_t GlobalConfig::GetExcessiveBlockSize() const {
+    return nExcessiveBlockSize;
 }
 
 const CChainParams &GlobalConfig::GetChainParams() const {
