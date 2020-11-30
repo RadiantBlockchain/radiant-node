@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # Copyright (c) 2011 Jeff Garzik
+# Copyright (c) 2020 The Bitcoin developers
 #
 # Previous copyright, from python-jsonrpc/jsonrpc/proxy.py:
 #
@@ -182,8 +183,17 @@ class AuthServiceProxy():
                 'code': -342, 'message': 'non-JSON HTTP response with \'{} {}\' from server'.format(
                     http_response.status, http_response.reason)})
 
+        def check_duplicate_keys(pairs):
+            obj = {}
+            for key, val in pairs:
+                if key in obj:
+                    raise JSONRPCException({
+                        'code': -342, 'message': 'duplicate key \'{}\' in JSON object'.format(key)})
+                obj[key] = val
+            return obj
+
         responsedata = http_response.read().decode('utf8')
-        response = json.loads(responsedata, parse_float=decimal.Decimal)
+        response = json.loads(responsedata, parse_float=decimal.Decimal, object_pairs_hook=check_duplicate_keys)
         elapsed = time.time() - req_start_time
         if "error" in response and response["error"] is None:
             log.debug("<-{}- [{:.6f}] {}".format(response["id"], elapsed, json.dumps(
