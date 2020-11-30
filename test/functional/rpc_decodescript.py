@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # Copyright (c) 2015-2019 The Bitcoin Core developers
+# Copyright (c) 2020 The Bitcoin developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Test decoding scripts via decodescript RPC command."""
@@ -27,18 +28,28 @@ class DecodeScriptTest(BitcoinTestFramework):
         # onto the stack
         rpc_result = self.nodes[0].decodescript(push_signature)
         assert_equal(signature, rpc_result['asm'])
+        assert 'reqSigs' not in rpc_result
+        assert_equal('nonstandard', rpc_result['type'])
+        assert 'addresses' not in rpc_result
+        assert_equal('bchreg:pqcelzf04c0k40ngx4f24dc8zr2mqstqyusveenvss', rpc_result['p2sh'])
 
         # 2) P2PKH scriptSig
-        rpc_result = self.nodes[0].decodescript(
-            push_signature + push_public_key)
+        rpc_result = self.nodes[0].decodescript(push_signature + push_public_key)
         assert_equal(signature + ' ' + public_key, rpc_result['asm'])
+        assert 'reqSigs' not in rpc_result
+        assert_equal('nonstandard', rpc_result['type'])
+        assert 'addresses' not in rpc_result
+        assert_equal('bchreg:ppzuwl0gnrzrkvac57rj4vvgpmj7gaulrsqcud3lwf', rpc_result['p2sh'])
 
         # 3) multisig scriptSig
         # this also tests the leading portion of a P2SH multisig scriptSig
         # OP_0 <A sig> <B sig>
-        rpc_result = self.nodes[0].decodescript(
-            '00' + push_signature + push_signature)
+        rpc_result = self.nodes[0].decodescript('00' + push_signature + push_signature)
         assert_equal('0 ' + signature + ' ' + signature, rpc_result['asm'])
+        assert 'reqSigs' not in rpc_result
+        assert_equal('nonstandard', rpc_result['type'])
+        assert 'addresses' not in rpc_result
+        assert_equal('bchreg:pq8n9kr6ye6heaxa8s64d225thxz7t64nql7350qz7', rpc_result['p2sh'])
 
         # 4) P2SH scriptSig
         # an empty P2SH redeemScript is valid and makes for a very simple test case.
@@ -46,6 +57,10 @@ class DecodeScriptTest(BitcoinTestFramework):
         # hash test and leave true on the top of the stack.
         rpc_result = self.nodes[0].decodescript('5100')
         assert_equal('1 0', rpc_result['asm'])
+        assert 'reqSigs' not in rpc_result
+        assert_equal('nonstandard', rpc_result['type'])
+        assert 'addresses' not in rpc_result
+        assert_equal('bchreg:pq42f3g7mt8h9qaf3dxq9u3dk8fm22unvqv2l22pjr', rpc_result['p2sh'])
 
         # 5) null data scriptSig - no such thing because null data scripts can not be spent.
         # thus, no test case for that standard transaction type is here.
@@ -62,32 +77,42 @@ class DecodeScriptTest(BitcoinTestFramework):
         # <pubkey> OP_CHECKSIG
         rpc_result = self.nodes[0].decodescript(push_public_key + 'ac')
         assert_equal(public_key + ' OP_CHECKSIG', rpc_result['asm'])
+        assert_equal(1, rpc_result['reqSigs'])
+        assert_equal('pubkey', rpc_result['type'])
+        assert_equal(['bchreg:qpwar5aqfqgecfajs2fs2eeym9fz7fkeg565hwlcwt'], rpc_result['addresses'])
+        assert_equal('bchreg:pr7a3024aymtt7jw2j37pktad4apv479aymf867e30', rpc_result['p2sh'])
 
         # 2) P2PKH scriptPubKey
         # OP_DUP OP_HASH160 <PubKeyHash> OP_EQUALVERIFY OP_CHECKSIG
-        rpc_result = self.nodes[0].decodescript(
-            '76a9' + push_public_key_hash + '88ac')
-        assert_equal('OP_DUP OP_HASH160 ' + public_key_hash +
-                     ' OP_EQUALVERIFY OP_CHECKSIG', rpc_result['asm'])
+        rpc_result = self.nodes[0].decodescript('76a9' + push_public_key_hash + '88ac')
+        assert_equal('OP_DUP OP_HASH160 ' + public_key_hash + ' OP_EQUALVERIFY OP_CHECKSIG', rpc_result['asm'])
+        assert_equal(1, rpc_result['reqSigs'])
+        assert_equal('pubkeyhash', rpc_result['type'])
+        assert_equal(['bchreg:qqgkjkmvmzg5snpdf8k94fecas4jlzthwuwpda8j83'], rpc_result['addresses'])
+        assert_equal('bchreg:pqpylx2y5cdcc6e6mxxzdglu2t6uxhrnh5xmaq84mw', rpc_result['p2sh'])
 
         # 3) multisig scriptPubKey
         # <m> <A pubkey> <B pubkey> <C pubkey> <n> OP_CHECKMULTISIG
         # just imagine that the pub keys used below are different.
         # for our purposes here it does not matter that they are the same even
         # though it is unrealistic.
-        rpc_result = self.nodes[0].decodescript(
-            '52' + push_public_key + push_public_key + push_public_key + '53ae')
-        assert_equal('2 ' + public_key + ' ' + public_key + ' ' +
-                     public_key + ' 3 OP_CHECKMULTISIG', rpc_result['asm'])
+        rpc_result = self.nodes[0].decodescript('52' + push_public_key * 3 + '53ae')
+        assert_equal('2 ' + public_key + ' ' + public_key + ' ' + public_key + ' 3 OP_CHECKMULTISIG', rpc_result['asm'])
+        assert_equal(2, rpc_result['reqSigs'])
+        assert_equal('multisig', rpc_result['type'])
+        assert_equal(['bchreg:qpwar5aqfqgecfajs2fs2eeym9fz7fkeg565hwlcwt'] * 3, rpc_result['addresses'])
+        assert_equal('bchreg:pqewz2rkyl3988qlmve9lfyaagtk7m8xl5vc0lceaf', rpc_result['p2sh'])
 
         # 4) P2SH scriptPubKey
         # OP_HASH160 <Hash160(redeemScript)> OP_EQUAL.
         # push_public_key_hash here should actually be the hash of a redeem script.
         # but this works the same for purposes of this test.
-        rpc_result = self.nodes[0].decodescript(
-            'a9' + push_public_key_hash + '87')
-        assert_equal(
-            'OP_HASH160 ' + public_key_hash + ' OP_EQUAL', rpc_result['asm'])
+        rpc_result = self.nodes[0].decodescript('a9' + push_public_key_hash + '87')
+        assert_equal('OP_HASH160 ' + public_key_hash + ' OP_EQUAL', rpc_result['asm'])
+        assert_equal(1, rpc_result['reqSigs'])
+        assert_equal('scripthash', rpc_result['type'])
+        assert_equal(['bchreg:pqgkjkmvmzg5snpdf8k94fecas4jlzthwueysjq3uv'], rpc_result['addresses'])
+        assert 'p2sh' not in rpc_result
 
         # 5) null data scriptPubKey
         # use a signature look-alike here to make sure that we do not decode random data as a signature.
@@ -98,6 +123,10 @@ class DecodeScriptTest(BitcoinTestFramework):
         # OP_RETURN <data>
         rpc_result = self.nodes[0].decodescript('6a' + signature_imposter)
         assert_equal('OP_RETURN ' + signature_imposter[2:], rpc_result['asm'])
+        assert 'reqSigs' not in rpc_result
+        assert_equal('nulldata', rpc_result['type'])
+        assert 'addresses' not in rpc_result
+        assert_equal('bchreg:pzevmdfm7rq8cnsl00gp8jdlw2fvshhmh5pchcjpq7', rpc_result['p2sh'])
 
         # 6) a CLTV redeem script. redeem scripts are in-effect scriptPubKey scripts, so adding a test here.
         # OP_NOP2 is also known as OP_CHECKLOCKTIMEVERIFY.
@@ -112,10 +141,12 @@ class DecodeScriptTest(BitcoinTestFramework):
         # <sender-pubkey> OP_CHECKSIG
         #
         # lock until block 500,000
-        rpc_result = self.nodes[0].decodescript(
-            '63' + push_public_key + 'ad670320a107b17568' + push_public_key + 'ac')
-        assert_equal('OP_IF ' + public_key + ' OP_CHECKSIGVERIFY OP_ELSE 500000 OP_CHECKLOCKTIMEVERIFY OP_DROP OP_ENDIF ' +
-                     public_key + ' OP_CHECKSIG', rpc_result['asm'])
+        rpc_result = self.nodes[0].decodescript('63' + push_public_key + 'ad670320a107b17568' + push_public_key + 'ac')
+        assert_equal('OP_IF ' + public_key + ' OP_CHECKSIGVERIFY OP_ELSE 500000 OP_CHECKLOCKTIMEVERIFY OP_DROP OP_ENDIF ' + public_key + ' OP_CHECKSIG', rpc_result['asm'])
+        assert 'reqSigs' not in rpc_result
+        assert_equal('nonstandard', rpc_result['type'])
+        assert 'addresses' not in rpc_result
+        assert_equal('bchreg:pq8s6jh54dp8u2693h8v90r68dlr8vn9dq5h6x2leg', rpc_result['p2sh'])
 
     def decoderawtransaction_asm_sighashtype(self):
         """Test decoding scripts via RPC command "decoderawtransaction".
