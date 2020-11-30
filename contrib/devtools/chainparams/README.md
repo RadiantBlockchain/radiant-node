@@ -11,18 +11,30 @@ out-of-the-box:
 ## Mainnet
 ```
 bitcoind
-make_chainparams > chainparams_main.txt
+python3 make_chainparams.py > chainparams_main.txt
 ```
 
-## Testnet
+## Testnet3
 ```
 bitcoind --testnet
-make_chainparams -a 127.0.0.1:18332 > chainparams_test.txt
+python3 make_chainparams.py -a 127.0.0.1:18332 > chainparams_test.txt
+```
+
+## Testnet4
+```
+bitcoind --testnet4
+python3 make_chainparams.py -a 127.0.0.1:28332 > chainparams_testnet4.txt
+```
+
+## Scalenet
+```
+bitcoind --scalenet
+python3 make_chainparams.py -a 127.0.0.1:38332 > chainparams_scalenet.txt
 ```
 
 ## Build C++ Header File
 ```
-generate_chainparams_constants.py . > ../../../src/chainparamsconstants.h
+python3 generate_chainparams_constants.py . > ../../../src/chainparamsconstants.h
 ```
 
 ## Testing
