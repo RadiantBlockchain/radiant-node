@@ -59,27 +59,49 @@ BOOST_AUTO_TEST_CASE(isphononenabled) {
 }
 
 BOOST_AUTO_TEST_CASE(isaxionenabled) {
-    const Consensus::Params &params = Params().GetConsensus();
-    const auto activation =
-        gArgs.GetArg("-axionactivationtime", params.axionActivationTime);
-    SetMockTime(activation - 1000000);
+    // first, test chains with no hard-coded activation height (activation based on MTP)
+    {
+        const auto pparams = CreateChainParams(CBaseChainParams::SCALENET);
+        const Consensus::Params &params = pparams->GetConsensus();
+        const auto activation =
+            gArgs.GetArg("-axionactivationtime", params.axionActivationTime);
+        SetMockTime(activation - 1000000);
 
-    BOOST_CHECK(!IsAxionEnabled(params, nullptr));
+        BOOST_CHECK(!IsAxionEnabled(params, nullptr));
 
-    std::array<CBlockIndex, 12> blocks;
-    for (size_t i = 1; i < blocks.size(); ++i) {
-        blocks[i].pprev = &blocks[i - 1];
+        std::array<CBlockIndex, 12> blocks;
+        for (size_t i = 1; i < blocks.size(); ++i) {
+            blocks[i].pprev = &blocks[i - 1];
+        }
+        BOOST_CHECK(!IsAxionEnabled(params, &blocks.back()));
+
+        SetMTP(blocks, activation - 1);
+        BOOST_CHECK(!IsAxionEnabled(params, &blocks.back()));
+
+        SetMTP(blocks, activation);
+        BOOST_CHECK(IsAxionEnabled(params, &blocks.back()));
+
+        SetMTP(blocks, activation + 1);
+        BOOST_CHECK(IsAxionEnabled(params, &blocks.back()));
     }
-    BOOST_CHECK(!IsAxionEnabled(params, &blocks.back()));
 
-    SetMTP(blocks, activation - 1);
-    BOOST_CHECK(!IsAxionEnabled(params, &blocks.back()));
+    // next, test chains with height-based activation
+    {
+        const auto pparams = CreateChainParams(CBaseChainParams::MAIN);
+        const auto &params = pparams->GetConsensus();
+        const auto axionHeight = params.asertAnchorParams->nHeight;
 
-    SetMTP(blocks, activation);
-    BOOST_CHECK(IsAxionEnabled(params, &blocks.back()));
-
-    SetMTP(blocks, activation + 1);
-    BOOST_CHECK(IsAxionEnabled(params, &blocks.back()));
+        std::array<CBlockIndex, 4> blocks;
+        blocks[0].nHeight = axionHeight - 2;
+        for (size_t i = 1; i < blocks.size(); ++i) {
+            blocks[i].pprev = &blocks[i - 1];
+            blocks[i].nHeight = blocks[i - 1].nHeight + 1;
+        }
+        BOOST_CHECK(!IsAxionEnabled(params, &blocks[0]));
+        BOOST_CHECK(!IsAxionEnabled(params, &blocks[1]));
+        BOOST_CHECK(IsAxionEnabled(params, &blocks[2]));
+        BOOST_CHECK(IsAxionEnabled(params, &blocks[3]));
+    }
 }
 
 BOOST_AUTO_TEST_CASE(istachyonenabled) {

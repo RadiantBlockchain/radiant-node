@@ -914,7 +914,8 @@ void SetupServerArgs() {
 
     gArgs.AddArg(
         "-axionactivationtime=<n>",
-        strprintf("Activation time of the November 2020 Bitcoin Cash Network Upgrade (<n> seconds since epoch, default: %d)",
+        strprintf("Activation time of the November 2020 Bitcoin Cash Network Upgrade (<n> seconds since epoch, "
+                  "default: %d). This option only has an effect on regtest or scalenet.",
                   defaultChainParams->GetConsensus().axionActivationTime),
         true, OptionsCategory::DEBUG_TEST);
     gArgs.AddArg(

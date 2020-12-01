@@ -7,6 +7,7 @@
 #define BITCOIN_CONSENSUS_PARAMS_H
 
 #include <primitives/blockhash.h>
+#include <optional.h>
 #include <uint256.h>
 
 #include <limits>
@@ -59,6 +60,17 @@ struct Params {
     }
     uint256 nMinimumChainWork;
     BlockHash defaultAssumeValid;
+
+    /** Used by the ASERT DAA activated after Nov. 15, 2020 */
+    struct ASERTAnchor {
+        int nHeight;
+        uint32_t nBits;
+        int64_t nPrevBlockTime;
+    };
+
+    /** For chains with a checkpoint after the ASERT anchor block, this is always defined */
+    Optional<ASERTAnchor> asertAnchorParams;
+
 };
 } // namespace Consensus
 

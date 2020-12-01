@@ -140,6 +140,13 @@ public:
         // Default limit for block size (in bytes)
         consensus.nDefaultMaxBlockSize = DEFAULT_MAX_BLOCK_SIZE;
 
+        // Anchor params: Note that the block after this height *must* also be checkpointed below.
+        consensus.asertAnchorParams = Consensus::Params::ASERTAnchor{
+            661647,       // anchor block height
+            0x1804dafe,   // anchor block nBits
+            1605447844,   // anchor block previous block timestamp
+        };
+
         /**
          * The message start string is designed to be unlikely to occur in
          * normal data. The characters are rarely used upper ASCII, not valid as
@@ -333,6 +340,13 @@ public:
         // Default limit for block size (in bytes)
         consensus.nDefaultMaxBlockSize = DEFAULT_MAX_BLOCK_SIZE;
 
+        // Anchor params: Note that the block after this height *must* also be checkpointed below.
+        consensus.asertAnchorParams = Consensus::Params::ASERTAnchor{
+            1421481,      // anchor block height
+            0x1d00ffff,   // anchor block nBits
+            1605445400,   // anchor block previous block timestamp
+        };
+
         diskMagic[0] = 0x0b;
         diskMagic[1] = 0x11;
         diskMagic[2] = 0x09;
@@ -490,6 +504,13 @@ public:
         // Default limit for block size (in bytes)
         consensus.nDefaultMaxBlockSize = 2000000;
 
+        // Anchor params: Note that the block after this height *must* also be checkpointed below.
+        consensus.asertAnchorParams = Consensus::Params::ASERTAnchor{
+            16844,        // anchor block height
+            0x1d00ffff,   // anchor block nBits
+            1605451779,   // anchor block previous block timestamp
+        };
+
         diskMagic[0] = 0xcd;
         diskMagic[1] = 0x22;
         diskMagic[2] = 0xa7;
@@ -617,6 +638,10 @@ public:
 
         // Default limit for block size (in bytes)
         consensus.nDefaultMaxBlockSize = 256*1000*1000;
+
+        // ScaleNet has no hard-coded anchor block because will be expected to
+        // reorg back down to height 10,000, before ASERT activated.
+        consensus.asertAnchorParams.reset();
 
         diskMagic[0] = 0xba;
         diskMagic[1] = 0xc2;

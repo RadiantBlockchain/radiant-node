@@ -98,24 +98,18 @@ static const CBlockIndex *GetASERTAnchorBlock(const CBlockIndex *const pindex,
  * We set our targets (difficulty) exponentially. For every [nHalfLife] seconds ahead of or behind schedule we get, we
  * double or halve the difficulty.
  */
-uint32_t GetNextASERTWorkRequired(const CBlockIndex *pindexPrev,
-                                  const CBlockHeader *pblock,
-                                  const Consensus::Params &params,
-                                  const CBlockIndex *pindexAnchorBlock) noexcept {
+static uint32_t GetNextASERTWorkRequired(const CBlockIndex *pindexPrev,
+                                         const CBlockHeader *pblock,
+                                         const Consensus::Params &params,
+                                         const Consensus::Params::ASERTAnchor &anchorParams) noexcept {
     // This cannot handle the genesis block and early blocks in general.
     assert(pindexPrev != nullptr);
 
-    // Anchor block is the block on which all ASERT scheduling calculations are based.
-    // It too must exist, and it must have a valid parent.
-    assert(pindexAnchorBlock != nullptr);
-
     // We make no further assumptions other than the height of the prev block must be >= that of the anchor block.
-    assert(pindexPrev->nHeight >= pindexAnchorBlock->nHeight);
-
-    const arith_uint256 powLimit = UintToArith256(params.powLimit);
+    assert(pindexPrev->nHeight >= anchorParams.nHeight);
 
     // Special difficulty rule for testnet
-    // If the new block's timestamp is more than 2* 10 minutes then allow
+    // If the new block's timestamp is more than 2 * 10 minutes then allow
     // mining of a min-difficulty block.
     if (params.fPowAllowMinDifficultyBlocks &&
         (pblock->GetBlockTime() >
@@ -123,20 +117,21 @@ uint32_t GetNextASERTWorkRequired(const CBlockIndex *pindexPrev,
         return UintToArith256(params.powLimit).GetCompact();
     }
 
+    const arith_uint256 powLimit = UintToArith256(params.powLimit);
+
     // For nTimeDiff calculation, the timestamp of the parent to the anchor block is used,
     // as per the absolute formulation of ASERT.
     // This is somewhat counterintuitive since it is referred to as the anchor timestamp, but
     // as per the formula the timestamp of block M-1 must be used if the anchor is M.
     assert(pindexPrev->pprev != nullptr);
-    // Note: time difference is to parent of anchor block (or to anchor block itself iff anchor is genesis).
-    //       (according to absolute formulation of ASERT)
-    const auto anchorTime = pindexAnchorBlock->pprev
-                                    ? pindexAnchorBlock->pprev->GetBlockTime()
-                                    : pindexAnchorBlock->GetBlockTime();
-    const int64_t nTimeDiff = pindexPrev->GetBlockTime() - anchorTime;
+
+    const arith_uint256 refBlockTarget = arith_uint256().SetCompact(anchorParams.nBits);
+
+    // Time difference is from anchor block's parent block's timestamp
+    const int64_t nTimeDiff = pindexPrev->GetBlockTime() - anchorParams.nPrevBlockTime;
     // Height difference is from current block to anchor block
-    const int64_t nHeightDiff = pindexPrev->nHeight - pindexAnchorBlock->nHeight;
-    const arith_uint256 refBlockTarget = arith_uint256().SetCompact(pindexAnchorBlock->nBits);
+    const int nHeightDiff = pindexPrev->nHeight - anchorParams.nHeight;
+
     // Do the actual target adaptation calculation in separate
     // CalculateASERT() function
     arith_uint256 nextTarget = CalculateASERT(refBlockTarget,
@@ -149,6 +144,41 @@ uint32_t GetNextASERTWorkRequired(const CBlockIndex *pindexPrev,
     // CalculateASERT() already clamps to powLimit.
     return nextTarget.GetCompact();
 }
+
+uint32_t GetNextASERTWorkRequired(const CBlockIndex *pindexPrev,
+                                  const CBlockHeader *pblock,
+                                  const Consensus::Params &params,
+                                  const CBlockIndex *pindexAnchorBlock) noexcept {
+
+    // If hard-coded params exist for this chain, we use those
+    if (params.asertAnchorParams) {
+        return GetNextASERTWorkRequired(pindexPrev, pblock, params, *params.asertAnchorParams);
+    }
+
+    // Otherwise, caller should have specified the anchor block (chain where it has not yet
+    // activated such as ScaleNet).
+    //
+    // Anchor block is the block on which all ASERT scheduling calculations are based.
+    // It too must exist, and it must have a valid parent.
+    assert(pindexAnchorBlock != nullptr);
+
+
+    // Note: time difference is to parent of anchor block (or to anchor block itself iff anchor is genesis).
+    //       (according to absolute formulation of ASERT)
+    const auto anchorTime = pindexAnchorBlock->pprev
+                                    ? pindexAnchorBlock->pprev->GetBlockTime()
+                                    : pindexAnchorBlock->GetBlockTime();
+
+    const Consensus::Params::ASERTAnchor anchorParams{
+        pindexAnchorBlock->nHeight,
+        pindexAnchorBlock->nBits,
+        anchorTime
+    };
+
+    // Call the overloaded function that does the actual calculation using anchorParams
+    return GetNextASERTWorkRequired(pindexPrev, pblock, params, anchorParams);
+}
+
 
 // ASERT calculation function.
 // Clamps to powLimit.
@@ -325,7 +355,11 @@ uint32_t GetNextWorkRequired(const CBlockIndex *pindexPrev,
     }
 
     if (IsAxionEnabled(params, pindexPrev)) {
-        const CBlockIndex *panchorBlock = GetASERTAnchorBlock(pindexPrev, params);
+        const CBlockIndex *panchorBlock = nullptr;
+        if (!params.asertAnchorParams) {
+            // No hard-coded anchor params -- find the anchor block dynamically
+            panchorBlock = GetASERTAnchorBlock(pindexPrev, params);
+        }
 
         return GetNextASERTWorkRequired(pindexPrev, pblock, params, panchorBlock);
     }

@@ -406,7 +406,9 @@ BOOST_AUTO_TEST_CASE(asert_difficulty_test) {
 
     std::vector<CBlockIndexPtr> blocks(3000 + 2*24*3600);
 
-    const Consensus::Params &params = config.GetChainParams().GetConsensus();
+    Consensus::Params mutableParams = config.GetChainParams().GetConsensus(); // copy params
+    mutableParams.asertAnchorParams.reset();  // clear hard-coded anchor block so that we may perform these below tests
+    const Consensus::Params &params = mutableParams; // take a const reference
     const arith_uint256 powLimit = UintToArith256(params.powLimit);
     arith_uint256 currentPow = powLimit >> 3;
     uint32_t initialBits = currentPow.GetCompact();
@@ -775,6 +777,7 @@ BOOST_AUTO_TEST_CASE(asert_activation_anchor_test) {
     // at a lower height than usual, so we don't need to waste time making a
     // 504000-long chain.
     Consensus::Params params = CreateChainParams(CBaseChainParams::MAIN)->GetConsensus();
+    params.asertAnchorParams.reset(); // clear hard-coded anchor block so that we may test the activation below
     params.daaHeight = 2016;
     const int64_t activationTime =
         gArgs.GetArg("-axionactivationtime", params.axionActivationTime);
