@@ -6,7 +6,6 @@
 ```
 Compute per block statistics for a given window. All amounts are in BCH.
 It won't work for some heights with pruning.
-It won't work without -txindex for utxo_size_inc, *fee or *feerate stats.
 ```
 
 Arguments
@@ -71,4 +70,4 @@ Examples
 
 ***
 
-*Bitcoin Cash Node Daemon version v22.1.0*
+*Bitcoin Cash Node Daemon version v22.2.0*

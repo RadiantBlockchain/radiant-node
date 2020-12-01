@@ -23,4 +23,4 @@ Example
 
 ***
 
-*Bitcoin Cash Node Daemon version v22.1.0*
+*Bitcoin Cash Node Daemon version v22.2.0*

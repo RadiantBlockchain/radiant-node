@@ -1,7 +1,7 @@
 `logging` JSON-RPC command
 ==========================
 
-**`logging ( <include> <exclude> )`**
+**`logging ( "include" "exclude" )`**
 
 ```
 Gets and sets the logging configuration.
@@ -51,4 +51,4 @@ Examples
 
 ***
 
-*Bitcoin Cash Node Daemon version v22.1.0*
+*Bitcoin Cash Node Daemon version v22.2.0*

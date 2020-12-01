@@ -1,7 +1,7 @@
 `walletcreatefundedpsbt` JSON-RPC command
 =========================================
 
-**`walletcreatefundedpsbt [{"txid":"hex","vout":n,"sequence":n},...] [{"address":amount},{"data":"hex"},...] ( locktime {"changeAddress":"str","changePosition":n,"includeWatching":bool,"lockUnspents":bool,"feeRate":n,"subtractFeeFromOutputs":[int,...]} bip32derivs )`**
+**`walletcreatefundedpsbt [{"txid":"hex","vout":n,"sequence":n},...] [{"address":amount},{"data":"hex"},...] ( locktime options bip32derivs )`**
 
 ```
 Creates and funds a transaction in the Partially Signed Transaction format. Inputs will be added if supplied inputs are not enough
@@ -71,4 +71,4 @@ Create a transaction with no inputs
 
 ***
 
-*Bitcoin Cash Node Daemon version v22.1.0*
+*Bitcoin Cash Node Daemon version v22.2.0*

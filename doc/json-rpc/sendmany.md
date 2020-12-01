@@ -1,7 +1,7 @@
 `sendmany` JSON-RPC command
 ===========================
 
-**`sendmany "dummy" {"address":amount,...} ( minconf "comment" ["address",...] )`**
+**`sendmany "" {"address":amount} ( minconf "comment" ["address",...] )`**
 
 ```
 Send multiple times. Amounts are double-precision floating point numbers.
@@ -66,4 +66,4 @@ As a JSON-RPC call
 
 ***
 
-*Bitcoin Cash Node Daemon version v22.1.0*
+*Bitcoin Cash Node Daemon version v22.2.0*

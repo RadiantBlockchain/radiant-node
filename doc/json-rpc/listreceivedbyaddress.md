@@ -1,7 +1,7 @@
 `listreceivedbyaddress` JSON-RPC command
 ========================================
 
-**`listreceivedbyaddress ( minconf include_empty include_watchonly address_filter )`**
+**`listreceivedbyaddress ( minconf include_empty include_watchonly "address_filter" )`**
 
 ```
 List balances by receiving address.
@@ -49,4 +49,4 @@ Examples
 
 ***
 
-*Bitcoin Cash Node Daemon version v22.1.0*
+*Bitcoin Cash Node Daemon version v22.2.0*

@@ -9,15 +9,15 @@ Bitcoin Cash Node JSON-RPC commands
 * [**`getblockchaininfo`**](getblockchaininfo.md)
 * [**`getblockcount`**](getblockcount.md)
 * [**`getblockhash`**`  height`](getblockhash.md)
-* [**`getblockheader`**`  hash_or_height ( verbose )`](getblockheader.md)
+* [**`getblockheader`**`  "hash_or_height" ( verbose )`](getblockheader.md)
 * [**`getblockstats`**`  hash_or_height ( stats )`](getblockstats.md)
 * [**`getchaintips`**](getchaintips.md)
 * [**`getchaintxstats`**`  ( nblocks "blockhash" )`](getchaintxstats.md)
 * [**`getdifficulty`**](getdifficulty.md)
 * [**`getfinalizedblockhash`**](getfinalizedblockhash.md)
-* [**`getmempoolancestors`**`  txid ( verbose )`](getmempoolancestors.md)
-* [**`getmempooldescendants`**`  txid ( verbose )`](getmempooldescendants.md)
-* [**`getmempoolentry`**`  txid`](getmempoolentry.md)
+* [**`getmempoolancestors`**`  "txid" ( verbose )`](getmempoolancestors.md)
+* [**`getmempooldescendants`**`  "txid" ( verbose )`](getmempooldescendants.md)
+* [**`getmempoolentry`**`  "txid"`](getmempoolentry.md)
 * [**`getmempoolinfo`**](getmempoolinfo.md)
 * [**`getrawmempool`**`  ( verbose )`](getrawmempool.md)
 * [**`gettxout`**`  "txid" n ( include_mempool )`](gettxout.md)
@@ -36,17 +36,17 @@ Bitcoin Cash Node JSON-RPC commands
 
 ## Control
 
-* [**`getmemoryinfo`**`  ("mode")`](getmemoryinfo.md)
+* [**`getmemoryinfo`**`  ( "mode" )`](getmemoryinfo.md)
 * [**`getrpcinfo`**](getrpcinfo.md)
 * [**`help`**`  ( "command" )`](help.md)
-* [**`logging`**`  ( <include> <exclude> )`](logging.md)
+* [**`logging`**`  ( "include" "exclude" )`](logging.md)
 * [**`stop`**](stop.md)
 * [**`uptime`**](uptime.md)
 
 ## Generating
 
 * [**`generate`**`  nblocks ( maxtries )`](generate.md)
-* [**`generatetoaddress`**`  nblocks address (maxtries)`](generatetoaddress.md)
+* [**`generatetoaddress`**`  nblocks "address" ( maxtries )`](generatetoaddress.md)
 
 ## Mining
 
@@ -74,7 +74,7 @@ Bitcoin Cash Node JSON-RPC commands
 * [**`listbanned`**](listbanned.md)
 * [**`ping`**](ping.md)
 * [**`setban`**`  "subnet" "command" ( bantime absolute )`](setban.md)
-* [**`setexcessiveblock`**`  blockSize`](setexcessiveblock.md)
+* [**`setexcessiveblock`**`  maxBlockSize`](setexcessiveblock.md)
 * [**`setnetworkactive`**`  state`](setnetworkactive.md)
 
 ## Rawtransactions
@@ -124,7 +124,7 @@ Bitcoin Cash Node JSON-RPC commands
 * [**`getwalletinfo`**](getwalletinfo.md)
 * [**`importaddress`**`  "address" ( "label" rescan p2sh )`](importaddress.md)
 * [**`importmulti`**`  "requests" ( "options" )`](importmulti.md)
-* [**`importprivkey`**`  "privkey" ( "label" ) ( rescan )`](importprivkey.md)
+* [**`importprivkey`**`  "privkey" ( "label" rescan )`](importprivkey.md)
 * [**`importprunedfunds`**`  "rawtransaction" "txoutproof"`](importprunedfunds.md)
 * [**`importpubkey`**`  "pubkey" ( "label" rescan )`](importpubkey.md)
 * [**`importwallet`**`  "filename"`](importwallet.md)
@@ -132,26 +132,26 @@ Bitcoin Cash Node JSON-RPC commands
 * [**`listaddressgroupings`**](listaddressgroupings.md)
 * [**`listlabels`**`  ( "purpose" )`](listlabels.md)
 * [**`listlockunspent`**](listlockunspent.md)
-* [**`listreceivedbyaddress`**`  ( minconf include_empty include_watchonly address_filter )`](listreceivedbyaddress.md)
-* [**`listreceivedbylabel`**`  ( minconf include_empty include_watchonly)`](listreceivedbylabel.md)
+* [**`listreceivedbyaddress`**`  ( minconf include_empty include_watchonly "address_filter" )`](listreceivedbyaddress.md)
+* [**`listreceivedbylabel`**`  ( minconf include_empty include_watchonly )`](listreceivedbylabel.md)
 * [**`listsinceblock`**`  ( "blockhash" target_confirmations include_watchonly include_removed )`](listsinceblock.md)
 * [**`listtransactions`**`  ( "label" count skip include_watchonly )`](listtransactions.md)
-* [**`listunspent`**`  ( minconf maxconf ["address",...] include_unsafe {"minimumAmount":amount,"maximumAmount":amount,"maximumCount":n,"minimumSumAmount":amount} )`](listunspent.md)
+* [**`listunspent`**`  ( minconf maxconf ["address",...] include_unsafe query_options )`](listunspent.md)
 * [**`listwalletdir`**](listwalletdir.md)
 * [**`listwallets`**](listwallets.md)
 * [**`loadwallet`**`  "filename"`](loadwallet.md)
 * [**`lockunspent`**`  unlock ( [{"txid":"hex","vout":n},...] )`](lockunspent.md)
 * [**`removeprunedfunds`**`  "txid"`](removeprunedfunds.md)
-* [**`rescanblockchain`**`  ("start_height") ("stop_height")`](rescanblockchain.md)
-* [**`sendmany`**`  "dummy" {"address":amount,...} ( minconf "comment" ["address",...] )`](sendmany.md)
-* [**`sendtoaddress`**`  "address" amount ( "comment" "comment_to" subtractfeefromamount coinsel)`](sendtoaddress.md)
-* [**`sethdseed`**`  ( "newkeypool" "seed" )`](sethdseed.md)
+* [**`rescanblockchain`**`  ( start_height stop_height )`](rescanblockchain.md)
+* [**`sendmany`**`  "" {"address":amount} ( minconf "comment" ["address",...] )`](sendmany.md)
+* [**`sendtoaddress`**`  "address" amount ( "comment" "comment_to" subtractfeefromamount coinsel )`](sendtoaddress.md)
+* [**`sethdseed`**`  ( newkeypool "seed" )`](sethdseed.md)
 * [**`setlabel`**`  "address" "label"`](setlabel.md)
 * [**`settxfee`**`  amount`](settxfee.md)
 * [**`signmessage`**`  "address" "message"`](signmessage.md)
 * [**`signrawtransactionwithwallet`**`  "hexstring" ( [{"txid":"hex","vout":n,"scriptPubKey":"hex","redeemScript":"hex","amount":amount},...] "sighashtype" )`](signrawtransactionwithwallet.md)
 * [**`unloadwallet`**`  ( "wallet_name" )`](unloadwallet.md)
-* [**`walletcreatefundedpsbt`**`  [{"txid":"hex","vout":n,"sequence":n},...] [{"address":amount},{"data":"hex"},...] ( locktime {"changeAddress":"str","changePosition":n,"includeWatching":bool,"lockUnspents":bool,"feeRate":n,"subtractFeeFromOutputs":[int,...]} bip32derivs )`](walletcreatefundedpsbt.md)
+* [**`walletcreatefundedpsbt`**`  [{"txid":"hex","vout":n,"sequence":n},...] [{"address":amount},{"data":"hex"},...] ( locktime options bip32derivs )`](walletcreatefundedpsbt.md)
 * [**`walletprocesspsbt`**`  "psbt" ( sign "sighashtype" bip32derivs )`](walletprocesspsbt.md)
 
 ## Zmq
@@ -160,4 +160,4 @@ Bitcoin Cash Node JSON-RPC commands
 
 ***
 
-*Bitcoin Cash Node Daemon version v22.1.0*
+*Bitcoin Cash Node Daemon version v22.2.0*

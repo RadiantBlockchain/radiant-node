@@ -1,7 +1,7 @@
 `getblockheader` JSON-RPC command
 =================================
 
-**`getblockheader hash_or_height ( verbose )`**
+**`getblockheader "hash_or_height" ( verbose )`**
 
 ```
 If verbose is false, returns a string that is serialized, hex-encoded data for blockheader 'hash'.
@@ -13,7 +13,7 @@ Arguments
 
 ```
 1. "hash_or_height"  (numeric or string, required) The block hash or block height
-2. verbose             (boolean, optional, default=true) true for a json object, false for the hex-encoded data
+2. verbose           (boolean, optional, default=true) true for a json object, false for the hex-encoded data
 ```
 
 Result (for verbose = true)
@@ -58,4 +58,4 @@ Examples
 
 ***
 
-*Bitcoin Cash Node Daemon version v22.1.0*
+*Bitcoin Cash Node Daemon version v22.2.0*
