@@ -9,15 +9,10 @@
 #define UNUSED
 #endif
 static const char UNUSED *bitcoin_strings[] = {
-QT_TRANSLATE_NOOP("bitcoin-cash-node", "Bitcoin Cash Node"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "The %s developers"),
-QT_TRANSLATE_NOOP("bitcoin-cash-node", "Bitcoin"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", ""
 "-maxtxfee is set very high! Fees this large could be paid on a single "
 "transaction."),
-QT_TRANSLATE_NOOP("bitcoin-cash-node", ""
-"Accept relayed transactions received from whitelisted peers even when not "
-"relaying transactions (default: %d)"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", ""
 "Can't generate a change-address key. Private keys are disabled for this "
 "wallet."),
@@ -33,8 +28,6 @@ QT_TRANSLATE_NOOP("bitcoin-cash-node", ""
 QT_TRANSLATE_NOOP("bitcoin-cash-node", ""
 "Distributed under the MIT software license, see the accompanying file %s or "
 "%s"),
-QT_TRANSLATE_NOOP("bitcoin-cash-node", ""
-"Error loading %s: You can't enable HD on an already existing non-HD wallet"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", ""
 "Error reading %s! All keys read correctly, but transaction data or address "
 "book entries might be missing or incorrect."),
@@ -80,19 +73,26 @@ QT_TRANSLATE_NOOP("bitcoin-cash-node", ""
 "Total length of network version string (%i) exceeds maximum length (%i). "
 "Reduce the number or size of uacomments."),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", ""
+"Transaction broadcast interval must not be configured with a negative value."),
+QT_TRANSLATE_NOOP("bitcoin-cash-node", ""
+"Transaction broadcast rate must not be configured with a negative value."),
+QT_TRANSLATE_NOOP("bitcoin-cash-node", ""
 "Unable to replay blocks. You will need to rebuild the database using -"
 "reindex-chainstate."),
-QT_TRANSLATE_NOOP("bitcoin-cash-node", ""
-"Unsupported argument -socks found. Setting SOCKS version isn't possible "
-"anymore, only SOCKS5 proxies are supported."),
-QT_TRANSLATE_NOOP("bitcoin-cash-node", ""
-"Unsupported argument -whitelistalwaysrelay ignored, use -whitelistrelay and/"
-"or -whitelistforcerelay."),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", ""
 "Warning: Private keys detected in wallet {%s} with disabled private keys"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", ""
 "Warning: The network does not appear to fully agree! Some miners appear to "
 "be experiencing issues."),
+QT_TRANSLATE_NOOP("bitcoin-cash-node", ""
+"Warning: This version of %s is old and may fall out of network consensus in "
+"%d day(s). Please upgrade, or add expire=0 to your configuration file if you "
+"want to continue running this version. If you do nothing, the software will "
+"gracefully degrade by limiting its functionality in %d day(s)."),
+QT_TRANSLATE_NOOP("bitcoin-cash-node", ""
+"Warning: This version of %s is old and may have fallen out of network "
+"consensus %d day(s) ago. Please upgrade, or add expire=0 to your "
+"configuration file."),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", ""
 "Warning: Wallet file corrupt, data salvaged! Original %s saved as %s in %s; "
 "if your balance or transactions are incorrect you should restore from a "
@@ -110,19 +110,17 @@ QT_TRANSLATE_NOOP("bitcoin-cash-node", "Cannot downgrade wallet"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Cannot resolve -%s address: '%s'"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Cannot write to data directory '%s'; check permissions."),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Change index out of range"),
-QT_TRANSLATE_NOOP("bitcoin-cash-node", "Connect through SOCKS5 proxy"),
+QT_TRANSLATE_NOOP("bitcoin-cash-node", "Config setting for %s only applied on %s network when in [%s] section."),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Copyright (C) %i-%i"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Corrupted block database detected"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Do you want to rebuild the block database now?"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Done loading"),
-QT_TRANSLATE_NOOP("bitcoin-cash-node", "Error creating %s: You can't create non-HD wallets with this version."),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Error initializing block database"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Error initializing wallet database environment %s!"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Error loading %s"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Error loading %s: Private keys can only be disabled during creation"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Error loading %s: Wallet corrupted"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Error loading %s: Wallet requires newer version of %s"),
-QT_TRANSLATE_NOOP("bitcoin-cash-node", "Error loading %s: You can't disable HD on an already existing HD wallet"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Error loading block database"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Error loading wallet %s. Duplicate -wallet filename specified."),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Error opening block database"),
@@ -142,9 +140,11 @@ QT_TRANSLATE_NOOP("bitcoin-cash-node", "Initialization sanity check failed. %s i
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Insufficient funds"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Invalid -onion address or hostname: '%s'"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Invalid -proxy address or hostname: '%s'"),
+QT_TRANSLATE_NOOP("bitcoin-cash-node", "Invalid P2P permission: '%s'"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Invalid amount for -%s=<amount>: '%s'"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Invalid amount for -fallbackfee=<amount>: '%s'"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Invalid amount for -paytxfee=<amount>: '%s' (must be at least %s)"),
+QT_TRANSLATE_NOOP("bitcoin-cash-node", "Invalid coin selection hint"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Invalid netmask specified in -whitelist: '%s'"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Keypool ran out, please call keypoolrefill first"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Loading P2P addresses..."),
@@ -153,24 +153,24 @@ QT_TRANSLATE_NOOP("bitcoin-cash-node", "Loading block index..."),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Loading wallet..."),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Need to specify a port with -whitebind: '%s'"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Not enough file descriptors available."),
-QT_TRANSLATE_NOOP("bitcoin-cash-node", "Password for JSON-RPC connections"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Prune cannot be configured with a negative value."),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Prune mode is incompatible with -txindex."),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Pruning blockstore..."),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Reducing -maxconnections from %d to %d, because of system limitations."),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Replaying blocks..."),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Rescanning..."),
-QT_TRANSLATE_NOOP("bitcoin-cash-node", "Run in the background as a daemon and accept commands"),
+QT_TRANSLATE_NOOP("bitcoin-cash-node", "Section [%s] is not recognized."),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Signing transaction failed"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Specified -walletdir \"%s\" does not exist"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Specified -walletdir \"%s\" is a relative path"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Specified -walletdir \"%s\" is not a directory"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Specified blocks directory \"%s\" does not exist."),
+QT_TRANSLATE_NOOP("bitcoin-cash-node", "Specified index directory \"%s\" does not exist."),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Starting network threads..."),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "The source code is available from %s."),
+QT_TRANSLATE_NOOP("bitcoin-cash-node", "The specified config file %s does not exist\n"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "The transaction amount is too small to pay the fee"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "The wallet will avoid paying less than the minimum relay fee."),
-QT_TRANSLATE_NOOP("bitcoin-cash-node", "This is experimental software."),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "This is the minimum transaction fee you pay on every transaction."),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "This is the transaction fee you will pay if you send a transaction."),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Transaction amount too small"),
@@ -182,18 +182,15 @@ QT_TRANSLATE_NOOP("bitcoin-cash-node", "Transaction too large for fee policy"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Transaction too large"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Unable to bind to %s on this computer (bind returned error %s)"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Unable to bind to %s on this computer. %s is probably already running."),
+QT_TRANSLATE_NOOP("bitcoin-cash-node", "Unable to create the PID file '%s': %s"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Unable to generate initial keys"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Unable to generate keys"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Unable to start HTTP server. See debug log for details."),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Unknown network specified in -onlynet: '%s'"),
-QT_TRANSLATE_NOOP("bitcoin-cash-node", "Unsupported argument -benchmark ignored, use -debug=bench."),
-QT_TRANSLATE_NOOP("bitcoin-cash-node", "Unsupported argument -debugnet ignored, use -debug=net."),
-QT_TRANSLATE_NOOP("bitcoin-cash-node", "Unsupported argument -tor found, use -onion."),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Unsupported logging category %s=%s."),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Upgrading UTXO database"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Upgrading txindex database"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "User Agent comment (%s) contains unsafe characters."),
-QT_TRANSLATE_NOOP("bitcoin-cash-node", "Username for JSON-RPC connections"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Verifying blocks..."),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Verifying wallet(s)..."),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Wallet %s resides outside wallet directory %s"),
