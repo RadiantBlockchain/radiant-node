@@ -43,7 +43,7 @@ SplashScreen::SplashScreen(interfaces::Node &node,
 #endif
 
     // define text to place
-    QString titleText = tr(PACKAGE_NAME);
+    QString titleText = PACKAGE_NAME;
     QString versionText = QString("Version %1").arg(QString::fromStdString(FormatFullVersion()));
     QString copyrightText = QString::fromStdString(CopyrightHolders(strprintf("\xC2\xA9 %u-%u ", 2009, COPYRIGHT_YEAR)));
     QString titleAddText = networkStyle->getTitleAddText();
