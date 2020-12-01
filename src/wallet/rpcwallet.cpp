@@ -589,25 +589,26 @@ static UniValue listaddressgroupings(const Config &config,
     auto locked_chain = pwallet->chain().lock();
     LOCK(pwallet->cs_wallet);
 
-    UniValue jsonGroupings(UniValue::VARR);
-    std::map<CTxDestination, Amount> balances =
-        pwallet->GetAddressBalances(*locked_chain);
-    for (const std::set<CTxDestination> &grouping :
-         pwallet->GetAddressGroupings()) {
-        UniValue jsonGrouping(UniValue::VARR);
+    std::map<CTxDestination, Amount> balances = pwallet->GetAddressBalances(*locked_chain);
+    auto groupings = pwallet->GetAddressGroupings();
+    UniValue::Array jsonGroupings;
+    jsonGroupings.reserve(groupings.size());
+    for (const std::set<CTxDestination> &grouping : groupings) {
+        UniValue::Array jsonGrouping;
+        jsonGrouping.reserve(grouping.size());
         for (const CTxDestination &address : grouping) {
-            UniValue addressInfo(UniValue::VARR);
-            addressInfo.push_back(EncodeDestination(address, config));
+            auto found = pwallet->mapAddressBook.find(address);
+            bool label = found != pwallet->mapAddressBook.end();
+            UniValue::Array addressInfo;
+            addressInfo.reserve(2 + label);
+            addressInfo.emplace_back(EncodeDestination(address, config));
             addressInfo.push_back(ValueFromAmount(balances[address]));
-
-            if (pwallet->mapAddressBook.find(address) !=
-                pwallet->mapAddressBook.end()) {
-                addressInfo.push_back(
-                    pwallet->mapAddressBook.find(address)->second.name);
+            if (label) {
+                addressInfo.emplace_back(found->second.name);
             }
-            jsonGrouping.push_back(addressInfo);
+            jsonGrouping.emplace_back(std::move(addressInfo));
         }
-        jsonGroupings.push_back(jsonGrouping);
+        jsonGroupings.emplace_back(std::move(jsonGrouping));
     }
 
     return jsonGroupings;
@@ -662,8 +663,8 @@ static UniValue signmessage(const Config &config,
 
     EnsureWalletIsUnlocked(pwallet);
 
-    std::string strAddress = request.params[0].get_str();
-    std::string strMessage = request.params[1].get_str();
+    const std::string &strAddress = request.params[0].get_str();
+    const std::string &strMessage = request.params[1].get_str();
 
     CTxDestination dest =
         DecodeDestination(strAddress, config.GetChainParams());
@@ -1256,9 +1257,10 @@ static UniValue addmultisigaddress(const Config &config,
         AddAndGetDestinationForScript(*pwallet, inner, output_type);
     pwallet->SetAddressBook(dest, label, "send");
 
-    UniValue result(UniValue::VOBJ);
-    result.pushKV("address", EncodeDestination(dest, config));
-    result.pushKV("redeemScript", HexStr(inner.begin(), inner.end()));
+    UniValue::Object result;
+    result.reserve(2);
+    result.emplace_back("address", EncodeDestination(dest, config));
+    result.emplace_back("redeemScript", HexStr(inner.begin(), inner.end()));
     return result;
 }
 
@@ -1270,9 +1272,8 @@ struct tallyitem {
     tallyitem() {}
 };
 
-static UniValue
-ListReceived(const Config &config, interfaces::Chain::Lock &locked_chain,
-             CWallet *const pwallet, const UniValue &params, bool by_label)
+static UniValue::Array ListReceived(const Config &config, interfaces::Chain::Lock &locked_chain, CWallet *const pwallet,
+                                    const UniValue &params, bool by_label)
     EXCLUSIVE_LOCKS_REQUIRED(pwallet->cs_wallet) {
     // Temporary, for ContextualCheckTransactionForCurrentBlock below. Removed
     // in upcoming commit.
@@ -1351,7 +1352,7 @@ ListReceived(const Config &config, interfaces::Chain::Lock &locked_chain,
     }
 
     // Reply
-    UniValue ret(UniValue::VARR);
+    UniValue::Array ret;
     std::map<std::string, tallyitem> label_tally;
 
     // Create mapAddressBook iterator
@@ -1390,39 +1391,41 @@ ListReceived(const Config &config, interfaces::Chain::Lock &locked_chain,
             _item.nConf = std::min(_item.nConf, nConf);
             _item.fIsWatchonly = fIsWatchonly;
         } else {
-            UniValue obj(UniValue::VOBJ);
+            UniValue::Object obj;
+            obj.reserve(5 + fIsWatchonly);
             if (fIsWatchonly) {
-                obj.pushKV("involvesWatchonly", true);
+                obj.emplace_back("involvesWatchonly", true);
             }
-            obj.pushKV("address", EncodeDestination(address, config));
-            obj.pushKV("amount", ValueFromAmount(nAmount));
-            obj.pushKV("confirmations",
-                       (nConf == std::numeric_limits<int>::max() ? 0 : nConf));
-            obj.pushKV("label", label);
-            UniValue transactions(UniValue::VARR);
+            obj.emplace_back("address", EncodeDestination(address, config));
+            obj.emplace_back("amount", ValueFromAmount(nAmount));
+            obj.emplace_back("confirmations", nConf == std::numeric_limits<int>::max() ? 0 : nConf);
+            obj.emplace_back("label", label);
+            UniValue::Array transactions;
             if (it != mapTally.end()) {
-                for (const uint256 &_item : (*it).second.txids) {
-                    transactions.push_back(_item.GetHex());
+                transactions.reserve(it->second.txids.size());
+                for (const uint256 &_item : it->second.txids) {
+                    transactions.emplace_back(_item.GetHex());
                 }
             }
-            obj.pushKV("txids", transactions);
-            ret.push_back(obj);
+            obj.emplace_back("txids", std::move(transactions));
+            ret.emplace_back(std::move(obj));
         }
     }
 
     if (by_label) {
+        ret.reserve(label_tally.size());
         for (const auto &entry : label_tally) {
             Amount nAmount = entry.second.nAmount;
             int nConf = entry.second.nConf;
-            UniValue obj(UniValue::VOBJ);
+            UniValue::Object obj;
+            obj.reserve(3 + entry.second.fIsWatchonly);
             if (entry.second.fIsWatchonly) {
-                obj.pushKV("involvesWatchonly", true);
+                obj.emplace_back("involvesWatchonly", true);
             }
-            obj.pushKV("amount", ValueFromAmount(nAmount));
-            obj.pushKV("confirmations",
-                       (nConf == std::numeric_limits<int>::max() ? 0 : nConf));
-            obj.pushKV("label", entry.first);
-            ret.push_back(obj);
+            obj.emplace_back("amount", ValueFromAmount(nAmount));
+            obj.emplace_back("confirmations", nConf == std::numeric_limits<int>::max() ? 0 : nConf);
+            obj.emplace_back("label", entry.first);
+            ret.emplace_back(std::move(obj));
         }
     }
 
@@ -2014,6 +2017,7 @@ static UniValue listsinceblock(const Config &config,
                               : BlockHash();
 
     UniValue::Object ret;
+    ret.reserve(2 + include_removed);
     ret.emplace_back("transactions", std::move(transactions));
     if (include_removed) {
         ret.emplace_back("removed", std::move(removed));
@@ -2813,16 +2817,15 @@ static UniValue listlockunspent(const Config &config,
     std::vector<COutPoint> vOutpts;
     pwallet->ListLockedCoins(vOutpts);
 
-    UniValue ret(UniValue::VARR);
-
+    UniValue::Array ret;
+    ret.reserve(vOutpts.size());
     for (const COutPoint &output : vOutpts) {
-        UniValue o(UniValue::VOBJ);
-
-        o.pushKV("txid", output.GetTxId().GetHex());
-        o.pushKV("vout", int(output.GetN()));
-        ret.push_back(o);
+        UniValue::Object o;
+        o.reserve(2);
+        o.emplace_back("txid", output.GetTxId().GetHex());
+        o.emplace_back("vout", output.GetN());
+        ret.emplace_back(std::move(o));
     }
-
     return ret;
 }
 
@@ -2948,34 +2951,29 @@ static UniValue getwalletinfo(const Config &config,
     auto locked_chain = pwallet->chain().lock();
     LOCK(pwallet->cs_wallet);
 
-    UniValue obj(UniValue::VOBJ);
-
+    UniValue::Object obj;
     size_t kpExternalSize = pwallet->KeypoolCountExternalKeys();
-    obj.pushKV("walletname", pwallet->GetName());
-    obj.pushKV("walletversion", pwallet->GetVersion());
-    obj.pushKV("balance", ValueFromAmount(pwallet->GetBalance()));
-    obj.pushKV("unconfirmed_balance",
-               ValueFromAmount(pwallet->GetUnconfirmedBalance()));
-    obj.pushKV("immature_balance",
-               ValueFromAmount(pwallet->GetImmatureBalance()));
-    obj.pushKV("txcount", (int)pwallet->mapWallet.size());
-    obj.pushKV("keypoololdest", pwallet->GetOldestKeyPoolTime());
-    obj.pushKV("keypoolsize", (int64_t)kpExternalSize);
+    obj.emplace_back("walletname", pwallet->GetName());
+    obj.emplace_back("walletversion", pwallet->GetVersion());
+    obj.emplace_back("balance", ValueFromAmount(pwallet->GetBalance()));
+    obj.emplace_back("unconfirmed_balance", ValueFromAmount(pwallet->GetUnconfirmedBalance()));
+    obj.emplace_back("immature_balance", ValueFromAmount(pwallet->GetImmatureBalance()));
+    obj.emplace_back("txcount", pwallet->mapWallet.size());
+    obj.emplace_back("keypoololdest", pwallet->GetOldestKeyPoolTime());
+    obj.emplace_back("keypoolsize", kpExternalSize);
     CKeyID seed_id = pwallet->GetHDChain().seed_id;
     if (!seed_id.IsNull() && pwallet->CanSupportFeature(FEATURE_HD_SPLIT)) {
-        obj.pushKV("keypoolsize_hd_internal",
-                   int64_t(pwallet->GetKeyPoolSize() - kpExternalSize));
+        obj.emplace_back("keypoolsize_hd_internal", pwallet->GetKeyPoolSize() - kpExternalSize);
     }
     if (pwallet->IsCrypted()) {
-        obj.pushKV("unlocked_until", pwallet->nRelockTime);
+        obj.emplace_back("unlocked_until", pwallet->nRelockTime);
     }
-    obj.pushKV("paytxfee", ValueFromAmount(pwallet->m_pay_tx_fee.GetFeePerK()));
+    obj.emplace_back("paytxfee", ValueFromAmount(pwallet->m_pay_tx_fee.GetFeePerK()));
     if (!seed_id.IsNull()) {
-        obj.pushKV("hdseedid", seed_id.GetHex());
-        obj.pushKV("hdmasterkeyid", seed_id.GetHex());
+        obj.emplace_back("hdseedid", seed_id.GetHex());
+        obj.emplace_back("hdmasterkeyid", seed_id.GetHex());
     }
-    obj.pushKV("private_keys_enabled",
-               !pwallet->IsWalletFlagSet(WALLET_FLAG_DISABLE_PRIVATE_KEYS));
+    obj.emplace_back("private_keys_enabled", !pwallet->IsWalletFlagSet(WALLET_FLAG_DISABLE_PRIVATE_KEYS));
     return obj;
 }
 
@@ -2999,15 +2997,19 @@ static UniValue listwalletdir(const Config &config,
             HelpExampleRpc("listwalletdir", ""));
     }
 
-    UniValue wallets(UniValue::VARR);
-    for (const auto &path : ListWalletDir()) {
-        UniValue wallet(UniValue::VOBJ);
-        wallet.pushKV("name", path.string());
-        wallets.push_back(wallet);
+    auto paths = ListWalletDir();
+    UniValue::Array wallets;
+    wallets.reserve(paths.size());
+    for (const auto &path : paths) {
+        UniValue::Object wallet;
+        wallet.reserve(1);
+        wallet.emplace_back("name", path.string());
+        wallets.emplace_back(std::move(wallet));
     }
 
-    UniValue result(UniValue::VOBJ);
-    result.pushKV("wallets", wallets);
+    UniValue::Object result;
+    result.reserve(1);
+    result.emplace_back("wallets", std::move(wallets));
     return result;
 }
 
@@ -3030,16 +3032,17 @@ static UniValue listwallets(const Config &config,
             HelpExampleRpc("listwallets", ""));
     }
 
-    UniValue obj(UniValue::VARR);
-
-    for (const std::shared_ptr<CWallet> &wallet : GetWallets()) {
+    auto wallets = GetWallets();
+    UniValue::Array obj;
+    obj.reserve(wallets.size());
+    for (const std::shared_ptr<CWallet> &wallet : wallets) {
         if (!EnsureWalletIsAvailable(wallet.get(), request.fHelp)) {
             return UniValue();
         }
 
         LOCK(wallet->cs_wallet);
 
-        obj.push_back(wallet->GetName());
+        obj.emplace_back(wallet->GetName());
     }
 
     return obj;
@@ -3095,7 +3098,7 @@ static UniValue loadwallet(const Config &config,
     if (!CWallet::Verify(chainParams, *g_rpc_interfaces->chain, location, false,
                          error, warning)) {
         throw JSONRPCError(RPC_WALLET_ERROR,
-                           "Wallet file verification failed: " + error);
+                           "Wallet file verification failed: " + std::move(error));
     }
 
     std::shared_ptr<CWallet> const wallet = CWallet::CreateWalletFromFile(
@@ -3107,10 +3110,10 @@ static UniValue loadwallet(const Config &config,
 
     wallet->postInitProcess();
 
-    UniValue obj(UniValue::VOBJ);
-    obj.pushKV("name", wallet->GetName());
-    obj.pushKV("warning", warning);
-
+    UniValue::Object obj;
+    obj.reserve(2);
+    obj.emplace_back("name", wallet->GetName());
+    obj.emplace_back("warning", std::move(warning));
     return obj;
 }
 
@@ -3174,7 +3177,7 @@ static UniValue createwallet(const Config &config,
     if (!CWallet::Verify(chainParams, *g_rpc_interfaces->chain, location, false,
                          error, warning)) {
         throw JSONRPCError(RPC_WALLET_ERROR,
-                           "Wallet file verification failed: " + error);
+                           "Wallet file verification failed: " + std::move(error));
     }
 
     std::shared_ptr<CWallet> const wallet = CWallet::CreateWalletFromFile(
@@ -3186,10 +3189,10 @@ static UniValue createwallet(const Config &config,
 
     wallet->postInitProcess();
 
-    UniValue obj(UniValue::VOBJ);
-    obj.pushKV("name", wallet->GetName());
-    obj.pushKV("warning", warning);
-
+    UniValue::Object obj;
+    obj.reserve(2);
+    obj.emplace_back("name", wallet->GetName());
+    obj.emplace_back("warning", std::move(warning));
     return obj;
 }
 
@@ -3278,9 +3281,10 @@ static UniValue resendwallettransactions(const Config &config,
 
     std::vector<uint256> txids = pwallet->ResendWalletTransactionsBefore(
         *locked_chain, GetTime(), g_connman.get());
-    UniValue result(UniValue::VARR);
+    UniValue::Array result;
+    result.reserve(txids.size());
     for (const uint256 &txid : txids) {
-        result.push_back(txid.ToString());
+        result.emplace_back(txid.ToString());
     }
 
     return result;
@@ -3467,7 +3471,7 @@ static UniValue listunspent(const Config &config,
     // the user could have gotten from another RPC command prior to now
     pwallet->BlockUntilSyncedToCurrentChain();
 
-    UniValue results(UniValue::VARR);
+    UniValue::Array results;
     std::vector<COutput> vecOutputs;
     {
         auto locked_chain = pwallet->chain().lock();
@@ -3490,36 +3494,34 @@ static UniValue listunspent(const Config &config,
             continue;
         }
 
-        UniValue entry(UniValue::VOBJ);
-        entry.pushKV("txid", out.tx->GetId().GetHex());
-        entry.pushKV("vout", out.i);
+        UniValue::Object entry;
+        entry.emplace_back("txid", out.tx->GetId().GetHex());
+        entry.emplace_back("vout", out.i);
 
         if (fValidAddress) {
-            entry.pushKV("address", EncodeDestination(address, config));
+            entry.emplace_back("address", EncodeDestination(address, config));
 
             auto i = pwallet->mapAddressBook.find(address);
             if (i != pwallet->mapAddressBook.end()) {
-                entry.pushKV("label", i->second.name);
+                entry.emplace_back("label", i->second.name);
             }
 
             if (scriptPubKey.IsPayToScriptHash()) {
                 const CScriptID &hash = boost::get<CScriptID>(address);
                 CScript redeemScript;
                 if (pwallet->GetCScript(hash, redeemScript)) {
-                    entry.pushKV("redeemScript", HexStr(redeemScript.begin(),
-                                                        redeemScript.end()));
+                    entry.emplace_back("redeemScript", HexStr(redeemScript.begin(), redeemScript.end()));
                 }
             }
         }
 
-        entry.pushKV("scriptPubKey",
-                     HexStr(scriptPubKey.begin(), scriptPubKey.end()));
-        entry.pushKV("amount", ValueFromAmount(out.tx->tx->vout[out.i].nValue));
-        entry.pushKV("confirmations", out.nDepth);
-        entry.pushKV("spendable", out.fSpendable);
-        entry.pushKV("solvable", out.fSolvable);
-        entry.pushKV("safe", out.fSafe);
-        results.push_back(entry);
+        entry.emplace_back("scriptPubKey", HexStr(scriptPubKey.begin(), scriptPubKey.end()));
+        entry.emplace_back("amount", ValueFromAmount(out.tx->tx->vout[out.i].nValue));
+        entry.emplace_back("confirmations", out.nDepth);
+        entry.emplace_back("spendable", out.fSpendable);
+        entry.emplace_back("solvable", out.fSolvable);
+        entry.emplace_back("safe", out.fSafe);
+        results.emplace_back(std::move(entry));
     }
 
     return results;
@@ -3735,11 +3737,11 @@ static UniValue fundrawtransaction(const Config &config,
     int change_position;
     FundTransaction(pwallet, tx, fee, change_position, request.params[1]);
 
-    UniValue result(UniValue::VOBJ);
-    result.pushKV("hex", EncodeHexTx(CTransaction(tx)));
-    result.pushKV("fee", ValueFromAmount(fee));
-    result.pushKV("changepos", change_position);
-
+    UniValue::Object result;
+    result.reserve(3);
+    result.emplace_back("hex", EncodeHexTx(CTransaction(tx)));
+    result.emplace_back("fee", ValueFromAmount(fee));
+    result.emplace_back("changepos", change_position);
     return result;
 }
 
@@ -4011,10 +4013,14 @@ UniValue rescanblockchain(const Config &config, const JSONRPCRequest &request) {
             throw JSONRPCError(RPC_MISC_ERROR, "Rescan aborted.");
             // no default case, so the compiler can warn about missing cases
     }
-    UniValue response(UniValue::VOBJ);
-    response.pushKV("start_height", start_height);
-    response.pushKV("stop_height",
-                    result.stop_height ? *result.stop_height : UniValue());
+    UniValue::Object response;
+    response.reserve(2);
+    response.emplace_back("start_height", start_height);
+    if (result.stop_height) {
+        response.emplace_back("stop_height", *result.stop_height);
+    } else {
+        response.emplace_back(std::piecewise_construct, std::forward_as_tuple("stop_height"), std::forward_as_tuple());
+    }
     return response;
 }
 
@@ -4038,7 +4044,7 @@ class DescribeWalletAddressVisitor : public boost::static_visitor<void> {
         obj.emplace_back("hex", HexStr(subscript.begin(), subscript.end()));
 
         CTxDestination embedded;
-        UniValue a(UniValue::VARR);
+        UniValue::Array a;
         if (ExtractDestination(subscript, embedded)) {
             // Only when the script corresponds to an address.
             UniValue::Object subobj;
@@ -4052,7 +4058,7 @@ class DescribeWalletAddressVisitor : public boost::static_visitor<void> {
             }
             obj.emplace_back("embedded", std::move(subobj));
             if (include_addresses) {
-                a.push_back(EncodeDestination(embedded, GetConfig()));
+                a.emplace_back(EncodeDestination(embedded, GetConfig()));
             }
         } else if (which_type == TX_MULTISIG) {
             // Also report some information on multisig scripts (which do not
@@ -4060,13 +4066,13 @@ class DescribeWalletAddressVisitor : public boost::static_visitor<void> {
             // TODO: abstract out the common functionality between this logic
             // and ExtractDestinations.
             obj.emplace_back("sigsrequired", solutions_data[0][0]);
-            UniValue pubkeys(UniValue::VARR);
+            UniValue::Array pubkeys;
             for (size_t i = 1; i < solutions_data.size() - 1; ++i) {
                 CPubKey key(solutions_data[i].begin(), solutions_data[i].end());
                 if (include_addresses) {
-                    a.push_back(EncodeDestination(key.GetID(), GetConfig()));
+                    a.emplace_back(EncodeDestination(key.GetID(), GetConfig()));
                 }
-                pubkeys.push_back(HexStr(key.begin(), key.end()));
+                pubkeys.emplace_back(HexStr(key.begin(), key.end()));
             }
             obj.emplace_back("pubkeys", std::move(pubkeys));
         }
@@ -4112,13 +4118,13 @@ static void DescribeWalletAddress(CWallet *pwallet, const CTxDestination &dest, 
 }
 
 /** Convert CAddressBookData to JSON record.  */
-static UniValue AddressBookDataToJSON(const CAddressBookData &data,
-                                      const bool verbose) {
-    UniValue ret(UniValue::VOBJ);
+static UniValue::Object AddressBookDataToJSON(const CAddressBookData &data, const bool verbose) {
+    UniValue::Object ret;
+    ret.reserve(1 + verbose);
     if (verbose) {
-        ret.pushKV("name", data.name);
+        ret.emplace_back("name", data.name);
     }
-    ret.pushKV("purpose", data.purpose);
+    ret.emplace_back("purpose", data.purpose);
     return ret;
 }
 
@@ -4268,7 +4274,7 @@ UniValue getaddressinfo(const Config &config, const JSONRPCRequest &request) {
         pwallet->mapAddressBook.find(dest);
     if (mi != pwallet->mapAddressBook.end()) {
         labels.reserve(1);
-        labels.push_back(AddressBookDataToJSON(mi->second, true));
+        labels.emplace_back(AddressBookDataToJSON(mi->second, true));
     }
     ret.emplace_back("labels", std::move(labels));
 
@@ -4308,21 +4314,19 @@ UniValue getaddressesbylabel(const Config &config,
 
     LOCK(pwallet->cs_wallet);
 
-    std::string label = LabelFromValue(request.params[0]);
+    const std::string &label = LabelFromValue(request.params[0]);
 
     // Find all addresses that have the given label
-    UniValue ret(UniValue::VOBJ);
+    UniValue::Object ret;
     for (const std::pair<const CTxDestination, CAddressBookData> &item :
          pwallet->mapAddressBook) {
         if (item.second.name == label) {
-            ret.pushKV(EncodeDestination(item.first, config),
-                       AddressBookDataToJSON(item.second, false), false);
+            ret.emplace_back(EncodeDestination(item.first, config), AddressBookDataToJSON(item.second, false));
         }
     }
 
     if (ret.empty()) {
-        throw JSONRPCError(RPC_WALLET_INVALID_LABEL_NAME,
-                           std::string("No addresses with label " + label));
+        throw JSONRPCError(RPC_WALLET_INVALID_LABEL_NAME, "No addresses with label " + label);
     }
 
     return ret;
@@ -4378,11 +4382,11 @@ UniValue listlabels(const Config &config, const JSONRPCRequest &request) {
         }
     }
 
-    UniValue ret(UniValue::VARR);
+    UniValue::Array ret;
+    ret.reserve(label_set.size());
     for (const std::string &name : label_set) {
-        ret.push_back(name);
+        ret.emplace_back(name);
     }
-
     return ret;
 }
 
@@ -4568,12 +4572,12 @@ static UniValue walletprocesspsbt(const Config &config,
         request.params[3].isNull() ? false : request.params[3].get_bool();
     bool complete = FillPSBT(pwallet, psbtx, nHashType, sign, bip32derivs);
 
-    UniValue result(UniValue::VOBJ);
     CDataStream ssTx(SER_NETWORK, PROTOCOL_VERSION);
     ssTx << psbtx;
-    result.pushKV("psbt", EncodeBase64((uint8_t *)ssTx.data(), ssTx.size()), false);
-    result.pushKV("complete", complete, false);
-
+    UniValue::Object result;
+    result.reserve(2);
+    result.emplace_back("psbt", EncodeBase64((uint8_t *)ssTx.data(), ssTx.size()));
+    result.emplace_back("complete", complete);
     return result;
 }
 
@@ -4711,10 +4715,11 @@ static UniValue walletcreatefundedpsbt(const Config &config,
     CDataStream ssTx(SER_NETWORK, PROTOCOL_VERSION);
     ssTx << psbtx;
 
-    UniValue result(UniValue::VOBJ);
-    result.pushKV("psbt", EncodeBase64((uint8_t *)ssTx.data(), ssTx.size()), false);
-    result.pushKV("fee", ValueFromAmount(fee), false);
-    result.pushKV("changepos", change_position, false);
+    UniValue::Object result;
+    result.reserve(3);
+    result.emplace_back("psbt", EncodeBase64((uint8_t *)ssTx.data(), ssTx.size()));
+    result.emplace_back("fee", ValueFromAmount(fee));
+    result.emplace_back("changepos", change_position);
     return result;
 }
 
