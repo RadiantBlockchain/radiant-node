@@ -1,7 +1,7 @@
 `generatetoaddress` JSON-RPC command
 ====================================
 
-**`generatetoaddress nblocks address (maxtries)`**
+**`generatetoaddress nblocks "address" ( maxtries )`**
 
 ```
 Mine blocks immediately to a specified address (before the RPC call returns)
@@ -33,4 +33,4 @@ Generate 11 blocks to myaddress
 
 ***
 
-*Bitcoin Cash Node Daemon version v22.1.0*
+*Bitcoin Cash Node Daemon version v22.2.0*

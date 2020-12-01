@@ -1,7 +1,7 @@
 `listunspent` JSON-RPC command
 ==============================
 
-**`listunspent ( minconf maxconf ["address",...] include_unsafe {"minimumAmount":amount,"maximumAmount":amount,"maximumCount":n,"minimumSumAmount":amount} )`**
+**`listunspent ( minconf maxconf ["address",...] include_unsafe query_options )`**
 
 ```
 Returns array of unspent transaction outputs
@@ -60,4 +60,4 @@ Examples
 
 ***
 
-*Bitcoin Cash Node Daemon version v22.1.0*
+*Bitcoin Cash Node Daemon version v22.2.0*

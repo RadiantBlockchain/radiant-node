@@ -1,15 +1,15 @@
 `setexcessiveblock` JSON-RPC command
 ====================================
 
-**`setexcessiveblock blockSize`**
+**`setexcessiveblock maxBlockSize`**
 
 ```
 Set the excessive block size. Excessive blocks will not be used in the active chain or relayed. This discourages the propagation of blocks that you consider excessively large.
 Arguments
-1. blockSize  (integer, required) Excessive block size in bytes.  Must be greater than 1000000.
+1. maxBlockSize  (integer, required) Excessive block size in bytes.  Must be greater than 1000000.
 
 Result
-  blockSize (integer) excessive block size in bytes
+  maxBlockSize (integer) excessive block size in bytes
 ```
 
 Examples
@@ -22,4 +22,4 @@ Examples
 
 ***
 
-*Bitcoin Cash Node Daemon version v22.1.0*
+*Bitcoin Cash Node Daemon version v22.2.0*

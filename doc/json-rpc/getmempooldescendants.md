@@ -1,7 +1,7 @@
 `getmempooldescendants` JSON-RPC command
 ========================================
 
-**`getmempooldescendants txid ( verbose )`**
+**`getmempooldescendants "txid" ( verbose )`**
 
 ```
 If txid is in the mempool, returns all in-mempool descendants.
@@ -68,4 +68,4 @@ Examples
 
 ***
 
-*Bitcoin Cash Node Daemon version v22.1.0*
+*Bitcoin Cash Node Daemon version v22.2.0*

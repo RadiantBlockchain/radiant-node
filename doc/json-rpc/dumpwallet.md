@@ -5,7 +5,7 @@
 
 ```
 Dumps all wallet keys in a human-readable format to a server-side file. This does not allow overwriting existing files.
-Imported scripts are included in the dumpsfile, but corresponding addresses may not be added automatically by importwallet.
+Imported scripts are included in the dumpfile, but corresponding addresses may not be added automatically by importwallet.
 Note that if your wallet contains keys which are not derived from your HD seed (e.g. imported keys), these are not covered by
 only backing up the seed itself, and must be backed up too (e.g. ensure you back up the whole dumpfile).
 ```
@@ -36,4 +36,4 @@ Examples
 
 ***
 
-*Bitcoin Cash Node Daemon version v22.1.0*
+*Bitcoin Cash Node Daemon version v22.2.0*

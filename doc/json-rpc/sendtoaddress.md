@@ -1,7 +1,7 @@
 `sendtoaddress` JSON-RPC command
 ================================
 
-**`sendtoaddress "address" amount ( "comment" "comment_to" subtractfeefromamount coinsel)`**
+**`sendtoaddress "address" amount ( "comment" "comment_to" subtractfeefromamount coinsel )`**
 
 ```
 Send an amount to a given address.
@@ -46,4 +46,4 @@ Examples
 
 ***
 
-*Bitcoin Cash Node Daemon version v22.1.0*
+*Bitcoin Cash Node Daemon version v22.2.0*

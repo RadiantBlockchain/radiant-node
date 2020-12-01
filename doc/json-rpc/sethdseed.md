@@ -1,7 +1,7 @@
 `sethdseed` JSON-RPC command
 ============================
 
-**`sethdseed ( "newkeypool" "seed" )`**
+**`sethdseed ( newkeypool "seed" )`**
 
 ```
 Set or generate a new HD wallet seed. Non-HD wallets will not be upgraded to being a HD wallet. Wallets that are already
@@ -34,4 +34,4 @@ Examples
 
 ***
 
-*Bitcoin Cash Node Daemon version v22.1.0*
+*Bitcoin Cash Node Daemon version v22.2.0*

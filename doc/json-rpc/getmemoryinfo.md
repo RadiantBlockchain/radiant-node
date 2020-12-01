@@ -1,7 +1,7 @@
 `getmemoryinfo` JSON-RPC command
 ================================
 
-**`getmemoryinfo ("mode")`**
+**`getmemoryinfo ( "mode" )`**
 
 ```
 Returns an object containing information about memory usage.
@@ -44,4 +44,4 @@ Examples
 
 ***
 
-*Bitcoin Cash Node Daemon version v22.1.0*
+*Bitcoin Cash Node Daemon version v22.2.0*

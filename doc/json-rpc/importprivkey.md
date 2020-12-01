@@ -1,7 +1,7 @@
 `importprivkey` JSON-RPC command
 ================================
 
-**`importprivkey "privkey" ( "label" ) ( rescan )`**
+**`importprivkey "privkey" ( "label" rescan )`**
 
 ```
 Adds a private key (as returned by dumpprivkey) to your wallet. Requires a new wallet backup.
@@ -42,4 +42,4 @@ As a JSON-RPC call
 
 ***
 
-*Bitcoin Cash Node Daemon version v22.1.0*
+*Bitcoin Cash Node Daemon version v22.2.0*

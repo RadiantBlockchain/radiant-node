@@ -1,4 +1,4 @@
-# Bitcoin Cash Node RPC client version v22.1.0
+# Bitcoin Cash Node RPC client version v22.2.0
 
 | Usage                                                    | Description                                              |
 | :------------------------------------------------------- | :------------------------------------------------------- |

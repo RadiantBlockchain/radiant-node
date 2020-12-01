@@ -5,7 +5,7 @@
 
 ```
 Returns the estimated network hashes per second based on the last n blocks.
-Pass in [blocks] to override # of blocks, -1 specifies since last difficulty change.
+Pass in [nblocks] to override # of blocks, -1 specifies since last difficulty change.
 Pass in [height] to estimate the network speed at the time when a certain block was found.
 ```
 
@@ -34,4 +34,4 @@ Examples
 
 ***
 
-*Bitcoin Cash Node Daemon version v22.1.0*
+*Bitcoin Cash Node Daemon version v22.2.0*

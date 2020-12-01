@@ -1,7 +1,7 @@
 `rescanblockchain` JSON-RPC command
 ===================================
 
-**`rescanblockchain ("start_height") ("stop_height")`**
+**`rescanblockchain ( start_height stop_height )`**
 
 ```
 Rescan the local blockchain for wallet related transactions.
@@ -35,4 +35,4 @@ Examples
 
 ***
 
-*Bitcoin Cash Node Daemon version v22.1.0*
+*Bitcoin Cash Node Daemon version v22.2.0*
