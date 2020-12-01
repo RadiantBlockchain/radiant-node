@@ -138,7 +138,7 @@ public:
         consensus.tachyonActivationTime = 1621080000;
 
         // Default limit for block size (in bytes)
-        consensus.nDefaultMaxBlockSize = DEFAULT_MAX_BLOCK_SIZE;
+        consensus.nDefaultExcessiveBlockSize = DEFAULT_EXCESSIVE_BLOCK_SIZE;
 
         // Anchor params: Note that the block after this height *must* also be checkpointed below.
         consensus.asertAnchorParams = Consensus::Params::ASERTAnchor{
@@ -338,7 +338,7 @@ public:
         consensus.tachyonActivationTime = 1621080000;
 
         // Default limit for block size (in bytes)
-        consensus.nDefaultMaxBlockSize = DEFAULT_MAX_BLOCK_SIZE;
+        consensus.nDefaultExcessiveBlockSize = DEFAULT_EXCESSIVE_BLOCK_SIZE;
 
         // Anchor params: Note that the block after this height *must* also be checkpointed below.
         consensus.asertAnchorParams = Consensus::Params::ASERTAnchor{
@@ -501,8 +501,8 @@ public:
         // May 15, 2021 12:00:00 UTC tentative protocol upgrade
         consensus.tachyonActivationTime = 1621080000;
 
-        // Default limit for block size (in bytes)
-        consensus.nDefaultMaxBlockSize = 2000000;
+        // Default limit for block size (in bytes) (testnet4 is smaller at 2MB)
+        consensus.nDefaultExcessiveBlockSize = 2 * ONE_MEGABYTE;
 
         // Anchor params: Note that the block after this height *must* also be checkpointed below.
         consensus.asertAnchorParams = Consensus::Params::ASERTAnchor{
@@ -637,7 +637,7 @@ public:
         consensus.tachyonActivationTime = 1621080000;
 
         // Default limit for block size (in bytes)
-        consensus.nDefaultMaxBlockSize = 256*1000*1000;
+        consensus.nDefaultExcessiveBlockSize = 256 * ONE_MEGABYTE;
 
         // ScaleNet has no hard-coded anchor block because will be expected to
         // reorg back down to height 10,000, before ASERT activated.
@@ -760,7 +760,7 @@ public:
         consensus.tachyonActivationTime = 1621080000;
 
         // Default limit for block size (in bytes)
-        consensus.nDefaultMaxBlockSize = DEFAULT_MAX_BLOCK_SIZE;
+        consensus.nDefaultExcessiveBlockSize = DEFAULT_EXCESSIVE_BLOCK_SIZE;
 
         diskMagic[0] = 0xfa;
         diskMagic[1] = 0xbf;

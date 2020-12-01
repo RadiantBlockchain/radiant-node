@@ -1260,7 +1260,7 @@ SaltedTxidHasher::SaltedTxidHasher()
       k1(GetRand(std::numeric_limits<uint64_t>::max())) {}
 
 /** Maximum bytes for transactions to store for processing during reorg */
-static const size_t MAX_DISCONNECTED_TX_POOL_SIZE = 20 * DEFAULT_MAX_BLOCK_SIZE;
+static const size_t MAX_DISCONNECTED_TX_POOL_SIZE = 20 * DEFAULT_EXCESSIVE_BLOCK_SIZE;
 
 void DisconnectedBlockTransactions::addForBlock(
     const std::vector<CTransactionRef> &vtx) {

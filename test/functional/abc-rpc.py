@@ -8,7 +8,7 @@
 import re
 
 from test_framework.cdefs import (
-    DEFAULT_MAX_BLOCK_SIZE,
+    DEFAULT_EXCESSIVE_BLOCK_SIZE,
     LEGACY_MAX_BLOCK_SIZE,
     ONE_MEGABYTE,
 )
@@ -35,10 +35,10 @@ class ABC_RPC_Test (BitcoinTestFramework):
         assert pattern.match(subversion)
 
     def test_excessiveblock(self):
-        # Check that we start with DEFAULT_MAX_BLOCK_SIZE
+        # Check that we start with DEFAULT_EXCESSIVE_BLOCK_SIZE
         getsize = self.nodes[0].getexcessiveblock()
         ebs = getsize['excessiveBlockSize']
-        assert_equal(ebs, DEFAULT_MAX_BLOCK_SIZE)
+        assert_equal(ebs, DEFAULT_EXCESSIVE_BLOCK_SIZE)
 
         # Check that setting to legacy size is ok
         self.nodes[0].setexcessiveblock(LEGACY_MAX_BLOCK_SIZE + 1)

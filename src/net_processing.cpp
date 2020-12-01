@@ -4477,7 +4477,7 @@ bool PeerLogicValidation::SendMessages(const Config &config, CNode *pto,
 
         // (tx/sec/MB) * (block_bytes) * (ms/broadcast) * (1 sec/1000 ms) * (1 MB/1000000 bytes) = tx/broadcast
         // (rounded up)
-        const uint64_t nMaxBroadcasts = (config.GetInvBroadcastRate() * config.GetMaxBlockSize() *
+        const uint64_t nMaxBroadcasts = (config.GetInvBroadcastRate() * config.GetExcessiveBlockSize() *
                                          config.GetInvBroadcastInterval() + (1000 * 1000000 - 1)) / 1000 / 1000000;
         vInv.reserve(std::max<size_t>(pto->vInventoryBlockToSend.size(), nMaxBroadcasts));
 

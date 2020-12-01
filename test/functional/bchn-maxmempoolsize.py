@@ -4,7 +4,7 @@
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Test the command-line setting of the -maxmempool setting."""
 
-from test_framework.cdefs import DEFAULT_MAX_BLOCK_SIZE
+from test_framework.cdefs import DEFAULT_EXCESSIVE_BLOCK_SIZE
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import (
     assert_equal,
@@ -21,7 +21,7 @@ class MaxMempoolSizeTest(BitcoinTestFramework):
     def run_test(self):
         self.log.info('Check that -maxmempool command-line settings work')
         # Check that the -maxmempool setting defaults work correctly
-        assert_equal(self.get_mempool_size(), DEFAULT_MAX_BLOCK_SIZE * 10)
+        assert_equal(self.get_mempool_size(), DEFAULT_EXCESSIVE_BLOCK_SIZE * 10)
 
         # 2 MB excessive block size should give a 20 MB max mempool size
         self.restart_node(0, ['-excessiveblocksize=2000000'])

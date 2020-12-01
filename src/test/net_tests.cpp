@@ -63,11 +63,11 @@ public:
 
 class NetTestConfig : public DummyConfig {
 public:
-    bool SetMaxBlockSize(uint64_t maxBlockSize) override {
+    bool SetExcessiveBlockSize(uint64_t maxBlockSize) override {
         nMaxBlockSize = maxBlockSize;
         return true;
     }
-    uint64_t GetMaxBlockSize() const override { return nMaxBlockSize; }
+    uint64_t GetExcessiveBlockSize() const override { return nMaxBlockSize; }
 
 private:
     uint64_t nMaxBlockSize;
@@ -214,7 +214,7 @@ BOOST_AUTO_TEST_CASE(test_getSubVersionEB) {
 BOOST_AUTO_TEST_CASE(test_userAgent) {
     NetTestConfig config;
 
-    config.SetMaxBlockSize(8000000);
+    config.SetExcessiveBlockSize(8000000);
     const std::string uacomment = "A very nice comment";
     gArgs.ForceSetMultiArg("-uacomment", uacomment);
 

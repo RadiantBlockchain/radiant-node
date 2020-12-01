@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE(blockfail) {
 
     // Set max blocksize to default in case other tests left it dirty
     GlobalConfig config;
-    config.SetMaxBlockSize(DEFAULT_MAX_BLOCK_SIZE);
+    config.SetExcessiveBlockSize(DEFAULT_EXCESSIVE_BLOCK_SIZE);
 
     CBlock block;
     RunCheckOnBlock(config, block, "bad-cb-missing");
@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE(blockfail) {
     tx = CMutableTransaction(coinbaseTx);
     block.vtx[0] = MakeTransactionRef(tx);
     auto txSize = ::GetSerializeSize(tx, PROTOCOL_VERSION);
-    auto maxTxCount = ((DEFAULT_MAX_BLOCK_SIZE - 1) / txSize) - 1;
+    auto maxTxCount = ((DEFAULT_EXCESSIVE_BLOCK_SIZE - 1) / txSize) - 1;
 
     for (size_t i = 1; i < maxTxCount; i++) {
         tx.vin[0].prevout = InsecureRandOutPoint();
