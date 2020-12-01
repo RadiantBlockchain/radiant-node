@@ -216,7 +216,7 @@ class P2PConnection(asyncio.Protocol):
                 self._log_message("receive", m)
                 return m
         except Exception as e:
-            logger.exception('Error reading message:', repr(e))
+            logger.exception('Error reading message: {}'.format(repr(e)))
             raise
 
     def on_message(self, message):
