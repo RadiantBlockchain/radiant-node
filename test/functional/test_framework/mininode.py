@@ -120,7 +120,7 @@ class P2PConnection(asyncio.Protocol):
         # The initial message to send after the connection was made:
         self.on_connection_send_msg = None
         self.on_connection_send_msg_is_raw = False
-        self.recvbuf = b""
+        self.recvbuf = bytearray()
         self.magic_bytes = MAGIC_BYTES[net]
         logger.debug('Connecting to Bitcoin Node: {}:{}'.format(
             self.dstaddr, self.dstport))
@@ -164,16 +164,18 @@ class P2PConnection(asyncio.Protocol):
             logger.debug("Closed connection to: {}:{}".format(
                 self.dstaddr, self.dstport))
         self._transport = None
-        self.recvbuf = b""
+        self.recvbuf = bytearray()
         self.on_close()
 
     # Socket read methods
 
     def data_received(self, t):
         """asyncio callback when data is read from the socket."""
+        if len(t) < 1:
+            return
+
         with mininode_lock:
-            if len(t) > 0:
-                self.recvbuf += t
+            self.recvbuf.extend(t)
 
         while True:
             msg = self._on_data()
@@ -196,16 +198,16 @@ class P2PConnection(asyncio.Protocol):
                         "got garbage {}".format(repr(self.recvbuf)))
                 if len(self.recvbuf) < 4 + 12 + 4 + 4:
                     return None
-                command = self.recvbuf[4:4 + 12].split(b"\x00", 1)[0]
                 msglen = struct.unpack(
                     "<i", self.recvbuf[4 + 12:4 + 12 + 4])[0]
-                checksum = self.recvbuf[4 + 12 + 4:4 + 12 + 4 + 4]
                 if len(self.recvbuf) < 4 + 12 + 4 + 4 + msglen:
                     return None
                 msg = self.recvbuf[4 + 12 + 4 + 4:4 + 12 + 4 + 4 + msglen]
                 h = sha256(sha256(msg))
+                checksum = self.recvbuf[4 + 12 + 4:4 + 12 + 4 + 4]
                 if checksum != h[:4]:
                     raise ValueError("got bad checksum " + repr(self.recvbuf))
+                command = bytes(self.recvbuf[4:4 + 12].split(b"\x00", 1)[0])
                 self.recvbuf = self.recvbuf[4 + 12 + 4 + 4 + msglen:]
                 if command not in MESSAGEMAP:
                     raise ValueError("Received unknown command from {}:{}: '{}' {}".format(
