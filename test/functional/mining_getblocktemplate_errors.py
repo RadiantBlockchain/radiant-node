@@ -8,10 +8,10 @@ import time
 
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import (
-    assert_equal,
     connect_nodes_bi,
     disconnect_nodes,
-    assert_raises_rpc_error
+    assert_raises_rpc_error,
+    assert_blocktemplate_equal
 )
 
 
@@ -58,7 +58,7 @@ class GetBlockTemplateTest(BitcoinTestFramework):
         connect_nodes_bi(self.nodes[0], self.nodes[1])
         gbt0 = self.nodes[0].getblocktemplate()
         gbt1 = self.nodes[1].getblocktemplate()
-        assert_equal(gbt0, gbt1)
+        assert_blocktemplate_equal(gbt0, gbt1)
 
         # Test that getblocktemplate will return a cached template
         # for the next 5 seconds
