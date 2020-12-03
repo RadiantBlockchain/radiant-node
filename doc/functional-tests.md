@@ -25,10 +25,11 @@ you configure. Tests will not run otherwise.
 
 #### Dependencies
 
-The ZMQ functional test requires a python ZMQ library. To install it:
+The ZMQ functional test requires a python ZMQ library and the TX broadcast
+interval test requires the scipy library. To install them:
 
-- On Unix, run `sudo apt-get install python3-zmq`
-- On mac OS, run `pip3 install pyzmq`
+- On Unix, run `sudo apt-get install python3-zmq python3-scipy`
+- On mac OS, run `pip3 install pyzmq scipy`
 
 #### Running the tests
 
