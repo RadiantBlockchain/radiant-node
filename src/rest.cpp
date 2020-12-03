@@ -308,7 +308,7 @@ static bool rest_chaininfo(Config &config, HTTPRequest *req,
     switch (rf) {
         case RetFormat::JSON: {
             JSONRPCRequest jsonRequest;
-            jsonRequest.params = UniValue(UniValue::VARR);
+            jsonRequest.params.setArray();
             UniValue chainInfoObject = getblockchaininfo(config, jsonRequest);
             std::string strJSON = UniValue::stringify(chainInfoObject) + "\n";
             req->WriteHeader("Content-Type", "application/json");
@@ -474,7 +474,7 @@ static bool rest_getutxos(Config &config, HTTPRequest *req,
             fCheckMemPool = true;
         }
 
-        for (size_t i = (fCheckMemPool) ? 1 : 0; i < uriParts.size(); i++) {
+        for (size_t i = fCheckMemPool ? 1 : 0; i < uriParts.size(); i++) {
             int32_t nOutput;
             std::string strTxid = uriParts[i].substr(0, uriParts[i].find('-'));
             std::string strOutput =
@@ -621,26 +621,27 @@ static bool rest_getutxos(Config &config, HTTPRequest *req,
         }
 
         case RetFormat::JSON: {
-            UniValue objGetUTXOResponse(UniValue::VOBJ);
+            UniValue::Object objGetUTXOResponse;
 
             // pack in some essentials
             // use more or less the same output as mentioned in Bip64
-            objGetUTXOResponse.pushKV("chainHeight", ::ChainActive().Height());
-            objGetUTXOResponse.pushKV(
-                "chaintipHash", ::ChainActive().Tip()->GetBlockHash().GetHex());
-            objGetUTXOResponse.pushKV("bitmap", bitmapStringRepresentation);
+            objGetUTXOResponse.emplace_back("chainHeight", ::ChainActive().Height());
+            objGetUTXOResponse.emplace_back("chaintipHash", ::ChainActive().Tip()->GetBlockHash().GetHex());
+            objGetUTXOResponse.emplace_back("bitmap", bitmapStringRepresentation);
 
-            UniValue utxos(UniValue::VARR);
+            UniValue::Array utxos;
+            utxos.reserve(outs.size());
             for (const CCoin &coin : outs) {
-                UniValue utxo(UniValue::VOBJ);
-                utxo.pushKV("height", int32_t(coin.nHeight));
-                utxo.pushKV("value", ValueFromAmount(coin.out.nValue));
+                UniValue::Object utxo;
+                utxo.reserve(3);
+                utxo.emplace_back("height", coin.nHeight);
+                utxo.emplace_back("value", ValueFromAmount(coin.out.nValue));
 
                 // include the script in a json output
-                utxo.pushKV("scriptPubKey", ScriptPubKeyToUniv(config, coin.out.scriptPubKey, true));
-                utxos.push_back(utxo);
+                utxo.emplace_back("scriptPubKey", ScriptPubKeyToUniv(config, coin.out.scriptPubKey, true));
+                utxos.emplace_back(std::move(utxo));
             }
-            objGetUTXOResponse.pushKV("utxos", utxos);
+            objGetUTXOResponse.emplace_back("utxos", std::move(utxos));
 
             // return json string
             std::string strJSON = UniValue::stringify(objGetUTXOResponse) + "\n";
