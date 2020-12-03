@@ -132,6 +132,8 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
                             help="use bitcoin-cli instead of RPC for all commands")
         parser.add_argument("--with-axionactivation", dest="axionactivation", default=False, action="store_true",
                             help="Activate axion update on timestamp {}".format(TIMESTAMP_IN_THE_PAST))
+        parser.add_argument("--extra-bitcoind-args", dest="extra_bitcoind_args", default="",
+                            help="Start bitcoind with these additional arguments (comma separated)")
         self.add_options(parser)
         self.options = parser.parse_args()
 
@@ -335,6 +337,9 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
             if self.options.axionactivation:
                 self.nodes[i].extend_default_args(
                     ["-axionactivationtime={}".format(TIMESTAMP_IN_THE_PAST)])
+            if len(self.options.extra_bitcoind_args):
+                self.nodes[i].extend_default_args(
+                        self.options.extra_bitcoind_args.split(","))
 
     def start_node(self, i, *args, **kwargs):
         """Start a bitcoind"""
