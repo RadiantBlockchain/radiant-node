@@ -100,13 +100,13 @@ BOOST_AUTO_TEST_CASE(rpc_server_execute_command_from_request_context) {
     rpcServer.RegisterCommand(
         std::make_unique<RequestContextRPCCommand>(commandName));
 
-    UniValue args(UniValue::VOBJ);
-    args.pushKV("arg2", "value2");
+    UniValue::Object args;
+    args.emplace_back("arg2", "value2");
 
     // Registered commands execute and return values correctly
     JSONRPCRequest request;
     request.strMethod = commandName;
-    request.params = args;
+    request.params.setObject(args);
     UniValue output = rpcServer.ExecuteCommand(config, request);
     BOOST_CHECK_EQUAL(output.get_str(), "testing2");
 }

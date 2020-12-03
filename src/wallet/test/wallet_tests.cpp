@@ -146,27 +146,22 @@ BOOST_FIXTURE_TEST_CASE(importmulti_rescan, TestChain100Setup) {
         std::shared_ptr<CWallet> wallet = std::make_shared<CWallet>(
             Params(), *chain, WalletLocation(), WalletDatabase::CreateDummy());
         AddWallet(wallet);
-        UniValue keys;
-        keys.setArray();
-        UniValue key;
-        key.setObject();
-        key.pushKV("scriptPubKey",
-                   HexStr(GetScriptForRawPubKey(coinbaseKey.GetPubKey())));
-        key.pushKV("timestamp", 0);
-        key.pushKV("internal", UniValue(true));
-        keys.push_back(key);
-        key.setObject();
+        UniValue::Array keys;
+        UniValue::Object key;
+        key.emplace_back("scriptPubKey", HexStr(GetScriptForRawPubKey(coinbaseKey.GetPubKey())));
+        key.emplace_back("timestamp", 0);
+        key.emplace_back("internal", true);
+        keys.emplace_back(std::move(key));
+        BOOST_CHECK(key.empty());
         CKey futureKey;
         futureKey.MakeNewKey(true);
-        key.pushKV("scriptPubKey",
-                   HexStr(GetScriptForRawPubKey(futureKey.GetPubKey())));
-        key.pushKV("timestamp",
-                   newTip->GetBlockTimeMax() + TIMESTAMP_WINDOW + 1);
-        key.pushKV("internal", UniValue(true));
-        keys.push_back(key);
+        key.emplace_back("scriptPubKey", HexStr(GetScriptForRawPubKey(futureKey.GetPubKey())));
+        key.emplace_back("timestamp", newTip->GetBlockTimeMax() + TIMESTAMP_WINDOW + 1);
+        key.emplace_back("internal", true);
+        keys.emplace_back(std::move(key));
         JSONRPCRequest request;
         request.params.setArray();
-        request.params.push_back(keys);
+        request.params.get_array().emplace_back(std::move(keys));
 
         UniValue response = importmulti(GetConfig(), request);
         BOOST_CHECK_EQUAL(
