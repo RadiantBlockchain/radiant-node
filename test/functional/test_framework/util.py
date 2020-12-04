@@ -204,6 +204,19 @@ def assert_array_result(object_array, to_match, expected,
     if num_matched > 0 and should_not_find:
         raise AssertionError("Objects were found {}".format(str(to_match)))
 
+
+def assert_blocktemplate_equal(blocktemplate0, blocktemplate1):
+    """ Checks that the block templates are equal, except for the curtime.
+    curtime is considered equal enough if the difference is within a second """
+    curtime0 = int(blocktemplate0['curtime'])
+    curtime1 = int(blocktemplate1['curtime'])
+    curtimedelta = abs(curtime0 - curtime1)
+    assert_greater_than_or_equal(1, curtimedelta)
+    assert_equal(
+        {i: blocktemplate0[i] for i in blocktemplate0 if i != 'curtime'},
+        {i: blocktemplate1[i] for i in blocktemplate1 if i != 'curtime'}
+    )
+
 # Utility functions
 ###################
 

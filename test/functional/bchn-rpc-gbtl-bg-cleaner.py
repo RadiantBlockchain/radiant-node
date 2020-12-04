@@ -13,7 +13,7 @@ import os
 import threading
 
 from test_framework.test_framework import BitcoinTestFramework
-from test_framework.util import assert_equal, assert_raises_rpc_error, wait_until
+from test_framework.util import assert_equal, assert_raises_rpc_error, wait_until, assert_blocktemplate_equal
 from test_framework import messages, blocktools
 
 
@@ -42,7 +42,7 @@ class GBTLightBGCleanerTest(BitcoinTestFramework):
         gbtl0 = self.nodes[0].getblocktemplatelight()
         gbtl1 = self.nodes[1].getblocktemplatelight()
 
-        assert_equal(gbtl0, gbtl1)
+        assert_blocktemplate_equal(gbtl0, gbtl1)
 
         # some random tx's from mainnet and testnet. They don't have to be valid on this chain for this test.
         txs = [

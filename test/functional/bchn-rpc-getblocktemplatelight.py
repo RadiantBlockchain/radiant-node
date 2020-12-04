@@ -17,7 +17,7 @@ import time
 from decimal import Decimal
 
 from test_framework.test_framework import BitcoinTestFramework
-from test_framework.util import assert_equal, assert_raises_rpc_error
+from test_framework.util import assert_equal, assert_raises_rpc_error, assert_blocktemplate_equal
 from test_framework import messages, script, util, blocktools
 
 
@@ -198,7 +198,7 @@ class GBTLightTest(BitcoinTestFramework):
         gbtl0 = self.nodes[0].getblocktemplatelight()
         gbtl1 = self.nodes[1].getblocktemplatelight()
 
-        assert_equal(gbtl0, gbtl1)
+        assert_blocktemplate_equal(gbtl0, gbtl1)
 
         def check_gbt_store_dir(gbtdir, job_id):
             expected_data_file = os.path.join(gbtdir, job_id)
@@ -230,7 +230,7 @@ class GBTLightTest(BitcoinTestFramework):
         # Check that, once the nodes are synced, they give the same template
         gbtl0 = self.nodes[0].getblocktemplatelight()  # in the python test framework you can simply call the rpc by name
         gbtl1 = self.nodes[1].getblocktemplatelight()  # no need to declare it anywhere
-        assert_equal(gbtl0, gbtl1)
+        assert_blocktemplate_equal(gbtl0, gbtl1)
 
         # check job_id is ok
         self.check_job_id(gbtl0)
@@ -287,7 +287,7 @@ class GBTLightTest(BitcoinTestFramework):
         # try regular getblocktemplatelight again, without extratxs, test that extratxs didn't stick around
         gbtl0 = self.nodes[0].getblocktemplatelight()
         gbtl1 = self.nodes[1].getblocktemplatelight()
-        assert_equal(gbtl0, gbtl1)
+        assert_blocktemplate_equal(gbtl0, gbtl1)
         self.check_merkle(gbtl0, txids)
 
         # Test RPC errors
