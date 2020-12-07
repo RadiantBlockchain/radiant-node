@@ -499,7 +499,6 @@ int main(int argc, char **argv) {
     }
     bool fDNS = true;
     std::fprintf(stdout, "Using %s.\n", gArgs.GetChainName().c_str());
-    netMagic = Params().NetMagic();
     if (opts.ns.empty()) {
         std::fprintf(stdout, "No nameserver set. Not starting DNS server.\n");
         fDNS = false;
