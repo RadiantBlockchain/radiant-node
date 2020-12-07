@@ -27,7 +27,7 @@ enum class PeerMessagingState {
 };
 
 class CSeederNode {
-private:
+protected:
     SOCKET sock;
     CDataStream vSend;
     CDataStream vRecv;
@@ -55,7 +55,6 @@ private:
 
     bool ProcessMessages();
 
-protected:
     PeerMessagingState ProcessMessage(const std::string &strCommand,
                                       CDataStream &recv);
 
