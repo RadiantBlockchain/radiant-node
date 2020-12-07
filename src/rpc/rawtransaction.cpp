@@ -37,31 +37,34 @@
 
 #include <univalue.h>
 
-static void TxToJSON(const CTransaction &tx, const BlockHash &hashBlock,
-                     UniValue &entry) {
+static UniValue::Object TxToJSON(const Config &config, const CTransaction &tx, const BlockHash &hashBlock) {
     // Call into TxToUniv() in bitcoin-common to decode the transaction hex.
     //
     // Blockchain contextual information (confirmations and blocktime) is not
     // available to code in bitcoin-common, so we query them here and push the
     // data into the returned UniValue.
-    TxToUniv(tx, uint256(), entry, true, RPCSerializationFlags());
+    UniValue::Object entry = TxToUniv(config, tx, uint256(), true, RPCSerializationFlags());
 
     if (!hashBlock.IsNull()) {
         LOCK(cs_main);
 
-        entry.pushKV("blockhash", hashBlock.GetHex());
         CBlockIndex *pindex = LookupBlockIndex(hashBlock);
-        if (pindex) {
-            if (::ChainActive().Contains(pindex)) {
-                entry.pushKV("confirmations",
-                             1 + ::ChainActive().Height() - pindex->nHeight);
-                entry.pushKV("time", pindex->GetBlockTime());
-                entry.pushKV("blocktime", pindex->GetBlockTime());
+        bool blockFound = pindex;
+        bool inActiveChain = blockFound && ::ChainActive().Contains(pindex);
+        entry.reserve(entry.size() + (blockFound ? inActiveChain ? 4 : 2 : 1));
+        entry.emplace_back("blockhash", hashBlock.GetHex());
+        if (blockFound) {
+            if (inActiveChain) {
+                entry.emplace_back("confirmations", 1 + ::ChainActive().Height() - pindex->nHeight);
+                entry.emplace_back("time", pindex->GetBlockTime());
+                entry.emplace_back("blocktime", pindex->GetBlockTime());
             } else {
-                entry.pushKV("confirmations", 0);
+                entry.emplace_back("confirmations", 0);
             }
         }
     }
+
+    return entry;
 }
 
 static UniValue getrawtransaction(const Config &config,
@@ -102,9 +105,6 @@ static UniValue getrawtransaction(const Config &config,
 
             "\nResult (if verbose is set to true):\n"
             "{\n"
-            "  \"in_active_chain\": b, (bool) Whether specified block is in "
-            "the active chain or not (only present with explicit \"blockhash\" "
-            "argument)\n"
             "  \"hex\" : \"data\",       (string) The serialized, hex-encoded "
             "data for 'txid'\n"
             "  \"txid\" : \"id\",        (string) The transaction id (same as "
@@ -150,8 +150,11 @@ static UniValue getrawtransaction(const Config &config,
             "  \"confirmations\" : n,      (numeric) The confirmations\n"
             "  \"time\" : ttt,             (numeric) The transaction time in "
             "seconds since epoch (Jan 1 1970 GMT)\n"
-            "  \"blocktime\" : ttt         (numeric) The block time in seconds "
+            "  \"blocktime\" : ttt,        (numeric) The block time in seconds "
             "since epoch (Jan 1 1970 GMT)\n"
+            "  \"in_active_chain\": b  (bool) Whether specified block is in "
+            "the active chain or not (only present with explicit \"blockhash\" "
+            "argument)\n"
             "}\n"
 
             "\nExamples:\n" +
@@ -229,11 +232,11 @@ static UniValue getrawtransaction(const Config &config,
         return EncodeHexTx(*tx, RPCSerializationFlags());
     }
 
-    UniValue result(UniValue::VOBJ);
+    UniValue::Object result = TxToJSON(config, *tx, hash_block);
     if (blockindex) {
-        result.pushKV("in_active_chain", in_active_chain);
+        result.reserve(result.size() + 1);
+        result.emplace_back("in_active_chain", in_active_chain);
     }
-    TxToJSON(*tx, hash_block, result);
     return result;
 }
 
@@ -593,7 +596,7 @@ static UniValue createrawtransaction(const Config &config,
     return EncodeHexTx(CTransaction(rawTx));
 }
 
-static UniValue decoderawtransaction(const Config &,
+static UniValue decoderawtransaction(const Config &config,
                                      const JSONRPCRequest &request) {
     if (request.fHelp || request.params.size() != 1) {
         throw std::runtime_error(
@@ -662,10 +665,7 @@ static UniValue decoderawtransaction(const Config &,
         throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "TX decode failed");
     }
 
-    UniValue result(UniValue::VOBJ);
-    TxToUniv(CTransaction(std::move(mtx)), uint256(), result, false);
-
-    return result;
+    return TxToUniv(config, CTransaction(std::move(mtx)), uint256(), false);
 }
 
 static UniValue decodescript(const Config &config,
@@ -683,7 +683,6 @@ static UniValue decodescript(const Config &config,
             "\nResult:\n"
             "{\n"
             "  \"asm\":\"asm\",   (string) Script public key\n"
-            "  \"hex\":\"hex\",   (string) hex-encoded public key\n"
             "  \"type\":\"type\", (string) The output type\n"
             "  \"reqSigs\": n,    (numeric) The required signatures\n"
             "  \"addresses\": [   (json array of string)\n"
@@ -701,9 +700,8 @@ static UniValue decodescript(const Config &config,
 
     RPCTypeCheck(request.params, {UniValue::VSTR});
 
-    UniValue r(UniValue::VOBJ);
     CScript script;
-    if (request.params[0].get_str().size() > 0) {
+    if (!request.params[0].get_str().empty()) {
         std::vector<uint8_t> scriptData(
             ParseHexV(request.params[0], "argument"));
         script = CScript(scriptData.begin(), scriptData.end());
@@ -711,17 +709,7 @@ static UniValue decodescript(const Config &config,
         // Empty scripts are valid.
     }
 
-    ScriptPubKeyToUniv(script, r, false);
-
-    const UniValue& type = r["type"];
-
-    if (type.isStr() && type.get_str() != "scripthash") {
-        // P2SH cannot be wrapped in a P2SH. If this script is already a P2SH,
-        // don't return the address for a P2SH of the P2SH.
-        r.pushKV("p2sh", EncodeDestination(CScriptID(script), config));
-    }
-
-    return r;
+    return ScriptPubKeyToUniv(config, script, false, true);
 }
 
 /**
@@ -1284,7 +1272,7 @@ static std::string WriteHDKeypath(const std::vector<uint32_t> &keypath) {
     return keypath_str;
 }
 
-static UniValue decodepsbt(const Config &,
+static UniValue decodepsbt(const Config &config,
                            const JSONRPCRequest &request) {
     if (request.fHelp || request.params.size() != 1) {
         throw std::runtime_error(
@@ -1415,9 +1403,7 @@ static UniValue decodepsbt(const Config &,
     UniValue::Object result;
 
     // Add the decoded tx
-    UniValue tx_univ(UniValue::VOBJ);
-    TxToUniv(CTransaction(*psbtx.tx), uint256(), tx_univ, false);
-    result.emplace_back("tx", std::move(tx_univ));
+    result.emplace_back("tx", TxToUniv(config, CTransaction(*psbtx.tx), uint256(), false));
 
     // Unknown data
     if (!psbtx.unknown.empty()) {
@@ -1447,9 +1433,7 @@ static UniValue decodepsbt(const Config &,
             out.emplace_back("amount", ValueFromAmount(txout.nValue));
             total_in += txout.nValue;
 
-            UniValue o(UniValue::VOBJ);
-            ScriptToUniv(txout.scriptPubKey, o, true);
-            out.emplace_back("scriptPubKey", std::move(o));
+            out.emplace_back("scriptPubKey", ScriptToUniv(config, txout.scriptPubKey, true));
             in.emplace_back("utxo", std::move(out));
         } else {
             have_all_utxos = false;
@@ -1472,9 +1456,7 @@ static UniValue decodepsbt(const Config &,
 
         // Redeem script
         if (!input.redeem_script.empty()) {
-            UniValue r(UniValue::VOBJ);
-            ScriptToUniv(input.redeem_script, r, false);
-            in.emplace_back("redeem_script", std::move(r));
+            in.emplace_back("redeem_script", ScriptToUniv(config, input.redeem_script, false));
         }
 
         // keypaths
@@ -1524,9 +1506,7 @@ static UniValue decodepsbt(const Config &,
         UniValue::Object out;
         // Redeem script
         if (!output.redeem_script.empty()) {
-            UniValue r(UniValue::VOBJ);
-            ScriptToUniv(output.redeem_script, r, false);
-            out.emplace_back("redeem_script", std::move(r));
+            out.emplace_back("redeem_script", ScriptToUniv(config, output.redeem_script, false));
         }
 
         // keypaths

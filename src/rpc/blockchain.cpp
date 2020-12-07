@@ -111,7 +111,7 @@ UniValue::Object blockheaderToJSON(const CBlockIndex *tip, const CBlockIndex *bl
     return result;
 }
 
-UniValue::Object blockToJSON(const CBlock &block, const CBlockIndex *tip, const CBlockIndex *blockindex, bool txDetails) {
+UniValue::Object blockToJSON(const Config &config, const CBlock &block, const CBlockIndex *tip, const CBlockIndex *blockindex, bool txDetails) {
     const CBlockIndex *pnext;
     int confirmations = ComputeNextBlockAndDepth(tip, blockindex, pnext);
     bool previousblockhash = blockindex->pprev;
@@ -129,9 +129,7 @@ UniValue::Object blockToJSON(const CBlock &block, const CBlockIndex *tip, const 
     txs.reserve(block.vtx.size());
     for (const auto &tx : block.vtx) {
         if (txDetails) {
-            UniValue objTx(UniValue::VOBJ);
-            TxToUniv(*tx, uint256(), objTx, true, RPCSerializationFlags());
-            txs.push_back(std::move(objTx));
+            txs.emplace_back(TxToUniv(config, *tx, uint256(), true, RPCSerializationFlags()));
         } else {
             txs.emplace_back(tx->GetId().GetHex());
         }
@@ -1047,8 +1045,7 @@ static UniValue getblock(const Config &config, const JSONRPCRequest &request) {
         return strHex;
     }
 
-    return blockToJSON(block, ::ChainActive().Tip(), pblockindex,
-                       verbosity >= 2);
+    return blockToJSON(config, block, ::ChainActive().Tip(), pblockindex, verbosity >= 2);
 }
 
 struct CCoinsStats {
@@ -1321,9 +1318,7 @@ UniValue gettxout(const Config &config, const JSONRPCRequest &request) {
     ret.emplace_back("bestblock", pindex->GetBlockHash().GetHex());
     ret.emplace_back("confirmations", coin.GetHeight() == MEMPOOL_HEIGHT ? 0 : pindex->nHeight - coin.GetHeight() + 1);
     ret.emplace_back("value", ValueFromAmount(coin.GetTxOut().nValue));
-    UniValue o(UniValue::VOBJ);
-    ScriptPubKeyToUniv(coin.GetTxOut().scriptPubKey, o, true);
-    ret.emplace_back("scriptPubKey", std::move(o));
+    ret.emplace_back("scriptPubKey", ScriptPubKeyToUniv(config, coin.GetTxOut().scriptPubKey, true));
     ret.emplace_back("coinbase", coin.IsCoinBase());
 
     return ret;

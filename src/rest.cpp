@@ -271,7 +271,7 @@ static bool rest_block(const Config &config, HTTPRequest *req,
         }
 
         case RetFormat::JSON: {
-            UniValue::Object objBlock = blockToJSON(block, tip, pblockindex, showTxDetails);
+            UniValue::Object objBlock = blockToJSON(config, block, tip, pblockindex, showTxDetails);
             std::string strJSON = UniValue::stringify(objBlock) + "\n";
             req->WriteHeader("Content-Type", "application/json");
             req->WriteReply(HTTP_OK, strJSON);
@@ -423,8 +423,7 @@ static bool rest_tx(Config &config, HTTPRequest *req,
         }
 
         case RetFormat::JSON: {
-            UniValue objTx(UniValue::VOBJ);
-            TxToUniv(*tx, hashBlock, objTx);
+            UniValue::Object objTx = TxToUniv(config, *tx, hashBlock);
             std::string strJSON = UniValue::stringify(objTx) + "\n";
             req->WriteHeader("Content-Type", "application/json");
             req->WriteReply(HTTP_OK, strJSON);
@@ -638,9 +637,7 @@ static bool rest_getutxos(Config &config, HTTPRequest *req,
                 utxo.pushKV("value", ValueFromAmount(coin.out.nValue));
 
                 // include the script in a json output
-                UniValue o(UniValue::VOBJ);
-                ScriptPubKeyToUniv(coin.out.scriptPubKey, o, true);
-                utxo.pushKV("scriptPubKey", o);
+                utxo.pushKV("scriptPubKey", ScriptPubKeyToUniv(config, coin.out.scriptPubKey, true));
                 utxos.push_back(utxo);
             }
             objGetUTXOResponse.pushKV("utxos", utxos);

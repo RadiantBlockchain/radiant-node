@@ -8,6 +8,7 @@
 
 #include <chain.h>
 #include <chainparams.h>
+#include <config.h>
 #include <validation.h>
 #include <streams.h>
 #include <consensus/validation.h>
@@ -31,7 +32,7 @@ static void RPCBlockVerbose(const std::vector<uint8_t> &data, benchmark::State &
     blockindex.nBits = block.nBits;
 
     while (state.KeepRunning()) {
-        (void)blockToJSON(block, &blockindex, &blockindex, /*verbose*/ true);
+        (void)blockToJSON(GetConfig(), block, &blockindex, &blockindex, /*verbose*/ true);
     }
 }
 
