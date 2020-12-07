@@ -919,13 +919,28 @@ static void ThrowIfPrunedBlock(const CBlockIndex *pblockindex) EXCLUSIVE_LOCKS_R
 /// Lock-free -- will throw if block not found or was pruned, etc. Guaranteed to return a valid block or fail.
 static CBlock ReadBlockChecked(const Config &config, const CBlockIndex *pblockindex) {
     CBlock block;
-    if (!ReadBlockFromDisk(block, pblockindex,
-                           config.GetChainParams().GetConsensus())) {
-        // Block not found on disk. This could be because we have the block
-        // header in our index but don't have the block (for example if a
-        // non-whitelisted node sends us an unrequested long chain of valid
-        // blocks, we add the headers to our index, but don't accept the block).
-        throw JSONRPCError(RPC_MISC_ERROR, "Block not found on disk");
+    auto doRead = [&] {
+        if (!ReadBlockFromDisk(block, pblockindex,
+                               config.GetChainParams().GetConsensus())) {
+            // Block not found on disk. This could be because we have the block
+            // header in our index but don't have the block (for example if a
+            // non-whitelisted node sends us an unrequested long chain of valid
+            // blocks, we add the headers to our index, but don't accept the block).
+            throw JSONRPCError(RPC_MISC_ERROR, "Block not found on disk");
+        }
+    };
+    if (fPruneMode) {
+        // Note: in pruned mode we must take cs_main here because it's possible for FlushStateToDisk()
+        // in validation.cpp to also attempt to remove this file while we have it open.  This is not
+        // normally a problem except for on Windows, where FlushStateToDisk() would fail to remove the
+        // block file we have open here, in which case on Windows the node would AbortNode().  Hence
+        // the need for this locking in the fPrunedMode case only.
+        LOCK(cs_main);
+        doRead();
+    } else {
+        // Non-pruned mode, we can benefit from not having to grab cs_main here since blocks never
+        // go away -- this increases parallelism in the case of non-pruning nodes.
+        doRead();
     }
 
     return block;
@@ -2022,19 +2037,34 @@ static constexpr size_t PER_UTXO_OVERHEAD =
 /// Guaranteed to return a valid undo or fail.
 static CBlockUndo ReadUndoChecked(const CBlockIndex *pblockindex) {
     CBlockUndo undo;
-    // Note: we special-case block 0 to preserve RPC compatibility with previous
-    // incarnations of `getblockstats` that did not use the undo mechanism to grab
-    // stats. Those earlier versions would return stats for block 0. So, we return
-    // empty undo for genesis (genesis has no actual undo file on disk but an empty
-    // CBlockUndo is a perfect simulacrum of its undo file if it were to have one)
-    if (pblockindex->nHeight != 0 && !UndoReadFromDisk(undo, pblockindex)) {
-        // Undo not found on disk. This could be because we have the block
-        // header in our index but don't have the block (for example if a
-        // non-whitelisted node sends us an unrequested long chain of valid
-        // blocks, we add the headers to our index, but don't accept the block).
-        // This can also happen if in the extremely rare event that the undo file
-        // was pruned from underneath us as we were executing getblockstats().
-        throw JSONRPCError(RPC_MISC_ERROR, "Can't read undo data from disk");
+    auto doRead = [&] {
+        // Note: we special-case block 0 to preserve RPC compatibility with previous
+        // incarnations of `getblockstats` that did not use the undo mechanism to grab
+        // stats. Those earlier versions would return stats for block 0. So, we return
+        // empty undo for genesis (genesis has no actual undo file on disk but an empty
+        // CBlockUndo is a perfect simulacrum of its undo file if it were to have one)
+        if (pblockindex->nHeight != 0 && !UndoReadFromDisk(undo, pblockindex)) {
+            // Undo not found on disk. This could be because we have the block
+            // header in our index but don't have the block (for example if a
+            // non-whitelisted node sends us an unrequested long chain of valid
+            // blocks, we add the headers to our index, but don't accept the block).
+            // This can also happen if in the extremely rare event that the undo file
+            // was pruned from underneath us as we were executing getblockstats().
+            throw JSONRPCError(RPC_MISC_ERROR, "Can't read undo data from disk");
+        }
+    };
+    if (fPruneMode) {
+        // Note: in pruned mode we must take cs_main here because it's possible for FlushStateToDisk()
+        // in validation.cpp to also attempt to remove this file while we have it open.  This is not
+        // normally a problem except for on Windows, where FlushStateToDisk() would fail to remove the
+        // undo file we have open here, in which case on Windows the node would AbortNode().  Hence
+        // the need for this locking in the fPrunedMode case only.
+        LOCK(cs_main);
+        doRead();
+    } else {
+        // Non-pruned mode, we can benefit from not having to grab cs_main here since undos never
+        // go away -- this increases parallelism in the case of non-pruning nodes.
+        doRead();
     }
 
     return undo;
