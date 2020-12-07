@@ -504,20 +504,21 @@ public:
         return *this;
     }
 
-    UniValue GetJSON() {
+    UniValue::Array GetJSON() {
         DoPush();
-        UniValue array(UniValue::VARR);
+        UniValue::Array array;
         if (nValue != Amount::zero()) {
-            UniValue amount(UniValue::VARR);
+            UniValue::Array amount;
+            amount.reserve(1);
             amount.push_back(ValueFromAmount(nValue));
-            array.push_back(amount);
+            array.emplace_back(std::move(amount));
         }
 
-        array.push_back(FormatScript(spendTx.vin[0].scriptSig));
-        array.push_back(FormatScript(creditTx->vout[0].scriptPubKey));
-        array.push_back(FormatScriptFlags(flags));
-        array.push_back(FormatScriptError(scriptError));
-        array.push_back(comment);
+        array.emplace_back(FormatScript(spendTx.vin[0].scriptSig));
+        array.emplace_back(FormatScript(creditTx->vout[0].scriptPubKey));
+        array.emplace_back(FormatScriptFlags(flags));
+        array.emplace_back(FormatScriptError(scriptError));
+        array.emplace_back(comment);
         return array;
     }
 
