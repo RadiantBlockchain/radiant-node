@@ -2064,11 +2064,11 @@ static void PushGetAddrOnceIfAfterVerAck(CConnman *connman, CNode *pfrom) {
 static void PushVerACK(CConnman *connman, CNode *pfrom) {
     const CNetMsgMaker msg_maker(INIT_PROTO_VERSION);
 
-    // Send VERACK handshake message
-    connman->PushMessage(pfrom, msg_maker.Make(NetMsgType::VERACK));
-
     // Signal ADDRv2 support (BIP155).
     connman->PushMessage(pfrom, msg_maker.Make(NetMsgType::SENDADDRV2));
+
+    // Send VERACK handshake message
+    connman->PushMessage(pfrom, msg_maker.Make(NetMsgType::VERACK));
 }
 
 static bool ProcessMessage(const Config &config, CNode *pfrom,
@@ -2442,6 +2442,17 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         return true;
     }
 
+    if (msg_type == NetMsgType::SENDADDRV2) {
+        if (pfrom->fSuccessfullyConnected) {
+            // Disconnect peers that send SENDADDRV2 message after VERACK; this
+            // must be negotiated between VERSION and VERACK.
+            pfrom->fDisconnect = true;
+            return false;
+        }
+        pfrom->m_wants_addrv2 = true;
+        return true;
+    }
+
     if (!pfrom->fSuccessfullyConnected) {
         // Must have a verack message before anything else
         LOCK(cs_main);
@@ -2513,11 +2524,6 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         if (pfrom->fOneShot) {
             pfrom->fDisconnect = true;
         }
-        return true;
-    }
-
-    if (msg_type == NetMsgType::SENDADDRV2) {
-        pfrom->m_wants_addrv2 = true;
         return true;
     }
 
