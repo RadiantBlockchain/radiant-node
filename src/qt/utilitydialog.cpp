@@ -37,13 +37,10 @@ HelpMessageDialog::HelpMessageDialog(interfaces::Node &node, QWidget *parent,
     : QDialog(parent), ui(new Ui::HelpMessageDialog) {
     ui->setupUi(this);
 
-    QString version = tr(PACKAGE_NAME) + " " + tr("version") + " " +
-                      QString::fromStdString(FormatFullVersion());
-/**
- * On x86 add a bit specifier to the version so that users can distinguish
- * between 32 and 64 bit builds. On other architectures, 32/64 bit may be more
- * ambiguous.
- */
+    QString version = QString{PACKAGE_NAME} + " " + tr("version") + " " + QString::fromStdString(FormatFullVersion());
+    /* On x86 add a bit specifier to the version so that users can distinguish between
+     * 32 and 64 bit builds. On other architectures, 32/64 bit may be more ambiguous.
+     */
 #if defined(__x86_64__)
     version += " " + tr("(%1-bit)").arg(64);
 #elif defined(__i386__)
@@ -51,7 +48,7 @@ HelpMessageDialog::HelpMessageDialog(interfaces::Node &node, QWidget *parent,
 #endif
 
     if (about) {
-        setWindowTitle(tr("About %1").arg(tr(PACKAGE_NAME)));
+        setWindowTitle(tr("About %1").arg(PACKAGE_NAME));
 
         /// HTML-format the license message from the core
         QString licenseInfo = QString::fromStdString(LicenseInfo());
@@ -149,7 +146,7 @@ void HelpMessageDialog::on_okButton_accepted() {
 ShutdownWindow::ShutdownWindow(QWidget *parent) : QWidget(parent) {
     QVBoxLayout *layout = new QVBoxLayout();
     layout->addWidget(new QLabel(
-        tr("%1 is shutting down...").arg(tr(PACKAGE_NAME)) + "<br /><br />" +
+        tr("%1 is shutting down...").arg(PACKAGE_NAME) + "<br /><br />" +
         tr("Do not shut down the computer until this window disappears.")));
     setLayout(layout);
 }

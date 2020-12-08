@@ -1402,7 +1402,7 @@ int GetNumCores() {
 
 std::string CopyrightHolders(const std::string &strPrefix) {
     return strPrefix +
-           strprintf(_(COPYRIGHT_HOLDERS), _(COPYRIGHT_HOLDERS_SUBSTITUTION));
+           strprintf(_(COPYRIGHT_HOLDERS), COPYRIGHT_HOLDERS_SUBSTITUTION);
 }
 
 // Obtain the application startup time (used for uptime calculation)

@@ -576,7 +576,7 @@ int GuiMain(int argc, char *argv[]) {
     std::string error;
     if (!node->parseParameters(argc, argv, error)) {
         QMessageBox::critical(
-            nullptr, QObject::tr(PACKAGE_NAME),
+            nullptr, PACKAGE_NAME,
             QObject::tr("Error parsing command line arguments: %1.")
                 .arg(QString::fromStdString(error)));
         return EXIT_FAILURE;
@@ -626,7 +626,7 @@ int GuiMain(int argc, char *argv[]) {
     /// - Do not call GetDataDir(true) before this step finishes.
     if (!fs::is_directory(GetDataDir(false))) {
         QMessageBox::critical(
-            nullptr, QObject::tr(PACKAGE_NAME),
+            nullptr, PACKAGE_NAME,
             QObject::tr(
                 "Error: Specified data directory \"%1\" does not exist.")
                 .arg(QString::fromStdString(gArgs.GetArg("-datadir", ""))));
@@ -634,7 +634,7 @@ int GuiMain(int argc, char *argv[]) {
     }
     if (!node->readConfigFiles(error)) {
         QMessageBox::critical(
-            nullptr, QObject::tr(PACKAGE_NAME),
+            nullptr, PACKAGE_NAME,
             QObject::tr("Error: Cannot parse configuration file: %1.")
                 .arg(QString::fromStdString(error)));
         return EXIT_FAILURE;
@@ -653,7 +653,7 @@ int GuiMain(int argc, char *argv[]) {
     try {
         node->selectParams(gArgs.GetChainName());
     } catch (std::exception &e) {
-        QMessageBox::critical(nullptr, QObject::tr(PACKAGE_NAME),
+        QMessageBox::critical(nullptr, PACKAGE_NAME,
                               QObject::tr("Error: %1").arg(e.what()));
         return EXIT_FAILURE;
     }
@@ -733,7 +733,7 @@ int GuiMain(int argc, char *argv[]) {
 #if defined(Q_OS_WIN)
         WinShutdownMonitor::registerShutdownBlockReason(
             QObject::tr("%1 didn't yet exit safely...")
-                .arg(QObject::tr(PACKAGE_NAME)),
+                .arg(PACKAGE_NAME),
             (HWND)app.getMainWinId());
 #endif
         app.exec();
