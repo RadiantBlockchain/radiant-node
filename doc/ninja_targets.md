@@ -110,6 +110,12 @@ Runs `devtools/chainparams/test_make_chainparams.py`.
 This tests utilities to generate chainparams constants that are compiled into the client.
 See `contrib/devtools/chainparams/README.md` for more information on these tools.
 
+### check-lint
+
+Runs checking of our source code for programmatic and stylistic errors.
+
+See [linting documentation](linting.md) for details.
+
 ### security-check
 
 Runs a series of security tests for ELF binaries against the following executables:
