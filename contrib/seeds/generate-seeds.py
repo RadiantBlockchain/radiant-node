@@ -85,7 +85,7 @@ def name_to_ipv6(addr):
 
 
 def parse_spec(s, defaultport):
-    match = re.match('\[([0-9a-fA-F:]+)\](?::([0-9]+))?$', s)
+    match = re.match(r'\[([0-9a-fA-F:]+)\](?::([0-9]+))?$', s)
     if match:  # ipv6
         host = match.group(1)
         port = match.group(2)

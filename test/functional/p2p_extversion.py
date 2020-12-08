@@ -7,9 +7,9 @@ import sys
 if sys.version_info[0] < 3:
     sys.exit("Use Python 3")
 from test_framework.test_framework import BitcoinTestFramework
-from test_framework.mininode import *
-from test_framework.messages import *
-from test_framework.util import assert_equal
+from test_framework.mininode import P2PInterface, mininode_lock
+from test_framework.messages import NODE_NETWORK, msg_version, msg_extversion, msg_verack, MIN_VERSION_SUPPORTED, NODE_EXTVERSION
+from test_framework.util import assert_equal, wait_until
 
 
 class P2PIgnoreInv(P2PInterface):

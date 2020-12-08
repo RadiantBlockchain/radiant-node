@@ -26,14 +26,14 @@ import threading
 import time
 import os
 import sys
+from decimal import Decimal
 
 sys.path.insert(0, os.path.join('..', 'functional'))
-import test_framework.util
-from test_framework.util import sync_blocks
-from test_framework.test_framework import BitcoinTestFramework
-from test_framework.mininode import P2PInterface
-from test_framework.authproxy import JSONRPCException
-from decimal import Decimal
+import test_framework.util # noqa: E402
+from test_framework.util import sync_blocks # noqa: E402
+from test_framework.test_framework import BitcoinTestFramework # noqa: E402
+from test_framework.mininode import P2PInterface # noqa: E402
+from test_framework.authproxy import JSONRPCException # noqa: E402
 
 
 NUM_NODES = 4

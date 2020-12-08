@@ -102,7 +102,8 @@ if ! PYTHONWARNINGS="ignore" flake8 --ignore=B,C,E,F,I,N,W --select=$(IFS=","; e
     EXIT_CODE=1
 fi
 
-if ! mypy --ignore-missing-imports $(git ls-files "test/functional/*.py"); then
+# Ignore tests of framework, see issue #215
+if ! mypy --ignore-missing-imports $(git ls-files "test/functional/*.py" | grep -v "test_framework/tests"); then
     EXIT_CODE=1
 fi
 
