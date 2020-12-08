@@ -37,6 +37,8 @@ EXPECTED_CIRCULAR_DEPENDENCIES=(
     "script/scriptcache -> validation -> script/scriptcache"
     "seeder/bitcoin -> seeder/db -> seeder/bitcoin"
     "chainparams -> protocol -> config -> chainparams"
+    "config -> policy/policy -> validation -> config"
+    "config -> policy/policy -> validation -> protocol -> config"
 )
 
 EXIT_CODE=0

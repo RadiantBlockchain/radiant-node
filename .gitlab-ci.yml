@@ -102,6 +102,19 @@ static-checks-branch:
         paths:
             - .cache/pip
 
+static-run-linters:
+    stage: static_checks
+    needs: []
+    cache: {}
+    script:
+        - mkdir build
+        - cd build
+        - cmake -GNinja ..
+        - ninja check-lint
+    artifacts:
+        paths:
+            - build/test/lint*.log
+
 .ccache_scripts:
     before_script:
         - mkdir -p ccache

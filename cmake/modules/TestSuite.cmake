@@ -68,6 +68,22 @@ function(add_test_runner SUITE NAME EXECUTABLE)
 	add_dependencies(${SUITE_TARGET} ${TARGET})
 endfunction()
 
+function(add_lint_runner SUITE NAME LINTER_SCRIPT)
+	get_target_from_suite(${SUITE} SUITE_TARGET)
+	set(TARGET "${SUITE_TARGET}-${NAME}")
+	add_test_custom_target(${TARGET}
+		TEST_COMMAND
+			"${CMAKE_SOURCE_DIR}/cmake/utils/test_wrapper.sh"
+			${CMAKE_CURRENT_LIST_DIR}/${LINTER_SCRIPT} "${CMAKE_CURRENT_BINARY_DIR}/${NAME}.log" ${ARGN}
+		CUSTOM_TARGET_ARGS
+			COMMENT "${SUITE}: testing ${NAME}"
+			DEPENDS ${LINTER_SCRIPT}
+			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+			VERBATIM
+	)
+	add_dependencies(${SUITE_TARGET} ${TARGET})
+endfunction()
+
 function(add_test_to_suite SUITE NAME)
 	add_executable(${NAME} EXCLUDE_FROM_ALL ${ARGN})
 	add_test_runner(${SUITE} ${NAME} ${NAME})
@@ -122,3 +138,27 @@ function(add_boost_unit_tests_to_suite SUITE NAME)
 		target_compile_definitions(${NAME} PRIVATE BOOST_TEST_DYN_LINK)
 	endif()
 endfunction(add_boost_unit_tests_to_suite)
+
+function(add_lint_script_tests_to_suite SUITE)
+	cmake_parse_arguments(ARG
+		""
+		""
+		"TESTS"
+		${ARGN}
+	)
+
+	get_target_from_suite(${SUITE} SUITE_TARGET)
+
+	foreach(_test_source ${ARG_TESTS})
+		get_filename_component(_test_name "${_test_source}" NAME_WE)
+		add_lint_runner(
+			${SUITE}
+			${_test_name}
+			${_test_source}
+		)
+		set_property(
+			TARGET ${SUITE_TARGET}
+			APPEND PROPERTY UNIT_TESTS ${_test_name}
+		)
+	endforeach()
+endfunction(add_lint_script_tests_to_suite)
