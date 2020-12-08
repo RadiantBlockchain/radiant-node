@@ -145,7 +145,9 @@ class TransactionOrderingTest(BitcoinTestFramework):
             self.tip = self.blocks[number]
 
         # adds transactions to the block and updates state
-        def update_block(block_number, new_transactions=[]):
+        def update_block(block_number, new_transactions=None):
+            if new_transactions is None:
+                new_transactions = []
             block = self.blocks[block_number]
             self.add_transactions_to_block(block, new_transactions)
             old_sha256 = block.sha256
