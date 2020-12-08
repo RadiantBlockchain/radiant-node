@@ -513,19 +513,6 @@ public:
         }
     }
 
-    /**
-     * DEPRECATED.
-     * Planned to be replaced with UniValue::Object::reserve() or UniValue::Array::reserve().
-     *
-     * VOBJ/VARR: Increases the capacity of the underlying vector to at least n.
-     * Other types: Does nothing.
-     *
-     * Complexity: at most linear in number of elements.
-     *
-     * Compatible with the upstream UniValue API for VOBJ/VARR but does not implement upstream behavior for other types.
-     */
-    void reserve(size_type n);
-
     constexpr bool getBool() const noexcept { return isTrue(); }
 
     /**
@@ -671,26 +658,6 @@ public:
     constexpr bool isNum() const noexcept { return typ == VNUM; }
     constexpr bool isArray() const noexcept { return typ == VARR; }
     constexpr bool isObject() const noexcept { return typ == VOBJ; }
-
-    /*
-     * DEPRECATED.
-     * Planned to be replaced with UniValue::Array::push_back() or UniValue::Array::emplace_back().
-     */
-    void push_back(UniValue&& val);
-    void push_back(const UniValue& val);
-
-    /*
-     * DEPRECATED.
-     * Planned to be replaced with UniValue::Object::push_back() or UniValue::Object::emplace_back(),
-     * possibly combined with UniValue::Object::locate().
-     *
-     * checkForDupes=true is slower, but does a linear search through the keys to overwrite existing keys.
-     * checkForDupes=false is faster, and will always append the new entry at the end (even if `key` exists).
-     */
-    void pushKV(const std::string& key, const UniValue& val, bool checkForDupes = true);
-    void pushKV(const std::string& key, UniValue&& val, bool checkForDupes = true);
-    void pushKV(std::string&& key, const UniValue& val, bool checkForDupes = true);
-    void pushKV(std::string&& key, UniValue&& val, bool checkForDupes = true);
 
     /**
      * Returns the JSON string representation of the provided value.

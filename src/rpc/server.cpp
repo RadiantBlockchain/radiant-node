@@ -519,8 +519,7 @@ std::string JSONRPCExecBatch(Config &config, RPCServer &rpcServer, const JSONRPC
 static inline JSONRPCRequest
 transformNamedArguments(const JSONRPCRequest &in,
                         const std::vector<std::string> &argNames) {
-    JSONRPCRequest out = in;
-    out.params.setArray();
+    UniValue::Array outParams;
     // Build a map of parameters, and remove ones that have been processed, so
     // that we can throw a focused error if there is an unknown one.
     std::unordered_map<std::string, const UniValue *> argsIn;
@@ -545,10 +544,10 @@ transformNamedArguments(const JSONRPCRequest &in,
                 // Fill hole between specified parameters with JSON nulls, but
                 // not at the end (for backwards compatibility with calls that
                 // act based on number of specified parameters).
-                out.params.push_back(UniValue());
+                outParams.emplace_back();
             }
             hole = 0;
-            out.params.push_back(*fr->second);
+            outParams.push_back(*fr->second);
             argsIn.erase(fr);
         } else {
             hole += 1;
@@ -560,6 +559,8 @@ transformNamedArguments(const JSONRPCRequest &in,
                            "Unknown named parameter " + argsIn.begin()->first);
     }
     // Return request with named arguments transformed to positional arguments
+    JSONRPCRequest out = in;
+    out.params.setArray(std::move(outParams));
     return out;
 }
 

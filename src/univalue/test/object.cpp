@@ -351,12 +351,12 @@ BOOST_AUTO_TEST_CASE(univalue_array)
     UniValue arr(UniValue::VARR);
 
     UniValue v((int64_t)1023LL);
-    arr.push_back(v);
+    arr.get_array().push_back(v);
 
     arr.get_array().emplace_back("zippy");
 
     const char *s = "pippy";
-    arr.push_back(s);
+    arr.get_array().push_back(s);
 
     UniValue::Array vec;
     v.setStr("boing");
@@ -433,34 +433,34 @@ BOOST_AUTO_TEST_CASE(univalue_object)
 
     strKey = "age";
     v.setInt(100);
-    obj.pushKV(strKey, v);
+    obj.get_obj().emplace_back(strKey, v);
 
     strKey = "first";
     strVal = "John";
-    obj.pushKV(strKey, strVal);
+    obj.get_obj().emplace_back(strKey, strVal);
 
     strKey = "last";
     const char *cVal = "Smith";
-    obj.pushKV(strKey, cVal);
+    obj.get_obj().emplace_back(strKey, cVal);
 
     strKey = "distance";
-    obj.pushKV(strKey, (int64_t) 25);
+    obj.get_obj().emplace_back(strKey, (int64_t) 25);
 
     strKey = "time";
-    obj.pushKV(strKey, (uint64_t) 3600);
+    obj.get_obj().emplace_back(strKey, (uint64_t) 3600);
 
     strKey = "calories";
-    obj.pushKV(strKey, (int) 12);
+    obj.get_obj().emplace_back(strKey, (int) 12);
 
     strKey = "temperature";
-    obj.pushKV(strKey, (double) 90.012);
+    obj.get_obj().emplace_back(strKey, (double) 90.012);
 
     BOOST_CHECK(!obj.empty());
     BOOST_CHECK_EQUAL(obj.size(), 7);
 
     strKey = "moon";
-    obj.pushKV(strKey, "overwrite me");
-    obj.pushKV(strKey, true);
+    obj.get_obj().emplace_back(strKey, "overwrite me");
+    obj.get_obj().rbegin()->second.setBool(true);
 
     BOOST_CHECK(!obj.empty());
     BOOST_CHECK_EQUAL(obj.size(), 8);
@@ -475,19 +475,19 @@ BOOST_AUTO_TEST_CASE(univalue_object)
     BOOST_CHECK(!obj.empty());
     BOOST_CHECK_EQUAL(obj.size(), 13);
 
-    UniValue obj2(UniValue::VOBJ);
+    UniValue::Object obj2;
     // emplace with move constructor of std::pair
-    obj2.get_obj().emplace_back(std::make_pair<std::string, UniValue>("cat1", 8999));
-    obj2.pushKV("cat1", obj);
-    obj2.pushKV("cat1", 9000);
+    obj2.emplace_back(std::make_pair<std::string, UniValue>("cat1", 8999));
+    obj2.emplace_back("cat1", obj);
+    obj2.emplace_back("cat1", 9000);
     // emplace with templated elementwise constructor of std::pair
-    obj2.get_obj().emplace_back(std::make_pair("cat2", 12345));
+    obj2.emplace_back(std::make_pair("cat2", 12345));
 
     BOOST_CHECK(!obj2.empty());
-    BOOST_CHECK_EQUAL(obj2.size(), 2);
+    BOOST_CHECK_EQUAL(obj2.size(), 4);
 
-    for (auto& pair : obj2.get_obj()) {
-        obj.pushKV(std::move(pair.first), std::move(pair.second));
+    for (auto pair = obj2.begin() + 2; pair != obj2.end(); ++pair) {
+        obj.get_obj().push_back(std::move(*pair));
     }
 
     BOOST_CHECK(!obj.empty());
@@ -599,16 +599,16 @@ BOOST_AUTO_TEST_CASE(univalue_object)
     obj.setObject();
     UniValue uv;
     uv.setInt(42);
-    obj.pushKV("age", uv);
+    obj.get_obj().emplace_back("age", uv);
     BOOST_CHECK_EQUAL(obj.size(), 1);
     BOOST_CHECK_EQUAL(obj["age"].getValStr(), "42");
 
     uv.setInt(43);
-    obj.pushKV("age", uv);
-    BOOST_CHECK_EQUAL(obj.size(), 1);
-    BOOST_CHECK_EQUAL(obj["age"].getValStr(), "43");
+    obj.get_obj().emplace_back("age", uv);
+    BOOST_CHECK_EQUAL(obj.size(), 2);
+    BOOST_CHECK_EQUAL(obj["age"].getValStr(), "42");
 
-    obj.pushKV("name", "foo bar");
+    obj.get_obj().emplace_back("name", "foo bar");
     BOOST_CHECK_EQUAL(obj["name"].getValStr(), "foo bar");
 
     // test front() / back() as well as operator==
@@ -628,7 +628,7 @@ BOOST_AUTO_TEST_CASE(univalue_object)
     vals.emplace_back(-42);
     vals.emplace_back(-12345678.11234678);
     vals.emplace_back(UniValue{UniValue::VARR});
-    vals.at(2).pushKV("akey", "this is a value");
+    vals.at(2).get_obj().emplace_back("akey", "this is a value");
     vals.rbegin()->setArray(vals); // vals recursively contains a partial copy of vals!
     const auto valsExpected(vals); // save a copy
     arr.setArray(std::move(vals)); // assign to array via move
@@ -690,7 +690,7 @@ BOOST_AUTO_TEST_CASE(univalue_readwrite)
     // check that json escapes work correctly by putting a json string INTO a UniValue
     // and doing a round of ser/deser on it.
     v.setArray();
-    v.push_back(json1);
+    v.get_array().emplace_back(json1);
     const UniValue vcopy(v);
     BOOST_CHECK(!vcopy.empty());
     v.setNull();
