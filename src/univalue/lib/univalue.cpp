@@ -275,71 +275,6 @@ void UniValue::setObject(Object&& object) noexcept
     entries = std::move(object);
 }
 
-void UniValue::push_back(const UniValue& val_)
-{
-    if (typ != VARR)
-        return;
-
-    values.push_back(val_);
-}
-
-void UniValue::push_back(UniValue&& val_)
-{
-    if (typ != VARR)
-        return;
-
-    values.emplace_back(std::move(val_));
-}
-
-void UniValue::pushKV(const std::string& key, const UniValue& val_, bool check)
-{
-    if (typ != VOBJ)
-        return;
-    if (check) {
-        if (auto found = locate(key)) {
-            *found = val_;
-            return;
-        }
-    }
-    entries.emplace_back(key, val_);
-}
-void UniValue::pushKV(const std::string& key, UniValue&& val_, bool check)
-{
-    if (typ != VOBJ)
-        return;
-    if (check) {
-        if (auto found = locate(key)) {
-            *found = std::move(val_);
-            return;
-        }
-    }
-    entries.emplace_back(key, std::move(val_));
-}
-void UniValue::pushKV(std::string&& key, const UniValue& val_, bool check)
-{
-    if (typ != VOBJ)
-        return;
-    if (check) {
-        if (auto found = locate(key)) {
-            *found = val_;
-            return;
-        }
-    }
-    entries.emplace_back(std::move(key), val_);
-}
-void UniValue::pushKV(std::string&& key, UniValue&& val_, bool check)
-{
-    if (typ != VOBJ)
-        return;
-    if (check) {
-        if (auto found = locate(key)) {
-            *found = std::move(val_);
-            return;
-        }
-    }
-    entries.emplace_back(std::move(key), std::move(val_));
-}
-
 const UniValue& UniValue::operator[](const std::string& key) const noexcept
 {
     if (auto found = locate(key)) {
@@ -452,20 +387,6 @@ bool UniValue::operator==(const UniValue& other) const noexcept
     // Returning true is the default behavior, but this is not included as a default statement inside the switch statement,
     // so that the compiler warns if some type is not explicitly listed there.
     return true;
-}
-
-void UniValue::reserve(size_type n)
-{
-    switch (typ) {
-    case VOBJ:
-        entries.reserve(n);
-        break;
-    case VARR:
-        values.reserve(n);
-        break;
-    default:
-        break;
-    }
 }
 
 const char *uvTypeName(UniValue::VType t) noexcept
