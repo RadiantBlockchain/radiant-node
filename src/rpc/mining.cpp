@@ -100,15 +100,10 @@ static UniValue getnetworkhashps(const Config &config,
                 "Pass in [nblocks] to override # of blocks, -1 specifies since last difficulty change.\n"
                 "Pass in [height] to estimate the network speed at the time when a certain block was found.\n",
                 {
-                    {"nblocks", RPCArg::Type::NUM, true},
-                    {"height", RPCArg::Type::NUM, true},
+                    {"nblocks", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "120", "The number of blocks, or -1 for blocks since last difficulty change."},
+                    {"height", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "-1", "To estimate at the time of the given height."},
                 }}
                 .ToString() +
-            "\nArguments:\n"
-            "1. nblocks     (numeric, optional, default=120) The number of "
-            "blocks, or -1 for blocks since last difficulty change.\n"
-            "2. height      (numeric, optional, default=-1) To estimate at the "
-            "time of the given height.\n"
             "\nResult:\n"
             "x             (numeric) Hashes per second estimated\n"
             "\nExamples:\n" +
@@ -199,18 +194,11 @@ static UniValue generatetoaddress(const Config &config,
             RPCHelpMan{"generatetoaddress",
                 "\nMine blocks immediately to a specified address (before the RPC call returns)\n",
                 {
-                    {"nblocks", RPCArg::Type::NUM, false},
-                    {"address", RPCArg::Type::STR, false},
-                    {"maxtries", RPCArg::Type::NUM, true},
+                    {"nblocks", RPCArg::Type::NUM, /* opt */ false, /* default_val */ "", "How many blocks are generated immediately."},
+                    {"address", RPCArg::Type::STR, /* opt */ false, /* default_val */ "", "The address to send the newly generated bitcoin to."},
+                    {"maxtries", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "1000000", "How many iterations to try."},
                 }}
                 .ToString() +
-            "\nArguments:\n"
-            "1. nblocks      (numeric, required) How many blocks are generated "
-            "immediately.\n"
-            "2. address      (string, required) The address to send the newly "
-            "generated bitcoin to.\n"
-            "3. maxtries     (numeric, optional) How many iterations to try "
-            "(default = 1000000).\n"
             "\nResult:\n"
             "[ blockhashes ]     (array) hashes of blocks generated\n"
             "\nExamples:\n"
@@ -290,23 +278,15 @@ static UniValue prioritisetransaction(const Config &config,
             RPCHelpMan{"prioritisetransaction",
                 "Accepts the transaction into mined blocks at a higher (or lower) priority\n",
                 {
-                    {"txid", RPCArg::Type::STR, false},
-                    {"dummy", RPCArg::Type::NUM, false},
-                    {"fee_delta", RPCArg::Type::NUM, false},
+                    {"txid", RPCArg::Type::STR_HEX, /* opt */ false, /* default_val */ "", "The transaction id."},
+                    {"dummy", RPCArg::Type::NUM, /* opt */ false, /* default_val */ "", "API-Compatibility for previous API. Must be zero or null.\n"
+            "                  DEPRECATED. For forward compatibility use named arguments and omit this parameter."},
+                    {"fee_delta", RPCArg::Type::NUM, /* opt */ false, /* default_val */ "", "The fee value (in satoshis) to add (or subtract, if negative).\n"
+            "                  Note, that this value is not a fee rate. It is a value to modify absolute fee of the TX.\n"
+            "                  The fee is not actually paid, only the algorithm for selecting transactions into a block\n"
+            "                  considers the transaction as it would have paid a higher (or lower) fee."},
                 }}
                 .ToString() +
-            "\nArguments:\n"
-            "1. \"txid\"       (string, required) The transaction id.\n"
-            "2. dummy          (numeric, optional) API-Compatibility for "
-            "previous API. Must be zero or null.\n"
-            "                  DEPRECATED. For forward compatibility use named "
-            "arguments and omit this parameter.\n"
-            "3. fee_delta      (numeric, required) The fee value (in satoshis) "
-            "to add (or subtract, if negative).\n"
-            "                  The fee is not actually paid, only the "
-            "algorithm for selecting transactions into a block\n"
-            "                  considers the transaction as it would have paid "
-            "a higher (or lower) fee.\n"
             "\nResult:\n"
             "true              (boolean) Returns true\n"
             "\nExamples:\n" +
@@ -1040,9 +1020,9 @@ static UniValue estimatefee(const Config &config,
                             const JSONRPCRequest &request) {
     if (request.fHelp || request.params.size() > 0) {
         throw std::runtime_error(
-            "estimatefee\n"
-            "\nEstimates the approximate fee per kilobyte needed for a "
-            "transaction\n"
+            RPCHelpMan{"estimatefee",
+                "\nEstimates the approximate fee per kilobyte needed for a "
+                "transaction\n", {}}.ToString() +
             "\nResult:\n"
             "n              (numeric) estimated fee-per-kilobyte\n"
             "\nExample:\n" +
