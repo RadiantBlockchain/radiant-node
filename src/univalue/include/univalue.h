@@ -18,7 +18,32 @@
 
 class UniValue {
 public:
-    enum VType { VNULL, VOBJ, VARR, VSTR, VNUM, VBOOL, };
+
+    /**
+     * Value types available in JSON (and thus in UniValue).
+     * Every type sets a different bit, so bitmasks can be used.
+     * Can be used with is().
+     *
+     * Numeric values differ from the upstream UniValue API.
+     * VFALSE and VTRUE are Bitcoin Cash Node extensions of the UniValue API (replacing VBOOL).
+     */
+    enum VType {
+        VNULL  = 1 << 0,
+        VFALSE = 1 << 1,
+        VTRUE  = 1 << 2,
+        VOBJ   = 1 << 3,
+        VARR   = 1 << 4,
+        VNUM   = 1 << 5,
+        VSTR   = 1 << 6,
+    };
+
+    /**
+     * Type bitmask shorthand for VFALSE|VTRUE.
+     * Can be used with is().
+     *
+     * This is a Bitcoin Cash Node extension of the UniValue API.
+     */
+    constexpr static auto MBOOL = VFALSE | VTRUE;
 
     class Object {
 
@@ -428,7 +453,16 @@ public:
     explicit UniValue(VType initialType = VNULL) noexcept : typ(initialType) {}
     UniValue(VType initialType, const std::string& initialStr) : typ(initialType), val(initialStr) {}
     UniValue(VType initialType, std::string&& initialStr) noexcept : typ(initialType), val(std::move(initialStr)) {}
-    UniValue(bool val_) { setBool(val_); }
+    explicit UniValue(const UniValue&) = default;
+    UniValue(UniValue&&) noexcept = default;
+    UniValue& operator=(const UniValue&) = default;
+    UniValue& operator=(UniValue&&) noexcept = default;
+
+    UniValue(bool val_) noexcept : typ(val_ ? VTRUE : VFALSE) {}
+    explicit UniValue(const Object& object) : typ(VOBJ), entries(object) {}
+    UniValue(Object&& object) noexcept : typ(VOBJ), entries(std::move(object)) {}
+    explicit UniValue(const Array& array) : typ(VARR), values(array) {}
+    UniValue(Array&& array) noexcept : typ(VARR), values(std::move(array)) {}
     UniValue(short val_) { setInt(val_); }
     UniValue(int val_) { setInt(val_); }
     UniValue(long val_) { setInt(val_); }
@@ -441,36 +475,28 @@ public:
     UniValue(const std::string& val_) : typ(VSTR), val(val_) {}
     UniValue(std::string&& val_) noexcept : typ(VSTR), val(std::move(val_)) {}
     UniValue(const char *val_) : typ(VSTR), val(val_) {}
-    explicit UniValue(const Array& array) : typ(VARR), values(array) {}
-    UniValue(Array&& array) : typ(VARR), values(std::move(array)) {}
-    explicit UniValue(const Object& object) : typ(VOBJ), entries(object) {}
-    UniValue(Object&& object) : typ(VOBJ), entries(std::move(object)) {}
-    explicit UniValue(const UniValue&) = default;
-    UniValue(UniValue&&) noexcept = default;
-    UniValue& operator=(const UniValue&) = default;
-    UniValue& operator=(UniValue&&) = default;
 
     void setNull() noexcept;
-    void setBool(bool val);
-    void setNumStr(const std::string& val);
-    void setNumStr(std::string&& val) noexcept;
-    void setInt(short val_);
-    void setInt(int val_);
-    void setInt(long val_);
-    void setInt(long long val_);
-    void setInt(unsigned short val_);
-    void setInt(unsigned val_);
-    void setInt(unsigned long val_);
-    void setInt(unsigned long long val_);
-    void setFloat(double val);
-    void setStr(const std::string& val);
-    void setStr(std::string&& val) noexcept;
-    void setArray() noexcept;
-    void setArray(const Array& array);
-    void setArray(Array&& array) noexcept;
+    void setBool(bool val) noexcept;
     void setObject() noexcept;
     void setObject(const Object& object);
     void setObject(Object&& object) noexcept;
+    void setArray() noexcept;
+    void setArray(const Array& array);
+    void setArray(Array&& array) noexcept;
+    void setNumStr(const std::string& val);
+    void setNumStr(std::string&& val) noexcept;
+    void setInt(short val);
+    void setInt(int val);
+    void setInt(long val);
+    void setInt(long long val);
+    void setInt(unsigned short val);
+    void setInt(unsigned val);
+    void setInt(unsigned long val);
+    void setInt(unsigned long long val);
+    void setFloat(double val);
+    void setStr(const std::string& val);
+    void setStr(std::string&& val) noexcept;
 
     constexpr enum VType getType() const noexcept { return typ; }
     constexpr const std::string& getValStr() const noexcept { return val; }
@@ -650,20 +676,30 @@ public:
     const UniValue& at(size_type index) const;
     UniValue& at(size_type index);
 
-    constexpr bool isNull() const noexcept { return typ == VNULL; }
-    constexpr bool isTrue() const noexcept { return typ == VBOOL && val == boolTrueVal; }
-    constexpr bool isFalse() const noexcept { return typ == VBOOL && val != boolTrueVal; }
-    constexpr bool isBool() const noexcept { return typ == VBOOL; }
-    constexpr bool isStr() const noexcept { return typ == VSTR; }
-    constexpr bool isNum() const noexcept { return typ == VNUM; }
-    constexpr bool isArray() const noexcept { return typ == VARR; }
-    constexpr bool isObject() const noexcept { return typ == VOBJ; }
+    /**
+     * Returns whether the value's type is the same as the given type.
+     * If a type bitmask is given, returns whether the value's type is any of the given types.
+     *
+     * Complexity: constant.
+     *
+     * This is a Bitcoin Cash Node extension of the UniValue API.
+     */
+    constexpr bool is(int types) const noexcept { return typ & types; }
+
+    constexpr bool isNull() const noexcept { return is(VNULL); }
+    constexpr bool isFalse() const noexcept { return is(VFALSE); }
+    constexpr bool isTrue() const noexcept { return is(VTRUE); }
+    constexpr bool isBool() const noexcept { return is(MBOOL); }
+    constexpr bool isObject() const noexcept { return is(VOBJ); }
+    constexpr bool isArray() const noexcept { return is(VARR); }
+    constexpr bool isNum() const noexcept { return is(VNUM); }
+    constexpr bool isStr() const noexcept { return is(VSTR); }
 
     /**
      * Returns the JSON string representation of the provided value.
      *
      * The type of value can be the generic UniValue,
-     * or a more specific type: bool, std::string, UniValue::Array, or UniValue::Object.
+     * or a more specific type: UniValue::Object, UniValue::Array, or std::string.
      *
      * The optional argument indicates the number of spaces for indentation in pretty formatting.
      * Use 0 (default) to disable pretty formatting and use compact formatting instead.
@@ -689,7 +725,6 @@ private:
     std::string val;                       // numbers are stored as C++ strings
     Object entries;
     Array values;
-    static const std::string boolTrueVal; // = "1"
 
     // Opaque type used for writing. This can be further optimized later.
     struct Stream {
@@ -704,10 +739,9 @@ private:
     static void jsonEscape(Stream & stream, const std::string & inString);
 
     static void stringify(Stream & stream, const UniValue& value, unsigned int prettyIndent, unsigned int indentLevel);
-    static void stringify(Stream & stream, bool value, unsigned int prettyIndent, unsigned int indentLevel);
-    static void stringify(Stream & stream, const std::string& value, unsigned int prettyIndent, unsigned int indentLevel);
-    static void stringify(Stream & stream, const UniValue::Array& value, unsigned int prettyIndent, unsigned int indentLevel);
     static void stringify(Stream & stream, const UniValue::Object& value, unsigned int prettyIndent, unsigned int indentLevel);
+    static void stringify(Stream & stream, const UniValue::Array& value, unsigned int prettyIndent, unsigned int indentLevel);
+    static void stringify(Stream & stream, const std::string& value, unsigned int prettyIndent, unsigned int indentLevel);
 
     // Used by the setInt() overloads
     template<typename Integer>
@@ -790,7 +824,21 @@ enum jtokentype {
 
 extern enum jtokentype getJsonToken(std::string& tokenVal,
                                     unsigned int& consumed, const char *raw, const char *end);
+
+/**
+ * Returns the human-readable name of the JSON value type.
+ *
+ * Compatible with the upstream UniValue API (but note VBOOL has been replaced with VFALSE and VTRUE).
+ */
 extern const char *uvTypeName(UniValue::VType t) noexcept;
+
+/**
+ * Returns the human-readable name of the composite JSON value type bitmask.
+ * Argument must be a bitmask consisting of one or more UniValue::VType elements.
+ *
+ * This is a Bitcoin Cash Node extension of the UniValue API.
+ */
+extern std::string uvTypeName(int t);
 
 static constexpr bool jsonTokenIsValue(enum jtokentype jtt) noexcept
 {

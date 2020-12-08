@@ -58,7 +58,7 @@ class MempoolAcceptanceTest(BitcoinTestFramework):
         coins = node.listunspent()
 
         self.log.info('Should not accept garbage to testmempoolaccept')
-        assert_raises_rpc_error(-3, 'Expected type array, got string',
+        assert_raises_rpc_error(-3, 'Expected type array at index 0, got string',
                                 lambda: node.testmempoolaccept(rawtxs='ff00baar'))
         assert_raises_rpc_error(-8, 'Array must contain exactly one raw transaction for now',
                                 lambda: node.testmempoolaccept(rawtxs=['ff00baar', 'ff22']))

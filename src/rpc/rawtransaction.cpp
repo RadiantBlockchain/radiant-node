@@ -570,9 +570,8 @@ static UniValue createrawtransaction(const Config &config,
 
     RPCTypeCheck(request.params,
                  {UniValue::VARR,
-                  UniValueType(), // ARR or OBJ, checked later
-                  UniValue::VNUM},
-                 true);
+                  UniValue::VARR|UniValue::VOBJ,
+                  UniValue::VNUM|UniValue::VNULL});
 
     CMutableTransaction rawTx =
         ConstructTransaction(config.GetChainParams(), request.params[0],
@@ -834,13 +833,10 @@ UniValue::Object SignTransaction(interfaces::Chain &, CMutableTransaction &mtx, 
 
             RPCTypeCheckObj(prevOut,
                             {
-                                {"txid", UniValueType(UniValue::VSTR)},
-                                {"vout", UniValueType(UniValue::VNUM)},
-                                {"scriptPubKey", UniValueType(UniValue::VSTR)},
-                                // "amount" is also required but check is done
-                                // below due to UniValue::VNUM erroneously
-                                // not accepting quoted numerics
-                                // (which are valid JSON)
+                                {"txid", UniValue::VSTR},
+                                {"vout", UniValue::VNUM},
+                                {"scriptPubKey", UniValue::VSTR},
+                                {"amount", UniValue::VNUM|UniValue::VSTR},
                             });
 
             TxId txid(ParseHashO(prevOut, "txid"));
@@ -867,21 +863,7 @@ UniValue::Object SignTransaction(interfaces::Chain &, CMutableTransaction &mtx, 
 
                 CTxOut txout;
                 txout.scriptPubKey = scriptPubKey;
-                txout.nValue = Amount::zero();
-                if (auto amountUV = prevOut.locate("amount")) {
-                    txout.nValue = AmountFromValue(*amountUV);
-                } else {
-                    // amount param is required in replay-protected txs.
-                    // Note that we must check for its presence here rather
-                    // than use RPCTypeCheckObj() above, since UniValue::VNUM
-                    // parser incorrectly parses numerics with quotes, eg
-                    // "3.12" as a string when JSON allows it to also parse
-                    // as numeric. And we have to accept numerics with quotes
-                    // because our own dogfood (our rpc results) always
-                    // produces decimal numbers that are quoted
-                    // eg getbalance returns "3.14152" rather than 3.14152
-                    throw JSONRPCError(RPC_INVALID_PARAMETER, "Missing amount");
-                }
+                txout.nValue = AmountFromValue(prevOut["amount"]);
 
                 view.AddCoin(out, Coin(txout, 1, false), true);
             }
@@ -889,10 +871,10 @@ UniValue::Object SignTransaction(interfaces::Chain &, CMutableTransaction &mtx, 
             // If redeemScript and private keys were given, add redeemScript to
             // the keystore so it can be signed
             if (is_temp_keystore && scriptPubKey.IsPayToScriptHash()) {
-                RPCTypeCheckObj(
-                    prevOut, {
-                                 {"redeemScript", UniValueType(UniValue::VSTR)},
-                             });
+                RPCTypeCheckObj(prevOut,
+                                {
+                                    {"redeemScript", UniValue::VSTR},
+                                });
                 std::vector<uint8_t> rsData(ParseHexO(prevOut, "redeemScript"));
                 CScript redeemScript(rsData.begin(), rsData.end());
                 keystore->AddCScript(redeemScript);
@@ -1035,7 +1017,7 @@ static UniValue signrawtransactionwithkey(const Config &,
 
     RPCTypeCheck(
         request.params,
-        {UniValue::VSTR, UniValue::VARR, UniValue::VARR, UniValue::VSTR}, true);
+        {UniValue::VSTR, UniValue::VARR, UniValue::VARR|UniValue::VNULL, UniValue::VSTR|UniValue::VNULL});
 
     CMutableTransaction mtx;
     if (!DecodeHexTx(mtx, request.params[0].get_str())) {
@@ -1085,7 +1067,7 @@ static UniValue sendrawtransaction(const Config &config,
             HelpExampleRpc("sendrawtransaction", "\"signedhex\""));
     }
 
-    RPCTypeCheck(request.params, {UniValue::VSTR, UniValue::VBOOL});
+    RPCTypeCheck(request.params, {UniValue::VSTR, UniValue::MBOOL});
 
     // parse hex string from parameter
     CMutableTransaction mtx;
@@ -1143,7 +1125,7 @@ static UniValue testmempoolaccept(const Config &config,
         );
     }
 
-    RPCTypeCheck(request.params, {UniValue::VARR, UniValue::VBOOL});
+    RPCTypeCheck(request.params, {UniValue::VARR, UniValue::MBOOL});
     if (request.params[0].get_array().size() != 1) {
         throw JSONRPCError(
             RPC_INVALID_PARAMETER,
@@ -1504,7 +1486,7 @@ static UniValue combinepsbt(const Config &,
                            "[\"mybase64_1\", \"mybase64_2\", \"mybase64_3\"]"));
     }
 
-    RPCTypeCheck(request.params, {UniValue::VARR}, true);
+    RPCTypeCheck(request.params, {UniValue::VARR});
 
     // Unserialize the transactions
     std::vector<PartiallySignedTransaction> psbtxs;
@@ -1575,7 +1557,7 @@ static UniValue finalizepsbt(const Config &,
             HelpExampleCli("finalizepsbt", "\"psbt\""));
     }
 
-    RPCTypeCheck(request.params, {UniValue::VSTR, UniValue::VBOOL}, true);
+    RPCTypeCheck(request.params, {UniValue::VSTR, UniValue::MBOOL|UniValue::VNULL});
 
     // Unserialize the transactions
     PartiallySignedTransaction psbtx;
@@ -1666,10 +1648,9 @@ static UniValue createpsbt(const Config &config,
     RPCTypeCheck(request.params,
                  {
                      UniValue::VARR,
-                     UniValueType(), // ARR or OBJ, checked later
-                     UniValue::VNUM,
-                 },
-                 true);
+                     UniValue::VARR|UniValue::VOBJ,
+                     UniValue::VNUM|UniValue::VNULL,
+                 });
 
     CMutableTransaction rawTx =
         ConstructTransaction(config.GetChainParams(), request.params[0],
@@ -1718,7 +1699,7 @@ static UniValue converttopsbt(const Config &,
                             );
     }
 
-    RPCTypeCheck(request.params, {UniValue::VSTR, UniValue::VBOOL}, true);
+    RPCTypeCheck(request.params, {UniValue::VSTR, UniValue::MBOOL|UniValue::VNULL});
 
     // parse hex string from parameter
     CMutableTransaction tx;
