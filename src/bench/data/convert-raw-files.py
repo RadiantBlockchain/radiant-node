@@ -94,7 +94,7 @@ if len(names):
 
     name_h = "../data.h"
 
-    with open(name_h, "w") as file_h:
+    with open(name_h, "w", encoding="utf8") as file_h:
 
         print("Writing " + str(len(names)) + " declaration(s) to " + name_h + " ...")
 

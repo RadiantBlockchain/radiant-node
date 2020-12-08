@@ -98,8 +98,7 @@ def bctest(testDir, testObj, buildenv):
         # output type from file extension (determines how to compare)
         outputType = os.path.splitext(outputFn)[1][1:]
         try:
-            outputData = open(os.path.join(testDir, outputFn),
-                              encoding="utf8").read()
+            outputData = open(os.path.join(testDir, outputFn), encoding="utf8").read()
         except OSError:
             logging.error("Output file " + outputFn + " can not be opened")
             raise
