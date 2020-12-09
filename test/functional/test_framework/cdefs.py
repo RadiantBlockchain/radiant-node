@@ -47,8 +47,7 @@ def get_srcdir():
 
 
 # Slurp in consensus.h contents
-_consensus_h_fh = open(os.path.join(get_srcdir(), 'src', 'consensus',
-                                    'consensus.h'), 'rt', encoding='utf-8')
+_consensus_h_fh = open(os.path.join(get_srcdir(), 'src', 'consensus', 'consensus.h'), 'rt', encoding='utf-8')
 _consensus_h_contents = _consensus_h_fh.read()
 _consensus_h_fh.close()
 
@@ -61,9 +60,15 @@ ONE_MEGABYTE = 1000000
 LEGACY_MAX_BLOCK_SIZE = ONE_MEGABYTE
 
 # Default setting for maximum allowed size for a block, in bytes
-DEFAULT_EXCESSIVE_BLOCK_SIZE = eval(
-    re.search(r'DEFAULT_EXCESSIVE_BLOCK_SIZE = (.+);',
-              _consensus_h_contents).group(1))
+_excessive_size_match = re.search(
+            r'DEFAULT_EXCESSIVE_BLOCK_SIZE = (.+);',
+            _consensus_h_contents)
+if _excessive_size_match is None:
+    import sys
+    print("DEFAULT_EXCESSIVE_BLOCK_SIZE not found in consensus.h")
+    sys.exit(1)
+else:
+    DEFAULT_EXCESSIVE_BLOCK_SIZE = eval(_excessive_size_match.group(1))
 
 # The following consensus parameters should not be automatically imported.
 # They *should* cause test failures if application code is changed in ways

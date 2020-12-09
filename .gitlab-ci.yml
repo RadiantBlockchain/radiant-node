@@ -113,7 +113,7 @@ static-run-linters:
         - ninja check-lint
     artifacts:
         paths:
-            - build/test/lint*.log
+            - build/test/lint
 
 .ccache_scripts:
     before_script:
