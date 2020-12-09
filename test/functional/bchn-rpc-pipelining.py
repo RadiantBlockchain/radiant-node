@@ -15,7 +15,7 @@ from test_framework.util import str_to_b64str, assert_equal
 success_re = re.compile(r'HTTP\/1\.1 200')
 
 
-def make_request(data: str, auth: str = None) -> str:
+def make_request(data: str, auth: str = None) -> bytes:
     lines = ["POST / HTTP/1.1"]
 
     if auth:
