@@ -4,7 +4,6 @@
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Test the wallet."""
 from decimal import Decimal
-import time
 
 from test_framework.messages import FromHex, CTransaction
 from test_framework.test_framework import BitcoinTestFramework
@@ -502,7 +501,7 @@ class WalletTest(BitcoinTestFramework):
         # original output
         sending_addr = self.nodes[1].getnewaddress()
         txid_list = []
-        for i in range(chainlimit * 2):
+        for _i in range(chainlimit * 2):
             txid_list.append(self.nodes[0].sendtoaddress(
                 sending_addr, Decimal('0.0001')))
         assert_equal(self.nodes[0].getmempoolinfo()['size'], chainlimit * 2)
@@ -526,13 +525,8 @@ class WalletTest(BitcoinTestFramework):
                         self.extra_args[0] + ["-walletrejectlongchains",
                                               "-limitancestorcount=" + str(2 * chainlimit)])
 
-        # wait for loadmempool
-        timeout = 10
-        while (timeout > 0 and len(
-                self.nodes[0].getrawmempool()) < chainlimit * 2):
-            time.sleep(0.5)
-            timeout -= 0.5
-        assert_equal(len(self.nodes[0].getrawmempool()), chainlimit * 2)
+        # wait until the wallet has submitted all transactions to the mempool
+        wait_until(lambda: len(self.nodes[0].getrawmempool()) == chainlimit * 2)
 
         node0_balance = self.nodes[0].getbalance()
         # With walletrejectlongchains we will not create the tx and store it in
