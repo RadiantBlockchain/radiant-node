@@ -1240,8 +1240,8 @@ static UniValue addmultisigaddress(const Config &config,
     for (const UniValue &key_or_addr : request.params[1].get_array()) {
         const auto& key_or_addr_str = key_or_addr.get_str();
         if (IsHex(key_or_addr_str) &&
-            (key_or_addr_str.length() == 66 ||
-             key_or_addr_str.length() == 130)) {
+            (key_or_addr_str.length() == 2 * CPubKey::COMPRESSED_PUBLIC_KEY_SIZE ||
+             key_or_addr_str.length() == 2 * CPubKey::PUBLIC_KEY_SIZE)) {
             pubkeys.push_back(HexToPubKey(key_or_addr_str));
         } else {
             pubkeys.push_back(AddrToPubKey(config.GetChainParams(), pwallet,
