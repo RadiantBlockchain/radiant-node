@@ -12,6 +12,7 @@
 #include <consensus/consensus.h>
 #include <consensus/tx_verify.h>
 #include <consensus/validation.h>
+#include <mempool/defaultbatchupdater.h>
 #include <policy/fees.h>
 #include <policy/policy.h>
 #include <reverse_iterator.h>
@@ -395,6 +396,8 @@ CTxMemPool::CTxMemPool() : nTransactionsUpdated(0) {
     // transactions becomes O(N^2) where N is the number of transactions in the
     // pool
     nCheckFrequency = 0;
+
+    batchUpdater = std::make_unique<mempool::DefaultBatchUpdater>(*this);
 }
 
 CTxMemPool::~CTxMemPool() {}
@@ -628,22 +631,7 @@ void CTxMemPool::removeForBlock(const std::vector<CTransactionRef> &vtx,
                                 unsigned int nBlockHeight) {
     LOCK(cs);
 
-    DisconnectedBlockTransactions disconnectpool;
-    disconnectpool.addForBlock(vtx);
-
-    for (const CTransactionRef &tx :
-         reverse_iterate(disconnectpool.GetQueuedTx().get<insertion_order>())) {
-        txiter it = mapTx.find(tx->GetId());
-        if (it != mapTx.end()) {
-            setEntries stage;
-            stage.insert(it);
-            RemoveStaged(stage, true, MemPoolRemovalReason::BLOCK);
-        }
-        removeConflicts(*tx);
-        ClearPrioritisation(tx->GetId());
-    }
-
-    disconnectpool.clear();
+    batchUpdater->removeForBlock(vtx, nBlockHeight);
 
     lastRollingFeeUpdate = GetTime();
     blockSinceLastRollingFeeBump = true;
