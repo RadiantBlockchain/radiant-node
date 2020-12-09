@@ -15,4 +15,5 @@ TESTS
 	lint-python-mutable-default-parameters.sh
 	lint-python-utf8-encoding.sh
 	lint-python.sh
+	lint-cpp.sh
 )
