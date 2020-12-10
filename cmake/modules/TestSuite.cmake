@@ -51,7 +51,6 @@ macro(create_test_suite NAME)
 	create_test_suite_with_parent_targets(${NAME} check-all check-extended)
 endmacro()
 
-set(TEST_RUNNER_TEMPLATE "${CMAKE_CURRENT_LIST_DIR}/../templates/TestRunner.cmake.in")
 function(add_test_runner SUITE NAME EXECUTABLE)
 	get_target_from_suite(${SUITE} SUITE_TARGET)
 	set(TARGET "${SUITE_TARGET}-${NAME}")
@@ -59,7 +58,8 @@ function(add_test_runner SUITE NAME EXECUTABLE)
 	add_test_custom_target(${TARGET}
 		TEST_COMMAND
 			"${CMAKE_SOURCE_DIR}/cmake/utils/test_wrapper.sh"
-			"$<TARGET_FILE:${EXECUTABLE}>" "${NAME}.log" ${ARGN}
+			"${NAME}.log"
+			${CMAKE_CROSSCOMPILING_EMULATOR} "$<TARGET_FILE:${EXECUTABLE}>" ${ARGN}
 		CUSTOM_TARGET_ARGS
 			COMMENT "${SUITE}: testing ${NAME}"
 			DEPENDS ${EXECUTABLE}
@@ -74,7 +74,8 @@ function(add_lint_runner SUITE NAME LINTER_SCRIPT)
 	add_test_custom_target(${TARGET}
 		TEST_COMMAND
 			"${CMAKE_SOURCE_DIR}/cmake/utils/test_wrapper.sh"
-			${CMAKE_CURRENT_LIST_DIR}/${LINTER_SCRIPT} "${CMAKE_CURRENT_BINARY_DIR}/${NAME}.log" ${ARGN}
+			"${CMAKE_CURRENT_BINARY_DIR}/${NAME}.log"
+			"${CMAKE_CURRENT_LIST_DIR}/${LINTER_SCRIPT}" ${ARGN}
 		CUSTOM_TARGET_ARGS
 			COMMENT "${SUITE}: testing ${NAME}"
 			DEPENDS ${LINTER_SCRIPT}
