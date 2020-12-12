@@ -163,6 +163,8 @@ BITCOIN_CORE_H = \
   dbwrapper.h \
   limitedmap.h \
   logging.h \
+  mempool/batchupdater.h \
+  mempool/defaultbatchupdater.h \
   memusage.h \
   merkleblock.h \
   miner.h \
@@ -281,6 +283,7 @@ libbitcoin_server_a_SOURCES = \
   interfaces/handler.cpp \
   interfaces/node.cpp \
   dbwrapper.cpp \
+  mempool/defaultbatchupdater.cpp \
   merkleblock.cpp \
   miner.cpp \
   net.cpp \
