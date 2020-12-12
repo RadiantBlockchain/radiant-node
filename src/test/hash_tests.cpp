@@ -176,7 +176,7 @@ public:
     }
 
     template <typename Stream> void Unserialize(Stream &s) {
-        unsigned int nVersionDummy;
+        unsigned int nVersionDummy{};
         ::Unserialize(s, VARINT(nVersionDummy));
         ::Unserialize(s, VARINT(value));
     }
