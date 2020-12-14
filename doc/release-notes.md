@@ -1,6 +1,6 @@
 # Release Notes for Bitcoin Cash Node version 22.3.0
 
-Bitcoin Cash Node version 22.2.2 is now available from:
+Bitcoin Cash Node version 22.3.0 is now available from:
 
   <https://bitcoincashnode.org>
 
