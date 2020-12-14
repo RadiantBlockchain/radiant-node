@@ -170,7 +170,7 @@ public:
 
     /** Construct a new block template with coinbase to scriptPubKeyIn */
     std::unique_ptr<CBlockTemplate>
-    CreateNewBlock(const CScript &scriptPubKeyIn);
+    CreateNewBlock(const CScript &scriptPubKeyIn, int64_t nTimeLimit=0);
 
     uint64_t GetMaxGeneratedBlockSize() const { return nMaxGeneratedBlockSize; }
 
@@ -187,7 +187,7 @@ private:
      * Increments nPackagesSelected / nDescendantsUpdated with corresponding
      * statistics from the package selection (for logging statistics).
      */
-    void addPackageTxs(int &nPackagesSelected, int &nDescendantsUpdated)
+    void addPackageTxs(int &nPackagesSelected, int &nDescendantsUpdated, int64_t nTimeLimit)
         EXCLUSIVE_LOCKS_REQUIRED(mempool->cs);
 
     // helper functions for addPackageTxs()
