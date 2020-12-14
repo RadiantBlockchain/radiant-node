@@ -1021,13 +1021,30 @@ void SetupServerArgs() {
                  strprintf("Set maximum block size in bytes (default: %d)",
                            DEFAULT_MAX_GENERATED_BLOCK_SIZE),
                  false, OptionsCategory::BLOCK_CREATION);
+
+    gArgs.AddArg("-maxgbttime=<n>",
+                 strprintf("Maximum time (in ms, 0 for no limit) to spend "
+                           "adding transactions to block templates in "
+                           "'getblocktemplate' and 'generate' RPC calls "
+                           "(default: %d)",
+                           DEFAULT_MAX_GBT_TIME),
+                 false, OptionsCategory::BLOCK_CREATION);
+    gArgs.AddArg("-maxinitialgbttime=<n>",
+                 strprintf("Maximum time (in ms, 0 for no limit) to spend "
+                           "adding transactions in the first getblocktemplate "
+                           "(but not generate) call after receiving a new block"
+                           " (default: %d). If -maxgbttime is stricter than "
+                           "-maxinitialgbttime, then -maxinitialgbttime will"
+                           "be ignored.",
+                           DEFAULT_MAX_INITIAL_GBT_TIME),
+                 false, OptionsCategory::BLOCK_CREATION);
+
     gArgs.AddArg("-blockmintxfee=<amt>",
                  strprintf("Set lowest fee rate (in %s/kB) for transactions to "
                            "be included in block creation. (default: %s)",
                            CURRENCY_UNIT,
                            FormatMoney(DEFAULT_BLOCK_MIN_TX_FEE_PER_KB)),
                  false, OptionsCategory::BLOCK_CREATION);
-
     gArgs.AddArg("-blockversion=<n>",
                  "Override block version to test forking scenarios", true,
                  OptionsCategory::BLOCK_CREATION);

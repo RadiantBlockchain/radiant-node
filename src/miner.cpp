@@ -127,7 +127,7 @@ void BlockAssembler::resetBlock() {
 }
 
 std::unique_ptr<CBlockTemplate>
-BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn) {
+BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn, int64_t nTimeLimit) {
     int64_t nTimeStart = GetTimeMicros();
 
     resetBlock();
@@ -161,9 +161,22 @@ BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn) {
             ? nMedianTimePast
             : pblock->GetBlockTime();
 
+    // CreateNewBlock's CPU time is divided between two parts: addPackageTxs(), and TestBlockValidity(). Our goal is to
+    // finish TestBlockValidity by nTimeLimit, but to do that we have to know when to stop adding transactions in
+    // addPackageTxs(). nAddPackagePPM stores an exponential moving average of what fraction of previous CreateNewBlock
+    // run times addPackageTxs() was responsible for, in parts per million. This fraction can change depending on the
+    // transaction mix (e.g. tx size, tx chain length).
+    static int64_t nAddPackagePPM = 500000;
+    // Clamp to sane range: (10% - 100%)
+    nAddPackagePPM = std::min((int64_t)1000000, std::max((int64_t)100000, nAddPackagePPM));
+    int64_t nPackageTimeLimit = (nTimeLimit - nTimeStart) * nAddPackagePPM / 1000000 + nTimeStart;
+    nPackageTimeLimit = nTimeLimit ? nPackageTimeLimit : 0;
+
     int nPackagesSelected = 0;
     int nDescendantsUpdated = 0;
-    addPackageTxs(nPackagesSelected, nDescendantsUpdated);
+    addPackageTxs(nPackagesSelected, nDescendantsUpdated, nPackageTimeLimit);
+
+    int64_t nTime0 = GetTimeMicros();
 
     if (IsMagneticAnomalyEnabled(consensusParams, pindexPrev)) {
         // If magnetic anomaly is enabled, we make sure transaction are
@@ -229,12 +242,17 @@ BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn) {
     }
     int64_t nTime2 = GetTimeMicros();
 
+    // Adjust nAddPackagePPM based on this run, using an EMA with alpha = 25% for non-tiny blocks
+    const int64_t nAlphaPPM = pblock->vtx.size() > 50 ? 250000 : 50000;
+    int64_t nThisAddPackagePPM = 1000000 * (nTime0 - nTimeStart) / (nTime2 - nTimeStart);
+    nAddPackagePPM = (nAddPackagePPM * (1000000 - nAlphaPPM) + nThisAddPackagePPM * nAlphaPPM) / 1000000;
+
     LogPrint(BCLog::BENCH,
              "CreateNewBlock() packages: %.2fms (%d packages, %d updated "
-             "descendants), validity: %.2fms (total %.2fms)\n",
-             0.001 * (nTime1 - nTimeStart), nPackagesSelected,
-             nDescendantsUpdated, 0.001 * (nTime2 - nTime1),
-             0.001 * (nTime2 - nTimeStart));
+             "descendants), CTOR: %.2fms, validity: %.2fms (total %.2fms), nAddPackagePPM: %d\n",
+             0.001 * (nTime0 - nTimeStart), nPackagesSelected,
+             nDescendantsUpdated, 0.001 * (nTime1 - nTime0), 0.001 * (nTime2 - nTime1),
+             0.001 * (nTime2 - nTimeStart), nAddPackagePPM);
 
     return std::move(pblocktemplate);
 }
@@ -376,7 +394,8 @@ void BlockAssembler::SortForBlock(
  * @param[out] nDescendantsUpdated  Number of descendant transactions updated
  */
 void BlockAssembler::addPackageTxs(int &nPackagesSelected,
-                                   int &nDescendantsUpdated) {
+                                   int &nDescendantsUpdated,
+                                   int64_t nTimeLimit) {
     // selection algorithm orders the mempool based on feerate of a
     // transaction including all unconfirmed ancestors. Since we don't remove
     // transactions from the mempool as we select them for block inclusion, we
@@ -408,8 +427,9 @@ void BlockAssembler::addPackageTxs(int &nPackagesSelected,
     const int64_t MAX_CONSECUTIVE_FAILURES = 1000;
     int64_t nConsecutiveFailed = 0;
 
-    while (mi != mempool->mapTx.get<ancestor_score>().end() ||
-           !mapModifiedTx.empty()) {
+    while ((nTimeLimit <= 0 || GetTimeMicros() < nTimeLimit) &&
+           (mi != mempool->mapTx.get<ancestor_score>().end() ||
+            !mapModifiedTx.empty())) {
         // First try to find a new transaction in mapTx to evaluate.
         if (mi != mempool->mapTx.get<ancestor_score>().end() &&
             SkipMapTxEntry(mempool->mapTx.project<0>(mi), mapModifiedTx,

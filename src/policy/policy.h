@@ -23,6 +23,16 @@ class CTxOut;
  */
 static constexpr uint64_t DEFAULT_MAX_GENERATED_BLOCK_SIZE = 2 * ONE_MEGABYTE;
 /**
+ * Default for -maxgbttime, which sets the max amount of time (in milliseconds) the mining code will spend adding
+ * transactions to block templates.
+ */
+static constexpr int64_t DEFAULT_MAX_GBT_TIME = 0;
+/**
+ * Default for -maxinitialgbttime, which sets the max amount of time (in milliseconds) the mining code will spend
+ * adding transactions to the first block template after the chaintip changes.
+ */
+static constexpr int64_t DEFAULT_MAX_INITIAL_GBT_TIME = 0;
+/**
  * Default for -blockmintxfee, which sets the minimum feerate for a transaction
  * in blocks created by mining code.
  */

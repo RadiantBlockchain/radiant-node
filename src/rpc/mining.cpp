@@ -136,9 +136,17 @@ UniValue generateBlocks(const Config &config,
     unsigned int nExtraNonce = 0;
     UniValue::Array blockHashes;
     while (nHeight < nHeightEnd && !ShutdownRequested()) {
+        // Determine the time limit for CreateNewBlock's addPackageTx
+        // The -maxinitialgbttime setting is ignored since generate() is usually only used on regtest mode and we
+        // usually want to make full-sized blocks during functional testing
+        int64_t nMaxGBTTime = gArgs.GetArg("-maxgbttime", DEFAULT_MAX_GBT_TIME) * 1000;
+        int64_t nTimeLimit = 0;
+        if (nMaxGBTTime > 0) {
+            nTimeLimit = GetTimeMicros() + nMaxGBTTime;
+        }
         std::unique_ptr<CBlockTemplate> pblocktemplate(
             BlockAssembler(config, g_mempool)
-                .CreateNewBlock(coinbaseScript->reserveScript));
+                .CreateNewBlock(coinbaseScript->reserveScript, nTimeLimit));
 
         if (!pblocktemplate.get()) {
             throw JSONRPCError(RPC_INTERNAL_ERROR, "Couldn't create new block");
@@ -620,22 +628,39 @@ static UniValue getblocktemplatecommon(bool fLight, const Config &config, const 
     static int64_t nStart;
     static std::unique_ptr<CBlockTemplate> pblocktemplate;
     static std::unique_ptr<LightResult> plightresult; // fLight mode only, cached result associated with pblocktemplate
-    if (pindexPrev != ::ChainActive().Tip() ||
+    static bool fIgnoreCache = false;
+    bool fNewTip = (pindexPrev && pindexPrev != ::ChainActive().Tip());
+    if (pindexPrev != ::ChainActive().Tip() || fIgnoreCache ||
         (g_mempool.GetTransactionsUpdated() != nTransactionsUpdatedLast &&
          GetTime() - nStart > 5)) {
         // Clear pindexPrev so future calls make a new block, despite any
         // failures from here on
         pindexPrev = nullptr;
+        fIgnoreCache = false;
 
         // Store the pindexBest used before CreateNewBlock, to avoid races
         nTransactionsUpdatedLast = g_mempool.GetTransactionsUpdated();
         CBlockIndex *pindexPrevNew = ::ChainActive().Tip();
         nStart = GetTime();
 
+        // Determine the time limit for CreateNewBlock's addPackageTx
+        int64_t nMaxGBTTime = gArgs.GetArg("-maxgbttime", DEFAULT_MAX_GBT_TIME) * 1000;
+        int64_t nMaxInitialGBTTime = gArgs.GetArg("-maxinitialgbttime", DEFAULT_MAX_INITIAL_GBT_TIME) * 1000;
+        if (nMaxGBTTime > 0 && nMaxInitialGBTTime > 0 && nMaxGBTTime < nMaxInitialGBTTime) {
+            nMaxInitialGBTTime = 0;
+        }
+        int64_t nTimeLimit = 0;
+        if (fNewTip && nMaxInitialGBTTime > 0) {
+            nTimeLimit = GetTimeMicros() + nMaxInitialGBTTime;
+            fIgnoreCache = true;
+        } else if (nMaxGBTTime > 0) {
+            nTimeLimit = GetTimeMicros() + nMaxGBTTime;
+        }
+
         // Create new block
         CScript scriptDummy = CScript() << OP_TRUE;
         pblocktemplate =
-            BlockAssembler(config, g_mempool).CreateNewBlock(scriptDummy);
+            BlockAssembler(config, g_mempool).CreateNewBlock(scriptDummy, nTimeLimit);
         plightresult.reset();
         if (!pblocktemplate) {
             throw JSONRPCError(RPC_OUT_OF_MEMORY, "Out of memory");
