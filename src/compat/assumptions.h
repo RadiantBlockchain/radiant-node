@@ -20,6 +20,19 @@
 #error "Bitcoin cannot be compiled without assertions."
 #endif
 
+// Assumption: We assume a C++17 (ISO/IEC 14882:2017) compiler (minimum
+//             requirement).
+// Example(s): We may use use C++17 only constructs such as if constexpr,
+//             structured binding, std::is_same_v, etc.
+// Note:       MSVC does not report the expected __cplusplus value due to
+//             legacy reasons.
+#if !defined(_MSC_VER)
+// N4713 §19.8/p1  [cpp.predefined]/p1::
+// "The name __cplusplus is defined to the value 201703L when compiling a C++
+//  translation unit."
+static_assert(__cplusplus >= 201703L, "C++17 standard assumed");
+#endif
+
 // Assumption: We assume the floating-point types to fulfill the requirements of
 //             IEC 559 (IEEE 754) standard.
 // Example(s): Floating-point division by zero in ConnectBlock,

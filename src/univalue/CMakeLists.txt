@@ -3,6 +3,9 @@
 cmake_minimum_required(VERSION 3.13)
 project(univalue)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 option(UNIVALUE_BUILD_TESTS "Build univalue's unit tests" ON)
 
 # TODO: Version info

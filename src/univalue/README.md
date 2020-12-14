@@ -53,4 +53,4 @@ Commands to build the library stand-alone:
 make
 ```
 
-BCHN UniValue requires C++14 or later.
+BCHN UniValue requires C++17 or later.
