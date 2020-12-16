@@ -53,4 +53,5 @@ files by running `mkdocs build`.
 Due to the way `mkdocs` works, all links in the documentation need to be relative
 and not absolute.
 
-**Example**: Don't link to `/src/qt/intro.cpp` but do link to `../src/qt/intro.cpp`, if the document you are linking *from* is in the `doc/` folder.
+**Example**: Don't link to `/src/qt/intro.cpp` but do link to `../src/qt/intro.cpp`,
+if the document you are linking *from* is in the `doc/` folder.

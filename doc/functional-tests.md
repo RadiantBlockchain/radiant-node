@@ -200,7 +200,8 @@ Use the `-v` option for verbose output.
 
 #### Example test
 
-The [example_test.py](../test/functional/example_test.py) is a heavily commented example of a test
+The [example_test.py](../test/functional/example_test.py) is a heavily commented
+example of a test
 case that uses both the RPC and P2P interfaces. If you are writing your first
 test, copy that file and modify to fit your needs.
 
@@ -227,7 +228,8 @@ don't have test cases for.
 #### Naming guidelines
 
 - Name the test `<area>_<subject>.py`, where `<area>` can be one of the following:
-    - `feature` for tests for full features that aren't wallet/mining/mempool, eg `feature_rbf.py`
+    - `feature` for tests for full features that aren't wallet/mining/mempool,
+      eg `feature_rbf.py`
     - `interface` for tests for other interfaces (REST, ZMQ, etc), eg `interface_rest.py`
     - `mempool` for tests for mempool behaviour, eg `mempool_reorg.py`
     - `mining` for tests for mining features, eg `mining_prioritisetransaction.py`
@@ -235,7 +237,9 @@ don't have test cases for.
     - `rpc` for tests for individual RPC methods or features, eg `rpc_listtransactions.py`
     - `wallet` for tests for wallet features, eg `wallet_keypool.py`
 - use an underscore to separate words
-    - exception: for tests for specific RPCs or command line options which don't include underscores, name the test after the exact RPC or argument name, eg `rpc_decodescript.py`, not `rpc_decode_script.py`
+    - exception: for tests for specific RPCs or command line options which don't
+      include underscores, name the test after the exact RPC or argument name, eg
+      `rpc_decodescript.py`, not `rpc_decode_script.py`
 - Don't use the redundant word `test` in the name, eg `interface_zmq.py`, not `interface_zmq_test.py`
 
 #### General test-writing advice

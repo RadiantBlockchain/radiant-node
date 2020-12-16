@@ -2,10 +2,14 @@
 
 Some notes on how to build Bitcoin Cash Node in Unix.
 
-* For Ubuntu & Debian specific instructions, see [build-unix-deb.md](build-unix-deb.md) in this directory.
-* For Fedora & CentOS specific instructions, see [build-unix-rpm.md](build-unix-rpm.md) in this directory.
-* For Arch Linux specific instructions, see [build-unix-arch.md](build-unix-arch.md) in this directory.
-* For FreeBSD specific instructions, see [build-freebsd.md](build-freebsd.md) in this directory.
+* For Ubuntu & Debian specific instructions, see [build-unix-deb.md](build-unix-deb.md)
+  in this directory.
+* For Fedora & CentOS specific instructions, see [build-unix-rpm.md](build-unix-rpm.md)
+  in this directory.
+* For Arch Linux specific instructions, see [build-unix-arch.md](build-unix-arch.md)
+  in this directory.
+* For FreeBSD specific instructions, see [build-freebsd.md](build-freebsd.md) in
+  this directory.
 
 **Table of contents**
 
@@ -43,7 +47,8 @@ ninja check # recommended
 ```
 
 After a successful test you can install the newly built binaries to your bin directory.
-Note that this will probably overwrite any previous version installed, including binaries from different sources.
+Note that this will probably overwrite any previous version installed, including
+binaries from different sources.
 It might be necessary to run with `sudo`, depending on your system configuration:
 
 ```bash
@@ -153,21 +158,24 @@ See the cmake options for upnp behavior desired:
 ## Security
 
 To help make your Bitcoin Cash Node installation more secure by making certain
-attacks impossible to exploit even if a vulnerability is found, binaries are hardened by default.
-This can be disabled by passing `-DENABLE_HARDENING=OFF`.
+attacks impossible to exploit even if a vulnerability is found, binaries are hardened
+by default. This can be disabled by passing `-DENABLE_HARDENING=OFF`.
 
 Hardening enables the following features:
 
-* _Position Independent Executable_: Build position independent code to take advantage of Address Space Layout Randomization
-    offered by some kernels. Attackers who can cause execution of code at an arbitrary memory
-    location are thwarted if they don't know where anything useful is located.
-    The stack and heap are randomly located by default, but this allows the code section to be
-    randomly located as well.
+* _Position Independent Executable_: Build position independent code to take
+  advantage of Address Space Layout Randomization offered by some kernels. Attackers
+  who can cause execution of code at an arbitrary memory location are thwarted if
+  they don't know where anything useful is located.
+  The stack and heap are randomly located by default, but this allows the code
+  section to be randomly located as well.
 
-    On an AMD64 processor where a library was not compiled with -fPIC, this will cause an error
-    such as: "relocation R_X86_64_32 against `......' can not be used when making a shared object;"
+    On an AMD64 processor where a library was not compiled with -fPIC, this will
+    cause an error such as: "relocation R_X86_64_32 against `......' can not be
+    used when making a shared object;"
 
-    To test that you have built PIE executable, install `scanelf`, part of `pax-utils`, and use:
+    To test that you have built PIE executable, install `scanelf`, part of `pax-utils`,
+    and use:
 
 ```bash
       scanelf -e ./bitcoin
@@ -180,11 +188,12 @@ Hardening enables the following features:
       ET_DYN
 ```
 
-* _Non-executable Stack_: If the stack is executable then trivial stack-based buffer overflow exploits are possible if
-    vulnerable buffers are found. By default, Bitcoin Cash Node should be built with a non-executable stack,
-    but if one of the libraries it uses asks for an executable stack or someone makes a mistake
-    and uses a compiler extension which requires an executable stack, it will silently build an
-    executable without the non-executable stack protection.
+* _Non-executable Stack_: If the stack is executable then trivial stack-based buffer
+  overflow exploits are possible if vulnerable buffers are found. By default, Bitcoin
+  Cash Node should be built with a non-executable stack, but if one of the libraries
+  it uses asks for an executable stack or someone makes a mistake and uses a compiler
+  extension which requires an executable stack, it will silently build an executable
+  without the non-executable stack protection.
 
     To verify that the stack is non-executable after compiling use:
 

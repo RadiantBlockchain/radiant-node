@@ -3,8 +3,8 @@ Reduce Traffic
 
 Some node operators need to deal with bandwidth caps imposed by their ISPs.
 
-By default, Bitcoin Cash Node allows up to 125 connections to different peers, 8 of
-which are outbound. You can therefore, have at most 117 inbound connections.
+By default, Bitcoin Cash Node allows up to 125 connections to different peers,
+8 of which are outbound. You can therefore, have at most 117 inbound connections.
 
 The default settings can result in relatively significant traffic consumption.
 
@@ -26,9 +26,9 @@ calculating the target.
 
 ## 2. Disable "listening" (`-listen=0`)
 
-Disabling listening will result in fewer nodes connected (remember the maximum of 8
-outbound peers). Fewer nodes will result in less traffic usage as you are relaying
-blocks and transactions to fewer nodes.
+Disabling listening will result in fewer nodes connected (remember the maximum
+of 8 outbound peers). Fewer nodes will result in less traffic usage as you are
+relaying blocks and transactions to fewer nodes.
 
 ## 3. Reduce maximum connections (`-maxconnections=<num>`)
 

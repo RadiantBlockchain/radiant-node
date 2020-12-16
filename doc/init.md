@@ -30,13 +30,13 @@ file, however it is recommended that a strong and secure password be used
 as this password is security critical to securing the wallet should the
 wallet be enabled.
 
-If bitcoind is run with the "-server" flag (set by default), and no rpcpassword is set,
-it will use a special cookie file for authentication. The cookie is generated with random
-content when the daemon starts, and deleted when it exits. Read access to this file
-controls who can access it through RPC.
+If bitcoind is run with the "-server" flag (set by default), and no rpcpassword
+is set, it will use a special cookie file for authentication. The cookie is generated
+with random content when the daemon starts, and deleted when it exits. Read access
+to this file controls who can access it through RPC.
 
-By default the cookie is stored in the data directory, but it's location can be overridden
-with the option '-rpccookiefile'.
+By default the cookie is stored in the data directory, but it's location can be
+overridden with the option '-rpccookiefile'.
 
 This allows for running bitcoind without having to do any manual configuration.
 
@@ -56,7 +56,8 @@ All three configurations assume several paths that might need to be adjusted.
 Binary:              `/usr/bin/bitcoind`
 Configuration file:  `/etc/bitcoin/bitcoin.conf`
 Data directory:      `/var/lib/bitcoind`
-PID file:            `/var/run/bitcoind/bitcoind.pid` (OpenRC and Upstart) or `/var/lib/bitcoind/bitcoind.pid` (systemd)
+PID file:            `/var/run/bitcoind/bitcoind.pid` (OpenRC and Upstart) or
+`/var/lib/bitcoind/bitcoind.pid` (systemd)
 Lock file:           `/var/lock/subsys/bitcoind` (CentOS)
 
 The configuration file, PID directory (if applicable) and data directory
@@ -109,12 +110,13 @@ setting the BITCOIND and FLAGS environment variables in the file
 
 4e) macOS
 
-Copy org.bitcoin.bitcoind.plist into ~/Library/LaunchAgents. Load the launch agent by
-running `launchctl load ~/Library/LaunchAgents/org.bitcoin.bitcoind.plist`.
+Copy org.bitcoin.bitcoind.plist into ~/Library/LaunchAgents. Load the launch
+agent by running `launchctl load ~/Library/LaunchAgents/org.bitcoin.bitcoind.plist`.
 
 This Launch Agent will cause bitcoind to start whenever the user logs in.
 
-NOTE: This approach is intended for those wanting to run bitcoind as the current user.
+NOTE: This approach is intended for those wanting to run bitcoind as the
+current user.
 You will need to modify org.bitcoin.bitcoind.plist if you intend to use it as a
 Launch Daemon with a dedicated bitcoin user.
 

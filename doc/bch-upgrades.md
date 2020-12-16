@@ -1,9 +1,13 @@
 Currently supported Bitcoin Cash upgrades
 =========================================
 
-This page lists the Bitcoin Cash upgrade proposals that have currently been implemented in Bitcoin Cash Node, along with their implementation status. Note that the Bitcoin Cash Node project co-publishes the specifications of all Bitcoin Cash upgrades through a [separate repository](https://upgradespecs.bitcoincashnode.org).
+This page lists the Bitcoin Cash upgrade proposals that have currently been
+implemented in Bitcoin Cash Node, along with their implementation status. Note
+that the Bitcoin Cash Node project co-publishes the specifications of all Bitcoin
+Cash upgrades through a [separate repository](https://upgradespecs.bitcoincashnode.org).
 
-For implementation status of Bitcoin (Core) proposals in Bitcoin Cash Node, see [BIPs](bips.md).
+For implementation status of Bitcoin (Core) proposals in Bitcoin Cash Node,
+see [BIPs](bips.md).
 
 Network upgrades
 ----------------

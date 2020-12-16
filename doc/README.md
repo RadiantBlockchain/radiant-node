@@ -1,7 +1,12 @@
 Bitcoin Cash Node Setup
 =======================
 
-Bitcoin Cash Node is a fork of Bitcoin ABC, which is an original Bitcoin Cash client and builds the backbone of the network. It downloads and, by default, stores the entire history of Bitcoin Cash transactions, which requires a few hundred gigabytes of disk space. Depending on the speed of your computer and network connection, the synchronization process can take anywhere from a few hours to a day or more.
+Bitcoin Cash Node is a fork of Bitcoin ABC, which is an original Bitcoin Cash
+client and builds the backbone of the network. It downloads and, by default,
+stores the entire history of Bitcoin Cash transactions, which requires a few
+hundred gigabytes of disk space. Depending on the speed of your computer and
+network connection, the synchronization process can take anywhere from a few
+hours to a day or more.
 
 To download Bitcoin Cash Node, visit [bitcoincashnode.org](https://bitcoincashnode.org/).
 
@@ -35,14 +40,16 @@ grep "bitcoin-cash-node-${VERSION}" ${FILE_PATTERN} | cut -d " " -f 2- | xargs l
   xargs -i grep -h "{}" ${FILE_PATTERN} | uniq | sha256sum -c
 ```
 
-*IMPORTANT NOTE:* The first time you run this, all of the signing keys will be UNTRUSTED and you will see warnings
-indicating this.  For best security practices, you should `gpg --sign-key <signer key>` for each release signer key
-and rerun the above script (there should be no warnings the second time). If the keys change unexpectedly,
-the presence of those warnings should be heeded with extreme caution.
+*IMPORTANT NOTE:* The first time you run this, all of the signing keys will be
+UNTRUSTED and you will see warnings indicating this. For best security practices,
+you should `gpg --sign-key <signer key>` for each release signer key and rerun
+the above script (there should be no warnings the second time). If the keys change
+unexpectedly, the presence of those warnings should be heeded with extreme caution.
 
 Running
 ---------------------
-The following are some helpful notes on how to run Bitcoin Cash Node on your native platform.
+The following are some helpful notes on how to run Bitcoin Cash Node on your
+native platform.
 
 ### Unix
 
@@ -68,4 +75,7 @@ Drag `bitcoin-cash-node` to your applications folder, and then run `bitcoin-cash
 License
 ---------------------
 Distribution is done under the [MIT software license](../COPYING).
-This product includes software developed by the OpenSSL Project for use in the [OpenSSL Toolkit](https://www.openssl.org/), cryptographic software written by Eric Young ([eay@cryptsoft.com](mailto:eay@cryptsoft.com)), and UPnP software written by Thomas Bernard.
+This product includes software developed by the OpenSSL Project for use in the
+[OpenSSL Toolkit](https://www.openssl.org/), cryptographic software written by
+Eric Young ([eay@cryptsoft.com](mailto:eay@cryptsoft.com)), and UPnP software
+written by Thomas Bernard.

@@ -38,6 +38,11 @@ Bitcoin Cash Node version 22.2.2 is now available from:
 
 ...
 
+## Low-level RPC changes
+
+The `getblockstats` RPC is faster for fee calculation by using BlockUndo data.
+Also, `-txindex` is no longer required and `getblockstats` works for all
+non-pruned blocks.
 
 ## Low-level RPC changes
 
