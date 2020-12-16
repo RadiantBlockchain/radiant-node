@@ -2926,14 +2926,14 @@ static UniValue loadwallet(const Config &config,
     }
 
     std::string warning;
-    if (!CWallet::Verify(chainParams, *g_rpc_interfaces->chain, location, false,
+    if (!CWallet::Verify(chainParams, *g_rpc_node->chain, location, false,
                          error, warning)) {
         throw JSONRPCError(RPC_WALLET_ERROR,
                            "Wallet file verification failed: " + std::move(error));
     }
 
     std::shared_ptr<CWallet> const wallet = CWallet::CreateWalletFromFile(
-        chainParams, *g_rpc_interfaces->chain, location);
+        chainParams, *g_rpc_node->chain, location);
     if (!wallet) {
         throw JSONRPCError(RPC_WALLET_ERROR, "Wallet loading failed.");
     }
@@ -2996,14 +2996,14 @@ static UniValue createwallet(const Config &config,
 
     // Wallet::Verify will check if we're trying to create a wallet with a
     // duplicate name.
-    if (!CWallet::Verify(chainParams, *g_rpc_interfaces->chain, location, false,
+    if (!CWallet::Verify(chainParams, *g_rpc_node->chain, location, false,
                          error, warning)) {
         throw JSONRPCError(RPC_WALLET_ERROR,
                            "Wallet file verification failed: " + std::move(error));
     }
 
     std::shared_ptr<CWallet> const wallet = CWallet::CreateWalletFromFile(
-        chainParams, *g_rpc_interfaces->chain, location, flags);
+        chainParams, *g_rpc_node->chain, location, flags);
     if (!wallet) {
         throw JSONRPCError(RPC_WALLET_ERROR, "Wallet creation failed.");
     }

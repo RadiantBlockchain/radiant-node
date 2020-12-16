@@ -174,6 +174,7 @@ BITCOIN_CORE_H = \
   netaddress.h \
   netbase.h \
   netmessagemaker.h \
+  node/context.h \
   node/transaction.h \
   noui.h \
   optional.h \

@@ -14,13 +14,13 @@ class CChainParams;
 class CKeyStore;
 class CPubKey;
 class CScript;
-struct InitInterfaces;
+struct NodeContext;
 class UniValue;
 
 //! Pointers to interfaces that need to be accessible from RPC methods. Due to
 //! limitations of the RPC framework, there's currently no direct way to pass in
 //! state to RPC method implementations.
-extern InitInterfaces *g_rpc_interfaces;
+extern NodeContext *g_rpc_node;
 
 CPubKey HexToPubKey(const std::string &hex_in);
 CPubKey AddrToPubKey(const CChainParams &chainparams, CKeyStore *const keystore,
