@@ -17,28 +17,41 @@ Output descriptors currently support:
 - Multisig scripts, through the `multi` function.
 - Any type of supported address through the `addr` function.
 - Raw hex scripts through the `raw` function.
-- Public keys (compressed and uncompressed) in hex notation, or BIP32 extended pubkeys with derivation paths.
+- Public keys (compressed and uncompressed) in hex notation, or BIP32 extended
+  pubkeys with derivation paths.
 
 ## Examples
 
-- `pk(0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798)` represents a P2PK output.
-- `pkh(02c6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5)` represents a P2PKH output.
-- `combo(0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798)` represents a P2PK and P2PKH output.
-- `multi(1,022f8bde4d1a07209355b4a7250a5c5128e88b84bddc619ab7cba8d569b240efe4,025cbdf0646e5db4eaa398f365f2ea7a0e3d419b7e0330e39ce92bddedcac4f9bc)` represents a bare *1-of-2* multisig.
-- `sh(multi(2,022f01e5e15cca351daff3843fb70f3c2f0a1bdd05e5af888a67784ef3e10a2a01,03acd484e2f0c7f65309ad178a9f559abde09796974c57e714c35f110dfc27ccbe))` represents a P2SH *2-of-2* multisig.
-- `pk(xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8)` refers to a single P2PK output, using the public key part from the specified xpub.
-- `pkh(xpub68Gmy5EdvgibQVfPdqkBBCHxA5htiqg55crXYuXoQRKfDBFA1WEjWgP6LHhwBZeNK1VTsfTFUHCdrfp1bgwQ9xv5ski8PX9rL2dZXvgGDnw/1'/2)` refers to a single P2PKH output, using child key *1'/2* of the specified xpub.
-- `pkh([d34db33f/44'/0'/0']xpub6ERApfZwUNrhLCkDtcHTcxd75RbzS1ed54G1LkBUHQVHQKqhMkhgbmJbZRkrgZw4koxb5JaHWkY4ALHY2grBGRjaDMzQLcgJvLJuZZvRcEL/1/*)` describes a set of P2PKH outputs, but additionally specifies that the specified xpub is a child of a master with fingerprint `d34db33f`, and derived using path `44'/0'/0'`.
+- `pk(0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798)`
+  represents a P2PK output.
+- `pkh(02c6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5)`
+  represents a P2PKH output.
+- `combo(0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798)`
+  represents a P2PK and P2PKH output.
+- `multi(1,022f8bde4d1a07209355b4a7250a5c5128e88b84bddc619ab7cba8d569b240efe4,025cbdf0646e5db4eaa398f365f2ea7a0e3d419b7e0330e39ce92bddedcac4f9bc)`
+  represents a bare *1-of-2* multisig.
+- `sh(multi(2,022f01e5e15cca351daff3843fb70f3c2f0a1bdd05e5af888a67784ef3e10a2a01,03acd484e2f0c7f65309ad178a9f559abde09796974c57e714c35f110dfc27ccbe))`
+ represents a P2SH *2-of-2* multisig.
+- `pk(xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8)`
+ refers to a single P2PK output, using the public key part from the specified xpub.
+- `pkh(xpub68Gmy5EdvgibQVfPdqkBBCHxA5htiqg55crXYuXoQRKfDBFA1WEjWgP6LHhwBZeNK1VTsfTFUHCdrfp1bgwQ9xv5ski8PX9rL2dZXvgGDnw/1'/2)`
+ refers to a single P2PKH output, using child key *1'/2* of the specified xpub.
+- `pkh([d34db33f/44'/0'/0']xpub6ERApfZwUNrhLCkDtcHTcxd75RbzS1ed54G1LkBUHQVHQKqhMkhgbmJbZRkrgZw4koxb5JaHWkY4ALHY2grBGRjaDMzQLcgJvLJuZZvRcEL/1/*)`
+ describes a set of P2PKH outputs, but additionally specifies that the specified
+ xpub is a child of a master with fingerprint `d34db33f`, and derived using path
+ `44'/0'/0'`.
 
 ## Reference
 
-Descriptors consist of several types of expressions. The top level expression is always a `SCRIPT`.
+Descriptors consist of several types of expressions. The top level expression is
+always a `SCRIPT`.
 
 `SCRIPT` expressions:
 
 - `sh(SCRIPT)` (top level only): P2SH embed the argument.
 - `pk(KEY)` (anywhere): P2PK output for the given public key.
-- `pkh(KEY)` (anywhere): P2PKH output for the given public key (use `addr` if you only know the pubkey hash).
+- `pkh(KEY)` (anywhere): P2PKH output for the given public key (use `addr` if you
+  only know the pubkey hash).
 - `combo(KEY)` (top level only): an alias for the collection of `pk(KEY)` and `pkh(KEY)`.
 - `multi(k,KEY_1,KEY_2,...,KEY_n)` (anywhere): k-of-n multisig script.
 - `addr(ADDR)` (top level only): the script which ADDR expands to.
@@ -46,32 +59,47 @@ Descriptors consist of several types of expressions. The top level expression is
 
 `KEY` expressions:
 
-- Hex encoded public keys (66 characters starting with `02` or `03`, or 130 characters starting with `04`).
-- [WIF](https://en.bitcoin.it/wiki/Wallet_import_format) encoded private keys may be specified instead of the corresponding public key, with the same meaning.
-- `xpub` encoded extended public key or `xprv` encoded private key (as defined in [BIP 32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki)).
-  - Followed by zero or more `/NUM` unhardened and `/NUM'` hardened BIP32 derivation steps.
-  - Optionally followed by a single `/*` or `/*'` final step to denote all (direct) unhardened or hardened children.
+- Hex encoded public keys (66 characters starting with `02` or `03`, or 130
+  characters starting with `04`).
+- [WIF](https://en.bitcoin.it/wiki/Wallet_import_format) encoded private keys may
+  be specified instead of the corresponding public key, with the same meaning.
+- `xpub` encoded extended public key or `xprv` encoded private key (as defined in
+  [BIP 32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki)).
+  - Followed by zero or more `/NUM` unhardened and `/NUM'` hardened BIP32 derivation
+    steps.
+  - Optionally followed by a single `/*` or `/*'` final step to denote all (direct)
+    unhardened or hardened children.
   - The usage of hardened derivation steps requires providing the private key.
   - Instead of a `'`, the suffix `h` can be used to denote hardened derivation.
 
 - Optionally, key origin information, consisting of:
   - An open bracket `[`
-  - Exactly 8 hex characters for the fingerprint of the key where the derivation starts (see BIP32 for details)
-  - Followed by zero or more `/NUM` or `/NUM'` path elements to indicate unhardened or hardened derivation steps between the fingerprint and the key or xpub/xprv root that follows
+  - Exactly 8 hex characters for the fingerprint of the key where the derivation
+    starts (see BIP32 for details)
+  - Followed by zero or more `/NUM` or `/NUM'` path elements to indicate unhardened
+    or hardened derivation steps between the fingerprint and the key or xpub/xprv
+    root that follows
   - A closing bracket `]`
 - Followed by the actual key, which is either:
-  - Hex encoded public keys (66 characters starting with `02` or `03`, or 130 characters starting with `04`).
-  - [WIF](https://en.bitcoin.it/wiki/Wallet_import_format) encoded private keys may be specified instead of the corresponding public key, with the same meaning.
-  -`xpub` encoded extended public key or `xprv` encoded private key (as defined in [BIP 32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki)).
-    - Followed by zero or more `/NUM` unhardened and `/NUM'` hardened BIP32 derivation steps.
-    - Optionally followed by a single `/*` or `/*'` final step to denote all (direct) unhardened or hardened children.
+  - Hex encoded public keys (66 characters starting with `02` or `03`, or 130
+    characters starting with `04`).
+  - [WIF](https://en.bitcoin.it/wiki/Wallet_import_format) encoded private keys
+    may be specified instead of the corresponding public key, with the same meaning.
+  -`xpub` encoded extended public key or `xprv` encoded private key (as defined
+    in [BIP 32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki)).
+    - Followed by zero or more `/NUM` unhardened and `/NUM'` hardened BIP32
+      derivation steps.
+    - Optionally followed by a single `/*` or `/*'` final step to denote all
+      (direct) unhardened or hardened children.
     - The usage of hardened derivation steps requires providing the private key.
-- Anywhere a `'` suffix is permitted to denote hardened derivation, the suffix `h` can be used instead.
+- Anywhere a `'` suffix is permitted to denote hardened derivation, the suffix
+  `h` can be used instead.
 
 
 `ADDR` expressions are any type of supported address:
 
-- P2PKH addresses (base58, of the form `1...`). Note that P2PKH addresses in descriptors cannot be used for P2PK outputs (use the `pk` function instead).
+- P2PKH addresses (base58, of the form `1...`). Note that P2PKH addresses in
+  descriptors cannot be used for P2PK outputs (use the `pk` function instead).
 - P2SH addresses (base58, of the form `3...`, defined in [BIP 13](https://github.com/bitcoin/bips/blob/master/bip-0013.mediawiki)).
 
 ## Explanation

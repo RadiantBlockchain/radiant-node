@@ -65,7 +65,8 @@ To build with Qt 5 you need the following packages installed:
 pkg install qt5-qmake qt5-buildtools qt5-linguisttools qt5-widgets protobuf qt5-testlib libqrencode-4.0.0
 ```
 
-You can do without the `libqrencode-4.0.0` package, just pass `-DENABLE_QRCODE=OFF` on the `cmake` command line.
+You can do without the `libqrencode-4.0.0` package, just pass `-DENABLE_QRCODE=OFF`
+on the `cmake` command line.
 
 ## Building Bitcoin Cash Node
 
@@ -108,7 +109,8 @@ ninja test_bitcoin-qt # recommended
 ```
 
 After a successful test you can install the newly built binaries to your bin directory.
-Note that this will probably overwrite any previous version installed, including binaries from different sources.
+Note that this will probably overwrite any previous version installed, including
+binaries from different sources.
 It might be necessary to run as root, depending on your system configuration:
 
 ```bash

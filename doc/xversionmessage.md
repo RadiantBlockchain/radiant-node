@@ -9,8 +9,8 @@ Authors: Awemany, Griffith
 ## Overview
 
 Using the `version` message in the Bitcoin protocol (for more details,
-see [https://en.bitcoin.it/wiki/Protocol_documentation#version](https://en.bitcoin.it/wiki/Protocol_documentation#version)), peers
-announce their capabilities and preferences to each other. The
+see [https://en.bitcoin.it/wiki/Protocol_documentation#version](https://en.bitcoin.it/wiki/Protocol_documentation#version)),
+peers announce their capabilities and preferences to each other. The
 `version` message is limited in scope to a fixed set of well-known
 fields.
 

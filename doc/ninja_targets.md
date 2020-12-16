@@ -9,7 +9,8 @@ Bitcoin Cash Node currently has two build systems:
 
 This document describes how the CMake/Ninja build system works and how to use it.
 
-You will find some information on how to set up a Ninja build, and what are the build targets and their effects.
+You will find some information on how to set up a Ninja build, and what are the
+build targets and their effects.
 
 
 ## Generally understanding the Ninja build system
@@ -21,9 +22,12 @@ Please briefly acquaint yourself with the Ninja documentation at
 
 ## Setting up an out-of-tree Ninja build of Bitcoin Cash Node
 
-An out-of-tree build creates build products in a separate folder where they do not interfere with the source code working area.
+An out-of-tree build creates build products in a separate folder where they do
+not interfere with the source code working area.
 
-An in-tree build is not recommended and therefore not described further, but it is noted that in-tree builds are possible, both with Ninja and with the autoconf build method.
+An in-tree build is not recommended and therefore not described further, but it
+is noted that in-tree builds are possible, both with Ninja and with the autoconf
+build method.
 
 To set up an out-of-tree Ninja build:
 
@@ -39,10 +43,12 @@ To set up an out-of-tree Ninja build:
 
    `cmake -GNinja ..`
 
-The command above will configure your build to build the application according to the feature dependencies you have installed.
+The command above will configure your build to build the application according
+to the feature dependencies you have installed.
 For more configuration options, see the final section in this document.
 
-4. once step 3 has completed without errors, you are ready to call `ninja` to build various targets.
+4. once step 3 has completed without errors, you are ready to call `ninja` to
+   build various targets.
 
 In the next sections, there is a description of the ninja build targets.
 They are grouped according to their function.
@@ -54,7 +60,8 @@ For all these targets, run them by appending them to the `ninja` command.
 
 ### clean
 
-When used without further arguments, cleans up the build area by removing all build products.
+When used without further arguments, cleans up the build area by removing all
+build products.
 
 See also the description of the `clean` target at:
 
@@ -69,7 +76,8 @@ in the same working area, there may be unwanted interactions between the
 two at some points.
 
 It is recommended to delete all Ninja build/ artifacts when doing autoconf
-build tests, and vice versa, do a `make distclean` if you have been using autoconf and are switching to doing some Ninja builds on your tree.
+build tests, and vice versa, do a `make distclean` if you have been using autoconf
+and are switching to doing some Ninja builds on your tree.
 
 
 ## Build-related targets
@@ -89,7 +97,8 @@ Calling `ninja all` is equivalent to just running `ninja`.
 
 ### check
 
-`ninja check` runs only basic unit tests on the daemon, the Qt wallet (if built), and other utilities.
+`ninja check` runs only basic unit tests on the daemon, the Qt wallet (if built),
+and other utilities.
 
 ### check-bitcoin
 
@@ -97,7 +106,8 @@ Builds and runs only the core application's C++ unit tests.
 
 ### check-bitcoin-upgrade-activated
 
-Similar to `check-bitcoin`, but runs the tests in a mode simulating that the next upgrade has activated.
+Similar to `check-bitcoin`, but runs the tests in a mode simulating that the next
+upgrade has activated.
 
 ### check-bitcoin-util
 
@@ -107,7 +117,8 @@ Builds and runs application utility unit tests.
 
 Runs `devtools/chainparams/test_make_chainparams.py`.
 
-This tests utilities to generate chainparams constants that are compiled into the client.
+This tests utilities to generate chainparams constants that are compiled into
+the client.
 See `contrib/devtools/chainparams/README.md` for more information on these tools.
 
 ### check-lint
@@ -126,7 +137,9 @@ Runs a series of security tests for ELF binaries against the following executabl
 - bitcoin-qt
 - bitcoin-seeder
 
-If the checks are successful, the exit status of the script `security-check.py` script will be 0 and its output will be silent, otherwise there will be a log which executables failed which checks.
+If the checks are successful, the exit status of the script `security-check.py`
+script will be 0 and its output will be silent, otherwise there will be a log
+which executables failed which checks.
 
 ### check-leveldb
 
@@ -142,15 +155,18 @@ Build and run all secp256k1 tests.
 
 ### check-secp256k1-tests
 
-Build and run only the 'non-exhaustive' secp256k1 tests (this is a subset of `check-secp256k1` target).
+Build and run only the 'non-exhaustive' secp256k1 tests (this is a subset of
+`check-secp256k1` target).
 
 ### check-secp256k1-exhaustive_tests
 
-Build and run only the 'exhaustive' secp256k1 tests (this is a subset of `check-secp256k1` target).
+Build and run only the 'exhaustive' secp256k1 tests (this is a subset of
+`check-secp256k1` target).
 
 ### check-all
 
-`ninja check-all` runs basic unit tests and the Python functional regression tests, but not all (excludes so-called "extended" tests).
+`ninja check-all` runs basic unit tests and the Python functional regression tests,
+but not all (excludes so-called "extended" tests).
 
 ### check-extended
 
@@ -158,28 +174,37 @@ Runs unit tests and extended Python functional regression tests.
 
 ### check-upgrade-activated
 
-Runs seeder and application unit and Python functional regression tests in a mode where it simulates that the next planned upgrade (already built into the code) has been activated.
+Runs seeder and application unit and Python functional regression tests in a mode
+where it simulates that the next planned upgrade (already built into the code)
+has been activated.
 
 ### check-upgrade-activated-extended
 
-Similar to check-upgrade-activated but with more extensive Python functional regression tests (the `--extended` suite).
+Similar to check-upgrade-activated but with more extensive Python functional
+regression tests (the `--extended` suite).
 
 ### check-functional
 
-Builds the application (daemon and command line RPC client) and runs the Python-based regression test suite, but only the basic (short/fast) regression tests, not the extended ones.
+Builds the application (daemon and command line RPC client) and runs the Python-based
+regression test suite, but only the basic (short/fast) regression tests, not the
+extended ones.
 
 ### check-functional-longeronly
 
 Runs only the longer-running Python tests by running the test_runner.py with
-a `--startfrom=40` option (i.e. only run tests that have been timed previously to take longer than 40 seconds).
+a `--startfrom=40` option (i.e. only run tests that have been timed previously
+to take longer than 40 seconds).
 
 ### check-functional-upgrade-activated
 
-Runs the Python regression tests with an option to simulate that thhe next upgrade has been activated (currently `--with-phonon-activation` option).
+Runs the Python regression tests with an option to simulate that thhe next upgrade
+has been activated (currently `--with-phonon-activation` option).
 
 ### check-functional-upgrade-activated-extended
 
-Similar to `check-functional-upgrade-activated` target, but runs with the `--extended` option as well, so executing the full set of Python regression tests while simulating that the next upgrade has been activated.
+Similar to `check-functional-upgrade-activated` target, but runs with the `--extended`
+option as well, so executing the full set of Python regression tests while simulating
+that the next upgrade has been activated.
 
 ### check-functional-upgrade-activated-longeronly
 
@@ -191,15 +216,18 @@ Generate coverage report for <target>. See [generate coverage report](coverage.m
 
 ### test_bitcoin
 
-Build the core application's C++ unit test runner (executable produced at `src/test/test_bitcoin`)
+Build the core application's C++ unit test runner (executable produced at
+`src/test/test_bitcoin`)
 
 ### test_bitcoin-qt
 
-Build the GUI wallet's C++ unit test runner (executable produced at `src/qt/test/test_bitcoin-qt`)
+Build the GUI wallet's C++ unit test runner (executable produced at
+`src/qt/test/test_bitcoin-qt`)
 
 ### test_bitcoin-seeder
 
-Build the DNS seeder's C++ unit test runner (executable produced at `src/seeder/test/test_bitcoin-seeder`)
+Build the DNS seeder's C++ unit test runner (executable produced at
+`src/seeder/test/test_bitcoin-seeder`)
 
 ## Deployment / installation-related targets
 
@@ -207,28 +235,34 @@ Build the DNS seeder's C++ unit test runner (executable produced at `src/seeder/
 
 Builds and installs the project.
 
-You can override the installation root (which defaults to /usr/local) by defining the `CMAKE_INSTALL_PREFIX` when you configure your build, like this:
+You can override the installation root (which defaults to /usr/local) by defining
+the `CMAKE_INSTALL_PREFIX` when you configure your build, like this:
 
     cmake -DCMAKE_INSTALL_PREFIX=${your_install_root_path} -GNinja ..
 
-where you can use `$HOME` or `$(pwd)` (if you want to install into your build folder) or whatever you prefer for `${your_install_root_path}`.
+where you can use `$HOME` or `$(pwd)` (if you want to install into your build folder)
+or whatever you prefer for `${your_install_root_path}`.
 
 ### package
 
-Creates a versioned tarball package containing the executables, include header files, libraries and manual pages.
+Creates a versioned tarball package containing the executables, include header
+files, libraries and manual pages.
 
 ### package_source
 
-Creates a versioned tar.gz archive containing the project source code already configured by cmake and ready to be built.
+Creates a versioned tar.gz archive containing the project source code already
+configured by cmake and ready to be built.
 
 
 ## Benchmarking targets
 
 ### bench-bitcoin
 
-Builds and executes all application benchmarks. Excludes some library dependency benchmarks (eg. secp256k1).
+Builds and executes all application benchmarks. Excludes some library dependency
+benchmarks (eg. secp256k1).
 
-This target results in a comma separated output listing all benchmark names, the number of iterations and timings associated with those (these will be machine-specific).
+This target results in a comma separated output listing all benchmark names,
+the number of iterations and timings associated with those (these will be machine-specific).
 
 ### bench-secp256k1
 
@@ -259,17 +293,22 @@ Below are some of the cmake build options with example values.
 
 All these options are passed via `-D` (defines) to the `cmake` command.
 
-- -DBUILD_BITCOIN_SEEDER=OFF # to disable build of the seeder (it is not supported in Windows yet)
+- -DBUILD_BITCOIN_SEEDER=OFF # to disable build of the seeder (it is not
+  supported in Windows yet)
 
 - -DCMAKE_INSTALL_PREFIX=/home/user   # set install prefix to user home directory
 
-- -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/Win64.cmake  # select 64-bit Windows toolchain
+- -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/Win64.cmake  # select 64-bit Windows
+  toolchain
 
-- -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/Win32.cmake  # select 32-bit Windows toolchain
+- -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/Win32.cmake  # select 32-bit Windows
+  toolchain
 
-- -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/LinuxARM.cmake  # select ARM Linux toolchain
+- -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/LinuxARM.cmake  # select ARM Linux
+  toolchain
 
-- -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/LinuxAArch64.cmake # select AArch64 Linux toolchain
+- -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/LinuxAArch64.cmake # select AArch64
+  Linux toolchain
 
 - -DCCACHE=OFF  # disable ccache
 

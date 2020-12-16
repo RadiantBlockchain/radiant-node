@@ -1,9 +1,13 @@
 Bitcoin Improvement Proposals (BIPs)
 ====================================
 
-This page describes the implementation status of [Bitcoin Improvement Proposals (BIPs)](https://github.com/bitcoin/bips/blob/master/README.mediawiki) in Bitcoin Cash Node. See [BIP2](https://github.com/bitcoin/bips/blob/master/bip-0002.mediawiki) for basic information about BIPs.
+This page describes the implementation status of [Bitcoin Improvement Proposals (BIPs)](https://github.com/bitcoin/bips/blob/master/README.mediawiki)
+in Bitcoin Cash Node. See [BIP2](https://github.com/bitcoin/bips/blob/master/bip-0002.mediawiki)
+for basic information about BIPs.
 
-Note that BIPs are written for Bitcoin (Core) rather than for Bitcoin Cash. See [Bitcoin Cash upgrades](bch-upgrades.md) for implementation status of proposals specifically written for Bitcoin Cash.
+Note that BIPs are written for Bitcoin (Core) rather than for Bitcoin Cash. See
+[Bitcoin Cash upgrades](bch-upgrades.md) for implementation status of proposals
+specifically written for Bitcoin Cash.
 
 Currently implemented BIPs
 --------------------------
@@ -44,10 +48,13 @@ Obsolete BIPs
 
 We list a BIP as obsolete if:
 
-* the BIP was previously implemented in Bitcoin Cash Node but the implementation was removed later, or;
-* the BIP has been replaced with a [Bitcoin Cash upgrade](bch-upgrades.md) that is implemented in Bitcoin Cash Node.
+* the BIP was previously implemented in Bitcoin Cash Node but the implementation
+  was removed later, or;
+* the BIP has been replaced with a [Bitcoin Cash upgrade](bch-upgrades.md) that
+  is implemented in Bitcoin Cash Node.
 
-Here, Bitcoin Cash Node includes its predecessors Bitcoin ABC (before [v0.21.0](release-notes/release-notes-0.21.0.md)) and Bitcoin Core (before [v0.14.1](release-notes/release-notes-0.14.1.md)).
+Here, Bitcoin Cash Node includes its predecessors Bitcoin ABC (before [v0.21.0](release-notes/release-notes-0.21.0.md))
+and Bitcoin Core (before [v0.14.1](release-notes/release-notes-0.14.1.md)).
 
 The obsolete BIPs are:
 

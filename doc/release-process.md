@@ -13,21 +13,26 @@ Bitcoin Cash Node Release Process
     - Any known issues or limitations should be documented in release notes
     - Known bugs should have tickets
     - Run `arc lint --everything` and check there is no linter error
-    - Ensure that bitcoind and bitcoin-qt run with no issue on all supported platforms.
-      Manually test bitcoin-qt by sending some transactions and navigating through the menus.
+    - Ensure that bitcoind and bitcoin-qt run with no issue on all supported
+      platforms.
+      Manually test bitcoin-qt by sending some transactions and navigating
+      through the menus.
 
 3. Update the documents / code which needs to be updated every release
-    - Check that [release-notes.md](release-notes.md) is complete, and fill in any missing items.
+    - Check that [release-notes.md](release-notes.md) is complete, and fill in
+      any missing items.
     - Update [bips.md](bips.md) to account for changes since the last release.
-    - (major releases) Update [`BLOCK_CHAIN_SIZE`](../src/qt/intro.cpp) to the current size plus
-      some overhead.
-    - Regenerate manpages (run `contrib/devtools/gen-manpages.sh`, or for out-of-tree builds run
-      `BUILDDIR=$PWD/build contrib/devtools/gen-manpages.sh`).
+    - (major releases) Update [`BLOCK_CHAIN_SIZE`](../src/qt/intro.cpp) to the
+      current size plus some overhead.
+    - Regenerate manpages (run `contrib/devtools/gen-manpages.sh`, or for
+      out-of-tree builds run `BUILDDIR=$PWD/build contrib/devtools/gen-manpages.sh`).
     - Update seeds as per [contrib/seeds/README.md](../contrib/seeds/README.md).
-    - Update [`src/chainparams.cpp`](../src/chainparams.cpp) m_assumed_blockchain_size and m_assumed_chain_state_size with the current size plus some overhead.
+    - Update [`src/chainparams.cpp`](../src/chainparams.cpp) m_assumed_blockchain_size
+      and m_assumed_chain_state_size with the current size plus some overhead.
 
 4. Add git tag for release
-    a. Create the tag: `git tag vM.m.r` (M = major version, m = minor version, r = revision)
+    a. Create the tag: `git tag vM.m.r` (M = major version, m = minor version,
+       r = revision)
     b. Push the tag to GitLab:
         ```
         git push <gitlab remote> master
@@ -50,8 +55,10 @@ Bitcoin Cash Node Release Process
 
 9. Upload Gitian Builds to [bitcoincashnode.org](https://bitcoincashnode.org/)
 
-10. Create a [release](https://github.com/bitcoin-cash-node/bitcoin-cash-node) on our GitHub mirror:
-    `contrib/release/github-release.sh -a <path to release binaries> -t <release tag> -o <file containing your Github OAuth token>`
+10. Create a [release](https://github.com/bitcoin-cash-node/bitcoin-cash-node)
+    on our GitHub mirror: `contrib/release/github-release.sh -a
+    <path to release binaries> -t <release tag> -o
+    <file containing your Github OAuth token>`
 
 11. Create [Ubuntu PPA packages](https://launchpad.net/~bitcoin-cash-node/+archive/ubuntu/ppa):
     Maintainers need to clone [packaging](https://gitlab.com/bitcoin-cash-node/bchn-sw/packaging)

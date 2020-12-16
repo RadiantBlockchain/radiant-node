@@ -103,7 +103,8 @@ public:
 Doxygen comments
 -----------------
 
-To facilitate the generation of documentation, use doxygen-compatible comment blocks for functions, methods and fields.
+To facilitate the generation of documentation, use doxygen-compatible comment
+blocks for functions, methods and fields.
 
 For example, to describe a function use:
 ```c++
@@ -115,9 +116,11 @@ For example, to describe a function use:
  */
 bool function(int arg1, const char *arg2)
 ```
-A complete list of `@xxx` commands can be found at [https://www.doxygen.nl/manual/commands.html](https://www.doxygen.nl/manual/commands.html).
-As Doxygen recognizes the comments by the delimiters (`/**` and `*/` in this case), you don't
-*need* to provide any commands for a comment to be valid; just a description text is fine.
+A complete list of `@xxx` commands can be found at
+[https://www.doxygen.nl/manual/commands.html](https://www.doxygen.nl/manual/commands.html).
+As Doxygen recognizes the comments by the delimiters (`/**` and `*/` in this case),
+you don't *need* to provide any commands for a comment to be valid; just a description
+text is fine.
 
 To describe a class use the same construct above the class definition:
 ```c++
@@ -156,9 +159,12 @@ Not OK (used plenty in the current source, but not picked up):
 //
 ```
 
-A full list of comment syntaxes picked up by doxygen can be found at [https://www.doxygen.nl/manual/docblocks.html](https://www.doxygen.nl/manual/docblocks.html), but if possible use one of the above styles.
+A full list of comment syntaxes picked up by doxygen can be found at
+[https://www.doxygen.nl/manual/docblocks.html](https://www.doxygen.nl/manual/docblocks.html),
+but if possible use one of the above styles.
 
-To build doxygen locally to test changes to the Doxyfile or visualize your comments before landing changes:
+To build doxygen locally to test changes to the Doxyfile or visualize your
+comments before landing changes:
 ```
 # In the build directory, call:
 doxygen doc/Doxyfile
@@ -181,14 +187,15 @@ that produce better debugging builds.
 
 ### debug.log
 
-If the code is behaving strangely, take a look in the debug.log file in the data directory;
-error and debugging messages are written there.
+If the code is behaving strangely, take a look in the debug.log file in the data
+directory; error and debugging messages are written there.
 
-The `-debug=...` command-line option controls debugging; running with just `-debug` or `-debug=1` will turn
-on all categories (and give you a very large debug.log file).
+The `-debug=...` command-line option controls debugging; running with just
+`-debug` or `-debug=1` will turn on all categories (and give you a very large
+debug.log file).
 
-The Qt code routes `qDebug()` output to debug.log under category "qt": run with `-debug=qt`
-to see it.
+The Qt code routes `qDebug()` output to debug.log under category "qt": run with
+`-debug=qt` to see it.
 
 ### Writing tests
 
@@ -203,18 +210,20 @@ Script integration tests are built using `src/test/script_tests.cpp`:
 1. Uncomment the line with `#define UPDATE_JSON_TESTS`
 2. Add a new TestBuilder to the `script_build` test to cover your test case.
 3. `ninja check-bitcoin-script_tests`
-4. Copy your newly generated test JSON from `<build-dir>/src/script_tests.json.gen` to `src/test/data/script_tests.json`.
+4. Copy your newly generated test JSON from `<build-dir>/src/script_tests.json.gen`
+   to `src/test/data/script_tests.json`.
 
-Please commit your TestBuilder along with your generated test JSON and cleanup the uncommented #define before code review.
+Please commit your TestBuilder along with your generated test JSON and cleanup
+the uncommented #define before code review.
 
 ### Testnet and Regtest modes
 
-Run with the `-testnet` option to run with "play bitcoins" on the test network, if you
-are testing multi-machine code that needs to operate across the internet.
+Run with the `-testnet` option to run with "play bitcoins" on the test network,
+if you are testing multi-machine code that needs to operate across the internet.
 
-If you are testing something that can run on one machine, run with the `-regtest` option.
-In regression test mode, blocks can be created on-demand; see [test/functional/](../test/functional) for tests
-that run in `-regtest` mode.
+If you are testing something that can run on one machine, run with the `-regtest`
+option. In regression test mode, blocks can be created on-demand; see [test/functional/](../test/functional)
+for tests that run in `-regtest` mode.
 
 ### DEBUG_LOCKORDER
 
@@ -406,7 +415,8 @@ Threads
 
 - DumpAddresses : Dumps IP addresses of nodes to peers.dat.
 
-- ThreadRPCServer : Remote procedure call handler, listens on port 8332 for connections and services them.
+- ThreadRPCServer : Remote procedure call handler, listens on port 8332 for
+  connections and services them.
 
 - Shutdown : Does an orderly shutdown of everything.
 
@@ -459,7 +469,8 @@ pay attention to for reviewers of Bitcoin Cash Node code.
 
 - Include `db_cxx.h` (BerkeleyDB header) only when `ENABLE_WALLET` is set
 
-    - *Rationale*: Otherwise compilation of the disable-wallet build will fail in environments without BerkeleyDB
+    - *Rationale*: Otherwise compilation of the disable-wallet build will fail in
+      environments without BerkeleyDB
 
 ### General C++
 
@@ -471,32 +482,35 @@ pay attention to for reviewers of Bitcoin Cash Node code.
 
 - If you use the `.h`, you must link the `.cpp`
 
-    - *Rationale*: Include files define the interface for the code in implementation files. Including one but
-      not linking the other is confusing. Please avoid that. Moving functions from
-      the `.h` to the `.cpp` should not result in build errors
+    - *Rationale*: Include files define the interface for the code in implementation
+      files. Including one but not linking the other is confusing. Please avoid that.
+      Moving functions from the `.h` to the `.cpp` should not result in build errors
 
-- Use the RAII (Resource Acquisition Is Initialization) paradigm where possible. For example by using
-  `unique_ptr` for allocations in a function.
+- Use the RAII (Resource Acquisition Is Initialization) paradigm where possible.
+  For example by using `unique_ptr` for allocations in a function.
 
     - *Rationale*: This avoids memory and resource leaks, and ensures exception safety
 
 - Use `std::make_unique()` to construct objects owned by `unique_ptr`s
 
-    - *Rationale*: `std::make_unique` is concise and ensures exception safety in complex expressions.
+    - *Rationale*: `std::make_unique` is concise and ensures exception safety
+      in complex expressions.
 
 ### C++ data structures
 
 - Never use the `std::map []` syntax when reading from a map, but instead use `.find()`
 
     - *Rationale*: `[]` does an insert (of the default element) if the item doesn't
-      exist in the map yet. This has resulted in memory leaks in the past, as well as
-      race conditions (expecting read-read behavior). Using `[]` is fine for *writing* to a map
+      exist in the map yet. This has resulted in memory leaks in the past, as
+      well as race conditions (expecting read-read behavior). Using `[]` is fine
+      for *writing* to a map
 
 - Do not compare an iterator from one data structure with an iterator of
   another data structure (even if of the same type)
 
     - *Rationale*: Behavior is undefined. In C++ parlor this means "may reformat
-      the universe", in practice this has resulted in at least one hard-to-debug crash bug
+      the universe", in practice this has resulted in at least one hard-to-debug
+      crash bug
 
 - Watch out for out-of-bounds vector access. `&vch[vch.size()]` is illegal,
   including `&vch[0]` for an empty vector. Use `vch.data()` and `vch.data() +
@@ -525,13 +539,13 @@ pay attention to for reviewers of Bitcoin Cash Node code.
 
 - Prefer explicit constructions over implicit ones that rely on 'magical' C++ behavior
 
-    - *Rationale*: Easier to understand what is happening, thus easier to spot mistakes, even for those
-      that are not language lawyers
+    - *Rationale*: Easier to understand what is happening, thus easier to spot
+      mistakes, even for those that are not language lawyers
 
 - Initialize all non-static class members where they are defined
 
-    - *Rationale*: Initializing the members in the declaration makes it easy to spot uninitialized ones,
-      and avoids accidentally reading uninitialized memory
+    - *Rationale*: Initializing the members in the declaration makes it easy to
+      spot uninitialized ones, and avoids accidentally reading uninitialized memory
 
 ```cpp
 class A
@@ -548,9 +562,11 @@ class A
       buffer overflows and surprises with `\0` characters. Also some C string manipulations
       tend to act differently depending on platform, or even the user locale
 
-- Use `ParseInt32`, `ParseInt64`, `ParseUInt32`, `ParseUInt64`, `ParseDouble` from `utilstrencodings.h` for number parsing
+- Use `ParseInt32`, `ParseInt64`, `ParseUInt32`, `ParseUInt64`, `ParseDouble`
+  from `utilstrencodings.h` for number parsing
 
-    - *Rationale*: These functions do overflow checking, and avoid pesky locale issues
+    - *Rationale*: These functions do overflow checking, and avoid pesky locale
+      issues
 
 ### Variable names
 
@@ -574,7 +590,8 @@ AddressBookPage::AddressBookPage(Mode _mode) :
 When using nested cycles, do not name the inner cycle variable the same as in
 upper cycle etc.
 
-Please name variables so that their names do not shadow variables defined in the source code.
+Please name variables so that their names do not shadow variables defined in the
+source code.
 
 ### Threads and synchronization
 
@@ -624,16 +641,19 @@ TRY_LOCK(cs_vNodes, lockNodes);
 
 ### Source code organization
 
-- Implementation code should go into the `.cpp` file and not the `.h`, unless necessary due to template usage or
-  when performance due to inlining is critical
+- Implementation code should go into the `.cpp` file and not the `.h`, unless
+  necessary due to template usage or when performance due to inlining is critical
 
-    - *Rationale*: Shorter and simpler header files are easier to read, and reduce compile time
+    - *Rationale*: Shorter and simpler header files are easier to read, and
+      reduce compile time
 
-- Use only the lowercase alphanumerics (`a-z0-9`), underscore (`_`) and hyphen (`-`) in source code filenames.
+- Use only the lowercase alphanumerics (`a-z0-9`), underscore (`_`) and hyphen
+  (`-`) in source code filenames.
 
-    - *Rationale*: `grep`:ing and auto-completing filenames is easier when using a consistent
-      naming pattern. Potential problems when building on case-insensitive filesystems are
-      avoided when using only lowercase characters in source code filenames.
+    - *Rationale*: `grep`:ing and auto-completing filenames is easier when using
+      a consistent naming pattern. Potential problems when building on case-insensitive
+      filesystems are avoided when using only lowercase characters in source code
+      filenames.
 
 - Don't import anything into the global namespace (`using namespace ...`). Use
   fully specified types such as `std::string`.
@@ -664,12 +684,14 @@ namespace {
   - Native C++ headers should be preferred over C compatibility headers.
   e.g.: use `<cstdint>` instead of `<stdint.h>`
 
-  - In order to make the code consistent, header files should be included in the following order, with each
-  section separated by a newline:
-    1. In a .cpp file, the associated .h is in first position. In a test source, this is the header file under test.
+  - In order to make the code consistent, header files should be included in the
+    following order, with each section separated by a newline:
+    1. In a .cpp file, the associated .h is in first position. In a test source,
+       this is the header file under test.
     2. The project headers.
     3. The test headers.
-    4. The 3rd party libraries headers. Different libraries should be in different sections.
+    4. The 3rd party libraries headers. Different libraries should be in different
+       sections.
     5. The system libraries.
 
 All headers should be lexically ordered inside their block.
@@ -689,8 +711,8 @@ All headers should be lexically ordered inside their block.
 - Do not display or manipulate dialogs in model code (classes `*Model`)
 
     - *Rationale*: Model classes pass through events and data from the core, they
-      should not interact with the user. That's where View classes come in. The converse also
-      holds: try to not directly access core data structures from Views.
+      should not interact with the user. That's where View classes come in. The
+      converse also holds: try to not directly access core data structures from Views.
 
 - Avoid adding slow or blocking code in the GUI thread. In particular do not
   add new `interface::Node` and `interface::Wallet` method calls, even if they
@@ -699,7 +721,8 @@ All headers should be lexically ordered inside their block.
 
 - Prefer to offload work from the GUI thread to worker threads (see
   `RPCExecutor` in console code as an example) or take other steps (see
-  [https://doc.qt.io/archives/qq/qq27-responsive-guis.html](https://doc.qt.io/archives/qq/qq27-responsive-guis.html)) to keep the GUI
+  [https://doc.qt.io/archives/qq/qq27-responsive-guis.html](https://doc.qt.io/archives/qq/qq27-responsive-guis.html))
+  to keep the GUI
   responsive.
 
     - *Rationale*: Blocking the GUI thread can increase latency, and lead to
@@ -715,33 +738,38 @@ All headers should be lexically ordered inside their block.
 
 Several parts of the repository are subtrees of software maintained elsewhere.
 
-Some of these are maintained by active developers of Bitcoin Core, in which case changes should probably go
-directly upstream without being PRed directly against the project.  They will be merged back in the next
-subtree merge.
+Some of these are maintained by active developers of Bitcoin Core, in which case
+changes should probably go directly upstream without being PRed directly against
+the project.  They will be merged back in the next subtree merge.
 
-Others are external projects without a tight relationship with our project.  Changes to these should also
-be sent upstream but bugfixes may also be prudent to PR against Bitcoin Core so that they can be integrated
-quickly.  Cosmetic changes should be purely taken upstream.
+Others are external projects without a tight relationship with our project.
+Changes to these should also be sent upstream but bugfixes may also be prudent to
+PR against Bitcoin Core so that they can be integrated quickly. Cosmetic changes
+should be purely taken upstream.
 
-There is a tool in `test/lint/git-subtree-check.sh` to check a subtree directory for consistency with
-its upstream repository.
+There is a tool in `test/lint/git-subtree-check.sh` to check a subtree directory
+for consistency with its upstream repository.
 
 Current subtrees include:
 
 - src/leveldb
-    - Upstream at [https://github.com/google/leveldb](https://github.com/google/leveldb); Maintained by Google, but
-      open important PRs to Core to avoid delay.
-    - **Note**: Follow the instructions in [Upgrading LevelDB](#upgrading-leveldb) when
-      merging upstream changes to the leveldb subtree.
+    - Upstream at [https://github.com/google/leveldb](https://github.com/google/leveldb);
+      Maintained by Google, but open important PRs to Core to avoid delay.
+    - **Note**: Follow the instructions in [Upgrading LevelDB](#upgrading-leveldb)
+      when merging upstream changes to the leveldb subtree.
 
 - src/libsecp256k1
-    - Upstream at [https://github.com/bitcoin-core/secp256k1/](https://github.com/bitcoin-core/secp256k1/); actively maintaned by Core contributors.
+    - Upstream at [https://github.com/bitcoin-core/secp256k1/](https://github.com/bitcoin-core/secp256k1/);
+      actively maintaned by Core contributors.
 
 - src/crypto/ctaes
-    - Upstream at [https://github.com/bitcoin-core/ctaes](https://github.com/bitcoin-core/ctaes); actively maintained by Core contributors.
+    - Upstream at [https://github.com/bitcoin-core/ctaes](https://github.com/bitcoin-core/ctaes);
+      actively maintained by Core contributors.
 
 - src/univalue
-    - BCHN no longer has a single upstream for `src/univalue`, but maintains its own univalue code based on fixes from several repositories, namely [https://github.com/jgarzik/univalue](https://github.com/jgarzik/univalue), Bitcoin Core's fork of univalue and the Bitcoin ABC repository.
+    - BCHN no longer has a single upstream for `src/univalue`, but maintains its
+      own univalue code based on fixes from several repositories, namely [https://github.com/jgarzik/univalue](https://github.com/jgarzik/univalue),
+      Bitcoin Core's fork of univalue and the Bitcoin ABC repository.
 
 ### Upgrading LevelDB
 
@@ -759,8 +787,8 @@ uses `mmap()` + `close()` to open table files without actually retaining
 references to the table file descriptors. If you are upgrading LevelDB, you must
 sanity check the changes to make sure that this assumption remains valid.
 
-In addition to reviewing the upstream changes in `env_posix.cc`, you can use `lsof` to
-check this. For example, on Linux this command will show open `.ldb` file counts:
+In addition to reviewing the upstream changes in `env_posix.cc`, you can use `lsof`
+to check this. For example, on Linux this command will show open `.ldb` file counts:
 
 ```bash
 $ lsof -p $(pidof bitcoind) |\
@@ -816,38 +844,45 @@ Git and GitLab tips
         theirs
         >>>
 
-  This may make it much clearer what caused the conflict. In this style, you can often just look
-  at what changed between *original* and *theirs*, and mechanically apply that to *yours* (or the other way around).
+  This may make it much clearer what caused the conflict. In this style, you can
+  often just look at what changed between *original* and *theirs*, and mechanically
+  apply that to *yours* (or the other way around).
 
-- When reviewing patches which change indentation in C++ files, use `git diff -w` and `git show -w`. This makes
-  the diff algorithm ignore whitespace changes. This feature is also available on gitlab.com, by adding `?w=1`
-  at the end of any URL which shows a diff.
+- When reviewing patches which change indentation in C++ files, use `git diff -w`
+  and `git show -w`. This makes the diff algorithm ignore whitespace changes. This
+  feature is also available on gitlab.com, by adding `?w=1` at the end of any URL
+  which shows a diff.
 
-- When reviewing patches that change symbol names in many places, use `git diff --word-diff`. This will instead
-  of showing the patch as deleted/added *lines*, show deleted/added *words*.
+- When reviewing patches that change symbol names in many places, use
+  `git diff --word-diff`. This will instead of showing the patch as deleted/added
+  *lines*, show deleted/added *words*.
 
 - When reviewing patches that move code around, try using
-  `git diff --patience commit~:old/file.cpp commit:new/file/name.cpp`, and ignoring everything except the
-  moved body of code which should show up as neither `+` or `-` lines. In case it was not a pure move, this may
-  even work when combined with the `-w` or `--word-diff` options described above.
+  `git diff --patience commit~:old/file.cpp commit:new/file/name.cpp`, and ignoring
+  everything except the moved body of code which should show up as neither `+`
+  or `-` lines. In case it was not a pure move, this may even work when combined
+  with the `-w` or `--word-diff` options described above.
 
-- When looking at other's pull requests, it may make sense to add the following section to your `.git/config`
-  file:
+- When looking at other's pull requests, it may make sense to add the following
+  section to your `.git/config` file:
 
         [remote "upstream-merges"]
                 url = git@gitlab.com:bitcoin-cash-node/bitcoin-cash-node.git
                 fetch = +refs/merge-requests/*/head:refs/remotes/upstream-merges/merge-requests/*
 
-  This will add an `upstream-merges` remote to your git repository, which can be fetched using `git fetch --all`
-  or `git fetch upstream-merges`. Afterwards, you can use `upstream-merges/merge-requests/NUMBER` in arguments to `git show`,
-  `git checkout` and anywhere a commit id would be acceptable to see the changes from merge request NUMBER.
+  This will add an `upstream-merges` remote to your git repository, which can be
+  fetched using `git fetch --all` or `git fetch upstream-merges`. Afterwards, you
+  can use `upstream-merges/merge-requests/NUMBER` in arguments to `git show`,
+  `git checkout` and anywhere a commit id would be acceptable to see the changes
+  from merge request NUMBER.
 
 RPC interface guidelines
 --------------------------
 
 A few guidelines for introducing and reviewing new RPC interfaces:
 
-- Method naming: use consecutive lower-case names such as `getrawtransaction` and `submitblock`
+- Method naming: use consecutive lower-case names such as `getrawtransaction`
+  and `submitblock`
 
     - *Rationale*: Consistency with existing interface.
 
@@ -858,52 +893,57 @@ A few guidelines for introducing and reviewing new RPC interfaces:
 - Use the JSON parser for parsing, don't manually parse integers or strings from
   arguments unless absolutely necessary.
 
-    - *Rationale*: Introduces hand-rolled string manipulation code at both the caller and callee sites,
-      which is error prone, and it is easy to get things such as escaping wrong.
+    - *Rationale*: Introduces hand-rolled string manipulation code at both the
+      caller and callee sites, which is error prone, and it is easy to get things
+      such as escaping wrong.
       JSON already supports nested data structures, no need to re-invent the wheel.
 
-    - *Exception*: AmountFromValue can parse amounts as string. This was introduced because many JSON
-      parsers and formatters hard-code handling decimal numbers as floating point
-      values, resulting in potential loss of precision. This is unacceptable for
-      monetary values. **Always** use `AmountFromValue` and `ValueFromAmount` when
-      inputting or outputting monetary values. The only exceptions to this are
-      `prioritisetransaction` and `getblocktemplate` because their interface
-      is specified as-is in BIP22.
+    - *Exception*: AmountFromValue can parse amounts as string. This was introduced
+      because many JSON parsers and formatters hard-code handling decimal numbers
+      as floating point values, resulting in potential loss of precision. This is
+      unacceptable for monetary values. **Always** use `AmountFromValue` and
+      `ValueFromAmount` when inputting or outputting monetary values. The only
+      exceptions to this are `prioritisetransaction` and `getblocktemplate`
+      because their interface is specified as-is in BIP22.
 
-- Missing arguments and 'null' should be treated the same: as default values. If there is no
-  default value, both cases should fail in the same way. The easiest way to follow this
-  guideline is detect unspecified arguments with `params[x].isNull()` instead of
-  `params.size() <= x`. The former returns true if the argument is either null or missing,
-  while the latter returns true if is missing, and false if it is null.
+- Missing arguments and 'null' should be treated the same: as default values. If
+  there is no default value, both cases should fail in the same way. The easiest
+  way to follow this guideline is detect unspecified arguments with `params[x].isNull()`
+  instead of `params.size() <= x`. The former returns true if the argument is
+  either null or missing, while the latter returns true if is missing, and false
+  if it is null.
 
-    - *Rationale*: Avoids surprises when switching to name-based arguments. Missing name-based arguments
-    are passed as 'null'.
+    - *Rationale*: Avoids surprises when switching to name-based arguments. Missing
+      name-based arguments are passed as 'null'.
 
-- Try not to overload methods on argument type. E.g. don't make `getblock(true)` and `getblock("hash")`
-  do different things.
+- Try not to overload methods on argument type. E.g. don't make `getblock(true)`
+  and `getblock("hash")` do different things.
 
-    - *Rationale*: This is impossible to use with `bitcoin-cli`, and can be surprising to users.
+    - *Rationale*: This is impossible to use with `bitcoin-cli`, and can be
+      surprising to users.
 
-    - *Exception*: Some RPC calls can take both an `int` and `bool`, most notably when a bool was switched
-      to a multi-value, or due to other historical reasons. **Always** have false map to 0 and
-      true to 1 in this case.
+    - *Exception*: Some RPC calls can take both an `int` and `bool`, most notably
+      when a bool was switched to a multi-value, or due to other historical reasons.
+      **Always** have false map to 0 and true to 1 in this case.
 
 - Don't forget to fill in the argument names correctly in the RPC command table.
 
     - *Rationale*: If not, the call can not be used with name-based arguments.
 
-- Set okSafeMode in the RPC command table to a sensible value: safe mode is when the
-  blockchain is regarded to be in a confused state, and the client deems it unsafe to
-  do anything irreversible such as send. Anything that just queries should be permitted.
+- Set okSafeMode in the RPC command table to a sensible value: safe mode is when
+  the blockchain is regarded to be in a confused state, and the client deems it
+  unsafe to do anything irreversible such as send. Anything that just queries
+  should be permitted.
 
     - *Rationale*: Troubleshooting a node in safe mode is difficult if half the
       RPCs don't work.
 
-- Add every non-string RPC argument `(method, idx, name)` to the table `vRPCConvertParams` in `rpc/client.cpp`.
+- Add every non-string RPC argument `(method, idx, name)` to the table `vRPCConvertParams`
+  in `rpc/client.cpp`.
 
-    - *Rationale*: `bitcoin-cli` and the GUI debug console use this table to determine how to
-      convert a plaintext command line to JSON. If the types don't match, the method can be unusable
-      from there.
+    - *Rationale*: `bitcoin-cli` and the GUI debug console use this table to
+      determine how to convert a plaintext command line to JSON. If the types
+      don't match, the method can be unusable from there.
 
 - A RPC method must either be a wallet method or a non-wallet method. Do not
   introduce new methods such as `signrawtransaction` that differ in behavior
@@ -915,8 +955,8 @@ A few guidelines for introducing and reviewing new RPC interfaces:
 
 - Try to make the RPC response a JSON object.
 
-    - *Rationale*: If a RPC response is not a JSON object then it is harder to avoid API breakage if
-      new data in the response is needed.
+    - *Rationale*: If a RPC response is not a JSON object then it is harder to
+      avoid API breakage if new data in the response is needed.
 
 - Wallet RPCs call BlockUntilSyncedToCurrentChain to maintain consistency with
   `getblockchaininfo`'s state immediately prior to the call's execution. Wallet
