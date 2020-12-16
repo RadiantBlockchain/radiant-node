@@ -224,6 +224,7 @@ don't have test cases for.
 - When subclassing the BitcoinTestFramwork, place overrides for the
   `set_test_params()`, `add_options()` and `setup_xxxx()` methods at the top of
   the subclass, then locally-defined helper methods, then the `run_test()` method.
+- Use `f'{x}'` for string formatting in preference to `'{}'.format(x)` or `'%s' % x`.
 
 #### Naming guidelines
 
