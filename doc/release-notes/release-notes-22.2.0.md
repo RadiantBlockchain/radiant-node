@@ -28,6 +28,22 @@ This is to have a test network that is close to mainnet.
 If you wish to experiment with non-standard transactions, please use
 testnet3 or scalenet.
 
+This release reduces the interval between INV announcements (and
+introduces a new command-line configurable option, -txbroadcastinterval,
+with millisecond resolution. The default value to 500 ms for incoming
+connections (and half that for outgoing) instead of 5 seconds incoming
+(2 sec outgoing).
+
+The rate at which new INV messages are broadcast has important
+implications for scalability.
+
+In order to mitigate spam attacks, the node will limit the rate at which
+new transaction invs are broadcast to each peer. The default is to limit
+this to 7 tx/sec per MB of excessive block size.
+That is, with a 32 MB blocksize limit, no more than 224 tx INVs are allowed
+to be broadcast each second. The broadcast rate limit is adjustable
+through the -txbroadcastrate configuration option.
+
 
 ## Change of `-maxmempool` default value
 
@@ -39,6 +55,20 @@ memory capacity or override this default.
 
 
 ## Added functionality
+
+### Configurable transaction broadcast interval and rate
+
+Two new configuration have been added which control the INV broadcast
+interval and rate, with millisecond resolution.
+
+These options have important impact on user experience and scalability,
+and have been configured with settings that improve on the previous
+conditions.
+
+For more information on these impact of these options, please refer to
+the detailed description in:
+
+<https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/merge_requests/746>
 
 ### Thread names in logs
 
