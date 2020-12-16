@@ -1,10 +1,16 @@
 ### Usage
 
-To build dependencies for the current arch+OS:
+To build dependencies for the current architecture + OS:
 
     make
 
-To build for another arch/OS:
+To build for another architecture/OS, you may need to install
+some required packages first. Please have a look at the section
+"Install the required dependencies" below to check for your
+target platform.
+
+Once you have the required packages installed and done
+any necessary preparation, run
 
     make build-<platform>
 
@@ -16,18 +22,36 @@ Where `<platform>` is one of the following:
  - osx
  - win64
 
-For example, building the dependencies for macOS:
+For example, building the dependencies for Linux on ARM:
 
-    make build-osx
+    make build-linux-arm
+
+To use the dependencies for building Bitcoin Cash Node, you need to set
+the platform file to be used by `cmake`.
+The platform files are located under `cmake/platforms/`.
+For example, cross-building for Linux on ARM (run from the project root):
+
+    mkdir build_arm
+    cd build_arm
+    cmake -GNinja .. -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/LinuxARM.cmake
+    ninja
 
 Note that it will use all the CPU cores available on the machine by default.
 This behavior can be changed by setting the `JOBS` environment variable (see
 below).
 
-To use the dependencies for building Bitcoin Cash Node, you need to set
-the platform file to be used by `cmake`.
-The platform files are located under `cmake/platforms/`.
-For example, cross-building for macOS (run from the project root):
+For Mac OSX building, some preparatory steps are needed, including unpacking
+the suitable SDK (how to obtain this SDK can be found in the `gitian-building.md`
+document). Once the SDK has been obtained, the dependency building can be
+done like this:
+
+    make download
+    mkdir SDKs
+    tar -C SDKs -xf /path/to/MacOSX10.14.sdk.tar.xz
+    make build-osx HOST=x86_64-apple-darwin16
+
+Building the node against these dependencies is again a matter of (starting
+from the project root):
 
     mkdir build_osx
     cd build_osx
@@ -44,13 +68,19 @@ No other options are needed, the paths are automatically configured.
 
 #### For macOS cross compilation
 
+Install the following packages:
+
     sudo apt-get install imagemagick libbz2-dev libcap-dev librsvg2-bin libtiff-tools python3-setuptools
+
+Obtain the same SDK packge that is used in the gitian build (refer to `gitian-building.md` for download instructions).
+Create an `SDKs` folder within the `depends` folder, if it does not already exist.
+Unpack the SDK tarball there.
 
 #### For Win64 cross compilation
 
 - see [build-windows.md](../doc/build-windows.md#cross-compilation-for-ubuntu-and-windows-subsystem-for-linux)
 
-#### For linux cross compilation
+#### For Linux cross compilation
 
 Common linux dependencies:
 
