@@ -11,19 +11,6 @@ Some notes on how to build Bitcoin Cash Node in Unix.
 * For FreeBSD specific instructions, see [build-freebsd.md](build-freebsd.md) in
   this directory.
 
-**Table of contents**
-
-* [UNIX BUILD NOTES](build-unix.md#unix-build-notes)
-  * [To Build](build-unix.md#to-build)
-    * [Disable-wallet mode](build-unix.md#disable-wallet-mode)
-    * [ARM Cross-compilation](build-unix.md#arm-cross-compilation)
-    * [AArch64 Cross-compilation](build-unix.md#aarch64-cross-compilation)
-    * [Additional cmake options](build-unix.md#additional-cmake-options)
-    * [Memory Requirements](build-unix.md#memory-requirements)
-    * [Strip debug symbols](build-unix.md#strip-debug-symbols)
-  * [miniupnpc](build-unix.md#miniupnpc)
-  * [Security](build-unix.md#security)
-
 ## To Build
 
 To build Bitcoin Cash Node you first need to install all the needed dependencies.
