@@ -233,7 +233,8 @@ def count_bytes(hex_string):
     return len(bytearray.fromhex(hex_string))
 
 
-def hash256(byte_str):
+def hash256_reversed(byte_str):
+    """Compute sha256d, but return the result in big endian (reversed) byte order ready for hex display"""
     sha256 = hashlib.sha256()
     sha256.update(byte_str)
     sha256d = hashlib.sha256()

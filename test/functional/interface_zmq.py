@@ -10,7 +10,7 @@ from test_framework.test_framework import BitcoinTestFramework
 from test_framework.messages import CTransaction
 from test_framework.util import (
     assert_equal,
-    hash256,
+    hash256_reversed,
 )
 
 
@@ -104,7 +104,7 @@ class ZMQTest (BitcoinTestFramework):
 
             # Should receive the generated raw block.
             block = self.rawblock.receive()
-            assert_equal(genhashes[x], hash256(block[:80]).hex())
+            assert_equal(genhashes[x], hash256_reversed(block[:80]).hex())
 
         self.log.info("Wait for tx from second node")
         payment_txid = self.nodes[1].sendtoaddress(
@@ -117,7 +117,7 @@ class ZMQTest (BitcoinTestFramework):
 
         # Should receive the broadcasted raw transaction.
         hex = self.rawtx.receive()
-        assert_equal(payment_txid, hash256(hex).hex())
+        assert_equal(payment_txid, hash256_reversed(hex).hex())
 
 
 if __name__ == '__main__':
