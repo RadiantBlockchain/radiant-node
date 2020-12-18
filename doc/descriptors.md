@@ -65,26 +65,26 @@ always a `SCRIPT`.
   be specified instead of the corresponding public key, with the same meaning.
 - `xpub` encoded extended public key or `xprv` encoded private key (as defined in
   [BIP 32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki)).
-  - Followed by zero or more `/NUM` unhardened and `/NUM'` hardened BIP32 derivation
-    steps.
-  - Optionally followed by a single `/*` or `/*'` final step to denote all (direct)
-    unhardened or hardened children.
-  - The usage of hardened derivation steps requires providing the private key.
-  - Instead of a `'`, the suffix `h` can be used to denote hardened derivation.
+    - Followed by zero or more `/NUM` unhardened and `/NUM'` hardened BIP32 derivation
+      steps.
+    - Optionally followed by a single `/*` or `/*'` final step to denote all (direct)
+      unhardened or hardened children.
+    - The usage of hardened derivation steps requires providing the private key.
+    - Instead of a `'`, the suffix `h` can be used to denote hardened derivation.
 
 - Optionally, key origin information, consisting of:
-  - An open bracket `[`
-  - Exactly 8 hex characters for the fingerprint of the key where the derivation
-    starts (see BIP32 for details)
-  - Followed by zero or more `/NUM` or `/NUM'` path elements to indicate unhardened
-    or hardened derivation steps between the fingerprint and the key or xpub/xprv
-    root that follows
-  - A closing bracket `]`
+    - An open bracket `[`
+    - Exactly 8 hex characters for the fingerprint of the key where the derivation
+      starts (see BIP32 for details)
+    - Followed by zero or more `/NUM` or `/NUM'` path elements to indicate unhardened
+      or hardened derivation steps between the fingerprint and the key or xpub/xprv
+      root that follows
+    - A closing bracket `]`
 - Followed by the actual key, which is either:
-  - Hex encoded public keys (66 characters starting with `02` or `03`, or 130
-    characters starting with `04`).
-  - [WIF](https://en.bitcoin.it/wiki/Wallet_import_format) encoded private keys
-    may be specified instead of the corresponding public key, with the same meaning.
+    - Hex encoded public keys (66 characters starting with `02` or `03`, or 130
+      characters starting with `04`).
+    - [WIF](https://en.bitcoin.it/wiki/Wallet_import_format) encoded private keys
+      may be specified instead of the corresponding public key, with the same meaning.
   -`xpub` encoded extended public key or `xprv` encoded private key (as defined
     in [BIP 32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki)).
     - Followed by zero or more `/NUM` unhardened and `/NUM'` hardened BIP32
