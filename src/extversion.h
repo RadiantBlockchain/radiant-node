@@ -6,7 +6,6 @@
 #ifndef BITCOIN_EXTVERSION_H
 #define BITCOIN_EXTVERSION_H
 
-#include <optional.h>
 #include <serialize.h>
 #include <streams.h>
 #include <tinyformat.h>
@@ -14,6 +13,7 @@
 
 #include <cstdint>
 #include <limits>
+#include <optional>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -97,7 +97,7 @@ static_assert (version.Revision() < version.MinorRevisionRange(), "Static versio
 class Message final
 {
     struct Values {
-        Optional<VersionTuple> version; //! Data received/sent for Key::Version
+        std::optional<VersionTuple> version; //! Data received/sent for Key::Version
         // We may add more values here as we add support for more keys
 
         void clear() noexcept { version.reset(); }
@@ -107,7 +107,7 @@ public:
     Message() = default;
 
     //! Gets the value for Key::Version. May return an empty optional.
-    Optional<VersionTuple> GetVersion() const { return values.version; }
+    std::optional<VersionTuple> GetVersion() const { return values.version; }
     //! Sets the value for Key::Version.
     void SetVersion(const VersionTuple &v = extversion::version) { values.version = v; }
 

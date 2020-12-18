@@ -7,7 +7,7 @@
 #include <util/moneystr.h>
 #include <util/system.h>
 
-#include <boost/optional.hpp>
+#include <optional>
 
 // Descending order comparator
 struct {
@@ -254,7 +254,7 @@ bool KnapsackSolver(const Amount nTargetValue, std::vector<OutputGroup> &groups,
     nValueRet = Amount::zero();
 
     // List of values less than target
-    boost::optional<OutputGroup> lowest_larger;
+    std::optional<OutputGroup> lowest_larger;
     std::vector<OutputGroup> applicable_groups;
     Amount nTotalLower = Amount::zero();
 

@@ -177,7 +177,6 @@ BITCOIN_CORE_H = \
   node/context.h \
   node/transaction.h \
   noui.h \
-  optional.h \
   outputtype.h \
   policy/fees.h \
   policy/mempool.h \

@@ -23,6 +23,7 @@
 #include <boost/signals2/signal.hpp>
 
 #include <map>
+#include <optional>
 #include <set>
 #include <string>
 #include <utility>
@@ -666,7 +667,7 @@ public:
         EXCLUSIVE_LOCKS_REQUIRED(cs);
 
     /** Returns an iterator to the given txid, if found */
-    boost::optional<txiter> GetIter(const TxId &txid) const
+    std::optional<txiter> GetIter(const TxId &txid) const
         EXCLUSIVE_LOCKS_REQUIRED(cs);
 
     /**

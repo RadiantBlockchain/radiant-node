@@ -26,6 +26,7 @@
 
 #include <cstdint>
 #include <fstream>
+#include <optional>
 
 static std::string EncodeDumpString(const std::string &str) {
     std::stringstream ret;
@@ -419,8 +420,7 @@ UniValue importprunedfunds(const Config &,
     if (merkleBlock.txn.ExtractMatches(vMatch, vIndex) ==
         merkleBlock.header.hashMerkleRoot) {
         auto locked_chain = pwallet->chain().lock();
-        if (locked_chain->getBlockHeight(merkleBlock.header.GetHash()) ==
-            nullopt) {
+        if (locked_chain->getBlockHeight(merkleBlock.header.GetHash()) == std::nullopt) {
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY,
                                "Block not found in chain");
         }
@@ -636,7 +636,7 @@ UniValue importwallet(const Config &config, const JSONRPCRequest &request) {
             throw JSONRPCError(RPC_INVALID_PARAMETER,
                                "Cannot open wallet dump file");
         }
-        Optional<int> tip_height = locked_chain->getHeight();
+        std::optional<int> tip_height = locked_chain->getHeight();
         nTimeBegin = tip_height ? locked_chain->getBlockTime(*tip_height) : 0;
 
         int64_t nFilesize = std::max<int64_t>(1, file.tellg());
@@ -912,7 +912,7 @@ UniValue dumpwallet(const Config &config, const JSONRPCRequest &request) {
     // produce output
     file << strprintf("# Wallet dump created by Bitcoin %s\n", CLIENT_BUILD);
     file << strprintf("# * Created on %s\n", FormatISO8601DateTime(GetTime()));
-    const Optional<int> tip_height = locked_chain->getHeight();
+    const std::optional<int> tip_height = locked_chain->getHeight();
     file << strprintf("# * Best block at time of backup was %i (%s),\n",
                       tip_height.value_or(-1),
                       tip_height
@@ -1449,9 +1449,8 @@ UniValue importmulti(const Config &, const JSONRPCRequest &mainRequest) {
         EnsureWalletIsUnlocked(pwallet);
 
         // Verify all timestamps are present before importing any keys.
-        const Optional<int> tip_height = locked_chain->getHeight();
-        now =
-            tip_height ? locked_chain->getBlockMedianTimePast(*tip_height) : 0;
+        const std::optional<int> tip_height = locked_chain->getHeight();
+        now = tip_height ? locked_chain->getBlockMedianTimePast(*tip_height) : 0;
         for (auto &data : requests) {
             GetImportTimestamp(data, now);
         }

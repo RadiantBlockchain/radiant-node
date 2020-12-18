@@ -8,14 +8,14 @@
 #include <primitives/transaction.h>
 #include <wallet/wallet.h>
 
-#include <boost/optional.hpp>
+#include <optional>
 
 /** Coin Control Features. */
 class CCoinControl {
 public:
     CTxDestination destChange;
     //! Override the default change type if set, ignored if destChange is set
-    boost::optional<OutputType> m_change_type;
+    std::optional<OutputType> m_change_type;
     //! If false, allows unselected inputs, but requires all selected inputs be
     //! used
     bool fAllowOtherInputs;
@@ -24,9 +24,9 @@ public:
     //! Override automatic min/max checks on fee, m_feerate must be set if true
     bool fOverrideFeeRate;
     //! Override the wallet's m_pay_tx_fee if set
-    boost::optional<CFeeRate> m_feerate;
+    std::optional<CFeeRate> m_feerate;
     //! Override the default confirmation target if set
-    boost::optional<unsigned int> m_confirm_target;
+    std::optional<unsigned int> m_confirm_target;
     //! Avoid partial use of funds sent to a given address
     bool m_avoid_partial_spends;
 
