@@ -5,10 +5,9 @@
 #ifndef BITCOIN_INTERFACES_CHAIN_H
 #define BITCOIN_INTERFACES_CHAIN_H
 
-#include <optional.h>
-
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -37,12 +36,12 @@ public:
         //! Get current chain height, not including genesis block (returns 0 if
         //! chain only contains genesis block, nullopt if chain does not contain
         //! any blocks).
-        virtual Optional<int> getHeight() = 0;
+        virtual std::optional<int> getHeight() = 0;
 
         //! Get block height above genesis block. Returns 0 for genesis block,
         //! 1 for following block, and so on. Returns nullopt for a block not
         //! included in the current chain.
-        virtual Optional<int> getBlockHeight(const BlockHash &hash) = 0;
+        virtual std::optional<int> getBlockHeight(const BlockHash &hash) = 0;
 
         //! Get block depth. Returns 1 for chain tip, 2 for preceding block, and
         //! so on. Returns 0 for a block not included in the current chain.
@@ -67,8 +66,7 @@ public:
         //! a high enough timestamp. Also return the block hash as an optional
         //! output parameter (to avoid the cost of a second lookup in case this
         //! information is needed.)
-        virtual Optional<int> findFirstBlockWithTime(int64_t time,
-                                                     BlockHash *hash) = 0;
+        virtual std::optional<int> findFirstBlockWithTime(int64_t time, BlockHash *hash) = 0;
 
         //! Return height of the first block in the chain with timestamp equal
         //! or greater than the given time and height equal or greater than the
@@ -77,22 +75,18 @@ public:
         //! Calling this with height 0 is equivalent to calling
         //! findFirstBlockWithTime, but less efficient because it requires a
         //! linear instead of a binary search.
-        virtual Optional<int> findFirstBlockWithTimeAndHeight(int64_t time,
-                                                              int height) = 0;
+        virtual std::optional<int> findFirstBlockWithTimeAndHeight(int64_t time, int height) = 0;
 
         //! Return height of last block in the specified range which is pruned,
         //! or nullopt if no block in the range is pruned. Range is inclusive.
-        virtual Optional<int>
-        findPruned(int start_height = 0,
-                   Optional<int> stop_height = nullopt) = 0;
+        virtual std::optional<int> findPruned(int start_height = 0, std::optional<int> stop_height = std::nullopt) = 0;
 
         //! Return height of the highest block on the chain that is an ancestor
         //! of the specified block, or nullopt if no common ancestor is found.
         //! Also return the height of the specified block as an optional output
         //! parameter (to avoid the cost of a second hash lookup in case this
         //! information is desired).
-        virtual Optional<int> findFork(const BlockHash &hash,
-                                       Optional<int> *height) = 0;
+        virtual std::optional<int> findFork(const BlockHash &hash, std::optional<int> *height) = 0;
 
         //! Return true if block hash points to the current chain tip, or to a
         //! possible descendant of the current chain tip that isn't currently
@@ -105,7 +99,7 @@ public:
         //! Return height of the latest block common to locator and chain, which
         //! is guaranteed to be an ancestor of the block used to create the
         //! locator.
-        virtual Optional<int> findLocatorFork(const CBlockLocator &locator) = 0;
+        virtual std::optional<int> findLocatorFork(const CBlockLocator &locator) = 0;
     };
 
     //! Return Lock interface. Chain is locked when this is called, and

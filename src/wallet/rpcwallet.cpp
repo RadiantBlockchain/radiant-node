@@ -38,6 +38,7 @@
 #include <event2/http.h>
 
 #include <functional>
+#include <optional>
 
 static const std::string WALLET_ENDPOINT_BASE = "/wallet/";
 
@@ -1819,8 +1820,8 @@ static UniValue listsinceblock(const Config &config,
     LOCK(pwallet->cs_wallet);
 
     // The way the 'height' is initialized is just a workaround for the gcc bug #47679 since version 4.6.0.
-    Optional<int> height = MakeOptional(false, int()); // Height of the specified block or the common ancestor, if the block provided was in a deactivated chain.
-    Optional<int> altheight; // Height of the specified block, even if it's in a deactivated chain.
+    std::optional<int> height; // Height of the specified block or the common ancestor, if the block provided was in a deactivated chain.
+    std::optional<int> altheight; // Height of the specified block, even if it's in a deactivated chain.
     int target_confirms = 1;
     isminefilter filter = ISMINE_SPENDABLE;
 
@@ -1848,7 +1849,7 @@ static UniValue listsinceblock(const Config &config,
     bool include_removed =
         (request.params[3].isNull() || request.params[3].get_bool());
 
-    const Optional<int> tip_height = locked_chain->getHeight();
+    const std::optional<int> tip_height = locked_chain->getHeight();
     int depth = tip_height && height ? (1 + *tip_height - *height) : -1;
 
     UniValue::Array transactions;
@@ -3687,7 +3688,7 @@ UniValue rescanblockchain(const Config &config, const JSONRPCRequest &request) {
     BlockHash start_block, stop_block;
     {
         auto locked_chain = pwallet->chain().lock();
-        Optional<int> tip_height = locked_chain->getHeight();
+        std::optional<int> tip_height = locked_chain->getHeight();
 
         if (!request.params[0].isNull()) {
             start_height = request.params[0].get_int();
@@ -3697,7 +3698,7 @@ UniValue rescanblockchain(const Config &config, const JSONRPCRequest &request) {
             }
         }
 
-        Optional<int> stop_height;
+        std::optional<int> stop_height;
         if (!request.params[1].isNull()) {
             stop_height = request.params[1].get_int();
             if (*stop_height < 0 || !tip_height || *stop_height > *tip_height) {

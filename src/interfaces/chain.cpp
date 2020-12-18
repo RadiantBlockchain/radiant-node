@@ -19,23 +19,23 @@ namespace interfaces {
 namespace {
 
     class LockImpl : public Chain::Lock {
-        Optional<int> getHeight() override {
+        std::optional<int> getHeight() override {
             int height = ::ChainActive().Height();
             if (height >= 0) {
                 return height;
             }
-            return nullopt;
+            return std::nullopt;
         }
-        Optional<int> getBlockHeight(const BlockHash &hash) override {
+        std::optional<int> getBlockHeight(const BlockHash &hash) override {
             CBlockIndex *block = LookupBlockIndex(hash);
             if (block && ::ChainActive().Contains(block)) {
                 return block->nHeight;
             }
-            return nullopt;
+            return std::nullopt;
         }
         int getBlockDepth(const BlockHash &hash) override {
-            const Optional<int> tip_height = getHeight();
-            const Optional<int> height = getBlockHeight(hash);
+            const std::optional<int> tip_height = getHeight();
+            const std::optional<int> height = getBlockHeight(hash);
             return tip_height && height ? *tip_height - *height + 1 : 0;
         }
         BlockHash getBlockHash(int height) override {
@@ -57,8 +57,7 @@ namespace {
             CBlockIndex *block = ::ChainActive()[height];
             return block && (block->nStatus.hasData() != 0) && block->nTx > 0;
         }
-        Optional<int> findFirstBlockWithTime(int64_t time,
-                                             BlockHash *hash) override {
+        std::optional<int> findFirstBlockWithTime(int64_t time, BlockHash *hash) override {
             CBlockIndex *block = ::ChainActive().FindEarliestAtLeast(time);
             if (block) {
                 if (hash) {
@@ -66,10 +65,9 @@ namespace {
                 }
                 return block->nHeight;
             }
-            return nullopt;
+            return std::nullopt;
         }
-        Optional<int> findFirstBlockWithTimeAndHeight(int64_t time,
-                                                      int height) override {
+        std::optional<int> findFirstBlockWithTimeAndHeight(int64_t time, int height) override {
             // TODO: Could update CChain::FindEarliestAtLeast() to take a height
             // parameter and use it with std::lower_bound() to make this
             // implementation more efficient and allow combining
@@ -81,10 +79,9 @@ namespace {
                     return block->nHeight;
                 }
             }
-            return nullopt;
+            return std::nullopt;
         }
-        Optional<int> findPruned(int start_height,
-                                 Optional<int> stop_height) override {
+        std::optional<int> findPruned(int start_height, std::optional<int> stop_height) override {
             if (::fPruneMode) {
                 CBlockIndex *block = stop_height ? ::ChainActive()[*stop_height]
                                                  : ::ChainActive().Tip();
@@ -95,10 +92,9 @@ namespace {
                     block = block->pprev;
                 }
             }
-            return nullopt;
+            return std::nullopt;
         }
-        Optional<int> findFork(const BlockHash &hash,
-                               Optional<int> *height) override {
+        std::optional<int> findFork(const BlockHash &hash, std::optional<int> *height) override {
             const CBlockIndex *block = LookupBlockIndex(hash);
             const CBlockIndex *fork =
                 block ? ::ChainActive().FindFork(block) : nullptr;
@@ -112,7 +108,7 @@ namespace {
             if (fork) {
                 return fork->nHeight;
             }
-            return nullopt;
+            return std::nullopt;
         }
         bool isPotentialTip(const BlockHash &hash) override {
             if (::ChainActive().Tip()->GetBlockHash() == hash) {
@@ -125,13 +121,13 @@ namespace {
         CBlockLocator getLocator() override {
             return ::ChainActive().GetLocator();
         }
-        Optional<int> findLocatorFork(const CBlockLocator &locator) override {
+        std::optional<int> findLocatorFork(const CBlockLocator &locator) override {
             LockAnnotation lock(::cs_main);
             if (CBlockIndex *fork =
                     FindForkInGlobalIndex(::ChainActive(), locator)) {
                 return fork->nHeight;
             }
-            return nullopt;
+            return std::nullopt;
         }
     };
 

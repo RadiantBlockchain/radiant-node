@@ -7,10 +7,10 @@
 #define BITCOIN_CONSENSUS_PARAMS_H
 
 #include <primitives/blockhash.h>
-#include <optional.h>
 #include <uint256.h>
 
 #include <limits>
+#include <optional>
 
 namespace Consensus {
 
@@ -69,7 +69,7 @@ struct Params {
     };
 
     /** For chains with a checkpoint after the ASERT anchor block, this is always defined */
-    Optional<ASERTAnchor> asertAnchorParams;
+    std::optional<ASERTAnchor> asertAnchorParams;
 
 };
 } // namespace Consensus

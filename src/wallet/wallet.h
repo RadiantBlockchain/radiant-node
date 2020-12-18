@@ -30,6 +30,7 @@
 #include <cstdint>
 #include <map>
 #include <memory>
+#include <optional>
 #include <set>
 #include <stdexcept>
 #include <string>
@@ -1081,7 +1082,7 @@ public:
         //! Unset if no blocks were scanned due to read errors or the chain
         //! being empty.
         BlockHash stop_block;
-        Optional<int> stop_height;
+        std::optional<int> stop_height;
 
         //! Hash of the most recent block that could not be scanned due to
         //! read errors or pruning. Will be set if status is FAILURE, unset if

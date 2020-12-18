@@ -10,6 +10,8 @@
 #include <pubkey.h>
 #include <script/sign.h>
 
+#include <optional>
+
 // Magic bytes
 static constexpr uint8_t PSBT_MAGIC_BYTES[5] = {'p', 's', 'b', 't', 0xff};
 
@@ -308,7 +310,7 @@ struct PSBTOutput {
  * A version of CTransaction with the PSBT format.
  */
 struct PartiallySignedTransaction {
-    boost::optional<CMutableTransaction> tx;
+    std::optional<CMutableTransaction> tx;
     std::vector<PSBTInput> inputs;
     std::vector<PSBTOutput> outputs;
     std::map<std::vector<uint8_t>, std::vector<uint8_t>> unknown;

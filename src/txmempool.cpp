@@ -25,6 +25,7 @@
 #include <version.h>
 
 #include <algorithm>
+#include <optional>
 
 CTxMemPoolEntry::CTxMemPoolEntry(const CTransactionRef &_tx, const Amount _nFee,
                                  int64_t _nTime, unsigned int _entryHeight,
@@ -194,7 +195,7 @@ bool CTxMemPool::CalculateMemPoolAncestors(
         // GetMemPoolParents() is only valid for entries in the mempool, so we
         // iterate mapTx to find parents.
         for (const CTxIn &in : tx.vin) {
-            boost::optional<txiter> piter = GetIter(in.prevout.GetTxId());
+            std::optional<txiter> piter = GetIter(in.prevout.GetTxId());
             if (!piter) {
                 continue;
             }
@@ -971,13 +972,14 @@ const CTransaction *CTxMemPool::GetConflictTx(const COutPoint &prevout) const {
     return it == mapNextTx.end() ? nullptr : it->second;
 }
 
-boost::optional<CTxMemPool::txiter>
+std::optional<CTxMemPool::txiter>
 CTxMemPool::GetIter(const TxId &txid) const {
+    std::optional<CTxMemPool::txiter> ret;
     auto it = mapTx.find(txid);
     if (it != mapTx.end()) {
-        return it;
+        ret.emplace(it);
     }
-    return boost::optional<txiter>{};
+    return ret;
 }
 
 CTxMemPool::setEntries

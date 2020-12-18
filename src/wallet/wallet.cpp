@@ -1787,9 +1787,9 @@ int64_t CWallet::RescanFromTime(int64_t startTime,
     BlockHash start_block;
     {
         auto locked_chain = chain().lock();
-        const Optional<int> start_height = locked_chain->findFirstBlockWithTime(
+        const std::optional<int> start_height = locked_chain->findFirstBlockWithTime(
             startTime - TIMESTAMP_WINDOW, &start_block);
-        const Optional<int> tip_height = locked_chain->getHeight();
+        const std::optional<int> tip_height = locked_chain->getHeight();
         WalletLogPrintf(
             "%s: Rescanning last %i blocks\n", __func__,
             tip_height && start_height ? *tip_height - *start_height + 1 : 0);
@@ -1853,12 +1853,12 @@ CWallet::ScanResult CWallet::ScanForWalletTransactions(
                      0);
         BlockHash tip_hash;
         // The way the 'block_height' is initialized is just a workaround for the gcc bug #47679 since version 4.6.0.
-        Optional<int> block_height = MakeOptional(false, int());
+        std::optional<int> block_height;
         double progress_begin;
         double progress_end;
         {
             auto locked_chain = chain().lock();
-            if (Optional<int> tip_height = locked_chain->getHeight()) {
+            if (std::optional<int> tip_height = locked_chain->getHeight()) {
                 tip_hash = locked_chain->getBlockHash(*tip_height);
             }
             block_height = locked_chain->getBlockHeight(block_hash);
@@ -1918,7 +1918,7 @@ CWallet::ScanResult CWallet::ScanForWalletTransactions(
             }
             {
                 auto locked_chain = chain().lock();
-                Optional<int> tip_height = locked_chain->getHeight();
+                std::optional<int> tip_height = locked_chain->getHeight();
                 if (!tip_height || *tip_height <= block_height ||
                     !locked_chain->getBlockHeight(block_hash)) {
                     // break successfully when rescan has reached the tip, or
@@ -4216,7 +4216,7 @@ void CWallet::GetKeyBirthTimes(
     }
 
     // Map in which we'll infer heights of other keys
-    const Optional<int> tip_height = locked_chain.getHeight();
+    const std::optional<int> tip_height = locked_chain.getHeight();
     // the tip can be reorganized; use a 144-block safety margin
     const int max_height =
         tip_height && *tip_height > 144 ? *tip_height - 144 : 0;
@@ -4237,7 +4237,7 @@ void CWallet::GetKeyBirthTimes(
     for (const auto &entry : mapWallet) {
         // iterate over all wallet transactions...
         const CWalletTx &wtx = entry.second;
-        if (Optional<int> height = locked_chain.getBlockHeight(wtx.hashBlock)) {
+        if (std::optional<int> height = locked_chain.getBlockHeight(wtx.hashBlock)) {
             // ... which are already in a block
             for (const CTxOut &txout : wtx.tx->vout) {
                 // Iterate over all their outputs...
@@ -4719,14 +4719,13 @@ std::shared_ptr<CWallet> CWallet::CreateWalletFromFile(
         WalletBatch batch(*walletInstance->database);
         CBlockLocator locator;
         if (batch.ReadBestBlock(locator)) {
-            if (const Optional<int> fork_height =
-                    locked_chain->findLocatorFork(locator)) {
+            if (const std::optional<int> fork_height = locked_chain->findLocatorFork(locator)) {
                 rescan_height = *fork_height;
             }
         }
     }
 
-    const Optional<int> tip_height = locked_chain->getHeight();
+    const std::optional<int> tip_height = locked_chain->getHeight();
     if (tip_height) {
         walletInstance->m_last_block_processed =
             locked_chain->getBlockHash(*tip_height);
@@ -4763,10 +4762,9 @@ std::shared_ptr<CWallet> CWallet::CreateWalletFromFile(
         // No need to read and scan block if block was created before our wallet
         // birthday (as adjusted for block time variability)
         if (walletInstance->nTimeFirstKey) {
-            if (Optional<int> first_block =
-                    locked_chain->findFirstBlockWithTimeAndHeight(
-                        walletInstance->nTimeFirstKey - TIMESTAMP_WINDOW,
-                        rescan_height)) {
+            if (std::optional<int> first_block =
+                    locked_chain->findFirstBlockWithTimeAndHeight(walletInstance->nTimeFirstKey - TIMESTAMP_WINDOW,
+                                                                  rescan_height)) {
                 rescan_height = *first_block;
             }
         }

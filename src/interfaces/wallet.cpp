@@ -31,6 +31,7 @@
 #include <wallet/walletutil.h>
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -318,7 +319,7 @@ namespace {
             if (mi == m_wallet.mapWallet.end()) {
                 return false;
             }
-            if (Optional<int> height = locked_chain->getHeight()) {
+            if (std::optional<int> height = locked_chain->getHeight()) {
                 num_blocks = *height;
                 block_time = locked_chain->getBlockTime(*height);
             } else {
