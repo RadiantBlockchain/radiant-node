@@ -102,14 +102,14 @@ constexpr inline bool IsSpace(char c) noexcept {
  * @returns true if the entire string could be parsed as valid integer, false if
  * not the entire string could be parsed or when overflow or underflow occurred.
  */
-NODISCARD bool ParseInt32(const std::string &str, int32_t *out);
+[[nodiscard]] bool ParseInt32(const std::string &str, int32_t *out);
 
 /**
  * Convert string to signed 64-bit integer with strict parse error feedback.
  * @returns true if the entire string could be parsed as valid integer, false if
  * not the entire string could be parsed or when overflow or underflow occurred.
  */
-NODISCARD bool ParseInt64(const std::string &str, int64_t *out);
+[[nodiscard]] bool ParseInt64(const std::string &str, int64_t *out);
 
 /**
  * Convert decimal string to unsigned 32-bit integer with strict parse error
@@ -117,7 +117,7 @@ NODISCARD bool ParseInt64(const std::string &str, int64_t *out);
  * @returns true if the entire string could be parsed as valid integer, false if
  * not the entire string could be parsed or when overflow or underflow occurred.
  */
-NODISCARD bool ParseUInt32(const std::string &str, uint32_t *out);
+[[nodiscard]] bool ParseUInt32(const std::string &str, uint32_t *out);
 
 /**
  * Convert decimal string to unsigned 64-bit integer with strict parse error
@@ -125,14 +125,14 @@ NODISCARD bool ParseUInt32(const std::string &str, uint32_t *out);
  * @returns true if the entire string could be parsed as valid integer, false if
  * not the entire string could be parsed or when overflow or underflow occurred.
  */
-NODISCARD bool ParseUInt64(const std::string &str, uint64_t *out);
+[[nodiscard]] bool ParseUInt64(const std::string &str, uint64_t *out);
 
 /**
  * Convert string to double with strict parse error feedback.
  * @returns true if the entire string could be parsed as valid double, false if
  * not the entire string could be parsed or when overflow or underflow occurred.
  */
-NODISCARD bool ParseDouble(const std::string &str, double *out);
+[[nodiscard]] bool ParseDouble(const std::string &str, double *out);
 
 namespace strencodings {
 // We use a hex lookup table with a series of hex pairs all in 1 string in order to ensure locality of reference.
@@ -211,8 +211,7 @@ template <typename T> bool TimingResistantEqual(const T &a, const T &b) {
  * @note The result must be in the range (-10^18,10^18), otherwise an overflow
  * error will trigger.
  */
-NODISCARD bool ParseFixedPoint(const std::string &val, int decimals,
-                               int64_t *amount_out);
+[[nodiscard]] bool ParseFixedPoint(const std::string &val, int decimals, int64_t *amount_out);
 
 /**
  * Convert from one power-of-2 number base to another.
@@ -248,8 +247,7 @@ bool ConvertBits(const O &outfn, I it, I end) {
 }
 
 /** Parse an HD keypaths like "m/7/0'/2000". */
-NODISCARD bool ParseHDKeypath(const std::string &keypath_str,
-                              std::vector<uint32_t> &keypath);
+[[nodiscard]] bool ParseHDKeypath(const std::string &keypath_str, std::vector<uint32_t> &keypath);
 
 /**
  * Converts the given character to its lowercase equivalent.

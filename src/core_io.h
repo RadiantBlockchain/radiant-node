@@ -28,9 +28,9 @@ class uint256;
 CScript ParseScript(const std::string &s);
 std::string ScriptToAsmStr(const CScript &script,
                            const bool fAttemptSighashDecode = false);
-NODISCARD bool DecodeHexTx(CMutableTransaction &tx,
-                           const std::string &strHexTx);
-NODISCARD bool DecodeHexBlk(CBlock &, const std::string &strHexBlk);
+[[nodiscard]] bool DecodeHexTx(CMutableTransaction &tx,
+                               const std::string &strHexTx);
+[[nodiscard]] bool DecodeHexBlk(CBlock &, const std::string &strHexBlk);
 bool DecodeHexBlockHeader(CBlockHeader &, const std::string &hex_header);
 
 /**
@@ -50,8 +50,8 @@ bool ParseHashStr(const std::string &strHex, uint256 &result);
  */
 bool ParseHashStr(const std::string &strHex, uint160 &result);
 std::vector<uint8_t> ParseHexUV(const UniValue &v, const std::string &strName);
-NODISCARD bool DecodePSBT(PartiallySignedTransaction &psbt,
-                          const std::string &base64_tx, std::string &error);
+[[nodiscard]] bool DecodePSBT(PartiallySignedTransaction &psbt,
+                              const std::string &base64_tx, std::string &error);
 SigHashType ParseSighashString(const UniValue &sighash);
 
 // core_write.cpp

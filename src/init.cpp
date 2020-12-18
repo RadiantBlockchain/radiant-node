@@ -110,7 +110,7 @@ static fs::path GetPidFile() {
         fs::path(gArgs.GetArg("-pid", BITCOIN_PID_FILENAME)));
 }
 
-NODISCARD static bool CreatePidFile() {
+[[nodiscard]] static bool CreatePidFile() {
     FILE *file = fsbridge::fopen(GetPidFile(), "w");
     if (file) {
 #ifdef WIN32

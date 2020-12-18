@@ -91,7 +91,7 @@ fs::path GetSpecialFolderPath(int nFolder, bool fCreate = true);
 #endif
 void runCommand(const std::string &strCommand);
 
-NODISCARD bool ParseKeyValue(std::string &key, std::string &val);
+[[nodiscard]] bool ParseKeyValue(std::string &key, std::string &val);
 
 /**
  * Most paths passed as configuration arguments are treated as relative to
@@ -162,10 +162,10 @@ protected:
         m_available_args GUARDED_BY(cs_args);
     std::list<SectionInfo> m_config_sections GUARDED_BY(cs_args);
 
-    NODISCARD bool ReadConfigStream(std::istream &stream,
-                                    const std::string &filepath,
-                                    std::string &error,
-                                    bool ignore_invalid_keys = false);
+    [[nodiscard]] bool ReadConfigStream(std::istream &stream,
+                                        const std::string &filepath,
+                                        std::string &error,
+                                        bool ignore_invalid_keys = false);
 
 public:
     ArgsManager();
@@ -175,8 +175,8 @@ public:
      */
     void SelectConfigNetwork(const std::string &network);
 
-    NODISCARD bool ParseParameters(int argc, const char *const argv[],
-                                   std::string &error);
+    [[nodiscard]] bool ParseParameters(int argc, const char *const argv[],
+                                       std::string &error);
     bool ReadConfigFiles(std::string &error, bool ignore_invalid_keys = false);
 
     /**
