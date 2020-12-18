@@ -63,9 +63,11 @@ uint64_t CTxMemPoolModifiedEntry::GetVirtualSizeWithAncestors() const {
                                      nSigOpCountWithAncestors);
 }
 
+/// Note: This constructor is used in tests. The production code path ends up
+/// immediately overwriting these values in DefaultOptions() below.
 BlockAssembler::Options::Options()
     : nExcessiveBlockSize(DEFAULT_EXCESSIVE_BLOCK_SIZE),
-      nMaxGeneratedBlockSize(DEFAULT_MAX_GENERATED_BLOCK_SIZE),
+      nMaxGeneratedBlockSize(DEFAULT_EXCESSIVE_BLOCK_SIZE),
       blockMinFeeRate(DEFAULT_BLOCK_MIN_TX_FEE_PER_KB) {}
 
 BlockAssembler::BlockAssembler(const CChainParams &params,
@@ -89,21 +91,13 @@ BlockAssembler::BlockAssembler(const CChainParams &params,
 
 static BlockAssembler::Options DefaultOptions(const Config &config) {
     // Block resource limits
-    // If -blockmaxsize is not given, limit to DEFAULT_MAX_GENERATED_BLOCK_SIZE
-    // If only one is given, only restrict the specified resource.
-    // If both are given, restrict both.
     BlockAssembler::Options options;
 
     options.nExcessiveBlockSize = config.GetExcessiveBlockSize();
+    options.nMaxGeneratedBlockSize = config.GetGeneratedBlockSize();
 
-    if (gArgs.IsArgSet("-blockmaxsize")) {
-        options.nMaxGeneratedBlockSize =
-            gArgs.GetArg("-blockmaxsize", DEFAULT_MAX_GENERATED_BLOCK_SIZE);
-    }
-
-    Amount n = Amount::zero();
-    if (gArgs.IsArgSet("-blockmintxfee") &&
-        ParseMoney(gArgs.GetArg("-blockmintxfee", ""), n)) {
+    if (Amount n = Amount::zero();
+            gArgs.IsArgSet("-blockmintxfee") && ParseMoney(gArgs.GetArg("-blockmintxfee", ""), n)) {
         options.blockMinFeeRate = CFeeRate(n);
     }
 

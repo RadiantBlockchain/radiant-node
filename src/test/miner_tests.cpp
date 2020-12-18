@@ -679,8 +679,8 @@ BOOST_AUTO_TEST_CASE(CreateNewBlock_validity) {
     fCheckpointsEnabled = true;
 }
 
-void CheckBlockMaxSize(const Config &config, uint64_t size, uint64_t expected) {
-    gArgs.ForceSetArg("-blockmaxsize", std::to_string(size));
+void CheckBlockMaxSize(Config &config, uint64_t size, uint64_t expected) {
+    BOOST_CHECK(config.SetGeneratedBlockSize(size));
 
     BlockAssembler ba(config, g_mempool);
     BOOST_CHECK_EQUAL(ba.GetMaxGeneratedBlockSize(), expected);
@@ -688,6 +688,18 @@ void CheckBlockMaxSize(const Config &config, uint64_t size, uint64_t expected) {
 
 BOOST_AUTO_TEST_CASE(BlockAssembler_construction) {
     GlobalConfig config;
+
+    // check that generated block size can never exceed excessive block size
+    {
+        BOOST_CHECK_LE(config.GetGeneratedBlockSize(), config.GetExcessiveBlockSize());
+        const size_t prevVal = config.GetGeneratedBlockSize(),
+                     badVal = config.GetExcessiveBlockSize() + 1;
+        BOOST_CHECK_NE(prevVal, badVal); // ensure not equal for thoroughness
+        // try and set generated block size beyond the excessive block size (should fail)
+        BOOST_CHECK(!config.SetGeneratedBlockSize(badVal));
+        // check that the failure really did not set the value
+        BOOST_CHECK_EQUAL(config.GetGeneratedBlockSize(), prevVal);
+    }
 
     // We are working on a fake chain and need to protect ourselves.
     LOCK(cs_main);
@@ -717,13 +729,22 @@ BOOST_AUTO_TEST_CASE(BlockAssembler_construction) {
     CheckBlockMaxSize(config, DEFAULT_EXCESSIVE_BLOCK_SIZE,
                       DEFAULT_EXCESSIVE_BLOCK_SIZE - 1000);
 
-    // If the parameter is not specified, we use
-    // DEFAULT_MAX_GENERATED_BLOCK_SIZE
+    // NB: If the generated block size parameter is not specified, the config object just defaults it to the excessive
+    // block size. But in that case the BlockAssembler ends up unconditionally reserving 1000 bytes of space for the
+    // coinbase tx.
+    constexpr size_t hardCodedCoinbaseReserved = 1000;
     {
-        gArgs.ClearArg("-blockmaxsize");
-        BlockAssembler ba(config, g_mempool);
-        BOOST_CHECK_EQUAL(ba.GetMaxGeneratedBlockSize(),
-                          DEFAULT_MAX_GENERATED_BLOCK_SIZE);
+        GlobalConfig freshConfig;
+        BlockAssembler ba(freshConfig, g_mempool);
+        BOOST_CHECK_EQUAL(ba.GetMaxGeneratedBlockSize(), freshConfig.GetExcessiveBlockSize() - hardCodedCoinbaseReserved);
+
+        // next, ensure that invariants are maintained -- setting excessiveblocksize should pull down generatedblocksize
+        const auto prevVal = freshConfig.GetGeneratedBlockSize();
+        BOOST_CHECK(freshConfig.SetExcessiveBlockSize(prevVal / 2));
+        BOOST_CHECK_EQUAL(freshConfig.GetExcessiveBlockSize(), freshConfig.GetGeneratedBlockSize());
+        BOOST_CHECK_LT(freshConfig.GetGeneratedBlockSize(), prevVal);
+        BlockAssembler ba2(freshConfig, g_mempool);
+        BOOST_CHECK_EQUAL(ba2.GetMaxGeneratedBlockSize(), freshConfig.GetExcessiveBlockSize() - hardCodedCoinbaseReserved);
     }
 }
 
