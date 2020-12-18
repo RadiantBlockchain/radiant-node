@@ -140,6 +140,11 @@ public:
         // Default limit for block size (in bytes)
         consensus.nDefaultExcessiveBlockSize = DEFAULT_EXCESSIVE_BLOCK_SIZE;
 
+        // Chain-specific default for mining block size (in bytes) (configurable with -blockmaxsize)
+        consensus.nDefaultGeneratedBlockSize = 2 * ONE_MEGABYTE;
+
+        assert(consensus.nDefaultGeneratedBlockSize <= consensus.nDefaultExcessiveBlockSize);
+
         // Anchor params: Note that the block after this height *must* also be checkpointed below.
         consensus.asertAnchorParams = Consensus::Params::ASERTAnchor{
             661647,       // anchor block height
@@ -340,6 +345,11 @@ public:
         // Default limit for block size (in bytes)
         consensus.nDefaultExcessiveBlockSize = DEFAULT_EXCESSIVE_BLOCK_SIZE;
 
+        // Chain-specific default for mining block size (in bytes) (configurable with -blockmaxsize)
+        consensus.nDefaultGeneratedBlockSize = 2 * ONE_MEGABYTE;
+
+        assert(consensus.nDefaultGeneratedBlockSize <= consensus.nDefaultExcessiveBlockSize);
+
         // Anchor params: Note that the block after this height *must* also be checkpointed below.
         consensus.asertAnchorParams = Consensus::Params::ASERTAnchor{
             1421481,      // anchor block height
@@ -504,6 +514,11 @@ public:
         // Default limit for block size (in bytes) (testnet4 is smaller at 2MB)
         consensus.nDefaultExcessiveBlockSize = 2 * ONE_MEGABYTE;
 
+        // Chain-specific default for mining block size (in bytes) (configurable with -blockmaxsize)
+        consensus.nDefaultGeneratedBlockSize = 2 * ONE_MEGABYTE;
+
+        assert(consensus.nDefaultGeneratedBlockSize <= consensus.nDefaultExcessiveBlockSize);
+
         // Anchor params: Note that the block after this height *must* also be checkpointed below.
         consensus.asertAnchorParams = Consensus::Params::ASERTAnchor{
             16844,        // anchor block height
@@ -639,6 +654,11 @@ public:
         // Default limit for block size (in bytes)
         consensus.nDefaultExcessiveBlockSize = 256 * ONE_MEGABYTE;
 
+        // Chain-specific default for mining block size (in bytes) (configurable with -blockmaxsize)
+        consensus.nDefaultGeneratedBlockSize = 2 * ONE_MEGABYTE;
+
+        assert(consensus.nDefaultGeneratedBlockSize <= consensus.nDefaultExcessiveBlockSize);
+
         // ScaleNet has no hard-coded anchor block because will be expected to
         // reorg back down to height 10,000, before ASERT activated.
         consensus.asertAnchorParams.reset();
@@ -761,6 +781,11 @@ public:
 
         // Default limit for block size (in bytes)
         consensus.nDefaultExcessiveBlockSize = DEFAULT_EXCESSIVE_BLOCK_SIZE;
+
+        // Chain-specific default for mining block size (in bytes) (configurable with -blockmaxsize)
+        consensus.nDefaultGeneratedBlockSize = 2 * ONE_MEGABYTE;
+
+        assert(consensus.nDefaultGeneratedBlockSize <= consensus.nDefaultExcessiveBlockSize);
 
         diskMagic[0] = 0xfa;
         diskMagic[1] = 0xbf;

@@ -26,6 +26,10 @@ public:
     /** The largest block size this node will accept. */
     virtual bool SetExcessiveBlockSize(uint64_t maxBlockSize) = 0;
     virtual uint64_t GetExcessiveBlockSize() const = 0;
+    /** The largest block size this node will generate (mine).
+        Returns false if `blockSize` exceeds GetExcessiveBlockSize(). */
+    virtual bool SetGeneratedBlockSize(uint64_t blockSize) = 0;
+    virtual uint64_t GetGeneratedBlockSize() const = 0;
     /** The maximum amount of RAM to be used in the mempool before TrimToSize is called. */
     virtual void SetMaxMemPoolSize(uint64_t maxMemPoolSize) = 0;
     virtual uint64_t GetMaxMemPoolSize() const = 0;
@@ -46,6 +50,8 @@ public:
     GlobalConfig();
     bool SetExcessiveBlockSize(uint64_t maxBlockSize) override;
     uint64_t GetExcessiveBlockSize() const override;
+    bool SetGeneratedBlockSize(uint64_t blockSize) override;
+    uint64_t GetGeneratedBlockSize() const override;
     void SetMaxMemPoolSize(uint64_t maxMemPoolSize) override { nMaxMemPoolSize = maxMemPoolSize; }
     uint64_t GetMaxMemPoolSize() const override { return nMaxMemPoolSize; }
     void SetInvBroadcastRate(uint64_t rate) override { nInvBroadcastRate = rate; }
@@ -68,6 +74,9 @@ private:
     /** The largest block size this node will accept. */
     uint64_t nExcessiveBlockSize;
 
+    /** The largest block size this node will generate. */
+    uint64_t nGeneratedBlockSize;
+
     /** The maximum amount of RAM to be used in the mempool before TrimToSize is called. */
     uint64_t nMaxMemPoolSize;
 };
@@ -80,6 +89,8 @@ public:
     DummyConfig(std::unique_ptr<CChainParams> chainParamsIn);
     bool SetExcessiveBlockSize(uint64_t) override { return false; }
     uint64_t GetExcessiveBlockSize() const override { return 0; }
+    bool SetGeneratedBlockSize(uint64_t) override { return false; }
+    uint64_t GetGeneratedBlockSize() const override { return 0; }
     void SetMaxMemPoolSize(uint64_t) override {}
     uint64_t GetMaxMemPoolSize() const override {return 0; }
     void SetInvBroadcastRate(uint64_t) override {}

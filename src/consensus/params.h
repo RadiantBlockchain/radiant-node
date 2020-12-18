@@ -47,6 +47,12 @@ struct Params {
     int tachyonActivationTime;
     /** Default blocksize limit -- can be overridden with the -excessiveblocksize= command-line switch */
     uint64_t nDefaultExcessiveBlockSize;
+    /**
+     * Chain-specific default for -blockmaxsize, which controls the maximum size of blocks that the
+     * mining code will create.
+     */
+    uint64_t nDefaultGeneratedBlockSize;
+
 
     /** Proof of work parameters */
     uint256 powLimit;

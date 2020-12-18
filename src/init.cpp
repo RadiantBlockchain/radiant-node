@@ -448,8 +448,12 @@ void SetupServerArgs() {
                  false, OptionsCategory::OPTIONS);
     gArgs.AddArg("-excessiveblocksize=<n>",
                  strprintf("Do not accept blocks larger than this limit, in "
-                           "bytes (default: %d)",
-                           DEFAULT_EXCESSIVE_BLOCK_SIZE),
+                           "bytes (default: %u, testnet: %u, testnet4: %u, scalenet: %u, regtest: %u)",
+                           defaultChainParams->GetConsensus().nDefaultExcessiveBlockSize,
+                           testnetChainParams->GetConsensus().nDefaultExcessiveBlockSize,
+                           testnet4ChainParams->GetConsensus().nDefaultExcessiveBlockSize,
+                           scalenetChainParams->GetConsensus().nDefaultExcessiveBlockSize,
+                           regtestChainParams->GetConsensus().nDefaultExcessiveBlockSize),
                  false, OptionsCategory::OPTIONS);
     gArgs.AddArg("-feefilter",
                  strprintf("Tell other nodes to filter invs to us by our "
@@ -1018,8 +1022,13 @@ void SetupServerArgs() {
                  true, OptionsCategory::NODE_RELAY);
 
     gArgs.AddArg("-blockmaxsize=<n>",
-                 strprintf("Set maximum block size in bytes (default: %d)",
-                           DEFAULT_MAX_GENERATED_BLOCK_SIZE),
+                 strprintf("Set maximum block size in bytes (default: %u, testnet: %u, testnet4: %u, scalenet: %u, "
+                           "regtest: %u)",
+                           defaultChainParams->GetConsensus().nDefaultGeneratedBlockSize,
+                           testnetChainParams->GetConsensus().nDefaultGeneratedBlockSize,
+                           testnet4ChainParams->GetConsensus().nDefaultGeneratedBlockSize,
+                           scalenetChainParams->GetConsensus().nDefaultGeneratedBlockSize,
+                           regtestChainParams->GetConsensus().nDefaultGeneratedBlockSize),
                  false, OptionsCategory::BLOCK_CREATION);
 
     gArgs.AddArg("-maxgbttime=<n>",
@@ -1809,8 +1818,8 @@ bool AppInitParameterInteraction(Config &config) {
 
     // Check blockmaxsize does not exceed maximum accepted block size.
     const uint64_t nProposedMaxGeneratedBlockSize =
-        gArgs.GetArg("-blockmaxsize", DEFAULT_MAX_GENERATED_BLOCK_SIZE);
-    if (nProposedMaxGeneratedBlockSize > config.GetExcessiveBlockSize()) {
+        gArgs.GetArg("-blockmaxsize", chainparams.GetConsensus().nDefaultGeneratedBlockSize);
+    if (!config.SetGeneratedBlockSize(nProposedMaxGeneratedBlockSize)) {
         auto msg = _("Max generated block size (blockmaxsize) cannot exceed "
                      "the excessive block size (excessiveblocksize)");
         return InitError(msg);

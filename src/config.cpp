@@ -7,8 +7,13 @@
 #include <chainparams.h>
 #include <consensus/consensus.h> // DEFAULT_EXCESSIVE_BLOCK_SIZE
 
+#include <algorithm>
+
 GlobalConfig::GlobalConfig()
     : useCashAddr(DEFAULT_USE_CASHADDR), nExcessiveBlockSize(DEFAULT_EXCESSIVE_BLOCK_SIZE),
+      // NB: The generated block size is normally set in init.cpp to use chain-specific
+      //     defaults which are often smaller than the DEFAULT_EXCESSIVE_BLOCK_SIZE.
+      nGeneratedBlockSize(DEFAULT_EXCESSIVE_BLOCK_SIZE),
       nMaxMemPoolSize(DEFAULT_EXCESSIVE_BLOCK_SIZE * DEFAULT_MAX_MEMPOOL_SIZE_PER_MB) {}
 
 bool GlobalConfig::SetExcessiveBlockSize(uint64_t blockSize) {
@@ -19,11 +24,29 @@ bool GlobalConfig::SetExcessiveBlockSize(uint64_t blockSize) {
     }
 
     nExcessiveBlockSize = blockSize;
+
+    // Maintain invariant: ensure that nGeneratedBlockSize <= nExcessiveBlockSize
+    nGeneratedBlockSize = std::min(nExcessiveBlockSize, nGeneratedBlockSize);
+
     return true;
 }
 
 uint64_t GlobalConfig::GetExcessiveBlockSize() const {
     return nExcessiveBlockSize;
+}
+
+bool GlobalConfig::SetGeneratedBlockSize(uint64_t blockSize) {
+    // Do not allow generated blocks to exceed the size of blocks we accept.
+    if (blockSize > GetExcessiveBlockSize()) {
+        return false;
+    }
+
+    nGeneratedBlockSize = blockSize;
+    return true;
+}
+
+uint64_t GlobalConfig::GetGeneratedBlockSize() const {
+    return nGeneratedBlockSize;
 }
 
 const CChainParams &GlobalConfig::GetChainParams() const {

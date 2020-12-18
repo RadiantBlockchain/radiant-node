@@ -18,11 +18,6 @@ class CTxIn;
 class CTxOut;
 
 /**
- * Default for -blockmaxsize, which controls the maximum size of block the
- * mining code will create.
- */
-static constexpr uint64_t DEFAULT_MAX_GENERATED_BLOCK_SIZE = 2 * ONE_MEGABYTE;
-/**
  * Default for -maxgbttime, which sets the max amount of time (in milliseconds) the mining code will spend adding
  * transactions to block templates.
  */
