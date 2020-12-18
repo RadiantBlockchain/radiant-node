@@ -301,6 +301,13 @@ BOOST_AUTO_TEST_CASE(methods) {
         std::fill(alignedPtr, end, uninitializedByte); // set memory area to clearly uninitialized data
         // the below line prevents the above std::fill from being optimized away
         BOOST_CHECK(end > alignedPtr && *alignedPtr == uninitializedByte && end[-1] == uninitializedByte);
+/* GCC 8.3.x warns here if compiling with -O3 -- but the warning is a false positive. We intentionally
+ * are testing the uninitialized case here.  So we suppress the warning.
+ * Note that clang doesn't know about -Wmaybe-uninitialized so we limit this pragma to GNUC only. */
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
         {
             // Note: this pointer is to data on the stack and should not be freed!
             uint256 *uninitialized = new (alignedPtr) uint256(uint256::Uninitialized); // explicitly does not initialize the data
@@ -311,6 +318,9 @@ BOOST_AUTO_TEST_CASE(methods) {
             }
             BOOST_CHECK(uninitializedCtr == uint256::size());
         }
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
         // 2. while we are here, check the default constructor zeroes out data
         std::fill(alignedPtr, end, uninitializedByte); // set memory area to clearly uninitialized data
         // the below line prevents the above std::fill from being optimized away
