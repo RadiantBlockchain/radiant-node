@@ -226,9 +226,7 @@ BOOST_FIXTURE_TEST_CASE(importwallet_rescan, TestChain100Setup) {
         wallet->AddKeyPubKey(coinbaseKey, coinbaseKey.GetPubKey());
 
         JSONRPCRequest request;
-        UniValue::Array requestParams;
-        requestParams.emplace_back(backup_file);
-        request.params.setArray(std::move(requestParams));
+        request.params.setArray().emplace_back(backup_file);
         AddWallet(wallet);
         ::dumpwallet(GetConfig(), request);
         RemoveWallet(wallet);
@@ -241,9 +239,7 @@ BOOST_FIXTURE_TEST_CASE(importwallet_rescan, TestChain100Setup) {
             Params(), *chain, WalletLocation(), WalletDatabase::CreateDummy());
 
         JSONRPCRequest request;
-        UniValue::Array requestParams;
-        requestParams.emplace_back(backup_file);
-        request.params.setArray(std::move(requestParams));
+        request.params.setArray().emplace_back(backup_file);
         AddWallet(wallet);
         ::importwallet(GetConfig(), request);
         RemoveWallet(wallet);

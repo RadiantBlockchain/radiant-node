@@ -393,10 +393,10 @@ bool UniValue::read(const char *raw, size_t size)
                 // do nothing more
                 break;
             case JTOK_KW_TRUE:
-                tmpVal.setBool(true);
+                tmpVal = true;
                 break;
             case JTOK_KW_FALSE:
-                tmpVal.setBool(false);
+                tmpVal = false;
                 break;
             default: /* impossible */ break;
             }
