@@ -500,7 +500,7 @@ BOOST_AUTO_TEST_CASE(univalue_object)
     BOOST_CHECK_EQUAL(obj["time"].getValStr(), "3600");
     BOOST_CHECK_EQUAL(obj["calories"].getValStr(), "12");
     BOOST_CHECK_EQUAL(obj["temperature"].getValStr(), "90.012");
-    BOOST_CHECK_EQUAL(obj["moon"].getValStr(), "1");
+    BOOST_CHECK_EQUAL(obj["moon"].getValStr(), "");
     BOOST_CHECK_EQUAL(obj["spoon"].getValStr(), ""); // checks the first spoon
     BOOST_CHECK_EQUAL(obj["cat1"].getValStr(), "9000");
     BOOST_CHECK_EQUAL(obj["cat2"].getValStr(), "12345");
@@ -508,9 +508,9 @@ BOOST_AUTO_TEST_CASE(univalue_object)
     BOOST_CHECK_EQUAL(obj["nyuknyuknyuk"].getValStr(), "");
 
     // check all five spoons
-    BOOST_CHECK_EQUAL(obj[8].getValStr(), "");
+    BOOST_CHECK(obj[8].isFalse());
     BOOST_CHECK_EQUAL(obj[9].getValStr(), "just another spoon, but not the first one");
-    BOOST_CHECK_EQUAL(obj[10].getValStr(), "1");
+    BOOST_CHECK(obj[10].isTrue());
     BOOST_CHECK_EQUAL(obj[11].getValStr(), "third spoon's a charm");
     BOOST_CHECK_EQUAL(obj[12].getValStr(), "100");
 
@@ -568,8 +568,8 @@ BOOST_AUTO_TEST_CASE(univalue_object)
     BOOST_CHECK_EQUAL(obj["time"].getType(), UniValue::VNUM);
     BOOST_CHECK_EQUAL(obj["calories"].getType(), UniValue::VNUM);
     BOOST_CHECK_EQUAL(obj["temperature"].getType(), UniValue::VNUM);
-    BOOST_CHECK_EQUAL(obj["moon"].getType(), UniValue::VBOOL);
-    BOOST_CHECK_EQUAL(obj["spoon"].getType(), UniValue::VBOOL);
+    BOOST_CHECK_EQUAL(obj["moon"].getType(), UniValue::VTRUE);
+    BOOST_CHECK_EQUAL(obj["spoon"].getType(), UniValue::VFALSE);
     BOOST_CHECK_EQUAL(obj["cat1"].getType(), UniValue::VNUM);
     BOOST_CHECK_EQUAL(obj["cat2"].getType(), UniValue::VNUM);
 

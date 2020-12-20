@@ -35,17 +35,6 @@ void OnStopped(std::function<void()> slot);
 
 class Config;
 
-/**
- * Wrapper for UniValue::VType, which includes typeAny: used to denote don't
- * care type.
- */
-struct UniValueType {
-    UniValueType(UniValue::VType _type) : typeAny(false), type(_type) {}
-    UniValueType() : typeAny(true) {}
-    bool typeAny;
-    UniValue::VType type = UniValue::VNULL;
-};
-
 typedef std::map<std::string, std::unique_ptr<RPCCommand>> RPCCommandMap;
 
 /**
@@ -97,22 +86,23 @@ bool RPCIsInWarmup(std::string *outStatus);
  * that the right number of arguments are passed, just that any passed are the
  * correct type.
  */
-void RPCTypeCheck(const UniValue &params,
-                  const std::list<UniValueType> &typesExpected,
-                  bool fAllowNull = false);
+void RPCTypeCheck(const UniValue &params, std::initializer_list<int> expectedTypeMasks);
 
 /**
  * Type-check one argument; throws JSONRPCError if wrong type given.
  */
-void RPCTypeCheckArgument(const UniValue &value,
-                          const UniValueType &typeExpected);
+void RPCTypeCheckArgument(const UniValue &value, int expectedTypeMask);
 
 /**
  * Check for expected keys/value types in an Object.
  */
-void RPCTypeCheckObj(const UniValue::Object &o,
-                     const std::map<std::string, UniValueType> &typesExpected,
-                     bool fAllowNull = false, bool fStrict = false);
+void RPCTypeCheckObj(const UniValue::Object &o, std::initializer_list<std::pair<const char *, int>> expectedTypeMasks);
+
+/**
+ * Check for expected keys/value types in an Object,
+ * and additionally check there are no unexpected keys.
+ */
+void RPCTypeCheckObjStrict(const UniValue::Object &o, std::initializer_list<std::pair<const char *, int>> expectedTypeMasks);
 
 /**
  * Opaque base class for timers returned by NewTimerFunc.

@@ -127,7 +127,7 @@ class RawTransactionsTest(BitcoinTestFramework):
         # Test `createrawtransaction` invalid `outputs`
         address = self.nodes[0].getnewaddress()
         address2 = self.nodes[0].getnewaddress()
-        assert_raises_rpc_error(-1, "JSON value is not an array as expected",
+        assert_raises_rpc_error(-3, "Expected type object/array at index 1, got string",
                                 self.nodes[0].createrawtransaction, [], 'foo')
         # Should not throw for backwards compatibility
         self.nodes[0].createrawtransaction(inputs=[], outputs={})
@@ -150,7 +150,7 @@ class RawTransactionsTest(BitcoinTestFramework):
                                 self.nodes[0].createrawtransaction, [], [['key-value pair1'], ['2']])
 
         # Test `createrawtransaction` invalid `locktime`
-        assert_raises_rpc_error(-3, "Expected type number",
+        assert_raises_rpc_error(-3, "Expected type null/number at index 2, got string",
                                 self.nodes[0].createrawtransaction, [], {}, 'foo')
         assert_raises_rpc_error(-8, "Invalid parameter, locktime out of range",
                                 self.nodes[0].createrawtransaction, [], {}, -1)

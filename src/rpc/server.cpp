@@ -122,57 +122,58 @@ void RPCServerSignals::OnStopped(std::function<void()> slot) {
     g_rpcSignals.Stopped.connect(slot);
 }
 
-void RPCTypeCheck(const UniValue &params,
-                  const std::list<UniValueType> &typesExpected,
-                  bool fAllowNull) {
-    unsigned int i = 0;
-    for (const UniValueType &t : typesExpected) {
-        if (params.size() <= i) {
+void RPCTypeCheck(const UniValue &params, std::initializer_list<int> expectedTypeMasks) {
+    UniValue::size_type index = 0;
+    for (auto expectedTypeMask : expectedTypeMasks) {
+        if (params.size() <= index) {
             break;
         }
-
-        const UniValue &v = params[i];
-        if (!(fAllowNull && v.isNull())) {
-            RPCTypeCheckArgument(v, t);
+        if (!params[index].is(expectedTypeMask)) {
+            throw JSONRPCError(RPC_TYPE_ERROR,
+                               strprintf("Expected type %s at index %u, got %s",
+                                         uvTypeName(expectedTypeMask), index,
+                                         uvTypeName(params[index].type())));
         }
-        i++;
+        index++;
     }
 }
 
-void RPCTypeCheckArgument(const UniValue &value,
-                          const UniValueType &typeExpected) {
-    if (!typeExpected.typeAny && value.type() != typeExpected.type) {
+void RPCTypeCheckArgument(const UniValue &value, int expectedTypeMask) {
+    if (!value.is(expectedTypeMask)) {
         throw JSONRPCError(RPC_TYPE_ERROR,
                            strprintf("Expected type %s, got %s",
-                                     uvTypeName(typeExpected.type),
+                                     uvTypeName(expectedTypeMask),
                                      uvTypeName(value.type())));
     }
 }
 
-void RPCTypeCheckObj(const UniValue::Object &o,
-                     const std::map<std::string, UniValueType> &typesExpected,
-                     bool fAllowNull, bool fStrict) {
-    for (const auto &t : typesExpected) {
-        const UniValue &v = o[t.first];
-        if (!fAllowNull && v.isNull()) {
-            throw JSONRPCError(RPC_TYPE_ERROR,
-                               strprintf("Missing %s", t.first));
-        }
-
-        if (!(t.second.typeAny || v.type() == t.second.type ||
-              (fAllowNull && v.isNull()))) {
-            throw JSONRPCError(RPC_TYPE_ERROR, strprintf("Expected type %s for %s, got %s",
-                                                         uvTypeName(t.second.type), t.first,
-                                                         uvTypeName(v.type())));
+void RPCTypeCheckObj(const UniValue::Object &o, std::initializer_list<std::pair<const char *, int>> expectedTypeMasks) {
+    for (auto & [expectedKey, expectedTypeMask] : expectedTypeMasks) {
+        const UniValue *value = o.locate(expectedKey);
+        if (value) {
+            // Key found, so check value type.
+            if (!value->is(expectedTypeMask)) {
+                throw JSONRPCError(RPC_TYPE_ERROR, strprintf("Expected type %s for %s, got %s",
+                                                             uvTypeName(expectedTypeMask), expectedKey,
+                                                             uvTypeName(value->type())));
+            }
+        } else if (!(expectedTypeMask & UniValue::VNULL)) {
+            // Key not found, but it is required (null not accepted).
+            throw JSONRPCError(RPC_TYPE_ERROR, strprintf("Missing %s", expectedKey));
         }
     }
+}
 
-    if (fStrict) {
-        for (auto &kv : o) {
-            if (typesExpected.count(kv.first) == 0) {
-                throw JSONRPCError(RPC_TYPE_ERROR, strprintf("Unexpected key %s", kv.first));
+void RPCTypeCheckObjStrict(const UniValue::Object &o, std::initializer_list<std::pair<const char *, int>> expectedTypeMasks) {
+    RPCTypeCheckObj(o, expectedTypeMasks);
+    for (auto & [key, value] : o) {
+        for (auto & [expectedKey, expectedTypeMask] : expectedTypeMasks) {
+            if (key == expectedKey) {
+                goto expected;
             }
         }
+        throw JSONRPCError(RPC_TYPE_ERROR, strprintf("Unexpected key %s", key));
+        expected:;
     }
 }
 

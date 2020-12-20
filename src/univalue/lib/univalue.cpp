@@ -141,8 +141,6 @@ const UniValue& UniValue::Array::back() const noexcept
     return NullUniValue;
 }
 
-const std::string UniValue::boolTrueVal{"1"};
-
 void UniValue::setNull() noexcept
 {
     typ = VNULL;
@@ -151,12 +149,42 @@ void UniValue::setNull() noexcept
     values.clear();
 }
 
-void UniValue::setBool(bool val_)
+void UniValue::setBool(bool val_) noexcept
 {
     setNull();
-    typ = VBOOL;
-    if (val_)
-        val = boolTrueVal;
+    typ = val_ ? VTRUE : VFALSE;
+}
+
+void UniValue::setObject() noexcept
+{
+    setNull();
+    typ = VOBJ;
+}
+void UniValue::setObject(const Object& object)
+{
+    setObject();
+    entries = object;
+}
+void UniValue::setObject(Object&& object) noexcept
+{
+    setObject();
+    entries = std::move(object);
+}
+
+void UniValue::setArray() noexcept
+{
+    setNull();
+    typ = VARR;
+}
+void UniValue::setArray(const Array& array)
+{
+    setArray();
+    values = array;
+}
+void UniValue::setArray(Array&& array) noexcept
+{
+    setArray();
+    values = std::move(array);
 }
 
 static bool validNumStr(const std::string& s)
@@ -241,38 +269,6 @@ void UniValue::setStr(std::string&& val_) noexcept
     setNull();
     typ = VSTR;
     val = std::move(val_);
-}
-
-void UniValue::setArray() noexcept
-{
-    setNull();
-    typ = VARR;
-}
-void UniValue::setArray(const Array& array)
-{
-    setArray();
-    values = array;
-}
-void UniValue::setArray(Array&& array) noexcept
-{
-    setArray();
-    values = std::move(array);
-}
-
-void UniValue::setObject() noexcept
-{
-    setNull();
-    typ = VOBJ;
-}
-void UniValue::setObject(const Object& object)
-{
-    setObject();
-    entries = object;
-}
-void UniValue::setObject(Object&& object) noexcept
-{
-    setObject();
-    entries = std::move(object);
 }
 
 const UniValue& UniValue::operator[](const std::string& key) const noexcept
@@ -373,15 +369,16 @@ bool UniValue::operator==(const UniValue& other) const noexcept
         return false;
     // Some types have additional requirements for equality.
     switch (typ) {
-    case VBOOL:
+    case VOBJ:
+        return entries == other.entries;
+    case VARR:
+        return values == other.values;
     case VNUM:
     case VSTR:
         return val == other.val;
-    case VARR:
-        return values == other.values;
-    case VOBJ:
-        return entries == other.entries;
     case VNULL:
+    case VFALSE:
+    case VTRUE:
         break;
     }
     // Returning true is the default behavior, but this is not included as a default statement inside the switch statement,
@@ -393,13 +390,35 @@ const char *uvTypeName(UniValue::VType t) noexcept
 {
     switch (t) {
     case UniValue::VNULL: return "null";
-    case UniValue::VBOOL: return "bool";
+    case UniValue::VFALSE: return "false";
+    case UniValue::VTRUE: return "true";
     case UniValue::VOBJ: return "object";
     case UniValue::VARR: return "array";
-    case UniValue::VSTR: return "string";
     case UniValue::VNUM: return "number";
+    case UniValue::VSTR: return "string";
+    // Adding something here? Add it to the other uvTypeName overload below too!
     }
 
     // not reached
     return nullptr;
+}
+
+std::string uvTypeName(int t) {
+    std::string result;
+    auto appendTypeNameIfTypeIncludes = [&](UniValue::VType type) {
+        if (t & type) {
+            if (!result.empty()) {
+                result += '/';
+            }
+            result += uvTypeName(type);
+        }
+    };
+    appendTypeNameIfTypeIncludes(UniValue::VNULL);
+    appendTypeNameIfTypeIncludes(UniValue::VFALSE);
+    appendTypeNameIfTypeIncludes(UniValue::VTRUE);
+    appendTypeNameIfTypeIncludes(UniValue::VOBJ);
+    appendTypeNameIfTypeIncludes(UniValue::VARR);
+    appendTypeNameIfTypeIncludes(UniValue::VNUM);
+    appendTypeNameIfTypeIncludes(UniValue::VSTR);
+    return result;
 }

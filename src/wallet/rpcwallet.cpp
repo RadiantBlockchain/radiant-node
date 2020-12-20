@@ -2527,7 +2527,7 @@ static UniValue lockunspent(const Config &config,
     auto locked_chain = pwallet->chain().lock();
     LOCK(pwallet->cs_wallet);
 
-    RPCTypeCheckArgument(request.params[0], UniValue::VBOOL);
+    RPCTypeCheckArgument(request.params[0], UniValue::MBOOL);
 
     bool fUnlock = request.params[0].get_bool();
 
@@ -2551,8 +2551,8 @@ static UniValue lockunspent(const Config &config,
         const UniValue::Object &o = output_params[idx].get_obj();
 
         RPCTypeCheckObj(o, {
-                               {"txid", UniValueType(UniValue::VSTR)},
-                               {"vout", UniValueType(UniValue::VNUM)},
+                               {"txid", UniValue::VSTR},
+                               {"vout", UniValue::VNUM},
                            });
 
         const int nOutput = o["vout"].get_int();
@@ -3229,7 +3229,7 @@ static UniValue listunspent(const Config &config,
 
     bool include_unsafe = true;
     if (!request.params[3].isNull()) {
-        RPCTypeCheckArgument(request.params[3], UniValue::VBOOL);
+        RPCTypeCheckArgument(request.params[3], UniValue::MBOOL);
         include_unsafe = request.params[3].get_bool();
     }
 
@@ -3331,24 +3331,22 @@ void FundTransaction(CWallet *const pwallet, CMutableTransaction &tx,
     std::set<int> setSubtractFeeFromOutputs;
 
     if (!options.isNull()) {
-        if (options.type() == UniValue::VBOOL) {
+        if (options.isBool()) {
             // backward compatibility bool only fallback
             coinControl.fAllowWatchOnly = options.get_bool();
         } else {
             RPCTypeCheckArgument(options, UniValue::VOBJ);
             const UniValue::Object& options_obj = options.get_obj();
-            RPCTypeCheckObj(
+            RPCTypeCheckObjStrict(
                 options_obj,
                 {
-                    {"changeAddress", UniValueType(UniValue::VSTR)},
-                    {"changePosition", UniValueType(UniValue::VNUM)},
-                    {"includeWatching", UniValueType(UniValue::VBOOL)},
-                    {"lockUnspents", UniValueType(UniValue::VBOOL)},
-                    // will be checked below
-                    {"feeRate", UniValueType()},
-                    {"subtractFeeFromOutputs", UniValueType(UniValue::VARR)},
-                },
-                true, true);
+                    {"changeAddress", UniValue::VSTR|UniValue::VNULL},
+                    {"changePosition", UniValue::VNUM|UniValue::VNULL},
+                    {"includeWatching", UniValue::MBOOL|UniValue::VNULL},
+                    {"lockUnspents", UniValue::MBOOL|UniValue::VNULL},
+                    {"feeRate", UniValue::VNUM|UniValue::VSTR|UniValue::VNULL},
+                    {"subtractFeeFromOutputs", UniValue::VARR|UniValue::VNULL},
+                });
 
             if (auto changeAddressUV = options_obj.locate("changeAddress")) {
                 CTxDestination dest = DecodeDestination(
@@ -3490,7 +3488,7 @@ static UniValue fundrawtransaction(const Config &config,
                             );
     }
 
-    RPCTypeCheck(request.params, {UniValue::VSTR, UniValueType()});
+    RPCTypeCheck(request.params, {UniValue::VSTR, UniValue::VOBJ|UniValue::MBOOL|UniValue::VNULL});
 
     // parse hex string from parameter
     CMutableTransaction tx;
@@ -3580,8 +3578,7 @@ UniValue signrawtransactionwithwallet(const Config &config,
             HelpExampleRpc("signrawtransactionwithwallet", "\"myhex\""));
     }
 
-    RPCTypeCheck(request.params,
-                 {UniValue::VSTR, UniValue::VARR, UniValue::VSTR}, true);
+    RPCTypeCheck(request.params, {UniValue::VSTR, UniValue::VARR|UniValue::VNULL, UniValue::VSTR|UniValue::VNULL});
 
     CMutableTransaction mtx;
     if (!DecodeHexTx(mtx, request.params[0].get_str())) {
@@ -4240,8 +4237,7 @@ static UniValue walletprocesspsbt(const Config &config,
             HelpExampleCli("walletprocesspsbt", "\"psbt\""));
     }
 
-    RPCTypeCheck(request.params,
-                 {UniValue::VSTR, UniValue::VBOOL, UniValue::VSTR});
+    RPCTypeCheck(request.params, {UniValue::VSTR, UniValue::MBOOL, UniValue::VSTR, UniValue::MBOOL|UniValue::VNULL});
 
     // Unserialize the transaction
     PartiallySignedTransaction psbtx;
@@ -4354,9 +4350,10 @@ static UniValue walletcreatefundedpsbt(const Config &config,
 
     RPCTypeCheck(request.params,
                  {UniValue::VARR,
-                  UniValueType(), // ARR or OBJ, checked later
-                  UniValue::VNUM, UniValue::VOBJ},
-                 true);
+                  UniValue::VARR|UniValue::VOBJ,
+                  UniValue::VNUM|UniValue::VNULL,
+                  UniValue::VOBJ|UniValue::VNULL,
+                  UniValue::MBOOL|UniValue::VNULL});
 
     Amount fee;
     int change_position;
