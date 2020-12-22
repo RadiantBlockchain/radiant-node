@@ -1,5 +1,12 @@
 Bitcoin ABC 0.14.1
-==================
+------------------
+
+No release notes exist for this initial release of Bitcoin ABC. Below are the release notes for Bitcoin Core version 0.14.1, upon which Bitcoin ABC version 0.14.1 is based. For the main changes for the Bitcoin Cash network, see [Bitcoin Cash upgrades](../bch-upgrades.md) and [BIPS](../bips.md).
+
+----------------------------------------
+
+Bitcoin Core 0.14.1
+-------------------
 
 Bitcoin Core version 0.14.1 is now available from:
 
@@ -16,8 +23,7 @@ To receive security and update notifications, please subscribe to:
 
   <https://bitcoincore.org/en/list/announcements/join/>
 
-Compatibility
--------------
+### Compatibility
 
 Bitcoin Core is extensively tested on multiple operating systems using
 the Linux kernel, macOS 10.8+, and Windows Vista and later.
@@ -30,10 +36,9 @@ Please do not report issues about Windows XP to the issue tracker.
 Bitcoin Core should also work on most other Unix-like systems but is not
 frequently tested on them.
 
-Notable changes
----------------
+### Notable changes
 
-### RPC changes
+#### RPC changes
 
 - The first positional argument of `createrawtransaction` was renamed from
   `transactions` to `inputs`.
@@ -44,7 +49,7 @@ These interface changes break compatibility with 0.14.0, when the named
 arguments functionality, introduced in 0.14.0, is used. Client software
 using these calls with named arguments needs to be updated.
 
-### Mining
+#### Mining
 
 In previous versions, getblocktemplate required segwit support from downstream
 clients/miners once the feature activated on the network. In this version, it
@@ -59,7 +64,7 @@ all miners. This is safe because ability to enforce the rule is the only
 required criteria for safe activation, not actually producing segwit-enabled
 blocks.
 
-### UTXO memory accounting
+#### UTXO memory accounting
 
 Memory usage for the UTXO cache is being calculated more accurately, so that
 the configured limit (`-dbcache`) will be respected when memory usage peaks
@@ -77,15 +82,14 @@ Additional information relating to running on low-memory systems can be found
 here:
 [reducing-bitcoind-memory-usage.md](https://gist.github.com/laanwj/efe29c7661ce9b6620a7).
 
-0.14.1 Change log
------------------
+### 0.14.1 Change log
 
 Detailed release notes follow. This overview includes changes that affect
 behavior, not code moves, refactors and string updates. For convenience in locating
 the code changes and accompanying discussion, both the pull request and
 git merge commit are mentioned.
 
-### RPC and other APIs
+#### RPC and other APIs
 
 - \#10084 `142fbb2` Rename first named arg of createrawtransaction (MarcoFalke)
 - \#10139 `f15268d` Remove auth cookie on shutdown (practicalswift)
@@ -93,42 +97,41 @@ git merge commit are mentioned.
 - \#10144 `d947afc` Prioritisetransaction wasn't always updating ancestor fee (sdaftuar)
 - \#10204 `3c79602` Rename disconnectnode argument (jnewbery)
 
-### Block and transaction handling
+#### Block and transaction handling
 
 - \#10126 `0b5e162` Compensate for memory peak at flush time (sipa)
 - \#9912 `fc3d7db` Optimize GetWitnessHash() for non-segwit transactions (sdaftuar)
 - \#10133 `ab864d3` Clean up calculations of pcoinsTip memory usage (morcos)
 
-### P2P protocol and network code
+#### P2P protocol and network code
 
 - \#9953/#10013 `d2548a4` Fix shutdown hang with >= 8 -addnodes set (TheBlueMatt)
 - \#10176 `30fa231` net: gracefully handle NodeId wrapping (theuni)
 
-### Build system
+#### Build system
 
 - \#9973 `e9611d1` depends: fix zlib build on osx (theuni)
 
-### GUI
+#### GUI
 
 - \#10060 `ddc2dd1` Ensure an item exists on the rpcconsole stack before adding (achow101)
 
-### Mining
+#### Mining
 
 - \#9955/#10006 `569596c` Don't require segwit in getblocktemplate for segwit signalling or mining (sdaftuar)
 - \#9959/#10127 `b5c3440` Prevent slowdown in CreateNewBlock on large mempools (sdaftuar)
 
-### Tests and QA
+#### Tests and QA
 
 - \#10157 `55f641c` Fix the `mempool_packages.py` test (sdaftuar)
 
-### Miscellaneous
+#### Miscellaneous
 
 - \#10037 `4d8e660` Trivial: Fix typo in help getrawtransaction RPC (keystrike)
 - \#10120 `e4c9a90` util: Work around (virtual) memory exhaustion on 32-bit w/ glibc (laanwj)
 - \#10130 `ecc5232` bitcoin-tx input verification (awemany, jnewbery)
 
-Credits
--------
+### Credits
 
 Thanks to everyone who directly contributed to this release:
 
