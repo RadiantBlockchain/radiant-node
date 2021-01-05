@@ -160,12 +160,12 @@ for further info.
 To install Ubuntu 18.04 on your WSL, you need to:
 
 1. Install Ubuntu 18.04
-  * Open Microsoft Store and search for Ubuntu 18.04 or use [this link](https://www.microsoft.com/store/productId/9n9tngvndl3q)
-  * Click **Get**
+    * Open Microsoft Store and search for Ubuntu 18.04 or use [this link](https://www.microsoft.com/store/productId/9n9tngvndl3q)
+    * Click **Get**
 2. Complete Installation
-  * Open a cmd prompt and type "Ubuntu"
-  * Create a new UNIX user account
-    (this is a separate account from your Windows account)
+    * Open a cmd prompt and type "Ubuntu"
+    * Create a new UNIX user account
+      (this is a separate account from your Windows account)
 
 After the bash shell is active, you can follow the instructions below, starting
 with the "Cross-compilation" section. Compiling the 64-bit version is

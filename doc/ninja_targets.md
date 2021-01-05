@@ -33,19 +33,25 @@ To set up an out-of-tree Ninja build:
 
 1. create a build directory within your source tree:
 
-   `mkdir build/`
+    ```
+    mkdir build/
+    ```
 
 2. enter the build folder:
 
-   `cd build/`
+    ```
+    cd build/
+    ```
 
 3. configure the build:
 
-   `cmake -GNinja ..`
+    ```
+    cmake -GNinja ..
+    ```
 
-The command above will configure your build to build the application according
-to the feature dependencies you have installed.
-For more configuration options, see the final section in this document.
+    The command above will configure your build to build the application according
+    to the feature dependencies you have installed.
+    For more configuration options, see the final section in this document.
 
 4. once step 3 has completed without errors, you are ready to call `ninja` to
    build various targets.

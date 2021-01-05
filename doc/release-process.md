@@ -47,33 +47,33 @@ Bitcoin Cash Node Release Process
 
 ## Release
 
-6. Create Gitian Builds (see [gitian-building.md](gitian-building.md))
+1. Create Gitian Builds (see [gitian-building.md](gitian-building.md))
 
-7. Verify matching Gitian Builds, gather signatures
+2. Verify matching Gitian Builds, gather signatures
 
-8. Verify IBD bith with and without `-checkpoints=0 -assumevalid=0`
+3. Verify IBD bith with and without `-checkpoints=0 -assumevalid=0`
 
-9. Upload Gitian Builds to [bitcoincashnode.org](https://bitcoincashnode.org/)
+4. Upload Gitian Builds to [bitcoincashnode.org](https://bitcoincashnode.org/)
 
-10. Create a [release](https://github.com/bitcoin-cash-node/bitcoin-cash-node)
-    on our GitHub mirror: `contrib/release/github-release.sh -a
-    <path to release binaries> -t <release tag> -o
-    <file containing your Github OAuth token>`
+5. Create a [release](https://github.com/bitcoin-cash-node/bitcoin-cash-node)
+   on our GitHub mirror: `contrib/release/github-release.sh -a
+   <path to release binaries> -t <release tag> -o
+   <file containing your Github OAuth token>`
 
-11. Create [Ubuntu PPA packages](https://launchpad.net/~bitcoin-cash-node/+archive/ubuntu/ppa):
-    Maintainers need to clone [packaging](https://gitlab.com/bitcoin-cash-node/bchn-sw/packaging)
-    and follow instructions to run `debian-packaging.sh` in that repository.
+6. Create [Ubuntu PPA packages](https://launchpad.net/~bitcoin-cash-node/+archive/ubuntu/ppa):
+   Maintainers need to clone [packaging](https://gitlab.com/bitcoin-cash-node/bchn-sw/packaging)
+   and follow instructions to run `debian-packaging.sh` in that repository.
 
-12. Notify maintainers of AUR and Docker images to build their packages.
-    They should be given 1-day advance notice if possible.
+7. Notify maintainers of AUR and Docker images to build their packages.
+   They should be given 1-day advance notice if possible.
 
 ## After Release
 
-12. Update version number on www.bitcoincashnode.org
+1. Update version number on www.bitcoincashnode.org
 
-13. Publish signed checksums (various places, e.g. blog, reddit, etc. etc.)
+2. Publish signed checksums (various places, e.g. blog, reddit, etc. etc.)
 
-14. Announce Release:
+3. Announce Release:
     - [Reddit](https://www.reddit.com/r/bitcoincashnode/)
     - Twitter @bitcoincashnode
     - Public slack channels friendly to Bitcoin Cash Node announcements

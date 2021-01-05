@@ -12,36 +12,36 @@ gradually and you are encouraged to use the provided
 to clean up the patch automatically before submitting a pull request.
 
 - Basic rules specified in `src/.clang-format`.
-  - Braces on new lines for namespaces, classes, functions, methods.
-  - Braces on the same line for everything else.
-  - 4 space indentation (no tabs) for every block except namespaces.
-  - No indentation for `public`/`protected`/`private` or for `namespace`.
-  - No extra spaces inside parenthesis; don't do ( this )
-  - No space after function names; one space after `if`, `for` and `while`.
-  - Always add braces for block statements (e.g. `if`, `for`, `while`).
-  - `++i` is preferred over `i++`.
-  - `static_assert` is preferred over `assert` where possible.
-    Generally; compile-time checking is preferred over run-time checking.
-  - Use CamelCase for functions/methods, and lowerCamelCase for variables.
-    - GLOBAL_CONSTANTS should use UPPER_SNAKE_CASE.
-    - namespaces should use lower_snake_case.
-  - Function names should generally start with an English command-form verb
-    (e.g. `ValidateTransaction`, `AddTransactionToMempool`, `ConnectBlock`)
-  - Variable names should generally be nouns or past/future tense verbs.
-    (e.g. `canDoThing`, `signatureOperations`, `didThing`)
-  - Avoid using globals, remove existing globals whenever possible.
-  - Class member variable names should be prepended with `m_`
-  - DO choose easily readable identifier names.
-  - DO favor readability over brevity.
-  - DO NOT use Hungarian notation.
-  - DO NOT use abbreviations or contractions within identifiers.
-    - WRONG: mempool
-    - RIGHT: MemoryPool
-    - WRONG: ChangeDir
-    - RIGHT: ChangeDirectory
-  - DO NOT use obscure acronyms, DO uppercase any acronyms.
-  - FINALLY, do not migrate existing code unless refactoring. It makes
-    forwarding-porting from Bitcoin Core and Bitcoin ABC more difficult.
+    - Braces on new lines for namespaces, classes, functions, methods.
+    - Braces on the same line for everything else.
+    - 4 space indentation (no tabs) for every block except namespaces.
+    - No indentation for `public`/`protected`/`private` or for `namespace`.
+    - No extra spaces inside parenthesis; don't do ( this )
+    - No space after function names; one space after `if`, `for` and `while`.
+    - Always add braces for block statements (e.g. `if`, `for`, `while`).
+    - `++i` is preferred over `i++`.
+    - `static_assert` is preferred over `assert` where possible.
+      Generally; compile-time checking is preferred over run-time checking.
+    - Use CamelCase for functions/methods, and lowerCamelCase for variables.
+        - GLOBAL_CONSTANTS should use UPPER_SNAKE_CASE.
+        - namespaces should use lower_snake_case.
+    - Function names should generally start with an English command-form verb
+      (e.g. `ValidateTransaction`, `AddTransactionToMempool`, `ConnectBlock`)
+    - Variable names should generally be nouns or past/future tense verbs.
+      (e.g. `canDoThing`, `signatureOperations`, `didThing`)
+    - Avoid using globals, remove existing globals whenever possible.
+    - Class member variable names should be prepended with `m_`
+    - DO choose easily readable identifier names.
+    - DO favor readability over brevity.
+    - DO NOT use Hungarian notation.
+    - DO NOT use abbreviations or contractions within identifiers.
+        - WRONG: mempool
+        - RIGHT: MemoryPool
+        - WRONG: ChangeDir
+        - RIGHT: ChangeDirectory
+    - DO NOT use obscure acronyms, DO uppercase any acronyms.
+    - FINALLY, do not migrate existing code unless refactoring. It makes
+      forwarding-porting from Bitcoin Core and Bitcoin ABC more difficult.
 
 The naming convention roughly mirrors [Microsoft Naming Conventions](https://docs.microsoft.com/en-us/dotnet/standard/design-guidelines/general-naming-conventions)
 
@@ -366,14 +366,14 @@ ninja check check-functional
 
 Additional resources:
 
- * [AddressSanitizer](https://clang.llvm.org/docs/AddressSanitizer.html)
- * [LeakSanitizer](https://clang.llvm.org/docs/LeakSanitizer.html)
- * [MemorySanitizer](https://clang.llvm.org/docs/MemorySanitizer.html)
- * [ThreadSanitizer](https://clang.llvm.org/docs/ThreadSanitizer.html)
- * [UndefinedBehaviorSanitizer](https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html)
- * [GCC Instrumentation Options](https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html)
- * [Google Sanitizers Wiki](https://github.com/google/sanitizers/wiki)
- * [Issue #12691: Enable -fsanitize flags in Travis](https://github.com/bitcoin/bitcoin/issues/12691)
+* [AddressSanitizer](https://clang.llvm.org/docs/AddressSanitizer.html)
+* [LeakSanitizer](https://clang.llvm.org/docs/LeakSanitizer.html)
+* [MemorySanitizer](https://clang.llvm.org/docs/MemorySanitizer.html)
+* [ThreadSanitizer](https://clang.llvm.org/docs/ThreadSanitizer.html)
+* [UndefinedBehaviorSanitizer](https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html)
+* [GCC Instrumentation Options](https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html)
+* [Google Sanitizers Wiki](https://github.com/google/sanitizers/wiki)
+* [Issue #12691: Enable -fsanitize flags in Travis](https://github.com/bitcoin/bitcoin/issues/12691)
 
 Locking/mutex usage notes
 -------------------------
@@ -677,15 +677,15 @@ namespace {
 
 ### Header Inclusions
 
-  - Header inclusions should use angle brackets (`#include <>`).
+- Header inclusions should use angle brackets (`#include <>`).
   The include path should be relative to the `src` folder.
   e.g.: `#include <qt/test/guiutiltests.h>`
 
-  - Native C++ headers should be preferred over C compatibility headers.
+- Native C++ headers should be preferred over C compatibility headers.
   e.g.: use `<cstdint>` instead of `<stdint.h>`
 
-  - In order to make the code consistent, header files should be included in the
-    following order, with each section separated by a newline:
+- In order to make the code consistent, header files should be included in the
+  following order, with each section separated by a newline:
     1. In a .cpp file, the associated .h is in first position. In a test source,
        this is the header file under test.
     2. The project headers.
@@ -730,9 +730,9 @@ All headers should be lexically ordered inside their block.
 
 ### Unit Tests
 
- - Test suite naming convention: The Boost test suite in file
-   `src/test/foo_tests.cpp` should be named `foo_tests`. Test suite names must
-   be unique.
+- Test suite naming convention: The Boost test suite in file
+  `src/test/foo_tests.cpp` should be named `foo_tests`. Test suite names must
+  be unique.
 
 ### Subtrees
 
