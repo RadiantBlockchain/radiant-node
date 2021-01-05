@@ -1,5 +1,5 @@
 // Copyright (c) 2011-2019 The Bitcoin Core developers
-// Copyright (c) 2020 The Bitcoin developers
+// Copyright (c) 2020-2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -647,11 +647,9 @@ void RPCConsole::setClientModel(ClientModel *model) {
                 &RPCConsole::setNumConnections);
 
         interfaces::Node &node = clientModel->node();
-        setNumBlocks(node.getNumBlocks(),
-                     QDateTime::fromTime_t(node.getLastBlockTime()),
-                     node.getVerificationProgress(), false);
-        connect(model, &ClientModel::numBlocksChanged, this,
-                &RPCConsole::setNumBlocks);
+        setNumBlocks(node.getNumBlocks(), QDateTime::fromTime_t(node.getLastBlockTime()),
+                     QString::fromStdString(node.getLastBlockHash().ToString()), node.getVerificationProgress(), false);
+        connect(model, &ClientModel::numBlocksChanged, this, &RPCConsole::setNumBlocks);
 
         updateNetworkState();
         connect(model, &ClientModel::networkActiveChanged, this,
@@ -990,11 +988,11 @@ void RPCConsole::setNetworkActive(bool networkActive) {
     updateNetworkState();
 }
 
-void RPCConsole::setNumBlocks(int count, const QDateTime &blockDate,
-                              double nVerificationProgress, bool headers) {
+void RPCConsole::setNumBlocks(int count, const QDateTime &blockDate, const QString& blockHash, double nVerificationProgress, bool headers) {
     if (!headers) {
         ui->numberOfBlocks->setText(QString::number(count));
         ui->lastBlockTime->setText(blockDate.toString());
+        ui->lastBlockHash->setText(blockHash);
     }
 }
 

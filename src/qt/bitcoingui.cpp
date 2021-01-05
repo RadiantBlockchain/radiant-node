@@ -1,4 +1,5 @@
 // Copyright (c) 2011-2019 The Bitcoin Core developers
+// Copyright (c) 2020-2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -547,9 +548,8 @@ void BitcoinGUI::setClientModel(ClientModel *_clientModel) {
         modalOverlay->setKnownBestHeight(
             _clientModel->getHeaderTipHeight(),
             QDateTime::fromTime_t(_clientModel->getHeaderTipTime()));
-        setNumBlocks(m_node.getNumBlocks(),
-                     QDateTime::fromTime_t(m_node.getLastBlockTime()),
-                     m_node.getVerificationProgress(), false);
+        setNumBlocks(m_node.getNumBlocks(), QDateTime::fromTime_t(m_node.getLastBlockTime()),
+                     QString::fromStdString(m_node.getLastBlockHash().ToString()), m_node.getVerificationProgress(), false);
         connect(_clientModel, &ClientModel::numBlocksChanged, this,
                 &BitcoinGUI::setNumBlocks);
 
@@ -930,7 +930,7 @@ void BitcoinGUI::openOptionsDialogWithTab(OptionsDialog::Tab tab) {
     dlg.exec();
 }
 
-void BitcoinGUI::setNumBlocks(int count, const QDateTime &blockDate,
+void BitcoinGUI::setNumBlocks(int count, const QDateTime &blockDate, const QString &,
                               double nVerificationProgress, bool header) {
     if (modalOverlay) {
         if (header) {

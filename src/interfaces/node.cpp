@@ -1,4 +1,5 @@
 // Copyright (c) 2018 The Bitcoin Core developers
+// Copyright (c) 2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -198,11 +199,19 @@ namespace {
         }
         int64_t getLastBlockTime() override {
             LOCK(::cs_main);
-            if (::ChainActive().Tip()) {
-                return ::ChainActive().Tip()->GetBlockTime();
+            if (CBlockIndex *tip = ::ChainActive().Tip()) {
+                return tip->GetBlockTime();
             }
             // Genesis block's time of current network
             return Params().GenesisBlock().GetBlockTime();
+        }
+        BlockHash getLastBlockHash() override {
+            LOCK(::cs_main);
+            if (CBlockIndex *tip = ::ChainActive().Tip()) {
+                return tip->GetBlockHash();
+            }
+            // Genesis block's hash of current network
+            return Params().GenesisBlock().GetHash();
         }
         double getVerificationProgress() override {
             const CBlockIndex *tip;
@@ -306,7 +315,7 @@ namespace {
         handleNotifyBlockTip(NotifyBlockTipFn fn) override {
             return MakeHandler(::uiInterface.NotifyBlockTip_connect(
                 [fn](bool initial_download, const CBlockIndex *block) {
-                    fn(initial_download, block->nHeight, block->GetBlockTime(),
+                    fn(initial_download, block->nHeight, block->GetBlockTime(), block->GetBlockHash(),
                        GuessVerificationProgress(Params().TxData(), block));
                 }));
         }
@@ -314,7 +323,7 @@ namespace {
         handleNotifyHeaderTip(NotifyHeaderTipFn fn) override {
             return MakeHandler(::uiInterface.NotifyHeaderTip_connect(
                 [fn](bool initial_download, const CBlockIndex *block) {
-                    fn(initial_download, block->nHeight, block->GetBlockTime(),
+                    fn(initial_download, block->nHeight, block->GetBlockTime(), block->GetBlockHash(),
                        GuessVerificationProgress(Params().TxData(), block));
                 }));
         }

@@ -1,4 +1,5 @@
 // Copyright (c) 2018 The Bitcoin Core developers
+// Copyright (c) 2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -145,6 +146,9 @@ public:
     //! Get last block time.
     virtual int64_t getLastBlockTime() = 0;
 
+    //! Get last block hash.
+    virtual BlockHash getLastBlockHash() = 0;
+
     //! Get verification progress.
     virtual double getVerificationProgress() = 0;
 
@@ -248,14 +252,14 @@ public:
     //! Register handler for block tip messages.
     using NotifyBlockTipFn =
         std::function<void(bool initial_download, int height,
-                           int64_t block_time, double verification_progress)>;
+                           int64_t block_time, BlockHash block_hash, double verification_progress)>;
     virtual std::unique_ptr<Handler>
     handleNotifyBlockTip(NotifyBlockTipFn fn) = 0;
 
     //! Register handler for header tip messages.
     using NotifyHeaderTipFn =
         std::function<void(bool initial_download, int height,
-                           int64_t block_time, double verification_progress)>;
+                           int64_t block_time, BlockHash block_hash, double verification_progress)>;
     virtual std::unique_ptr<Handler>
     handleNotifyHeaderTip(NotifyHeaderTipFn fn) = 0;
 };

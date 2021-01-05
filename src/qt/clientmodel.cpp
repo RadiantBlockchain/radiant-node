@@ -1,4 +1,5 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
+// Copyright (c) 2020-2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -202,7 +203,7 @@ static void BannedListChanged(ClientModel *clientmodel) {
 }
 
 static void BlockTipChanged(ClientModel *clientmodel, bool initialSync,
-                            int height, int64_t blockTime,
+                            int height, int64_t blockTime, BlockHash blockHash,
                             double verificationProgress, bool fHeader) {
     // lock free async UI updates in case we have a new block tip
     // during initial sync, only update the UI if the last update
@@ -228,6 +229,7 @@ static void BlockTipChanged(ClientModel *clientmodel, bool initialSync,
             clientmodel, "numBlocksChanged", Qt::QueuedConnection,
             Q_ARG(int, height),
             Q_ARG(QDateTime, QDateTime::fromTime_t(blockTime)),
+            Q_ARG(QString, QString::fromStdString(blockHash.ToString())),
             Q_ARG(double, verificationProgress), Q_ARG(bool, fHeader));
         nLastUpdateNotification = now;
     }
@@ -249,10 +251,10 @@ void ClientModel::subscribeToCoreSignals() {
         m_node.handleBannedListChanged(std::bind(BannedListChanged, this));
     m_handler_notify_block_tip = m_node.handleNotifyBlockTip(std::bind(
         BlockTipChanged, this, std::placeholders::_1, std::placeholders::_2,
-        std::placeholders::_3, std::placeholders::_4, false));
+        std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, false));
     m_handler_notify_header_tip = m_node.handleNotifyHeaderTip(std::bind(
         BlockTipChanged, this, std::placeholders::_1, std::placeholders::_2,
-        std::placeholders::_3, std::placeholders::_4, true));
+        std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, true));
 }
 
 void ClientModel::unsubscribeFromCoreSignals() {
