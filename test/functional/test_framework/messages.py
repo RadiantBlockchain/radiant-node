@@ -553,7 +553,9 @@ class CBlock(CBlockHeader):
                 i2 = min(i + 1, len(hashes) - 1)
                 newhashes.append(hash256(hashes[i] + hashes[i2]))
             hashes = newhashes
-        return uint256_from_str(hashes[0])
+        if hashes:
+            return uint256_from_str(hashes[0])
+        return 0
 
     def calc_merkle_root(self):
         hashes = []

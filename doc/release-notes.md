@@ -36,7 +36,13 @@ Bitcoin Cash Node version 22.3.0 is now available from:
 
 ## New RPC methods
 
-...
+The 'validateblocktemplate' RPC call has been added.
+This call checks if a block template would be accepted if the hash solution
+were solved.
+The semantics of this call are the same as on BCHUnlimited, from
+where a substantial portion of this new functionality has been ported.
+It is intended to be used by services that test compatibility of block
+generation with BCHN's consensus rules.
 
 ## Low-level RPC changes
 
