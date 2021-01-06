@@ -4,6 +4,7 @@
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Utilities for manipulating blocks and transactions."""
 
+from typing import Optional, Union
 from .script import (
     CScript,
     OP_CHECKSIG,
@@ -12,6 +13,7 @@ from .script import (
     OP_HASH160,
     OP_RETURN,
     OP_TRUE,
+    OP_NOP,
 )
 from .messages import (
     CBlock,
@@ -27,19 +29,28 @@ from .messages import (
 from .txtools import pad_tx
 from .util import assert_equal, satoshi_round
 
-# Create a block (with regtest difficulty)
 
-
-def create_block(hashprev, coinbase, nTime=None):
+def create_block(hashprev: Union[int, str], coinbase: Optional[CTransaction], nTime: Optional[int] = None,
+                 *, txns=None, ctor=True):
+    """Create a block (with regtest difficulty)"""
     block = CBlock()
     if nTime is None:
         import time
         block.nTime = int(time.time() + 600)
     else:
+        assert isinstance(nTime, int)
         block.nTime = nTime
+    if isinstance(hashprev, str):
+        # Convert hex-encoded headers to an int
+        hashprev = int(hashprev, 16)
     block.hashPrevBlock = hashprev
     block.nBits = 0x207fffff  # Will break after a difficulty adjustment...
-    block.vtx.append(coinbase)
+    if coinbase:
+        block.vtx.append(coinbase)
+    if txns:
+        if ctor:
+            txns = sorted(txns, key=lambda x: x.hash)
+        block.vtx.extend(txns)
     block.hashMerkleRoot = block.calc_merkle_root()
     block.calc_sha256()
     return block
@@ -92,6 +103,34 @@ def create_coinbase(height, pubkey=None):
     coinbase.calc_sha256()
     return coinbase
 
+# BU version
+# Create a coinbase transaction, assuming no miner fees.
+# If pubkey is passed in, the coinbase output will be a P2PK output;
+# otherwise an anyone-can-spend output.
+def bu_create_coinbase(height, pubkey = None, scriptPubKey = None):
+    assert not (pubkey and scriptPubKey), "cannot both have pubkey and custom scriptPubKey"
+    coinbase = CTransaction()
+    coinbase.vin.append(CTxIn(COutPoint(0, 0xffffffff),
+                ser_string(serialize_script_num(height)), 0xffffffff))
+    coinbaseoutput = CTxOut()
+    coinbaseoutput.nValue = 50 * COIN
+    halvings = int(height/150) # regtest
+    coinbaseoutput.nValue >>= halvings
+    if pubkey is not None:
+        coinbaseoutput.scriptPubKey = CScript([pubkey, OP_CHECKSIG])
+    else:
+        if scriptPubKey is None:
+            scriptPubKey = CScript([OP_NOP])
+        coinbaseoutput.scriptPubKey = CScript(scriptPubKey)
+    coinbase.vout = [ coinbaseoutput ]
+
+    # Make sure the coinbase is at least 100 bytes
+    coinbase_size = len(coinbase.serialize())
+    if coinbase_size < 100:
+        coinbase.vin[0].scriptSig += b'x' * (100 - coinbase_size)
+
+    coinbase.calc_sha256()
+    return coinbase
 
 def create_tx_with_script(prevtx, n, script_sig=b"",
                           amount=1, script_pub_key=CScript()):

@@ -1041,6 +1041,53 @@ static UniValue submitheader(const Config &config,
     throw JSONRPCError(RPC_VERIFY_ERROR, state.GetRejectReason());
 }
 
+static UniValue validateblocktemplate(const Config &config,
+                                      const JSONRPCRequest &request) {
+    if (request.fHelp || request.params.size() != 1) {
+        throw std::runtime_error("validateblocktemplate \"hexdata\"\n"
+                                 "\nReturns whether this block template will "
+                                 "be accepted if a hash solution is found.\n"
+                                 "\nReturns a JSON error when the header is invalid.\n"
+                                 "\nArguments\n"
+                                 "1. \"hexdata\"        (string, required) the "
+                                 "hex-encoded block to validate (same format "
+                                 "as submitblock)\n"
+                                 "\nResult:\n"
+                                 "true"
+                                 "\nExamples:\n" +
+                                 HelpExampleCli("validateblocktemplate", "\"mydata\"") +
+                                 HelpExampleRpc("validateblocktemplate", "\"mydata\""));
+    }
+
+    CBlock block;
+    if (!DecodeHexBlk(block, request.params[0].get_str())) {
+        throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "Block decode failed");
+    }
+
+    {
+        LOCK(cs_main);
+        if (!LookupBlockIndex(block.hashPrevBlock)) {
+            throw JSONRPCError(RPC_VERIFY_ERROR, "Invalid block: unknown parent (" + block.hashPrevBlock.GetHex() + ")");
+        }
+
+        // Check that block builds on chain tip
+        // TestBlockValidity only supports blocks built on the current tip
+        CBlockIndex *const pindexPrev = ::ChainActive().Tip();
+        if (block.hashPrevBlock != pindexPrev->GetBlockHash()) {
+            throw JSONRPCError(RPC_VERIFY_ERROR, "Invalid block: does not build on chain tip");
+        }
+
+        CValidationState state;
+        if (!TestBlockValidity(state, config.GetChainParams(), block, pindexPrev,
+                               BlockValidationOptions(config)
+                                  .withCheckPoW(false)
+                                  .withCheckMerkleRoot(true))) {
+            throw JSONRPCError(RPC_VERIFY_ERROR, "Invalid block: " + state.GetRejectReason());
+        }
+    }
+    return true;
+}
+
 static UniValue estimatefee(const Config &config,
                             const JSONRPCRequest &request) {
     if (request.fHelp || request.params.size() > 0) {
@@ -1285,6 +1332,7 @@ static const ContextFreeRPCCommand commands[] = {
     {"mining",     "submitblock",           submitblock,           {"hexdata", "dummy|parameters"}}, //! "dummy" is for compat. with Core
     {"mining",     "submitblocklight",      submitblocklight,      {"hexdata", "job_id"}},
     {"mining",     "submitheader",          submitheader,          {"hexdata"}},
+    {"mining",     "validateblocktemplate", validateblocktemplate, {"hexdata"}},
 
     {"generating", "generatetoaddress",     generatetoaddress,     {"nblocks", "address", "maxtries"}},
 
