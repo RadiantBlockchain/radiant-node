@@ -51,6 +51,9 @@ static-checks-master:
     rules:
         - if: $CI_COMMIT_BRANCH == "master"
     allow_failure: true
+    variables:
+       GIT_STRATEGY: clone
+       GIT_LFS_SKIP_SMUDGE: 1
     script:
         - pip3 install -r .static-checks-python-requirements.txt
         - git clone https://github.com/ekho/checkstyle2junit.git --branch master --single-branch --depth=1 build-aux/checkstyle2junit
@@ -77,6 +80,9 @@ static-checks-branch:
     rules:
         - if: $CI_COMMIT_BRANCH != "master"
     allow_failure: true
+    variables:
+       GIT_STRATEGY: clone
+       GIT_LFS_SKIP_SMUDGE: 1
     script:
         - export GIT_DIR=$CI_PROJECT_DIR/.git
           # Last merge commit is used as reference for branch starts.
