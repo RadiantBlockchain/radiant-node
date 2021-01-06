@@ -12,6 +12,12 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/thread.hpp>
 
+#ifdef _WIN32
+// The below are only used by GetPerfTimeNanos() in the Windows case
+#include <algorithm>
+#include <profileapi.h>
+#endif
+
 #include <tinyformat.h>
 
 #include <atomic>
@@ -73,6 +79,47 @@ int64_t GetTimeMicros() {
     return now;
 }
 
+int64_t GetPerfTimeNanos() {
+#ifdef _WIN32
+    // Windows lacks a decent high resolution clock source on some C++ implementations (such as MinGW). So we
+    // query the OS's QPC mechanism, which, on Windows 7+ is very fast to query and guaranteed to be accurate,
+    // with sub-microsecond precision. It is also monotonic ("steady").
+    static const auto queryPerfCtr = []() -> int64_t {
+        // This is is guaranteed to be initialized once atomically the first time through this function.
+        static const int64_t freq = []{
+            // Read the performance counter frequency in counts per second.
+            LARGE_INTEGER val;
+            QueryPerformanceFrequency(&val);
+            return int64_t(val.QuadPart);
+        }();
+        LARGE_INTEGER ct;
+        QueryPerformanceCounter(&ct);   // reads the performance counter (in ticks)
+        // return ticks converted to nanoseconds
+        return (int64_t(ct.QuadPart) * int64_t(1'000'000'000)) / std::max(freq, int64_t(1));
+    };
+    // Save the timestamp of the first time through here to start with low values after app init.
+    static const int64_t t0 = queryPerfCtr();
+    return queryPerfCtr() - t0;
+#else
+    // Otherwise, get the best clock we can from the implementation, prefering high resolution clocks
+    // to the 'steady_clock' (but only if it is steady). This branch is taken on Linux, Darwin or on BSD,
+    // all of which have very high quality implementations of the high_resolution_clock.
+    using Clock = std::conditional_t<std::chrono::high_resolution_clock::is_steady,
+                                     std::chrono::high_resolution_clock,
+                                     std::chrono::steady_clock>;
+    // Ensure compiler and C++ library provide the microsecond or better precision we need. If not, fall-back to
+    // good old GetTimeMicros().
+    if constexpr (std::ratio_less_equal_v<Clock::period, std::micro>) {
+        // Save the timestamp of the first time through here to start with low values after app init.
+        static const auto t0 = Clock::now();
+        return std::chrono::duration<int64_t, std::nano>(Clock::now() - t0).count();
+    } else {
+        // This branch really should never be taken on the major platforms we support and is normally compiled-out.
+        return GetTimeMicros() * 1'000;
+    }
+#endif
+}
+
 int64_t GetSystemTimeInSeconds() {
     return GetTimeMicros() / 1000000;
 }
@@ -121,3 +168,7 @@ int64_t ParseISO8601DateTime(const std::string &str) {
     }
     return (ptime - epoch).total_seconds();
 }
+
+
+std::string Tic::format(double val, int precision) const { return strprintf("%1.*f", precision, val); }
+std::string Tic::format(int64_t nsec) const { return strprintf("%i", nsec); }

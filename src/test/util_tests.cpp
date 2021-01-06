@@ -8,6 +8,7 @@
 #include <clientversion.h>
 #include <primitives/transaction.h>
 #include <sync.h>
+#include <tinyformat.h>
 #include <util/moneystr.h>
 #include <util/strencodings.h>
 
@@ -1532,6 +1533,49 @@ BOOST_AUTO_TEST_CASE(test_Capitalize) {
     BOOST_CHECK_EQUAL(Capitalize(""), "");
     BOOST_CHECK_EQUAL(Capitalize("bitcoin"), "Bitcoin");
     BOOST_CHECK_EQUAL(Capitalize("\x00\xfe\xff"), "\x00\xfe\xff");
+}
+
+BOOST_AUTO_TEST_CASE(test_GetPerfTimeNanos) {
+    // Basic test to just check sanity of the GetPerfTsNanos() call that it actually increses along with system clock.
+    // We would like to test things with more precision than this but it's very tricky to compare two distinct clocks.
+    for (int i = 0; i < 100; ++i) {
+        const int64_t sleeptime_msec = (i+1) * 7;
+        const int64_t before = GetPerfTimeNanos();
+        MilliSleep(sleeptime_msec);
+        const int64_t after = GetPerfTimeNanos();
+        BOOST_CHECK_GE((after - before) + 1'000 /* fudge by 1 usec in case of drift */, sleeptime_msec * 1'000'000);
+    }
+}
+
+BOOST_AUTO_TEST_CASE(test_Tic) {
+    Tic tic;
+    // freshly constructed Tic timer should not have elapsed much. 100ms arbitrarily chosen as a "safe" value.
+    BOOST_CHECK_LT(tic.msec(), 100);
+    int64_t cum_time = 0;
+    for (int i = 0; i < 100; ++i) {
+        const int64_t sleeptime_msec = (i+1) * 7;
+        MilliSleep(sleeptime_msec);
+        cum_time += sleeptime_msec;
+        // we expect that tic must have measured at least as much time as we slept
+        BOOST_CHECK_GE(tic.msec() + 1 /* fudge to guard against drift */, cum_time);
+    }
+    // freeze clock
+    tic.fin();
+    const auto frozen_nsec = tic.nsec();
+    for (int i = 0; i < 10; ++i) {
+        MilliSleep(10);
+        // ensure frozen times remain frozen
+        BOOST_CHECK_EQUAL(tic.nsec(), frozen_nsec);
+        BOOST_CHECK_EQUAL(tic.usec(), frozen_nsec / 1'000);
+        BOOST_CHECK_EQUAL(tic.msec(), frozen_nsec / 1'000'000);
+        BOOST_CHECK_EQUAL(tic.secs<int64_t>(), frozen_nsec / 1'000'000'000);
+    }
+
+    // ensure the clock string values correspond to what we expect
+    BOOST_CHECK_EQUAL(tic.secsStr(3), strprintf("%1.3f", tic.secs<double>()));
+    BOOST_CHECK_EQUAL(tic.msecStr(3), strprintf("%1.3f", tic.msec<double>()));
+    BOOST_CHECK_EQUAL(tic.usecStr(3), strprintf("%1.3f", tic.usec<double>()));
+    BOOST_CHECK_EQUAL(tic.nsecStr(), strprintf("%i", tic.nsec()));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
