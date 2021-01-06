@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE(univalue_typecheck)
     BOOST_CHECK_THROW(v1.get_bool(), std::runtime_error);
 
     UniValue v2;
-    v2.setBool(true);
+    v2 = true;
     BOOST_CHECK_EQUAL(v2.get_bool(), true);
     BOOST_CHECK_THROW(v2.get_int(), std::runtime_error);
 
@@ -133,190 +133,236 @@ BOOST_AUTO_TEST_CASE(univalue_set)
     v.setNull();
     BOOST_CHECK(v.isNull());
     BOOST_CHECK_EQUAL(v.getValStr(), "");
+    BOOST_CHECK_EQUAL(v.size(), 0);
+    BOOST_CHECK_EQUAL(v.getType(), UniValue::VNULL);
+    BOOST_CHECK(v.empty());
 
-    v.setObject();
+    UniValue::Object& obj = v.setObject();
+    BOOST_CHECK_EQUAL(&obj, &v.get_obj());
     BOOST_CHECK(v.isObject());
     BOOST_CHECK_EQUAL(v.size(), 0);
     BOOST_CHECK_EQUAL(v.getType(), UniValue::VOBJ);
     BOOST_CHECK(v.empty());
+    UniValue vo(v); // make a copy
+    BOOST_CHECK(vo.isObject());
+    BOOST_CHECK_EQUAL(vo.size(), 0);
+    BOOST_CHECK_EQUAL(vo.getType(), UniValue::VOBJ);
+    BOOST_CHECK(vo.empty());
+    obj.emplace_back("key", "value"); // change the original
+    BOOST_CHECK_EQUAL(v.size(), 1);
+    BOOST_CHECK(!v.empty());
+    BOOST_CHECK_EQUAL(vo.size(), 0);
+    BOOST_CHECK(vo.empty());
+    UniValue::Object& obj2 = vo = obj; // assign original to copy
+    BOOST_CHECK_EQUAL(&obj2, &vo.get_obj());
+    BOOST_CHECK_EQUAL(vo.size(), 1);
+    BOOST_CHECK(!vo.empty());
 
-    v.setArray();
+    UniValue::Array& arr = v.setArray();
+    BOOST_CHECK_EQUAL(&arr, &v.get_array());
     BOOST_CHECK(v.isArray());
     BOOST_CHECK_EQUAL(v.size(), 0);
+    BOOST_CHECK_EQUAL(v.getType(), UniValue::VARR);
+    BOOST_CHECK(v.empty());
+    UniValue va(v); // make a copy
+    BOOST_CHECK(va.isArray());
+    BOOST_CHECK_EQUAL(va.size(), 0);
+    BOOST_CHECK_EQUAL(va.getType(), UniValue::VARR);
+    BOOST_CHECK(va.empty());
+    arr.emplace_back("value"); // change the original
+    BOOST_CHECK_EQUAL(v.size(), 1);
+    BOOST_CHECK(!v.empty());
+    BOOST_CHECK_EQUAL(va.size(), 0);
+    BOOST_CHECK(va.empty());
+    UniValue::Array& arr2 = va = arr; // assign original to copy
+    BOOST_CHECK_EQUAL(&arr2, &va.get_array());
+    BOOST_CHECK_EQUAL(va.size(), 1);
+    BOOST_CHECK(!va.empty());
 
-    v.setStr("zum");
+    std::string& str = v = "zum";
+    BOOST_CHECK_EQUAL(&str, &v.get_str());
     BOOST_CHECK(v.isStr());
     BOOST_CHECK_EQUAL(v.getValStr(), "zum");
+    BOOST_CHECK_EQUAL(v.size(), 0);
+    BOOST_CHECK_EQUAL(v.getType(), UniValue::VSTR);
+    BOOST_CHECK(v.empty());
 
-    v.setFloat(std::numeric_limits<double>::quiet_NaN());
+    v = "string must change into null when assigning unrepresentable number";
     BOOST_CHECK(v.isStr());
-    BOOST_CHECK_EQUAL(v.getValStr(), "zum");
+    v = std::numeric_limits<double>::quiet_NaN();
+    BOOST_CHECK(v.isNull());
 
-    v.setFloat(std::numeric_limits<double>::signaling_NaN());
+    v = "string must change into null when assigning unrepresentable number";
     BOOST_CHECK(v.isStr());
-    BOOST_CHECK_EQUAL(v.getValStr(), "zum");
+    v = std::numeric_limits<double>::signaling_NaN();
+    BOOST_CHECK(v.isNull());
 
-    v.setFloat(std::numeric_limits<double>::infinity());
+    v = "string must change into null when assigning unrepresentable number";
     BOOST_CHECK(v.isStr());
-    BOOST_CHECK_EQUAL(v.getValStr(), "zum");
+    v = std::numeric_limits<double>::infinity();
+    BOOST_CHECK(v.isNull());
 
-    v.setFloat(-std::numeric_limits<double>::infinity());
+    v = "string must change into null when assigning unrepresentable number";
     BOOST_CHECK(v.isStr());
-    BOOST_CHECK_EQUAL(v.getValStr(), "zum");
+    v = -std::numeric_limits<double>::infinity();
+    BOOST_CHECK(v.isNull());
 
-    v.setFloat(-1.01);
+    v = -1.01;
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "-1.01");
+    BOOST_CHECK_EQUAL(v.size(), 0);
+    BOOST_CHECK_EQUAL(v.getType(), UniValue::VNUM);
+    BOOST_CHECK(v.empty());
 
     v.setNull();
     BOOST_CHECK(v.isNull());
-    v.setFloat(-std::numeric_limits<double>::max());
+    v = -std::numeric_limits<double>::max();
     BOOST_CHECK(v.isNum());
 
-    v.setFloat(-1.79769313486231570e+308);
+    v = -1.79769313486231570e+308;
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "-1.797693134862316e+308");
 
-    v.setFloat(-100000000000000000. / 3.);
+    v = -100000000000000000. / 3.;
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "-3.333333333333333e+16");
 
-    v.setFloat(-10000000000000000. / 3.);
+    v = -10000000000000000. / 3.;
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "-3333333333333334");
 
-    v.setFloat(-1000000000000000. / 3.);
+    v = -1000000000000000. / 3.;
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "-333333333333333.3");
 
-    v.setFloat(-10. / 3.);
+    v = -10. / 3.;
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "-3.333333333333333");
 
-    v.setFloat(-1.);
+    v = -1.;
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "-1");
 
-    v.setFloat(-1. / 3.);
+    v = -1. / 3.;
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "-0.3333333333333333");
 
-    v.setFloat(-1. / 3000.);
+    v = -1. / 3000.;
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "-0.0003333333333333333");
 
-    v.setFloat(-1. / 30000.);
+    v = -1. / 30000.;
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "-3.333333333333333e-05");
 
-    v.setFloat(-4.94065645841246544e-324);
+    v = -4.94065645841246544e-324;
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "-4.940656458412465e-324");
 
     v.setNull();
     BOOST_CHECK(v.isNull());
-    v.setFloat(-std::numeric_limits<double>::min());
+    v = -std::numeric_limits<double>::min();
     BOOST_CHECK(v.isNum());
 
-    v.setFloat(-1. / std::numeric_limits<double>::infinity());
+    v = -1. / std::numeric_limits<double>::infinity();
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "-0");
 
-    v.setFloat(1. / std::numeric_limits<double>::infinity());
+    v = 1. / std::numeric_limits<double>::infinity();
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "0");
 
     v.setNull();
     BOOST_CHECK(v.isNull());
-    v.setFloat(std::numeric_limits<double>::min());
+    v = std::numeric_limits<double>::min();
     BOOST_CHECK(v.isNum());
 
-    v.setFloat(4.94065645841246544e-324);
+    v = 4.94065645841246544e-324;
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "4.940656458412465e-324");
 
-    v.setFloat(1. / 30000.);
+    v = 1. / 30000.;
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "3.333333333333333e-05");
 
-    v.setFloat(1. / 3000.);
+    v = 1. / 3000.;
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "0.0003333333333333333");
 
-    v.setFloat(1. / 3.);
+    v = 1. / 3.;
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "0.3333333333333333");
 
-    v.setFloat(1.);
+    v = 1.;
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "1");
 
-    v.setFloat(10. / 3.);
+    v = 10. / 3.;
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "3.333333333333333");
 
-    v.setFloat(1000000000000000. / 3.);
+    v = 1000000000000000. / 3.;
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "333333333333333.3");
 
-    v.setFloat(10000000000000000. / 3.);
+    v = 10000000000000000. / 3.;
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "3333333333333334");
 
-    v.setFloat(100000000000000000. / 3.);
+    v = 100000000000000000. / 3.;
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "3.333333333333333e+16");
 
-    v.setFloat(1.79769313486231570e+308);
+    v = 1.79769313486231570e+308;
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "1.797693134862316e+308");
 
     v.setNull();
     BOOST_CHECK(v.isNull());
-    v.setFloat(std::numeric_limits<double>::max());
+    v = std::numeric_limits<double>::max();
     BOOST_CHECK(v.isNum());
 
-    v.setInt(1023);
+    v = 1023;
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "1023");
 
-    v.setInt(0);
+    v = 0;
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "0");
 
-    v.setInt(std::numeric_limits<int>::min());
+    v = std::numeric_limits<int>::min();
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), std::to_string(std::numeric_limits<int>::min()));
 
-    v.setInt(std::numeric_limits<int>::max());
+    v = std::numeric_limits<int>::max();
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), std::to_string(std::numeric_limits<int>::max()));
 
-    v.setInt(int64_t(-1023));
+    v = int64_t(-1023);
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "-1023");
 
-    v.setInt(int64_t(0));
+    v = int64_t(0);
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "0");
 
-    v.setInt(std::numeric_limits<int64_t>::min());
+    v = std::numeric_limits<int64_t>::min();
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "-9223372036854775808");
 
-    v.setInt(std::numeric_limits<int64_t>::max());
+    v = std::numeric_limits<int64_t>::max();
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "9223372036854775807");
 
-    v.setInt(uint64_t(1023));
+    v = uint64_t(1023);
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "1023");
 
-    v.setInt(uint64_t(0));
+    v = uint64_t(0);
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "0");
 
-    v.setInt(std::numeric_limits<uint64_t>::max());
+    v = std::numeric_limits<uint64_t>::max();
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "18446744073709551615");
 
@@ -324,13 +370,13 @@ BOOST_AUTO_TEST_CASE(univalue_set)
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "-688");
 
-    v.setBool(false);
+    v = false;
     BOOST_CHECK_EQUAL(v.isBool(), true);
     BOOST_CHECK_EQUAL(v.isTrue(), false);
     BOOST_CHECK_EQUAL(v.isFalse(), true);
     BOOST_CHECK_EQUAL(v.getBool(), false);
 
-    v.setBool(true);
+    v = true;
     BOOST_CHECK_EQUAL(v.isBool(), true);
     BOOST_CHECK_EQUAL(v.isTrue(), true);
     BOOST_CHECK_EQUAL(v.isFalse(), false);
@@ -359,10 +405,10 @@ BOOST_AUTO_TEST_CASE(univalue_array)
     arr.get_array().push_back(s);
 
     UniValue::Array vec;
-    v.setStr("boing");
+    v = "boing";
     vec.push_back(v);
 
-    v.setStr("going");
+    v = "going";
     vec.push_back(std::move(v));
 
     for (UniValue& thing : vec) {
@@ -432,7 +478,7 @@ BOOST_AUTO_TEST_CASE(univalue_object)
     BOOST_CHECK_EQUAL(obj.size(), 0);
 
     strKey = "age";
-    v.setInt(100);
+    v = 100;
     obj.get_obj().emplace_back(strKey, v);
 
     strKey = "first";
@@ -460,7 +506,7 @@ BOOST_AUTO_TEST_CASE(univalue_object)
 
     strKey = "moon";
     obj.get_obj().emplace_back(strKey, "overwrite me");
-    obj.get_obj().rbegin()->second.setBool(true);
+    obj.get_obj().rbegin()->second = true;
 
     BOOST_CHECK(!obj.empty());
     BOOST_CHECK_EQUAL(obj.size(), 8);
@@ -598,12 +644,12 @@ BOOST_AUTO_TEST_CASE(univalue_object)
 
     obj.setObject();
     UniValue uv;
-    uv.setInt(42);
+    uv = 42;
     obj.get_obj().emplace_back("age", uv);
     BOOST_CHECK_EQUAL(obj.size(), 1);
     BOOST_CHECK_EQUAL(obj["age"].getValStr(), "42");
 
-    uv.setInt(43);
+    uv = 43;
     obj.get_obj().emplace_back("age", uv);
     BOOST_CHECK_EQUAL(obj.size(), 2);
     BOOST_CHECK_EQUAL(obj["age"].getValStr(), "42");
@@ -629,9 +675,9 @@ BOOST_AUTO_TEST_CASE(univalue_object)
     vals.emplace_back(-12345678.11234678);
     vals.emplace_back(UniValue{UniValue::VARR});
     vals.at(2).get_obj().emplace_back("akey", "this is a value");
-    vals.rbegin()->setArray(vals); // vals recursively contains a partial copy of vals!
+    *vals.rbegin() = vals; // vals recursively contains a partial copy of vals!
     const auto valsExpected(vals); // save a copy
-    arr.setArray(std::move(vals)); // assign to array via move
+    arr = std::move(vals); // assign to array via move
     BOOST_CHECK(vals.empty()); // vector should be empty after move
     BOOST_CHECK(!arr.empty()); // but our array should not be
     BOOST_CHECK(arr != UniValue{UniValue::VARR}); // check that UniValue::operator== is not a yes-man

@@ -149,42 +149,44 @@ void UniValue::setNull() noexcept
     values.clear();
 }
 
-void UniValue::setBool(bool val_) noexcept
+void UniValue::operator=(bool val_) noexcept
 {
     setNull();
     typ = val_ ? VTRUE : VFALSE;
 }
 
-void UniValue::setObject() noexcept
+UniValue::Object& UniValue::setObject() noexcept
 {
     setNull();
     typ = VOBJ;
+    return entries;
 }
-void UniValue::setObject(const Object& object)
+UniValue::Object& UniValue::operator=(const Object& object)
 {
     setObject();
-    entries = object;
+    return entries = object;
 }
-void UniValue::setObject(Object&& object) noexcept
+UniValue::Object& UniValue::operator=(Object&& object) noexcept
 {
     setObject();
-    entries = std::move(object);
+    return entries = std::move(object);
 }
 
-void UniValue::setArray() noexcept
+UniValue::Array& UniValue::setArray() noexcept
 {
     setNull();
     typ = VARR;
+    return values;
 }
-void UniValue::setArray(const Array& array)
+UniValue::Array& UniValue::operator=(const Array& array)
 {
     setArray();
-    values = array;
+    return values = array;
 }
-void UniValue::setArray(Array&& array) noexcept
+UniValue::Array& UniValue::operator=(Array&& array) noexcept
 {
     setArray();
-    values = std::move(array);
+    return values = std::move(array);
 }
 
 static bool validNumStr(const std::string& s)
@@ -217,6 +219,8 @@ void UniValue::setNumStr(std::string&& val_) noexcept
 template<typename Integer>
 void UniValue::setInt64(Integer val_)
 {
+    // Begin by setting to null, so that null is assigned if the number cannot be accepted.
+    setNull();
     // Longest possible 64-bit integers are "-9223372036854775808" and "18446744073709551615",
     // both of which require 20 visible characters and 1 terminating null,
     // hence buffer size 21.
@@ -225,23 +229,24 @@ void UniValue::setInt64(Integer val_)
     int n = std::snprintf(buf.data(), size_t(bufSize), std::is_signed<Integer>::value ? "%" PRId64 : "%" PRIu64, val_);
     if (n <= 0 || n >= bufSize) // should never happen
         return;
-    setNull();
     typ = VNUM;
     val.assign(buf.data(), std::string::size_type(n));
 }
 
-void UniValue::setInt(short val_) { setInt64<int64_t>(val_); }
-void UniValue::setInt(int val_) { setInt64<int64_t>(val_); }
-void UniValue::setInt(long val_) { setInt64<int64_t>(val_); }
-void UniValue::setInt(long long val_) { setInt64<int64_t>(val_); }
-void UniValue::setInt(unsigned short val_) { setInt64<uint64_t>(val_); }
-void UniValue::setInt(unsigned val_) { setInt64<uint64_t>(val_); }
-void UniValue::setInt(unsigned long val_) { setInt64<uint64_t>(val_); }
-void UniValue::setInt(unsigned long long val_) { setInt64<uint64_t>(val_); }
+void UniValue::operator=(short val_) { setInt64<int64_t>(val_); }
+void UniValue::operator=(int val_) { setInt64<int64_t>(val_); }
+void UniValue::operator=(long val_) { setInt64<int64_t>(val_); }
+void UniValue::operator=(long long val_) { setInt64<int64_t>(val_); }
+void UniValue::operator=(unsigned short val_) { setInt64<uint64_t>(val_); }
+void UniValue::operator=(unsigned val_) { setInt64<uint64_t>(val_); }
+void UniValue::operator=(unsigned long val_) { setInt64<uint64_t>(val_); }
+void UniValue::operator=(unsigned long long val_) { setInt64<uint64_t>(val_); }
 
-void UniValue::setFloat(double val_)
+void UniValue::operator=(double val_)
 {
-    // ensure not NaN or inf, which are not representable by the JSON Number type
+    // Begin by setting to null, so that null is assigned if the number cannot be accepted.
+    setNull();
+    // Ensure not NaN or inf, which are not representable by the JSON Number type.
     if (!std::isfinite(val_))
         return;
     // For floats and doubles, we can't use snprintf() since the C-locale may be anything,
@@ -253,22 +258,27 @@ void UniValue::setFloat(double val_)
     std::ostringstream oss;
     oss.imbue(std::locale::classic());
     oss << std::setprecision(16) << val_;
-    setNull();
     typ = VNUM;
     val = oss.str();
 }
 
-void UniValue::setStr(const std::string& val_)
+std::string& UniValue::operator=(const std::string& val_)
 {
     setNull();
     typ = VSTR;
-    val = val_;
+    return val = val_;
 }
-void UniValue::setStr(std::string&& val_) noexcept
+std::string& UniValue::operator=(std::string&& val_) noexcept
 {
     setNull();
     typ = VSTR;
-    val = std::move(val_);
+    return val = std::move(val_);
+}
+std::string& UniValue::operator=(const char* val_)
+{
+    setNull();
+    typ = VSTR;
+    return val = val_;
 }
 
 const UniValue& UniValue::operator[](const std::string& key) const noexcept

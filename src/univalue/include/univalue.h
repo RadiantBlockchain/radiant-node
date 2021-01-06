@@ -463,40 +463,41 @@ public:
     UniValue(Object&& object) noexcept : typ(VOBJ), entries(std::move(object)) {}
     explicit UniValue(const Array& array) : typ(VARR), values(array) {}
     UniValue(Array&& array) noexcept : typ(VARR), values(std::move(array)) {}
-    UniValue(short val_) { setInt(val_); }
-    UniValue(int val_) { setInt(val_); }
-    UniValue(long val_) { setInt(val_); }
-    UniValue(long long val_) { setInt(val_); }
-    UniValue(unsigned short val_) { setInt(val_); }
-    UniValue(unsigned val_) { setInt(val_); }
-    UniValue(unsigned long val_) { setInt(val_); }
-    UniValue(unsigned long long val_) { setInt(val_); }
-    UniValue(double val_) { setFloat(val_); }
+    UniValue(short val_) { *this = val_; }
+    UniValue(int val_) { *this = val_; }
+    UniValue(long val_) { *this = val_; }
+    UniValue(long long val_) { *this = val_; }
+    UniValue(unsigned short val_) { *this = val_; }
+    UniValue(unsigned val_) { *this = val_; }
+    UniValue(unsigned long val_) { *this = val_; }
+    UniValue(unsigned long long val_) { *this = val_; }
+    UniValue(double val_) { *this = val_; }
     UniValue(const std::string& val_) : typ(VSTR), val(val_) {}
     UniValue(std::string&& val_) noexcept : typ(VSTR), val(std::move(val_)) {}
-    UniValue(const char *val_) : typ(VSTR), val(val_) {}
+    UniValue(const char* val_) : typ(VSTR), val(val_) {}
 
     void setNull() noexcept;
-    void setBool(bool val) noexcept;
-    void setObject() noexcept;
-    void setObject(const Object& object);
-    void setObject(Object&& object) noexcept;
-    void setArray() noexcept;
-    void setArray(const Array& array);
-    void setArray(Array&& array) noexcept;
-    void setNumStr(const std::string& val);
-    void setNumStr(std::string&& val) noexcept;
-    void setInt(short val);
-    void setInt(int val);
-    void setInt(long val);
-    void setInt(long long val);
-    void setInt(unsigned short val);
-    void setInt(unsigned val);
-    void setInt(unsigned long val);
-    void setInt(unsigned long long val);
-    void setFloat(double val);
-    void setStr(const std::string& val);
-    void setStr(std::string&& val) noexcept;
+    void operator=(bool val) noexcept;
+    Object& setObject() noexcept;
+    Object& operator=(const Object& object);
+    Object& operator=(Object&& object) noexcept;
+    Array& setArray() noexcept;
+    Array& operator=(const Array& array);
+    Array& operator=(Array&& array) noexcept;
+    void setNumStr(const std::string& val); // TODO: refactor to assign null on failure
+    void setNumStr(std::string&& val) noexcept; // TODO: refactor to assign null on failure
+    void operator=(short val);
+    void operator=(int val);
+    void operator=(long val);
+    void operator=(long long val);
+    void operator=(unsigned short val);
+    void operator=(unsigned val);
+    void operator=(unsigned long val);
+    void operator=(unsigned long long val);
+    void operator=(double val);
+    std::string& operator=(const std::string& val);
+    std::string& operator=(std::string&& val) noexcept;
+    std::string& operator=(const char* val);
 
     constexpr enum VType getType() const noexcept { return typ; }
     constexpr const std::string& getValStr() const noexcept { return val; }
