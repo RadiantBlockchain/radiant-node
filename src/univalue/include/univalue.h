@@ -744,9 +744,9 @@ private:
     static void stringify(Stream & stream, const UniValue::Array& value, unsigned int prettyIndent, unsigned int indentLevel);
     static void stringify(Stream & stream, const std::string& value, unsigned int prettyIndent, unsigned int indentLevel);
 
-    // Used by the setInt() overloads
-    template<typename Integer>
-    void setInt64(Integer val);
+    // Used internally by the integral operator=() overloads
+    template<typename Int64>
+    void setInt64(Int64 val);
 
 public:
     // Strict type-specific getters, these throw std::runtime_error if the

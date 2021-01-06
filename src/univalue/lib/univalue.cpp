@@ -216,9 +216,11 @@ void UniValue::setNumStr(std::string&& val_) noexcept
     val = std::move(val_);
 }
 
-template<typename Integer>
-void UniValue::setInt64(Integer val_)
+template<typename Int64>
+void UniValue::setInt64(Int64 val_)
 {
+    static_assert(std::is_same_v<Int64, int64_t> || std::is_same_v<Int64, uint64_t>,
+                  "This function may only be called with either an int64_t or a uint64_t argument.");
     // Begin by setting to null, so that null is assigned if the number cannot be accepted.
     setNull();
     // Longest possible 64-bit integers are "-9223372036854775808" and "18446744073709551615",
@@ -226,7 +228,7 @@ void UniValue::setInt64(Integer val_)
     // hence buffer size 21.
     constexpr int bufSize = 21;
     std::array<char, bufSize> buf;
-    int n = std::snprintf(buf.data(), size_t(bufSize), std::is_signed<Integer>::value ? "%" PRId64 : "%" PRIu64, val_);
+    int n = std::snprintf(buf.data(), size_t(bufSize), std::is_signed<Int64>::value ? "%" PRId64 : "%" PRIu64, val_);
     if (n <= 0 || n >= bufSize) // should never happen
         return;
     typ = VNUM;
