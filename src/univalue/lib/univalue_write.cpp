@@ -1,5 +1,5 @@
 // Copyright 2014 BitPay Inc.
-// Copyright (c) 2020 The Bitcoin developers
+// Copyright (c) 2020-2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
@@ -9,7 +9,7 @@
 #include "univalue_escapes.h"
 
 /* static */
-void UniValue::jsonEscape(Stream & ss, const std::string & inS)
+void UniValue::jsonEscape(Stream & ss, std::string_view inS)
 {
     for (const auto ch : inS) {
         const char * const escStr = escapes[uint8_t(ch)];
@@ -35,13 +35,13 @@ void UniValue::stringify(Stream& ss, const UniValue& value, const unsigned int p
 {
     switch (value.typ) {
     case VNULL:
-        ss.write("null", 4); // .write() is slightly faster than operator<<
+        ss << "null";
         break;
     case VFALSE:
-        ss.write("false", 5);
+        ss << "false";
         break;
     case VTRUE:
-        ss.write("true", 4);
+        ss << "true";
         break;
     case VOBJ:
         stringify(ss, value.entries, prettyIndent, indentLevel);
@@ -68,7 +68,7 @@ void UniValue::stringify(Stream & ss, const UniValue::Object& object, const unsi
             startNewLine(ss, prettyIndent, internalIndentLevel);
             ss.put('"');
             jsonEscape(ss, entry->first);
-            ss.write("\":", 2);
+            ss << "\":";
             if (prettyIndent) {
                 ss.put(' ');
             }
@@ -103,7 +103,7 @@ void UniValue::stringify(Stream & ss, const UniValue::Array& array, const unsign
 }
 
 /* static */
-void UniValue::stringify(Stream& ss, const std::string& string, const unsigned int prettyIndent, const unsigned int indentLevel)
+void UniValue::stringify(Stream& ss, std::string_view string, const unsigned int prettyIndent, const unsigned int indentLevel)
 {
     ss.put('"');
     jsonEscape(ss, string);

@@ -1,5 +1,5 @@
 // Copyright 2014 BitPay Inc.
-// Copyright (c) 2020 The Bitcoin developers
+// Copyright (c) 2020-2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
@@ -51,15 +51,15 @@ const char *hatoui(const char *first, const char *last,
 }
 } // end anonymous namespace
 
-enum jtokentype getJsonToken(std::string& tokenVal, unsigned int& consumed,
-                             const char *raw, const char *end)
+jtokentype getJsonToken(std::string& tokenVal, std::string_view::size_type& consumed,
+                        std::string_view::const_iterator raw, const std::string_view::const_iterator end)
 {
     tokenVal.clear();
     consumed = 0;
 
-    const char * const rawStart = raw;
+    const std::string_view::const_iterator rawStart = raw;
 
-    while (raw < end && (json_isspace(*raw)))          // skip whitespace
+    while (raw < end && json_isspace(*raw))          // skip whitespace
         raw++;
 
     if (raw >= end)
@@ -69,28 +69,28 @@ enum jtokentype getJsonToken(std::string& tokenVal, unsigned int& consumed,
 
     case '{':
         raw++;
-        consumed = (raw - rawStart);
+        consumed = raw - rawStart;
         return JTOK_OBJ_OPEN;
     case '}':
         raw++;
-        consumed = (raw - rawStart);
+        consumed = raw - rawStart;
         return JTOK_OBJ_CLOSE;
     case '[':
         raw++;
-        consumed = (raw - rawStart);
+        consumed = raw - rawStart;
         return JTOK_ARR_OPEN;
     case ']':
         raw++;
-        consumed = (raw - rawStart);
+        consumed = raw - rawStart;
         return JTOK_ARR_CLOSE;
 
     case ':':
         raw++;
-        consumed = (raw - rawStart);
+        consumed = raw - rawStart;
         return JTOK_COLON;
     case ',':
         raw++;
-        consumed = (raw - rawStart);
+        consumed = raw - rawStart;
         return JTOK_COMMA;
 
     case 'n':
@@ -98,15 +98,15 @@ enum jtokentype getJsonToken(std::string& tokenVal, unsigned int& consumed,
     case 'f':
         if (!strncmp(raw, "null", 4)) {
             raw += 4;
-            consumed = (raw - rawStart);
+            consumed = raw - rawStart;
             return JTOK_KW_NULL;
         } else if (!strncmp(raw, "true", 4)) {
             raw += 4;
-            consumed = (raw - rawStart);
+            consumed = raw - rawStart;
             return JTOK_KW_TRUE;
         } else if (!strncmp(raw, "false", 5)) {
             raw += 5;
-            consumed = (raw - rawStart);
+            consumed = raw - rawStart;
             return JTOK_KW_FALSE;
         } else
             return JTOK_ERR;
@@ -252,7 +252,7 @@ enum expect_bits {
 #define setExpect(bit) (expectMask |= EXP_##bit)
 #define clearExpect(bit) (expectMask &= ~EXP_##bit)
 
-bool UniValue::read(const char *raw, size_t size)
+bool UniValue::read(std::string_view raw)
 {
     setNull();
 
@@ -260,17 +260,18 @@ bool UniValue::read(const char *raw, size_t size)
     std::vector<UniValue*> stack;
 
     std::string tokenVal;
-    unsigned int consumed;
+    std::string_view::size_type consumed;
     enum jtokentype tok = JTOK_NONE;
     enum jtokentype last_tok = JTOK_NONE;
-    const char* end = raw + size;
+    auto current = raw.begin();
+    const auto end = raw.end();
     do {
         last_tok = tok;
 
-        tok = getJsonToken(tokenVal, consumed, raw, end);
+        tok = getJsonToken(tokenVal, consumed, current, end);
         if (tok == JTOK_NONE || tok == JTOK_ERR)
             return false;
-        raw += consumed;
+        current += consumed;
 
         bool isValueOpen = jsonTokenIsValue(tok) ||
             tok == JTOK_OBJ_OPEN || tok == JTOK_ARR_OPEN;
@@ -467,7 +468,7 @@ bool UniValue::read(const char *raw, size_t size)
     } while (!stack.empty ());
 
     /* Check that nothing follows the initial construct (parsed above).  */
-    tok = getJsonToken(tokenVal, consumed, raw, end);
+    tok = getJsonToken(tokenVal, consumed, current, end);
     if (tok != JTOK_NONE)
         return false;
 
