@@ -15,12 +15,13 @@ any necessary preparation, run
     make build-<platform>
 
 Where `<platform>` is one of the following:
- - linux64
- - linux32
- - linux-arm
- - linux-aarch64
- - osx
- - win64
+
+- linux64
+- linux32
+- linux-arm
+- linux-aarch64
+- osx
+- win64
 
 For example, building the dependencies for Linux on ARM:
 
