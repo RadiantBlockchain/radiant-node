@@ -62,35 +62,35 @@ Cash Node project security team for more instructions.
 These PGP fingerprints and emails are provided only as backups in case you are
 unable to contact Bitcoin Cash Node via the security email above.
 
-#### freetrader
+### freetrader
 ```
 Bitcoin Cash Node Lead Maintainer
 contact at freetrader at tuta dot io
 CC329A4FB0E41392829505FEC07A7C345E86B06C
 ```
 
-#### emergent_reasons
+### emergent_reasons
 ```
 Bitcoin Cash Node Maintainer
 contact at emergentreasons at gmail dot com
 3F4F4CFA80488BA38DD45FF042D1A8643349D91F
 ```
 
-#### Andrea Suisani
+### Andrea Suisani
 ```
 Bitcoin Cash Node Developer and Maintainer
 contact at sickpig at gmail dot com
 17D16F72C0091B1FED7795FBA9CA1D0EE3789741
 ```
 
-#### Dagur Valberg Johannsson
+### Dagur Valberg Johannsson
 ```
 Bitcoin Cash Node Developer and Maintainer
 contact at dagurval at pvv dot ntnu dot no
 7AA5D836BCC067566039C49425A0F479C0F086B6
 ```
 
-#### imaginary_username
+### imaginary_username
 ```
 Bitcoin Cash Node Developer and Maintainer
 contact at imaginary dot username dot btc at gmail dot com

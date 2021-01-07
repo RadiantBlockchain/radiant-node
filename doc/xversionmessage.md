@@ -144,7 +144,7 @@ value named `u64c` is specified.
 
 ## Predefined value types
 
-#### The `u64c` value type
+### The `u64c` value type
 
 Values in the `xmap` can be interpreted as compact-size encoded 64-bit
 unsigned integers (named `u64c`), allowing to use it as a simple
