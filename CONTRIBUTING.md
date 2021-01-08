@@ -91,6 +91,7 @@ Here are some handy links for development practices aligned with Bitcoin Cash No
 
 - [BCHN GitLab development working rules and guidelines](doc/bchn-gitlab-usage-rules-and-guidelines.md)
 - [Developer Notes](doc/developer-notes.md)
+- [How to Write a Git Commit Message](https://chris.beams.io/posts/git-commit/)
 - [How to Do Code Reviews Like a Human - Part 1](https://mtlynch.io/human-code-reviews-1/)
 - [How to Do Code Reviews Like a Human - Part 2](https://mtlynch.io/human-code-reviews-2/)
 - [Large Diffs Are Hurting Your Ability To Ship](https://medium.com/@kurtisnusbaum/large-diffs-are-hurting-your-ability-to-ship-e0b2b41e8acf)
