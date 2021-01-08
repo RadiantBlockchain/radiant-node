@@ -14,12 +14,12 @@ to start the builds.
 
 Requirements:
 
- - A machine with at least 64b of disk space
- - 16GB of RAM
- - Several installed tools:
-   - [Vagrant](https://www.vagrantup.com)
-   - [Packer](https://www.packer.io)
-   - [Virtualbox](https://www.virtualbox.org)
+- A machine with at least 64b of disk space
+- 16GB of RAM
+- Several installed tools:
+    - [Vagrant](https://www.vagrantup.com)
+    - [Packer](https://www.packer.io)
+    - [Virtualbox](https://www.virtualbox.org)
 
 After you have installed each of these tools, you will need to create an
 ubuntu xenial vagrant "box."  This is most easily done using the [box-cutter

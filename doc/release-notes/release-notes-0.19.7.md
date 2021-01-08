@@ -7,7 +7,7 @@ Bitcoin ABC version 0.19.7 is now available from:
 
 This release includes the following features and fixes:
 
- - `-includeconf=<file>` can be used to include additional configuration files.
+- `-includeconf=<file>` can be used to include additional configuration files.
   Only works inside the `bitcoin.conf` file, not inside included files or from
   command-line. Multiple files may be included. Can be disabled from command-
   line via `-noincludeconf`. Note that multi-argument commands like
@@ -15,10 +15,10 @@ This release includes the following features and fixes:
     noincludeconf=1
     includeconf=relative.conf
   as bitcoin.conf will still include `relative.conf`.
- - The `createrawtransaction` RPC will now accept an array or dictionary (kept for compatibility) for the `outputs` parameter. This means the order of transaction outputs can be specified by the client.
- - The new RPC `testmempoolaccept` can be used to test acceptance of a transaction to the mempool without adding it.
- - An `initialblockdownload` boolean has been added to the `getblockchaininfo` RPC to indicate whether the node is currently in IBD or not.
- - The '-usehd' option has been removed. It is no longer possible to create a non HD wallet.
+- The `createrawtransaction` RPC will now accept an array or dictionary (kept for compatibility) for the `outputs` parameter. This means the order of transaction outputs can be specified by the client.
+- The new RPC `testmempoolaccept` can be used to test acceptance of a transaction to the mempool without adding it.
+- An `initialblockdownload` boolean has been added to the `getblockchaininfo` RPC to indicate whether the node is currently in IBD or not.
+- The '-usehd' option has been removed. It is no longer possible to create a non HD wallet.
 
 External wallet files
 ---------------------
@@ -44,11 +44,11 @@ interpreted the same as before.
 Low-level RPC changes
 ---------------------
 
- - When bitcoind is not started with any `-wallet=<path>` options, the name of
-   the default wallet returned by `getwalletinfo` and `listwallets` RPCs is now
-   the empty string `""` instead of `"wallet.dat"`. If bitcoind is started with
-   any `-wallet=<path>` options, there is no change in behavior, and the name of
-   any wallet is just its `<path>` string.
+- When bitcoind is not started with any `-wallet=<path>` options, the name of
+  the default wallet returned by `getwalletinfo` and `listwallets` RPCs is now
+  the empty string `""` instead of `"wallet.dat"`. If bitcoind is started with
+  any `-wallet=<path>` options, there is no change in behavior, and the name of
+  any wallet is just its `<path>` string.
 
 Transaction index changes
 -------------------------

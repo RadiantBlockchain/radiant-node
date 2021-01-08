@@ -41,14 +41,14 @@ release](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/blob/master/do
 
 Three new CLI / configuration options were added to manage GBT Light:
 
-  - `-gbtcachesize=<n>` - Specify how many recent `getblocktemplatelight`
-    jobs to keep cached in memory (default: 10). Jobs not in the memory
-    cache will be loaded from disk.
-  - `-gbtstoredir=<dir>` - Specify a directory for storing
-    `getblocktemplatelight` data (default: `<datadir>/gbt/`).
-  - `-gbtstoretime=<secs>` - Specify time in seconds to keep
-    `getblocktemplatelight` data in the `-gbtstoredir` before it is
-    automatically deleted (0 to disable autodeletion, default: 3600).
+- `-gbtcachesize=<n>` - Specify how many recent `getblocktemplatelight`
+  jobs to keep cached in memory (default: 10). Jobs not in the memory
+  cache will be loaded from disk.
+- `-gbtstoredir=<dir>` - Specify a directory for storing
+  `getblocktemplatelight` data (default: `<datadir>/gbt/`).
+- `-gbtstoretime=<secs>` - Specify time in seconds to keep
+  `getblocktemplatelight` data in the `-gbtstoredir` before it is
+  automatically deleted (0 to disable autodeletion, default: 3600).
 
 As usual, all of the above CLI arguments may also be specified in the
 `.conf` file for the node (but without the preceding `-` character).
@@ -199,14 +199,14 @@ Changes since Bitcoin Cash Node 0.21.1
 - publishing-documentation.md
 - rapidcheck.md
 - `doc/cli/` : command line program documentation (manual pages converted to Markdown)
-   - bitcoin-cli.md
-   - bitcoin-qt.md
-   - bitcoin-seeder.md
-   - bitcoin-tx.md
-   - bitcoind.md
-   - bitcoin-seeder.1
+    - bitcoin-cli.md
+    - bitcoin-qt.md
+    - bitcoin-seeder.md
+    - bitcoin-tx.md
+    - bitcoind.md
+    - bitcoin-seeder.1
 - `docs/json-rpc/` : RPC API documents (one help file for each call)
-   - ([complete list of files](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/tree/master/doc/json-rpc) omitted for brevity)
+    - ([complete list of files](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/tree/master/doc/json-rpc) omitted for brevity)
 
 
 ### Removed documents

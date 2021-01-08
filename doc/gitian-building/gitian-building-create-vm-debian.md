@@ -45,12 +45,12 @@ After creating the VM, we need to configure it.
 ![](figs/port_forwarding_rules.png)
 
 - Set up the new rule the following way:
-  - Name: `SSH`
-  - Protocol: `TCP`
-  - Leave Host IP empty
-  - Host Port: `22222`
-  - Leave Guest IP empty
-  - Guest Port: `22`
+    - Name: `SSH`
+    - Protocol: `TCP`
+    - Leave Host IP empty
+    - Host Port: `22222`
+    - Leave Guest IP empty
+    - Guest Port: `22`
 
 - Click `Ok` twice to save.
 
@@ -97,8 +97,8 @@ To select a different button, press `Tab`.
 
 - The VM will detect network settings using DHCP, this should all proceed automatically
 - Configure the network:
-  - Hostname `debian`.
-  - Leave domain name empty.
+    - Hostname `debian`.
+    - Leave domain name empty.
 
 ![](figs/debian_install_5_configure_the_network.png)
 ![](figs/debian_install_6_domain_name.png)
@@ -123,19 +123,19 @@ To select a different button, press `Tab`.
 ![](figs/debian_install_10_configure_clock.png)
 
 - Disk setup
-  - Partitioning method: Guided - Use the entire disk
+    - Partitioning method: Guided - Use the entire disk
 
 ![](figs/debian_install_11_partition_disks.png)
 
-  - Select disk to partition: SCSI1 (0,0,0)
+    - Select disk to partition: SCSI1 (0,0,0)
 
 ![](figs/debian_install_12_choose_disk.png)
 
-  - Partition Disks -> *All files in one partition*
+    - Partition Disks -> *All files in one partition*
 
 ![](figs/all_files_in_one_partition.png)
 
-  - Finish partitioning and write changes to disk -> *Yes* (`Tab`, `Enter` to select the `Yes` button)
+    - Finish partitioning and write changes to disk -> *Yes* (`Tab`, `Enter` to select the `Yes` button)
 
 ![](figs/debian_install_14_finish.png)
 ![](figs/debian_install_15_write_changes.png)
