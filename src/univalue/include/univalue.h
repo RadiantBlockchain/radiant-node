@@ -520,8 +520,6 @@ public:
     Array& operator=(const Array& array);
     Array& operator=(Array&& array) noexcept;
     void setNumStr(std::string_view val); // TODO: refactor to assign null on failure
-    void setNumStr(std::string&& val) noexcept; // TODO: refactor to assign null on failure
-    void setNumStr(const char* val_) { setNumStr(std::string_view(val_)); }
     void operator=(short val);
     void operator=(int val);
     void operator=(long val);
@@ -879,8 +877,7 @@ enum jtokentype {
     JTOK_STRING,
 };
 
-extern jtokentype getJsonToken(std::string& tokenVal, std::string_view::size_type& consumed,
-                               std::string_view::const_iterator raw, std::string_view::const_iterator end);
+extern jtokentype getJsonToken(std::string& tokenVal, std::string_view& buffer);
 
 /**
  * Returns the human-readable name of the JSON value type.
@@ -900,7 +897,7 @@ extern const char *uvTypeName(UniValue::VType t) noexcept;
 extern std::string uvTypeName(int t);
 
 [[nodiscard]]
-static constexpr bool jsonTokenIsValue(jtokentype jtt) noexcept
+inline constexpr bool jsonTokenIsValue(jtokentype jtt) noexcept
 {
     switch (jtt) {
     case JTOK_KW_NULL:
@@ -918,7 +915,7 @@ static constexpr bool jsonTokenIsValue(jtokentype jtt) noexcept
 }
 
 [[nodiscard]]
-static constexpr bool json_isspace(int ch) noexcept
+inline constexpr bool json_isspace(int ch) noexcept
 {
     switch (ch) {
     case 0x20:

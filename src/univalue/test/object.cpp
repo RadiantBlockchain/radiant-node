@@ -366,9 +366,24 @@ BOOST_AUTO_TEST_CASE(univalue_set)
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "18446744073709551615");
 
+    v.setNull();
     v.setNumStr("-688");
     BOOST_CHECK(v.isNum());
     BOOST_CHECK_EQUAL(v.getValStr(), "-688");
+
+    v.setNull();
+    /* ensure whitepsace was stripped */
+    v.setNumStr(" -689 ");
+    BOOST_CHECK(v.isNum());
+    BOOST_CHECK_EQUAL(v.getValStr(), "-689");
+
+    v.setNull();
+    v.setNumStr(" -690 whitespace then junk");
+    BOOST_CHECK(v.isNull());
+
+    v.setNull();
+    v.setNumStr("-688_has_junk_at_end");
+    BOOST_CHECK(v.isNull());
 
     v = false;
     BOOST_CHECK_EQUAL(v.isBool(), true);

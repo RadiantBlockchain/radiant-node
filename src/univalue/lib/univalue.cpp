@@ -14,6 +14,7 @@
 #include <cstdio>
 #include <iomanip>
 #include <locale>
+#include <optional>
 #include <sstream>
 #include <stdexcept>
 
@@ -189,30 +190,23 @@ UniValue::Array& UniValue::operator=(Array&& array) noexcept
     return values = std::move(array);
 }
 
-static bool validNumStr(std::string_view s)
+static std::optional<std::string> validateAndStripNumStr(std::string_view s)
 {
-    std::string tokenVal;
-    std::string_view::size_type consumed;
-    return getJsonToken(tokenVal, consumed, s.begin(), s.end()) == JTOK_NUMBER;
+    std::optional<std::string> ret;
+    // string must contain a number and no junk at the end
+    if (std::string tokenVal, dummy; getJsonToken(tokenVal, s) == JTOK_NUMBER && getJsonToken(dummy, s) == JTOK_NONE) {
+        ret.emplace(std::move(tokenVal));
+    }
+    return ret;
 }
 
 void UniValue::setNumStr(std::string_view val_)
 {
-    if (!validNumStr(val_))
-        return;
-
-    setNull();
-    typ = VNUM;
-    val = val_;
-}
-void UniValue::setNumStr(std::string&& val_) noexcept
-{
-    if (!validNumStr(val_))
-        return;
-
-    setNull();
-    typ = VNUM;
-    val = std::move(val_);
+    if (auto optStr = validateAndStripNumStr(val_)) {
+        setNull();
+        typ = VNUM;
+        val = std::move(*optStr);
+    }
 }
 
 template<typename Int64>
