@@ -63,11 +63,11 @@ void TestRpcCommand(RPCConsole *console) {
     loop.exec();
     QString output = messagesWidget->toPlainText();
     UniValue value;
-    value.read(
+    static_cast<void>(value.read(
         output
             .right(output.size() -
                    output.lastIndexOf(QChar::ObjectReplacementCharacter) - 1)
-            .toStdString());
+            .toStdString()));
     QCOMPARE(value["chain"].get_str(), std::string("regtest"));
 }
 } // namespace
