@@ -7,4 +7,4 @@ Bitcoin ABC version 0.20.3 is now available from:
 
 This release includes the following features and fixes:
 
- - Minor bug fixes and improvements.
+- Minor bug fixes and improvements.

@@ -188,63 +188,63 @@ so that all old nodes receive the final alert.
 
 ### GUI Changes
 
- - After resetting the options by clicking the `Reset Options` button
-   in the options dialog or with the `-resetguioptions` startup option,
-   the user will be prompted to choose the data directory again. This
-   is to ensure that custom data directories will be kept after the
-   option reset which clears the custom data directory set via the choose
-   datadir dialog.
+- After resetting the options by clicking the `Reset Options` button
+  in the options dialog or with the `-resetguioptions` startup option,
+  the user will be prompted to choose the data directory again. This
+  is to ensure that custom data directories will be kept after the
+  option reset which clears the custom data directory set via the choose
+  datadir dialog.
 
- - Multiple peers can now be selected in the list of peers in the debug
-   window. This allows for users to ban or disconnect multiple peers
-   simultaneously instead of banning them one at a time.
+- Multiple peers can now be selected in the list of peers in the debug
+  window. This allows for users to ban or disconnect multiple peers
+  simultaneously instead of banning them one at a time.
 
- - An indicator has been added to the bottom right hand corner of the main
-   window to indicate whether the wallet being used is a HD wallet. This
-   icon will be grayed out with an X on top of it if the wallet is not a
-   HD wallet.
+- An indicator has been added to the bottom right hand corner of the main
+  window to indicate whether the wallet being used is a HD wallet. This
+  icon will be grayed out with an X on top of it if the wallet is not a
+  HD wallet.
 
 ### Low-level RPC changes
 
- - `importprunedfunds` only accepts two required arguments. Some versions accept
-   an optional third arg, which was always ignored. Make sure to never pass more
-   than two arguments.
+- `importprunedfunds` only accepts two required arguments. Some versions accept
+  an optional third arg, which was always ignored. Make sure to never pass more
+  than two arguments.
 
- - The first boolean argument to `getaddednodeinfo` has been removed. This is
-   an incompatible change.
+- The first boolean argument to `getaddednodeinfo` has been removed. This is
+  an incompatible change.
 
- - RPC command `getmininginfo` loses the "testnet" field in favor of the more
-   generic "chain" (which has been present for years).
+- RPC command `getmininginfo` loses the "testnet" field in favor of the more
+  generic "chain" (which has been present for years).
 
- - A new RPC command `preciousblock` has been added which marks a block as
-   precious. A precious block will be treated as if it were received earlier
-   than a competing block.
+- A new RPC command `preciousblock` has been added which marks a block as
+  precious. A precious block will be treated as if it were received earlier
+  than a competing block.
 
- - A new RPC command `importmulti` has been added which receives an array of
-   JSON objects representing the intention of importing a public key, a
-   private key, an address and script/p2sh
+- A new RPC command `importmulti` has been added which receives an array of
+  JSON objects representing the intention of importing a public key, a
+  private key, an address and script/p2sh
 
- - Use of `getrawtransaction` for retrieving confirmed transactions with unspent
-   outputs has been deprecated. For now this will still work, but in the future
-   it may change to only be able to retrieve information about transactions in
-   the mempool or if `txindex` is enabled.
+- Use of `getrawtransaction` for retrieving confirmed transactions with unspent
+  outputs has been deprecated. For now this will still work, but in the future
+  it may change to only be able to retrieve information about transactions in
+  the mempool or if `txindex` is enabled.
 
- - A new RPC command `getmemoryinfo` has been added which will return information
-   about the memory usage of Bitcoin Core. This was added in conjunction with
-   optimizations to memory management. See [Pull #8753](https://github.com/bitcoin/bitcoin/pull/8753)
-   for more information.
+- A new RPC command `getmemoryinfo` has been added which will return information
+  about the memory usage of Bitcoin Core. This was added in conjunction with
+  optimizations to memory management. See [Pull #8753](https://github.com/bitcoin/bitcoin/pull/8753)
+  for more information.
 
- - A new RPC command `bumpfee` has been added which allows replacing an
-   unconfirmed wallet transaction that signaled RBF (see the `-walletrbf`
-   startup option above) with a new transaction that pays a higher fee, and
-   should be more likely to get confirmed quickly.
+- A new RPC command `bumpfee` has been added which allows replacing an
+  unconfirmed wallet transaction that signaled RBF (see the `-walletrbf`
+  startup option above) with a new transaction that pays a higher fee, and
+  should be more likely to get confirmed quickly.
 
 ### HTTP REST Changes
 
- - UTXO set query (`GET /rest/getutxos/<checkmempool>/<txid>-<n>/<txid>-<n>
-   /.../<txid>-<n>.<bin|hex|json>`) responses were changed to return status
-   code `HTTP_BAD_REQUEST` (400) instead of `HTTP_INTERNAL_SERVER_ERROR` (500)
-   when requests contain invalid parameters.
+- UTXO set query (`GET /rest/getutxos/<checkmempool>/<txid>-<n>/<txid>-<n>
+  /.../<txid>-<n>.<bin|hex|json>`) responses were changed to return status
+  code `HTTP_BAD_REQUEST` (400) instead of `HTTP_INTERNAL_SERVER_ERROR` (500)
+  when requests contain invalid parameters.
 
 ### Minimum Fee Rate Policies
 

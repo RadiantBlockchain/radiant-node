@@ -7,6 +7,6 @@ Bitcoin ABC version 0.20.10 is now available from:
 
 This release includes the following features and fixes:
 
- - Remove deprecated "startingpriority" and "currentpriority" from
-   `getrawmempool`, `getmempoolancestors`, `getmempooldescendants` and
-   `getmempoolentry` RPC.
+- Remove deprecated "startingpriority" and "currentpriority" from
+  `getrawmempool`, `getmempoolancestors`, `getmempooldescendants` and
+  `getmempoolentry` RPC.
