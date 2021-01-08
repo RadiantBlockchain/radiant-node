@@ -1,6 +1,6 @@
 // Copyright 2014 BitPay Inc.
 // Copyright 2015 Bitcoin Core Developers
-// Copyright (c) 2020 The Bitcoin developers
+// Copyright (c) 2020-2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
@@ -12,6 +12,7 @@
 #include <cstring>
 #include <map>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -76,7 +77,9 @@ public:
          *
          * Complexity: constant.
          */
+        [[nodiscard]]
         const_iterator begin() const noexcept { return vector.begin(); }
+        [[nodiscard]]
         iterator begin() noexcept { return vector.begin(); }
 
         /**
@@ -86,7 +89,9 @@ public:
          *
          * Complexity: constant.
          */
+        [[nodiscard]]
         const_iterator end() const noexcept { return vector.end(); }
+        [[nodiscard]]
         iterator end() noexcept { return vector.end(); }
 
         /**
@@ -96,7 +101,9 @@ public:
          *
          * Complexity: constant.
          */
+        [[nodiscard]]
         const_reverse_iterator rbegin() const noexcept { return vector.rbegin(); }
+        [[nodiscard]]
         reverse_iterator rbegin() noexcept { return vector.rbegin(); }
 
         /**
@@ -106,7 +113,9 @@ public:
          *
          * Complexity: constant.
          */
+        [[nodiscard]]
         const_reverse_iterator rend() const noexcept { return vector.rend(); }
+        [[nodiscard]]
         reverse_iterator rend() noexcept { return vector.rend(); }
 
         /**
@@ -121,6 +130,7 @@ public:
          *
          * Complexity: constant.
          */
+        [[nodiscard]]
         bool empty() const noexcept { return vector.empty(); }
 
         /**
@@ -128,6 +138,7 @@ public:
          *
          * Complexity: constant.
          */
+        [[nodiscard]]
         size_type size() const noexcept { return vector.size(); }
 
         /**
@@ -147,7 +158,8 @@ public:
          *
          * If you want to distinguish between null values and missing keys, please use locate() instead.
          */
-        const UniValue& operator[](const std::string& key) const noexcept;
+        [[nodiscard]]
+        const UniValue& operator[](std::string_view key) const noexcept;
 
         /**
          * Returns a reference to the value at the numeric index (regardless of key),
@@ -160,6 +172,7 @@ public:
          * To access the first or last value, consider using front() or back() instead.
          * If you want an exception thrown on missing indices, please use at() instead.
          */
+        [[nodiscard]]
         const UniValue& operator[](size_type index) const noexcept;
 
         /**
@@ -173,8 +186,10 @@ public:
          * If you want to treat missing keys as null values, please use the [] operator instead.
          * If you want an exception thrown on missing keys, please use at() instead.
          */
-        const UniValue* locate(const std::string& key) const noexcept;
-        UniValue* locate(const std::string& key) noexcept;
+        [[nodiscard]]
+        const UniValue* locate(std::string_view key) const noexcept;
+        [[nodiscard]]
+        UniValue* locate(std::string_view key) noexcept;
 
         /**
          * Returns a reference to the first value associated with the key,
@@ -186,8 +201,8 @@ public:
          *
          * If you don't want an exception thrown, please use locate() or the [] operator instead.
          */
-        const UniValue& at(const std::string& key) const;
-        UniValue& at(const std::string& key);
+        const UniValue& at(std::string_view key) const;
+        UniValue& at(std::string_view key);
 
         /**
          * Returns a reference to the value at the numeric index (regardless of key),
@@ -210,6 +225,7 @@ public:
          *
          * Complexity: constant.
          */
+        [[nodiscard]]
         const UniValue& front() const noexcept;
 
         /**
@@ -220,6 +236,7 @@ public:
          *
          * Complexity: constant.
          */
+        [[nodiscard]]
         const UniValue& back() const noexcept;
 
         /**
@@ -260,6 +277,7 @@ public:
          *
          * Complexity: linear in the amount of data to compare.
          */
+        [[nodiscard]]
         bool operator==(const Object& other) const noexcept { return vector == other.vector; }
 
         /**
@@ -268,6 +286,7 @@ public:
          *
          * Complexity: linear in the amount of data to compare.
          */
+        [[nodiscard]]
         bool operator!=(const Object& other) const noexcept { return !(*this == other); }
     };
 
@@ -300,7 +319,9 @@ public:
          *
          * Complexity: constant.
          */
+        [[nodiscard]]
         const_iterator begin() const noexcept { return vector.begin(); }
+        [[nodiscard]]
         iterator begin() noexcept { return vector.begin(); }
 
         /**
@@ -310,7 +331,9 @@ public:
          *
          * Complexity: constant.
          */
+        [[nodiscard]]
         const_iterator end() const noexcept { return vector.end(); }
+        [[nodiscard]]
         iterator end() noexcept { return vector.end(); }
 
         /**
@@ -320,7 +343,9 @@ public:
          *
          * Complexity: constant.
          */
+        [[nodiscard]]
         const_reverse_iterator rbegin() const noexcept { return vector.rbegin(); }
+        [[nodiscard]]
         reverse_iterator rbegin() noexcept { return vector.rbegin(); }
 
         /**
@@ -330,7 +355,9 @@ public:
          *
          * Complexity: constant.
          */
+        [[nodiscard]]
         const_reverse_iterator rend() const noexcept { return vector.rend(); }
+        [[nodiscard]]
         reverse_iterator rend() noexcept { return vector.rend(); }
 
         /**
@@ -345,6 +372,7 @@ public:
          *
          * Complexity: constant.
          */
+        [[nodiscard]]
         bool empty() const noexcept { return vector.empty(); }
 
         /**
@@ -352,6 +380,7 @@ public:
          *
          * Complexity: constant.
          */
+        [[nodiscard]]
         size_type size() const noexcept { return vector.size(); }
 
         /**
@@ -372,6 +401,7 @@ public:
          * To access the first or last value, consider using front() or back() instead.
          * If you want an exception thrown on missing indices, please use at() instead.
          */
+        [[nodiscard]]
         const UniValue& operator[](size_type index) const noexcept;
 
         /**
@@ -395,6 +425,7 @@ public:
          *
          * Complexity: constant.
          */
+        [[nodiscard]]
         const UniValue& front() const noexcept;
 
         /**
@@ -405,6 +436,7 @@ public:
          *
          * Complexity: constant.
          */
+        [[nodiscard]]
         const UniValue& back() const noexcept;
 
         /**
@@ -436,6 +468,7 @@ public:
          *
          * Complexity: linear in the amount of data to compare.
          */
+        [[nodiscard]]
         bool operator==(const Array& other) const noexcept { return vector == other.vector; }
 
         /**
@@ -443,6 +476,7 @@ public:
          *
          * Complexity: linear in the amount of data to compare.
          */
+        [[nodiscard]]
         bool operator!=(const Array& other) const noexcept { return !(*this == other); }
     };
 
@@ -451,8 +485,9 @@ public:
                   "UniValue::size_type should be equal to both UniValue::Object::size_type and UniValue::Array::size_type.");
 
     explicit UniValue(VType initialType = VNULL) noexcept : typ(initialType) {}
-    UniValue(VType initialType, const std::string& initialStr) : typ(initialType), val(initialStr) {}
+    UniValue(VType initialType, std::string_view initialStr) : typ(initialType), val(initialStr) {}
     UniValue(VType initialType, std::string&& initialStr) noexcept : typ(initialType), val(std::move(initialStr)) {}
+    UniValue(VType initialType, const char* initialStr) : typ(initialType), val(initialStr) {}
     explicit UniValue(const UniValue&) = default;
     UniValue(UniValue&&) noexcept = default;
     UniValue& operator=(const UniValue&) = default;
@@ -472,7 +507,7 @@ public:
     UniValue(unsigned long val_) { *this = val_; }
     UniValue(unsigned long long val_) { *this = val_; }
     UniValue(double val_) { *this = val_; }
-    UniValue(const std::string& val_) : typ(VSTR), val(val_) {}
+    UniValue(std::string_view val_) : typ(VSTR), val(val_) {}
     UniValue(std::string&& val_) noexcept : typ(VSTR), val(std::move(val_)) {}
     UniValue(const char* val_) : typ(VSTR), val(val_) {}
 
@@ -484,8 +519,9 @@ public:
     Array& setArray() noexcept;
     Array& operator=(const Array& array);
     Array& operator=(Array&& array) noexcept;
-    void setNumStr(const std::string& val); // TODO: refactor to assign null on failure
+    void setNumStr(std::string_view val); // TODO: refactor to assign null on failure
     void setNumStr(std::string&& val) noexcept; // TODO: refactor to assign null on failure
+    void setNumStr(const char* val_) { setNumStr(std::string_view(val_)); }
     void operator=(short val);
     void operator=(int val);
     void operator=(long val);
@@ -495,11 +531,13 @@ public:
     void operator=(unsigned long val);
     void operator=(unsigned long long val);
     void operator=(double val);
-    std::string& operator=(const std::string& val);
+    std::string& operator=(std::string_view val);
     std::string& operator=(std::string&& val) noexcept;
-    std::string& operator=(const char* val);
+    std::string& operator=(const char* val_) { return *this = std::string_view(val_); }
 
-    constexpr enum VType getType() const noexcept { return typ; }
+    [[nodiscard]]
+    constexpr VType getType() const noexcept { return typ; }
+    [[nodiscard]]
     constexpr const std::string& getValStr() const noexcept { return val; }
 
     /**
@@ -510,6 +548,7 @@ public:
      *
      * Compatible with the upstream UniValue API.
      */
+    [[nodiscard]]
     bool empty() const noexcept {
         switch (typ) {
         case VOBJ:
@@ -529,6 +568,7 @@ public:
      *
      * Compatible with the upstream UniValue API.
      */
+    [[nodiscard]]
     size_type size() const noexcept {
         switch (typ) {
         case VOBJ:
@@ -540,6 +580,7 @@ public:
         }
     }
 
+    [[nodiscard]]
     constexpr bool getBool() const noexcept { return isTrue(); }
 
     /**
@@ -556,7 +597,8 @@ public:
      * If you want to distinguish between null values and missing keys, please use locate() instead.
      * If you want an exception thrown on missing keys, please use at() instead.
      */
-    const UniValue& operator[](const std::string& key) const noexcept;
+    [[nodiscard]]
+    const UniValue& operator[](std::string_view key) const noexcept;
 
     /**
      * VOBJ: Returns a reference to the value at the numeric index (regardless of key),
@@ -574,6 +616,7 @@ public:
      * To access the first or last value, consider using front() or back() instead.
      * If you want an exception thrown on missing indices, please use at() instead.
      */
+    [[nodiscard]]
     const UniValue& operator[](size_type index) const noexcept;
 
     /**
@@ -584,6 +627,7 @@ public:
      *
      * This is a Bitcoin Cash Node extension of the UniValue API.
      */
+    [[nodiscard]]
     bool operator==(const UniValue& other) const noexcept;
 
     /**
@@ -594,6 +638,7 @@ public:
      *
      * This is a Bitcoin Cash Node extension of the UniValue API.
      */
+    [[nodiscard]]
     bool operator!=(const UniValue& other) const noexcept { return !(*this == other); }
 
     /**
@@ -609,6 +654,7 @@ public:
      *
      * This is a Bitcoin Cash Node extension of the UniValue API.
      */
+    [[nodiscard]]
     const UniValue& front() const noexcept;
 
     /**
@@ -624,6 +670,7 @@ public:
      *
      * This is a Bitcoin Cash Node extension of the UniValue API.
      */
+    [[nodiscard]]
     const UniValue& back() const noexcept;
 
     /**
@@ -640,8 +687,10 @@ public:
      * If you want to treat missing keys as null values, please use the [] operator instead.
      * If you want an exception thrown on missing keys, please use at() instead.
      */
-    const UniValue* locate(const std::string& key) const noexcept;
-    UniValue* locate(const std::string& key) noexcept;
+    [[nodiscard]]
+    const UniValue* locate(std::string_view key) const noexcept;
+    [[nodiscard]]
+    UniValue* locate(std::string_view key) noexcept;
 
     /**
      * VOBJ: Returns a reference to the first value associated with the key,
@@ -656,8 +705,8 @@ public:
      *
      * If you don't want an exception thrown, please use locate() or the [] operator instead.
      */
-    const UniValue& at(const std::string& key) const;
-    UniValue& at(const std::string& key);
+    const UniValue& at(std::string_view key) const;
+    UniValue& at(std::string_view key);
 
     /**
      * VOBJ: Returns a reference to the value at the numeric index (regardless of key),
@@ -685,15 +734,24 @@ public:
      *
      * This is a Bitcoin Cash Node extension of the UniValue API.
      */
+    [[nodiscard]]
     constexpr bool is(int types) const noexcept { return typ & types; }
 
+    [[nodiscard]]
     constexpr bool isNull() const noexcept { return is(VNULL); }
+    [[nodiscard]]
     constexpr bool isFalse() const noexcept { return is(VFALSE); }
+    [[nodiscard]]
     constexpr bool isTrue() const noexcept { return is(VTRUE); }
+    [[nodiscard]]
     constexpr bool isBool() const noexcept { return is(MBOOL); }
+    [[nodiscard]]
     constexpr bool isObject() const noexcept { return is(VOBJ); }
+    [[nodiscard]]
     constexpr bool isArray() const noexcept { return is(VARR); }
+    [[nodiscard]]
     constexpr bool isNum() const noexcept { return is(VNUM); }
+    [[nodiscard]]
     constexpr bool isStr() const noexcept { return is(VSTR); }
 
     /**
@@ -717,9 +775,8 @@ public:
         return s;
     }
 
-    bool read(const char *raw, size_t len);
-    bool read(const char *raw) { return read(raw, strlen(raw)); }
-    bool read(const std::string& rawStr) { return read(rawStr.data(), rawStr.size()); }
+    [[nodiscard]]
+    bool read(std::string_view raw);
 
 private:
     UniValue::VType typ = VNULL;
@@ -732,17 +789,15 @@ private:
         std::string & str; // this is a reference for RVO to always work in UniValue::stringify()
         void put(char c) { str.push_back(c); }
         void put(char c, size_t nFill) { str.append(nFill, c); }
-        void write(const char *s, size_t len) { str.append(s, len); }
-        Stream & operator<<(const char *s) { str.append(s); return *this; }
-        Stream & operator<<(const std::string &s) { str.append(s); return *this; }
+        Stream & operator<<(std::string_view s) { str.append(s); return *this; }
     };
     static inline void startNewLine(Stream & stream, unsigned int prettyIndent, unsigned int indentLevel);
-    static void jsonEscape(Stream & stream, const std::string & inString);
+    static void jsonEscape(Stream & stream, std::string_view inString);
 
     static void stringify(Stream & stream, const UniValue& value, unsigned int prettyIndent, unsigned int indentLevel);
     static void stringify(Stream & stream, const UniValue::Object& value, unsigned int prettyIndent, unsigned int indentLevel);
     static void stringify(Stream & stream, const UniValue::Array& value, unsigned int prettyIndent, unsigned int indentLevel);
-    static void stringify(Stream & stream, const std::string& value, unsigned int prettyIndent, unsigned int indentLevel);
+    static void stringify(Stream & stream, std::string_view value, unsigned int prettyIndent, unsigned int indentLevel);
 
     // Used internally by the integral operator=() overloads
     template<typename Int64>
@@ -804,7 +859,8 @@ public:
     const Array& get_array() const;
     Array& get_array();
 
-    constexpr enum VType type() const noexcept { return getType(); }
+    [[nodiscard]]
+    constexpr VType type() const noexcept { return getType(); }
 };
 
 enum jtokentype {
@@ -823,14 +879,15 @@ enum jtokentype {
     JTOK_STRING,
 };
 
-extern enum jtokentype getJsonToken(std::string& tokenVal,
-                                    unsigned int& consumed, const char *raw, const char *end);
+extern jtokentype getJsonToken(std::string& tokenVal, std::string_view::size_type& consumed,
+                               std::string_view::const_iterator raw, std::string_view::const_iterator end);
 
 /**
  * Returns the human-readable name of the JSON value type.
  *
  * Compatible with the upstream UniValue API (but note VBOOL has been replaced with VFALSE and VTRUE).
  */
+[[nodiscard]]
 extern const char *uvTypeName(UniValue::VType t) noexcept;
 
 /**
@@ -839,9 +896,11 @@ extern const char *uvTypeName(UniValue::VType t) noexcept;
  *
  * This is a Bitcoin Cash Node extension of the UniValue API.
  */
+[[nodiscard]]
 extern std::string uvTypeName(int t);
 
-static constexpr bool jsonTokenIsValue(enum jtokentype jtt) noexcept
+[[nodiscard]]
+static constexpr bool jsonTokenIsValue(jtokentype jtt) noexcept
 {
     switch (jtt) {
     case JTOK_KW_NULL:
@@ -858,6 +917,7 @@ static constexpr bool jsonTokenIsValue(enum jtokentype jtt) noexcept
     // not reached
 }
 
+[[nodiscard]]
 static constexpr bool json_isspace(int ch) noexcept
 {
     switch (ch) {

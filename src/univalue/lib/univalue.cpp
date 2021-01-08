@@ -1,6 +1,6 @@
 // Copyright 2014 BitPay Inc.
 // Copyright 2015 Bitcoin Core Developers
-// Copyright (c) 2020 The Bitcoin developers
+// Copyright (c) 2020-2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
@@ -21,7 +21,7 @@
 
 const UniValue NullUniValue;
 
-const UniValue& UniValue::Object::operator[](const std::string& key) const noexcept
+const UniValue& UniValue::Object::operator[](std::string_view key) const noexcept
 {
     if (auto found = locate(key)) {
         return *found;
@@ -37,7 +37,7 @@ const UniValue& UniValue::Object::operator[](size_type index) const noexcept
     return NullUniValue;
 }
 
-const UniValue* UniValue::Object::locate(const std::string& key) const noexcept {
+const UniValue* UniValue::Object::locate(std::string_view key) const noexcept {
     for (auto& entry : vector) {
         if (entry.first == key) {
             return &entry.second;
@@ -45,7 +45,7 @@ const UniValue* UniValue::Object::locate(const std::string& key) const noexcept 
     }
     return nullptr;
 }
-UniValue* UniValue::Object::locate(const std::string& key) noexcept {
+UniValue* UniValue::Object::locate(std::string_view key) noexcept {
     for (auto& entry : vector) {
         if (entry.first == key) {
             return &entry.second;
@@ -54,17 +54,17 @@ UniValue* UniValue::Object::locate(const std::string& key) noexcept {
     return nullptr;
 }
 
-const UniValue& UniValue::Object::at(const std::string& key) const {
+const UniValue& UniValue::Object::at(std::string_view key) const {
     if (auto found = locate(key)) {
         return *found;
     }
-    throw std::out_of_range("Key not found in JSON object: " + key);
+    throw std::out_of_range("Key not found in JSON object: " + std::string(key));
 }
-UniValue& UniValue::Object::at(const std::string& key) {
+UniValue& UniValue::Object::at(std::string_view key) {
     if (auto found = locate(key)) {
         return *found;
     }
-    throw std::out_of_range("Key not found in JSON object: " + key);
+    throw std::out_of_range("Key not found in JSON object: " + std::string(key));
 }
 
 const UniValue& UniValue::Object::at(size_type index) const
@@ -189,15 +189,14 @@ UniValue::Array& UniValue::operator=(Array&& array) noexcept
     return values = std::move(array);
 }
 
-static bool validNumStr(const std::string& s)
+static bool validNumStr(std::string_view s)
 {
     std::string tokenVal;
-    unsigned int consumed;
-    enum jtokentype tt = getJsonToken(tokenVal, consumed, s.data(), s.data() + s.size());
-    return (tt == JTOK_NUMBER);
+    std::string_view::size_type consumed;
+    return getJsonToken(tokenVal, consumed, s.begin(), s.end()) == JTOK_NUMBER;
 }
 
-void UniValue::setNumStr(const std::string& val_)
+void UniValue::setNumStr(std::string_view val_)
 {
     if (!validNumStr(val_))
         return;
@@ -264,7 +263,7 @@ void UniValue::operator=(double val_)
     val = oss.str();
 }
 
-std::string& UniValue::operator=(const std::string& val_)
+std::string& UniValue::operator=(std::string_view val_)
 {
     setNull();
     typ = VSTR;
@@ -276,14 +275,8 @@ std::string& UniValue::operator=(std::string&& val_) noexcept
     typ = VSTR;
     return val = std::move(val_);
 }
-std::string& UniValue::operator=(const char* val_)
-{
-    setNull();
-    typ = VSTR;
-    return val = val_;
-}
 
-const UniValue& UniValue::operator[](const std::string& key) const noexcept
+const UniValue& UniValue::operator[](std::string_view key) const noexcept
 {
     if (auto found = locate(key)) {
         return *found;
@@ -327,26 +320,26 @@ const UniValue& UniValue::back() const noexcept
     }
 }
 
-const UniValue* UniValue::locate(const std::string& key) const noexcept {
+const UniValue* UniValue::locate(std::string_view key) const noexcept {
     return entries.locate(key);
 }
-UniValue* UniValue::locate(const std::string& key) noexcept {
+UniValue* UniValue::locate(std::string_view key) noexcept {
     return entries.locate(key);
 }
 
-const UniValue& UniValue::at(const std::string& key) const {
+const UniValue& UniValue::at(std::string_view key) const {
     if (typ == VOBJ) {
         return entries.at(key);
     }
     throw std::domain_error(std::string("Cannot look up keys in JSON ") + uvTypeName(typ) +
-                                        ", expected object with key: " + key);
+                            ", expected object with key: " + std::string(key));
 }
-UniValue& UniValue::at(const std::string& key) {
+UniValue& UniValue::at(std::string_view key) {
     if (typ == VOBJ) {
         return entries.at(key);
     }
     throw std::domain_error(std::string("Cannot look up keys in JSON ") + uvTypeName(typ) +
-                                        ", expected object with key: " + key);
+                            ", expected object with key: " + std::string(key));
 }
 
 const UniValue& UniValue::at(size_type index) const
