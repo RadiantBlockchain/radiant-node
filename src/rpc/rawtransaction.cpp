@@ -1,6 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
-// Copyright (c) 2020 The Bitcoin developers
+// Copyright (c) 2020-2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -484,8 +484,7 @@ CMutableTransaction ConstructTransaction(const CChainParams &params,
     }
     for (auto &entry : *outputs) {
         if (entry.first == "data") {
-            std::vector<uint8_t> data =
-                ParseHexV(entry.second.getValStr(), "Data");
+            std::vector<uint8_t> data = ParseHexV(entry.second, "Data");
 
             CTxOut out(Amount::zero(), CScript() << OP_RETURN << data);
             rawTx.vout.push_back(out);

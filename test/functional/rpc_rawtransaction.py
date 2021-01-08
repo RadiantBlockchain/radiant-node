@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Copyright (c) 2014-2019 The Bitcoin Core developers
-# Copyright (c) 2020 The Bitcoin developers
+# Copyright (c) 2020-2021 The Bitcoin developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Test the rawtranscation RPCs.
@@ -134,6 +134,14 @@ class RawTransactionsTest(BitcoinTestFramework):
         self.nodes[0].createrawtransaction(inputs=[], outputs=[])
         assert_raises_rpc_error(-8, "Data must be hexadecimal string",
                                 self.nodes[0].createrawtransaction, [], {'data': 'foo'})
+        assert_raises_rpc_error(-8, "Data must be hexadecimal string",
+                                self.nodes[0].createrawtransaction, [], {'data': None})
+        assert_raises_rpc_error(-8, "Data must be hexadecimal string",
+                                self.nodes[0].createrawtransaction, [], {'data': 1234})
+        assert_raises_rpc_error(-8, "Data must be hexadecimal string",
+                                self.nodes[0].createrawtransaction, [], {'data': '9'})
+        assert_raises_rpc_error(-8, "Data must be hexadecimal string",
+                                self.nodes[0].createrawtransaction, [], {'data': ''})
         assert_raises_rpc_error(-5, "Invalid Bitcoin address",
                                 self.nodes[0].createrawtransaction, [], {'foo': 0})
         assert_raises_rpc_error(-3, "Invalid amount",
