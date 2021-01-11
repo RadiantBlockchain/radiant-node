@@ -168,9 +168,15 @@ public:
     BlockAssembler(const CChainParams &params, const CTxMemPool &_mempool,
                    const Options &options);
 
-    /** Construct a new block template with coinbase to scriptPubKeyIn */
+    /**
+     *  Construct a new block template with coinbase to scriptPubKeyIn
+     *  @param scriptPubKeyIn  Script to which to send mining reward
+     *  @param timeLimitSecs   If >0, limit the amount of time spent
+     *                         assembling the block to this time limit,
+     *                         in seconds. If <= 0, no time limit.
+     */
     std::unique_ptr<CBlockTemplate>
-    CreateNewBlock(const CScript &scriptPubKeyIn, int64_t nTimeLimit=0);
+    CreateNewBlock(const CScript &scriptPubKeyIn, double timeLimitSecs = 0.);
 
     uint64_t GetMaxGeneratedBlockSize() const { return nMaxGeneratedBlockSize; }
 
@@ -187,7 +193,7 @@ private:
      * Increments nPackagesSelected / nDescendantsUpdated with corresponding
      * statistics from the package selection (for logging statistics).
      */
-    void addPackageTxs(int &nPackagesSelected, int &nDescendantsUpdated, int64_t nTimeLimit)
+    void addPackageTxs(int &nPackagesSelected, int &nDescendantsUpdated, int64_t nLimitTimePoint)
         EXCLUSIVE_LOCKS_REQUIRED(mempool->cs);
 
     // helper functions for addPackageTxs()

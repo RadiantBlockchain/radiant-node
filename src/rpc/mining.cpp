@@ -139,14 +139,11 @@ UniValue generateBlocks(const Config &config,
         // Determine the time limit for CreateNewBlock's addPackageTx
         // The -maxinitialgbttime setting is ignored since generate() is usually only used on regtest mode and we
         // usually want to make full-sized blocks during functional testing
-        int64_t nMaxGBTTime = gArgs.GetArg("-maxgbttime", DEFAULT_MAX_GBT_TIME) * 1000;
-        int64_t nTimeLimit = 0;
-        if (nMaxGBTTime > 0) {
-            nTimeLimit = GetTimeMicros() + nMaxGBTTime;
-        }
+        const double maxGBTTimeSecs = gArgs.GetArg("-maxgbttime", DEFAULT_MAX_GBT_TIME) / 1e3;
+
         std::unique_ptr<CBlockTemplate> pblocktemplate(
             BlockAssembler(config, g_mempool)
-                .CreateNewBlock(coinbaseScript->reserveScript, nTimeLimit));
+                .CreateNewBlock(coinbaseScript->reserveScript, maxGBTTimeSecs));
 
         if (!pblocktemplate.get()) {
             throw JSONRPCError(RPC_INTERNAL_ERROR, "Couldn't create new block");
@@ -643,24 +640,24 @@ static UniValue getblocktemplatecommon(bool fLight, const Config &config, const 
         CBlockIndex *pindexPrevNew = ::ChainActive().Tip();
         nStart = GetTime();
 
-        // Determine the time limit for CreateNewBlock's addPackageTx
-        int64_t nMaxGBTTime = gArgs.GetArg("-maxgbttime", DEFAULT_MAX_GBT_TIME) * 1000;
-        int64_t nMaxInitialGBTTime = gArgs.GetArg("-maxinitialgbttime", DEFAULT_MAX_INITIAL_GBT_TIME) * 1000;
-        if (nMaxGBTTime > 0 && nMaxInitialGBTTime > 0 && nMaxGBTTime < nMaxInitialGBTTime) {
-            nMaxInitialGBTTime = 0;
+        // Determine the time limit for CreateNewBlock
+        const double maxGBTTimeSecs = gArgs.GetArg("-maxgbttime", DEFAULT_MAX_GBT_TIME) / 1e3;
+        double maxInitialGBTTimeSecs = gArgs.GetArg("-maxinitialgbttime", DEFAULT_MAX_INITIAL_GBT_TIME) / 1e3;
+        if (maxGBTTimeSecs > 0. && maxInitialGBTTimeSecs > 0. && maxGBTTimeSecs < maxInitialGBTTimeSecs) {
+            maxInitialGBTTimeSecs = 0.;
         }
-        int64_t nTimeLimit = 0;
-        if (fNewTip && nMaxInitialGBTTime > 0) {
-            nTimeLimit = GetTimeMicros() + nMaxInitialGBTTime;
+        double timeLimitSecs = 0.; // 0 indicates no time limit
+        if (fNewTip && maxInitialGBTTimeSecs > 0.) {
+            timeLimitSecs = maxInitialGBTTimeSecs;
             fIgnoreCache = true;
-        } else if (nMaxGBTTime > 0) {
-            nTimeLimit = GetTimeMicros() + nMaxGBTTime;
+        } else if (maxGBTTimeSecs > 0.) {
+            timeLimitSecs = maxGBTTimeSecs;
         }
 
         // Create new block
         CScript scriptDummy = CScript() << OP_TRUE;
         pblocktemplate =
-            BlockAssembler(config, g_mempool).CreateNewBlock(scriptDummy, nTimeLimit);
+            BlockAssembler(config, g_mempool).CreateNewBlock(scriptDummy, timeLimitSecs);
         plightresult.reset();
         if (!pblocktemplate) {
             throw JSONRPCError(RPC_OUT_OF_MEMORY, "Out of memory");

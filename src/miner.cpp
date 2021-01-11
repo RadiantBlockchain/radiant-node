@@ -21,6 +21,7 @@
 #include <pow.h>
 #include <primitives/transaction.h>
 #include <script/standard.h>
+#include <threadsafety.h>
 #include <timedata.h>
 #include <txmempool.h>
 #include <util/moneystr.h>
@@ -121,8 +122,8 @@ void BlockAssembler::resetBlock() {
 }
 
 std::unique_ptr<CBlockTemplate>
-BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn, int64_t nTimeLimit) {
-    int64_t nTimeStart = GetTimeMicros();
+BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn, double timeLimitSecs) {
+    const int64_t nTimeStart = GetTimeMicros();
 
     resetBlock();
 
@@ -156,21 +157,26 @@ BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn, int64_t nTimeLimit
             : pblock->GetBlockTime();
 
     // CreateNewBlock's CPU time is divided between two parts: addPackageTxs(), and TestBlockValidity(). Our goal is to
-    // finish TestBlockValidity by nTimeLimit, but to do that we have to know when to stop adding transactions in
-    // addPackageTxs(). nAddPackagePPM stores an exponential moving average of what fraction of previous CreateNewBlock
-    // run times addPackageTxs() was responsible for, in parts per million. This fraction can change depending on the
-    // transaction mix (e.g. tx size, tx chain length).
-    static int64_t nAddPackagePPM = 500000;
-    // Clamp to sane range: (10% - 100%)
-    nAddPackagePPM = std::min((int64_t)1000000, std::max((int64_t)100000, nAddPackagePPM));
-    int64_t nPackageTimeLimit = (nTimeLimit - nTimeStart) * nAddPackagePPM / 1000000 + nTimeStart;
-    nPackageTimeLimit = nTimeLimit ? nPackageTimeLimit : 0;
+    // finish TestBlockValidity by timeLimitSecs, but to do that we have to know when to stop adding transactions in
+    // addPackageTxs(). addPackageFrac stores an exponential moving average of what fraction of previous CreateNewBlock
+    // run times addPackageTxs() was responsible for. This fraction can change depending on the transaction mix (e.g.
+    // tx size, tx chain length).
+    static double addPackageFrac GUARDED_BY(cs_main) = 0.5; // initial value: 50%
+    // Clamp to sane range: [10% - 100%]
+    addPackageFrac = std::clamp(addPackageFrac, 0.1, 1.);
+    int64_t nAddPackageLimitTime = 0; // a time point in the future to stop adding; 0 indicates no limit
+    if (timeLimitSecs > 0.) {
+        // If we are using the time limit feature, then estimate the amount of time we need to spend in addPackageTxs()
+        // based on the addPackageFrac statistic, and convert that time into a timepoint (in micros) after nTimeStart.
+        timeLimitSecs = std::min(timeLimitSecs, 1e3); // limit to 1e3 secs, to prevent int64 overflow below
+        nAddPackageLimitTime = nTimeStart + static_cast<int64_t>(addPackageFrac * timeLimitSecs * 1e6);
+    }
 
     int nPackagesSelected = 0;
     int nDescendantsUpdated = 0;
-    addPackageTxs(nPackagesSelected, nDescendantsUpdated, nPackageTimeLimit);
+    addPackageTxs(nPackagesSelected, nDescendantsUpdated, nAddPackageLimitTime);
 
-    int64_t nTime0 = GetTimeMicros();
+    const int64_t nTime0 = GetTimeMicros();
 
     if (IsMagneticAnomalyEnabled(consensusParams, pindexPrev)) {
         // If magnetic anomaly is enabled, we make sure transaction are
@@ -187,7 +193,7 @@ BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn, int64_t nTimeLimit
         pblock->vtx.push_back(entry.tx);
     }
 
-    int64_t nTime1 = GetTimeMicros();
+    const int64_t nTime1 = GetTimeMicros();
 
     nLastBlockTx = nBlockTx;
     nLastBlockSize = nBlockSize;
@@ -234,19 +240,21 @@ BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn, int64_t nTimeLimit
                                            __func__,
                                            FormatStateMessage(state)));
     }
-    int64_t nTime2 = GetTimeMicros();
+    const int64_t nTime2 = GetTimeMicros();
 
-    // Adjust nAddPackagePPM based on this run, using an EMA with alpha = 25% for non-tiny blocks
-    const int64_t nAlphaPPM = pblock->vtx.size() > 50 ? 250000 : 50000;
-    int64_t nThisAddPackagePPM = 1000000 * (nTime0 - nTimeStart) / (nTime2 - nTimeStart);
-    nAddPackagePPM = (nAddPackagePPM * (1000000 - nAlphaPPM) + nThisAddPackagePPM * nAlphaPPM) / 1000000;
+    // Save time taken by addPackageTxs() vs total time taken
+    const int64_t elapsedAddPkgTxs = nTime0 - nTimeStart, elapsedTotal = nTime2 - nTimeStart;
+    // Adjust addPackageFrac based on elapsedAddPkgTxs this run, using an EMA with alpha = 25% for non-tiny blocks
+    const double alpha = pblock->vtx.size() > 50 ? 0.25 : 0.05;
+    const double thisAddPackageFrac = elapsedTotal > 0 ? std::clamp(elapsedAddPkgTxs / double(elapsedTotal), 0., 1.) : 0.;
+    addPackageFrac = addPackageFrac * (1. - alpha) + thisAddPackageFrac * alpha;
 
     LogPrint(BCLog::BENCH,
-             "CreateNewBlock() packages: %.2fms (%d packages, %d updated "
-             "descendants), CTOR: %.2fms, validity: %.2fms (total %.2fms), nAddPackagePPM: %d\n",
-             0.001 * (nTime0 - nTimeStart), nPackagesSelected,
+             "CreateNewBlock() packages: %.2fms (%d packages, %d updated descendants), "
+             "CTOR: %.2fms, validity: %.2fms (total %.2fms), addPackageFrac: %1.2f, timeLimitSecs: %1.3f\n",
+             0.001 * elapsedAddPkgTxs, nPackagesSelected,
              nDescendantsUpdated, 0.001 * (nTime1 - nTime0), 0.001 * (nTime2 - nTime1),
-             0.001 * (nTime2 - nTimeStart), nAddPackagePPM);
+             0.001 * elapsedTotal, addPackageFrac, timeLimitSecs);
 
     return std::move(pblocktemplate);
 }
@@ -386,10 +394,16 @@ void BlockAssembler::SortForBlock(
  * children come after parents, despite having a potentially larger fee.
  * @param[out] nPackagesSelected    How many packages were selected
  * @param[out] nDescendantsUpdated  Number of descendant transactions updated
+ * @param nLimitTimePoint  A time point in the future (obtained via
+ *                         GetTimeMicros() + delta). If this argument is > 0,
+ *                         then stop looping after this time point elapses.
+ *                         Otherwise if <= 0, loop until the block template
+ *                         is filled to -blockmaxsize capacity (or until all
+ *                         tx's in mempool are added, whichever is smaller).
  */
 void BlockAssembler::addPackageTxs(int &nPackagesSelected,
                                    int &nDescendantsUpdated,
-                                   int64_t nTimeLimit) {
+                                   int64_t nLimitTimePoint) {
     // selection algorithm orders the mempool based on feerate of a
     // transaction including all unconfirmed ancestors. Since we don't remove
     // transactions from the mempool as we select them for block inclusion, we
@@ -421,7 +435,7 @@ void BlockAssembler::addPackageTxs(int &nPackagesSelected,
     const int64_t MAX_CONSECUTIVE_FAILURES = 1000;
     int64_t nConsecutiveFailed = 0;
 
-    while ((nTimeLimit <= 0 || GetTimeMicros() < nTimeLimit) &&
+    while ((nLimitTimePoint <= 0 || GetTimeMicros() < nLimitTimePoint) &&
            (mi != mempool->mapTx.get<ancestor_score>().end() ||
             !mapModifiedTx.empty())) {
         // First try to find a new transaction in mapTx to evaluate.
