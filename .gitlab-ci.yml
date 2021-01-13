@@ -114,41 +114,51 @@ static-run-linters:
     cache: {}
     script:
         - mkdir build
-        - cd build
-        - cmake -GNinja ..
-        - ninja check-lint
+        - (cd build; cmake -GNinja ..)
+        - (cd build; ninja check-lint)
     artifacts:
         paths:
             - build/test/lint
 
-.ccache_scripts:
+# Common setup for jobs building binaries using cmake + ninja
+.build_common:
     before_script:
+        - mkdir -p build
         - mkdir -p ccache
         - export CCACHE_BASEDIR=${PWD}
         - export CCACHE_DIR=${PWD}/ccache
         - export CCACHE_COMPILERCHECK=content
         - ccache --zero-stats || true
 
+          # Limit ccache to 3 GB (from default 5 GB).
+          # 'ninja all check bench_bitcoin' produces ~2.1GB cache (Jan 2021)
+        - ccache -M 3G
+    after_script:
+        # after_script somehow loses CCACHE environent variables.
+        - export CCACHE_BASEDIR=${PWD}
+        - export CCACHE_DIR=${PWD}/ccache
+        - ccache --show-stats
+
 .cache-debian:
-    extends: .ccache_scripts
+    extends: .build_common
     cache:
         <<: *global_cache_settings
         key: debian_cache
 
 .cache-debian-clang:
-    extends: .ccache_scripts
+    extends: .build_common
     cache:
         <<: *global_cache_settings
         key: debian_cache_clang
 
 .cache-debian-makefiles:
-    extends: .ccache_scripts
+    extends: .build_common
     cache:
         <<: *global_cache_settings
         key: debian_cache_makefiles
 
 .cache-win:
-    extends: .ccache_scripts
+    extends: .build_common
     cache:
         <<: *global_cache_settings
         key: win_cache
@@ -159,7 +169,7 @@ static-run-linters:
             - depends/x86_64-w64-mingw32
 
 .cache-arm:
-    extends: .ccache_scripts
+    extends: .build_common
     cache:
         <<: *global_cache_settings
         key: arm_cache
@@ -170,7 +180,7 @@ static-run-linters:
             - depends/arm-linux-gnueabihf
 
 .cache-aarch64:
-    extends: .ccache_scripts
+    extends: .build_common
     cache:
         <<: *global_cache_settings
         key: aarch64_cache
@@ -181,7 +191,7 @@ static-run-linters:
             - depends/aarch64-linux-gnu
 
 .cache-osx:
-    extends: .ccache_scripts
+    extends: .build_common
     cache:
         <<: *global_cache_settings
         key: osx_cache
@@ -205,11 +215,8 @@ build-debian:
     extends: .cache-debian
     needs: []
     script:
-        - mkdir build
-        - cd build
-        - cmake -GNinja ..
-        - ninja
-        - ccache --show-stats
+        - (cd build; cmake -GNinja ..)
+        - (cd build; ninja)
 
     artifacts:
         paths:
@@ -266,7 +273,6 @@ test-debian-utils:
               check-rpcauth
               check-secp256k1
               check-univalue)
-        - ccache --show-stats
     dependencies:
         - build-debian
 
@@ -280,7 +286,6 @@ test-debian-functional:
     script:
         - (cd build; ninja -t restat)
         - (cd build; ninja check-functional)
-        - ccache --show-stats
     dependencies:
         - build-debian
     artifacts:
@@ -302,7 +307,6 @@ test-debian-functional-extended:
     script:
         - (cd build; ninja -t restat)
         - (cd build; ninja check-functional-extended)
-        - ccache --show-stats
     dependencies:
         - build-debian
     artifacts:
@@ -320,7 +324,6 @@ deploy-debian:
     script:
         - (cd build; ninja -t restat)
         - (cd build; ninja package)
-        - ccache --show-stats
     dependencies:
         - build-debian
 
@@ -331,11 +334,8 @@ build-debian-nowallet:
     extends: .cache-debian
     needs: []
     script:
-        - mkdir build
-        - cd build
-        - cmake -GNinja .. -DBUILD_BITCOIN_WALLET=OFF
-        - ninja
-        - ccache --show-stats
+        - (cd build; cmake -GNinja .. -DBUILD_BITCOIN_WALLET=OFF)
+        - (cd build; ninja)
 
     artifacts:
         paths:
@@ -378,7 +378,6 @@ test-debian-nowallet-functional:
     script:
         - (cd build; ninja -t restat)
         - (cd build; ninja check-functional)
-        - ccache --show-stats
     dependencies:
         - build-debian-nowallet
     artifacts:
@@ -400,7 +399,6 @@ test-debian-nowallet-functional-extended:
     script:
         - (cd build; ninja -t restat)
         - (cd build; ninja check-functional-longeronly)
-        - ccache --show-stats
     dependencies:
         - build-debian-nowallet
     artifacts:
@@ -417,11 +415,8 @@ build-debian-clang:
     extends: .debian-clang-env
     needs: []
     script:
-        - mkdir build
-        - cd build
-        - cmake -GNinja ..
-        - ninja -v
-        - ccache --show-stats
+        - (cd build; cmake -GNinja ..)
+        - (cd build; ninja)
 
     artifacts:
         paths:
@@ -433,11 +428,8 @@ build-debian-makefiles:
     extends: .cache-debian-makefiles
     needs: []
     script:
-        - mkdir build
-        - cd build
-        - cmake -G"Unix Makefiles" ..
-        - make -j`nproc`
-        - ccache --show-stats
+        - (cd build; cmake -G"Unix Makefiles" ..)
+        - (cd build; make -j`nproc`)
 
 build-debian-tests-clang:
     stage: build_tests
@@ -480,7 +472,6 @@ test-debian-utils-clang:
               check-rpcauth
               check-secp256k1
               check-univalue)
-        - ccache --show-stats
     dependencies:
         - build-debian-clang
 
@@ -498,21 +489,18 @@ test-debian-benchmarks-clang:
 ## Debian native Debug build
 
 .cache-debian-debug:
-  extends: .ccache_scripts
+  extends: .build_common
   cache:
     <<: *global_cache_settings
-    key: debian_cache
+    key: debian_debug_cache
 
 build-debian-debug:
   stage: build
   extends: .cache-debian-debug
   needs: []
   script:
-    - mkdir build
-    - cd build
-    - cmake -GNinja .. -DCMAKE_BUILD_TYPE=Debug
-    - ninja
-    - ccache --show-stats
+    - (cd build; cmake -GNinja .. -DCMAKE_BUILD_TYPE=Debug)
+    - (cd build; ninja)
 
   artifacts:
     paths:
@@ -548,10 +536,10 @@ test-debian-debug-unittests:
 ## Debian native Debug build with clang
 
 .cache-debian-debug-clang:
-    extends: .ccache_scripts
+    extends: .build_common
     cache:
         <<: *global_cache_settings
-        key: debian_cache_debug_clang
+        key: debian_debug_clang_cache
 
 .debian-debug-clang-env:
     extends: .cache-debian-debug-clang
@@ -564,11 +552,8 @@ build-debian-debug-clang:
     extends: .debian-debug-clang-env
     needs: []
     script:
-        - mkdir build
-        - cd build
-        - cmake -GNinja .. -DCMAKE_BUILD_TYPE=Debug
-        - ninja -v
-        - ccache --show-stats
+        - (cd build; cmake -GNinja .. -DCMAKE_BUILD_TYPE=Debug)
+        - (cd build; ninja)
 
     artifacts:
         paths:
@@ -619,13 +604,11 @@ build-win-64:
     extends: .cache-win
     needs: ["build-win-64-depends"]
     script:
-        - mkdir build_win
-        - cd build_win
+        - cd build
         - cmake -GNinja .. -DBUILD_BITCOIN_QT=OFF
                            -DBUILD_BITCOIN_SEEDER=OFF
                            -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/Win64.cmake
         - ninja
-        - ccache --show-stats
     dependencies:
         - build-win-64-depends
 
@@ -647,15 +630,13 @@ build-arm:
     extends: .cache-arm
     needs: ["build-arm-depends"]
     script:
-        - mkdir build_arm
-        - cd build_arm
+        - cd build
         - cmake -GNinja .. -DBUILD_BITCOIN_QT=OFF
                            -DBUILD_BITCOIN_SEEDER=OFF
                            -DENABLE_GLIBC_BACK_COMPAT=ON
                            -DENABLE_STATIC_LIBSTDCXX=ON
                            -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/LinuxARM.cmake
         - ninja
-        - ccache --show-stats
     dependencies:
         - build-arm-depends
 
@@ -676,13 +657,11 @@ build-aarch64:
     extends: .cache-aarch64
     needs: ["build-aarch64-depends"]
     script:
-        - mkdir build
         - cd build
         - cmake -GNinja .. -DBUILD_BITCOIN_ZMQ=OFF
                            -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/LinuxAArch64.cmake
                            -DCMAKE_CROSSCOMPILING_EMULATOR=$(command -v qemu-aarch64-static)
         - ninja
-        - ccache --show-stats
     dependencies:
         - build-aarch64-depends
     artifacts:
@@ -727,7 +706,6 @@ test-aarch64-functional:
     script:
         - (cd build; ninja -t restat)
         - (cd build; ninja check-functional)
-        - ccache --show-stats
     dependencies:
         - build-aarch64
     artifacts:
