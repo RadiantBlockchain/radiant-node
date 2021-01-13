@@ -184,7 +184,6 @@ add_compiler_flags(
 	-Wextra
 	-Wformat
 	-Wvla
-	-Wformat-security
 	-Wcast-align
 	-Wunused-parameter
 	-Wmissing-braces
@@ -193,6 +192,9 @@ add_compiler_flags(
 	-Wrange-loop-analysis
 	-Wredundant-decls
 )
+# The -Wformat-security option is dependent on -Wformat on GCC. Check for it
+# together with -Wformat to avoid a warning.
+add_compiler_flag_group(-Wformat -Wformat-security)
 add_cxx_compiler_flags(
 	-Wredundant-move
 )
