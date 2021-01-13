@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The Bitcoin developers
+# Copyright (c) 2017-2021 The Bitcoin developers
 
 # This generates config.h which provides numerous defines
 # about the state of the plateform we are building on.
