@@ -803,7 +803,9 @@ void BitcoinGUI::createTrayIconMenu() {
         trayIconMenu->addSeparator();
     }
     trayIconMenu->addAction(optionsAction);
-    trayIconMenu->addAction(openRPCConsoleAction);
+    if (enableWallet) {
+        trayIconMenu->addAction(openRPCConsoleAction);
+    }
 #ifndef Q_OS_MAC
     // This is built-in on macOS
     trayIconMenu->addSeparator();
