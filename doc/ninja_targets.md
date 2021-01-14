@@ -329,3 +329,6 @@ All these options are passed via `-D` (defines) to the `cmake` command.
 - -DENABLE_GLIBC_BACK_COMPAT=ON
 
 - -DENABLE_STATIC_LIBSTDCXX=ON
+
+- -DEXCLUDE_FUNCTIONAL_TESTS # Skip specified functional tests for
+  `check-functional` targets.
