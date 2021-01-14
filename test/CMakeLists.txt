@@ -1,4 +1,9 @@
 ###
+# User options
+##
+set(EXCLUDE_FUNCTIONAL_TESTS "" CACHE STRING "Comma-separated-list of functional tests to exclude.")
+
+###
 # Create config.ini file for tests
 ###
 if("fuzzer" IN_LIST ENABLE_SANITIZERS)
@@ -42,11 +47,17 @@ include(Coverage)
 include(TestSuite)
 
 macro(add_functional_test_check TARGET COMMENT)
+	if ("${EXCLUDE_FUNCTIONAL_TESTS}" STREQUAL "")
+		set(exclude_arg "")
+	else()
+		set(exclude_arg "--exclude=${EXCLUDE_FUNCTIONAL_TESTS}")
+	endif()
 	add_test_custom_target(${TARGET}
 		TEST_COMMAND
 			"${Python_EXECUTABLE}"
 			./functional/test_runner.py
 			${ARGN}
+			${exclude_arg}
 		CUSTOM_TARGET_ARGS
 			COMMENT "${COMMENT}"
 			DEPENDS
