@@ -678,9 +678,12 @@ build-aarch64:
     script:
         - mkdir build
         - cd build
+          # The following tests are excluded:
+          # - bchn-rpc-getblocktemplate-sigops - OOM issues for aarch64 (see #211)
         - cmake -GNinja .. -DBUILD_BITCOIN_ZMQ=OFF
                            -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/LinuxAArch64.cmake
                            -DCMAKE_CROSSCOMPILING_EMULATOR=$(command -v qemu-aarch64-static)
+                           -DEXCLUDE_FUNCTIONAL_TESTS=bchn-rpc-getblocktemplate-sigops
         - ninja
         - ccache --show-stats
     dependencies:
