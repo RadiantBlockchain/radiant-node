@@ -3,10 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
-#include <string.h>
-#include <vector>
-#include <stdio.h>
 #include <utility>
+#include <vector>
 #include "univalue.h"
 #include "univalue_utffilter.h"
 
@@ -24,92 +22,96 @@ constexpr bool json_isdigit(char ch) noexcept
     return ch >= '0' && ch <= '9';
 }
 
-// convert hexadecimal string to unsigned integer
-const char *hatoui(const char *first, const char *last,
-                   unsigned int& out) noexcept
+/// Helper for getJsonToken; converts hexadecimal string to unsigned integer.
+///
+/// Returns a nullopt if conversion fails due to not enough characters (requires
+/// minimum 4 characters), or if any of the characters encountered are not hex.
+///
+/// On success, consumes the first 4 characters in `buffer`, and returns an
+/// optional containing the converted codepoint.
+std::optional<unsigned> hatoui(std::string_view& buffer) noexcept
 {
-    out = 0;
-    for (; first != last; ++first)
-    {
+    if (buffer.size() < 4)
+        return std::nullopt; // not enough digits, fail
+
+    unsigned val = 0;
+    for (const char c : buffer.substr(0, 4)) {
         int digit;
-        if (json_isdigit(*first))
-            digit = *first - '0';
+        if (json_isdigit(c))
+            digit = c - '0';
 
-        else if (*first >= 'a' && *first <= 'f')
-            digit = *first - 'a' + 10;
+        else if (c >= 'a' && c <= 'f')
+            digit = c - 'a' + 10;
 
-        else if (*first >= 'A' && *first <= 'F')
-            digit = *first - 'A' + 10;
+        else if (c >= 'A' && c <= 'F')
+            digit = c - 'A' + 10;
 
         else
-            break;
+            return std::nullopt; // not a hex digit, fail
 
-        out = 16 * out + digit;
+        val = 16 * val + digit;
     }
 
-    return first;
+    buffer.remove_prefix(4); // consume hex chars from start of buffer
+    return val;
 }
 } // end anonymous namespace
 
-jtokentype getJsonToken(std::string& tokenVal, std::string_view::size_type& consumed,
-                        std::string_view::const_iterator raw, const std::string_view::const_iterator end)
+jtokentype getJsonToken(std::string& tokenVal, std::string_view& buffer)
 {
+    using namespace std::literals; // for operator""sv (string_view literals)
+
     tokenVal.clear();
-    consumed = 0;
 
-    const std::string_view::const_iterator rawStart = raw;
+    while (!buffer.empty() && json_isspace(buffer.front()))          // skip whitespace
+        buffer.remove_prefix(1);
 
-    while (raw < end && json_isspace(*raw))          // skip whitespace
-        raw++;
-
-    if (raw >= end)
+    if (buffer.empty())
         return JTOK_NONE;
 
-    switch (*raw) {
+    switch (buffer.front()) {
 
     case '{':
-        raw++;
-        consumed = raw - rawStart;
+        buffer.remove_prefix(1);
         return JTOK_OBJ_OPEN;
     case '}':
-        raw++;
-        consumed = raw - rawStart;
+        buffer.remove_prefix(1);
         return JTOK_OBJ_CLOSE;
     case '[':
-        raw++;
-        consumed = raw - rawStart;
+        buffer.remove_prefix(1);
         return JTOK_ARR_OPEN;
     case ']':
-        raw++;
-        consumed = raw - rawStart;
+        buffer.remove_prefix(1);
         return JTOK_ARR_CLOSE;
 
     case ':':
-        raw++;
-        consumed = raw - rawStart;
+        buffer.remove_prefix(1);
         return JTOK_COLON;
     case ',':
-        raw++;
-        consumed = raw - rawStart;
+        buffer.remove_prefix(1);
         return JTOK_COMMA;
 
     case 'n':
-    case 't':
-    case 'f':
-        if (!strncmp(raw, "null", 4)) {
-            raw += 4;
-            consumed = raw - rawStart;
+        // equivalent to C++20: buffer.starts_with("null")
+        if (const auto& tok = "null"sv; tok == buffer.substr(0, tok.size())) {
+            buffer.remove_prefix(tok.size());
             return JTOK_KW_NULL;
-        } else if (!strncmp(raw, "true", 4)) {
-            raw += 4;
-            consumed = raw - rawStart;
+        }
+        return JTOK_ERR;
+    case 't':
+        // equivalent to C++20: buffer.starts_with("true")
+        if (const auto& tok = "true"sv; tok == buffer.substr(0, tok.size())) {
+            buffer.remove_prefix(tok.size());
             return JTOK_KW_TRUE;
-        } else if (!strncmp(raw, "false", 5)) {
-            raw += 5;
-            consumed = raw - rawStart;
+        }
+        return JTOK_ERR;
+    case 'f':
+        // equivalent to C++20: buffer.starts_with("false")
+        if (const auto& tok = "false"sv; tok == buffer.substr(0, tok.size())) {
+            buffer.remove_prefix(tok.size());
             return JTOK_KW_FALSE;
-        } else
-            return JTOK_ERR;
+        }
+        return JTOK_ERR;
 
     case '-':
     case '0':
@@ -123,73 +125,75 @@ jtokentype getJsonToken(std::string& tokenVal, std::string_view::size_type& cons
     case '8':
     case '9': {
         // part 1: int
-        const char * const first = raw;
+        const char * const first = buffer.data();
         const bool firstIsMinus = *first == '-';
 
         const char * const firstDigit = first + firstIsMinus;
 
-        if (*firstDigit == '0' && firstDigit + 1 < end && json_isdigit(firstDigit[1]))
+        if (*firstDigit == '0' && firstDigit < &buffer.back() && json_isdigit(firstDigit[1]))
             return JTOK_ERR;
 
-        raw++;                                  // consume first char
+        buffer.remove_prefix(1);                                                       // consume first char
 
-        if (firstIsMinus && (raw >= end || !json_isdigit(*raw))) {
+        if (firstIsMinus && (buffer.empty() || !json_isdigit(buffer.front()))) {
             // reject buffers ending in '-' or '-' followed by non-digit
             return JTOK_ERR;
         }
 
-        while (raw < end && json_isdigit(*raw)) {  // consume digits
-            raw++;
+        while (!buffer.empty() && json_isdigit(buffer.front())) {                      // consume digits
+            buffer.remove_prefix(1);
         }
 
         // part 2: frac
-        if (raw < end && *raw == '.') {
-            raw++;                              // consume .
+        if (!buffer.empty() && buffer.front() == '.') {
+            buffer.remove_prefix(1);                                                   // consume .
 
-            if (raw >= end || !json_isdigit(*raw))
+            if (buffer.empty() || !json_isdigit(buffer.front()))
                 return JTOK_ERR;
-            while (raw < end && json_isdigit(*raw)) { // consume digits
-                raw++;
-            }
+            do {                                                                       // consume digits
+                buffer.remove_prefix(1);
+            } while (!buffer.empty() && json_isdigit(buffer.front()));
         }
 
         // part 3: exp
-        if (raw < end && (*raw == 'e' || *raw == 'E')) {
-            raw++;                              // consume E
+        if (!buffer.empty() && (buffer.front() == 'e' || buffer.front() == 'E')) {
+            buffer.remove_prefix(1);                                                   // consume E
 
-            if (raw < end && (*raw == '-' || *raw == '+')) { // consume +/-
-                raw++;
+            if (!buffer.empty() && (buffer.front() == '-' || buffer.front() == '+')) { // consume +/-
+                buffer.remove_prefix(1);
             }
 
-            if (raw >= end || !json_isdigit(*raw))
+            if (buffer.empty() || !json_isdigit(buffer.front()))
                 return JTOK_ERR;
-            while (raw < end && json_isdigit(*raw)) { // consume digits
-                raw++;
-            }
+            do {                                                                       // consume digits
+                buffer.remove_prefix(1);
+            } while (!buffer.empty() && json_isdigit(buffer.front()));
         }
 
-        tokenVal.assign(first, raw - first);
-        consumed = raw - rawStart;
+        tokenVal.assign(first, std::string::size_type(buffer.data() - first));
         return JTOK_NUMBER;
         }
 
     case '"': {
-        raw++;                                // skip "
+        buffer.remove_prefix(1);                                // skip "
 
         std::string valStr;
         JSONUTF8StringFilter writer(valStr);
 
         while (true) {
-            if (raw >= end || (unsigned char)*raw < 0x20)
+            if (buffer.empty() || static_cast<unsigned char>(buffer.front()) < 0x20)
                 return JTOK_ERR;
 
-            else if (*raw == '\\') {
-                raw++;                        // skip backslash
+            else if (buffer.front() == '\\') {
+                buffer.remove_prefix(1);                        // skip backslash
 
-                if (raw >= end)
+                if (buffer.empty())
                     return JTOK_ERR;
 
-                switch (*raw) {
+                const char escChar = buffer.front();
+                buffer.remove_prefix(1);                        // skip esc'd char
+
+                switch (escChar) {
                 case '"':  writer.push_back('\"'); break;
                 case '\\': writer.push_back('\\'); break;
                 case '/':  writer.push_back('/'); break;
@@ -199,39 +203,32 @@ jtokentype getJsonToken(std::string& tokenVal, std::string_view::size_type& cons
                 case 'r':  writer.push_back('\r'); break;
                 case 't':  writer.push_back('\t'); break;
 
-                case 'u': {
-                    unsigned int codepoint;
-                    if (raw + 1 + 4 >= end ||
-                        hatoui(raw + 1, raw + 1 + 4, codepoint) !=
-                               raw + 1 + 4)
-                        return JTOK_ERR;
-                    writer.push_back_u(codepoint);
-                    raw += 4;
-                    break;
+                case 'u':
+                    if (auto optCodepoint = hatoui(buffer)) {
+                        writer.push_back_u(*optCodepoint);
+                        break;
                     }
+                    return JTOK_ERR;
                 default:
                     return JTOK_ERR;
 
                 }
-
-                raw++;                        // skip esc'd char
             }
 
-            else if (*raw == '"') {
-                raw++;                        // skip "
-                break;                        // stop scanning
+            else if (buffer.front() == '"') {
+                buffer.remove_prefix(1);                        // skip "
+                break;                                          // stop scanning
             }
 
             else {
-                writer.push_back(*raw);
-                raw++;
+                writer.push_back(buffer.front());
+                buffer.remove_prefix(1);
             }
         }
 
         if (!writer.finalize())
             return JTOK_ERR;
         tokenVal = std::move(valStr);
-        consumed = raw - rawStart;
         return JTOK_STRING;
         }
 
@@ -252,7 +249,7 @@ enum expect_bits {
 #define setExpect(bit) (expectMask |= EXP_##bit)
 #define clearExpect(bit) (expectMask &= ~EXP_##bit)
 
-bool UniValue::read(std::string_view raw)
+bool UniValue::read(std::string_view buffer)
 {
     setNull();
 
@@ -260,18 +257,14 @@ bool UniValue::read(std::string_view raw)
     std::vector<UniValue*> stack;
 
     std::string tokenVal;
-    std::string_view::size_type consumed;
-    enum jtokentype tok = JTOK_NONE;
-    enum jtokentype last_tok = JTOK_NONE;
-    auto current = raw.begin();
-    const auto end = raw.end();
+    jtokentype tok = JTOK_NONE;
+    jtokentype last_tok = JTOK_NONE;
     do {
         last_tok = tok;
 
-        tok = getJsonToken(tokenVal, consumed, current, end);
+        tok = getJsonToken(tokenVal, buffer);
         if (tok == JTOK_NONE || tok == JTOK_ERR)
             return false;
-        current += consumed;
 
         bool isValueOpen = jsonTokenIsValue(tok) ||
             tok == JTOK_OBJ_OPEN || tok == JTOK_ARR_OPEN;
@@ -468,7 +461,7 @@ bool UniValue::read(std::string_view raw)
     } while (!stack.empty ());
 
     /* Check that nothing follows the initial construct (parsed above).  */
-    tok = getJsonToken(tokenVal, consumed, current, end);
+    tok = getJsonToken(tokenVal, buffer);
     if (tok != JTOK_NONE)
         return false;
 
