@@ -1,4 +1,4 @@
-# Copyright (c) 2017 The Bitcoin developers
+# Copyright (c) 2017-2021 The Bitcoin developers
 
 cmake_minimum_required(VERSION 3.13)
 
@@ -16,7 +16,7 @@ project(bitcoin-cash-node
 set(PACKAGE_NAME "Bitcoin Cash Node")
 
 # Copyright
-set(COPYRIGHT_YEAR 2020)
+set(COPYRIGHT_YEAR 2021)
 set(COPYRIGHT_HOLDERS "The %s developers")
 set(COPYRIGHT_HOLDERS_SUBSTITUTION Bitcoin)
 string(REPLACE "%s" ${COPYRIGHT_HOLDERS_SUBSTITUTION} COPYRIGHT_HOLDERS_FINAL ${COPYRIGHT_HOLDERS})
