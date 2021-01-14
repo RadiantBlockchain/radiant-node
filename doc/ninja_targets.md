@@ -15,9 +15,7 @@ build targets and their effects.
 
 ## Generally understanding the Ninja build system
 
-Please briefly acquaint yourself with the Ninja documentation at
-
-   https://ninja-build.org/manual.html
+Please briefly acquaint yourself with the Ninja documentation at <https://ninja-build.org/manual.html>
 
 
 ## Setting up an out-of-tree Ninja build of Bitcoin Cash Node
@@ -69,9 +67,7 @@ For all these targets, run them by appending them to the `ninja` command.
 When used without further arguments, cleans up the build area by removing all
 build products.
 
-See also the description of the `clean` target at:
-
-    https://ninja-build.org/manual.html#_extra_tools
+See also the description of the `clean` target at: <https://ninja-build.org/manual.html#_extra_tools>
 
 If you need to 'clean up hardest' then the right way is to change to the
 source folder of your checked out working area, and remove the entire
