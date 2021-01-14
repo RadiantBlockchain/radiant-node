@@ -198,21 +198,21 @@ Use the `-v` option for verbose output.
 
 ## Writing functional tests
 
-#### Example test
+### Example test
 
 The [example_test.py](../test/functional/example_test.py) is a heavily commented
 example of a test
 case that uses both the RPC and P2P interfaces. If you are writing your first
 test, copy that file and modify to fit your needs.
 
-#### Coverage
+### Coverage
 
 Running `test_runner.py` with the `--coverage` argument tracks which RPCs are
 called by the tests and prints a report of uncovered RPCs in the summary. This
 can be used (along with the `--extended` argument) to find out which RPCs we
 don't have test cases for.
 
-#### Style guidelines
+### Style guidelines
 
 - Where possible, try to adhere to
   [PEP-8 guidelines](https://www.python.org/dev/peps/pep-0008/)
@@ -227,7 +227,7 @@ don't have test cases for.
 - Use `f'{x}'` for string formatting in preference to `'{}'.format(x)`
   or `'%s' % x`.
 
-#### Naming guidelines
+### Naming guidelines
 
 - Name the test `<area>_<subject>.py`, where `<area>` can be one of the following:
     - `feature` for tests for full features that aren't wallet/mining/mempool,
@@ -244,7 +244,7 @@ don't have test cases for.
       `rpc_decodescript.py`, not `rpc_decode_script.py`
 - Don't use the redundant word `test` in the name, eg `interface_zmq.py`, not `interface_zmq_test.py`
 
-#### General test-writing advice
+### General test-writing advice
 
 - Set `self.num_nodes` to the minimum number of nodes necessary for the test.
   Having additional unrequired nodes adds to the execution time of the test as
@@ -266,7 +266,7 @@ don't have test cases for.
   from typographical errors or usage of the objects outside of their intended
   purpose.
 
-#### RPC and P2P definitions
+### RPC and P2P definitions
 
 Test writers may find it helpful to refer to the definitions for the RPC and
 P2P messages. These can be found in the following source files:
@@ -275,7 +275,7 @@ P2P messages. These can be found in the following source files:
 - `/src/wallet/rpc*` for wallet RPCs
 - `ProcessMessage()` in `/src/net_processing.cpp` for parsing P2P messages
 
-#### Using the P2P interface
+### Using the P2P interface
 
 - `messages.py` contains all the definitions for objects that pass
   over the network (`CBlock`, `CTransaction`, etc, along with the network-level
