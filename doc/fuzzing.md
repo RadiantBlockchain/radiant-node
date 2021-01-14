@@ -62,7 +62,7 @@ The fuzzing can be sped up significantly (~200x) by using `afl-clang-fast` and
 compiling using `afl-clang-fast`/`afl-clang-fast++` the resulting
 binary will be instrumented in such a way that the AFL features "persistent
 mode" and "deferred forkserver" can be used.
-See https://github.com/google/AFL/tree/master/llvm_mode for details.
+See <https://github.com/google/AFL/tree/master/llvm_mode> for details.
 
 ### Fuzzing
 
@@ -98,7 +98,7 @@ ninja bitcoin-fuzzers
 The fuzzer needs some inputs to work on, but the inputs or seeds can be used
 interchangeably between libFuzzer and AFL.
 
-See https://llvm.org/docs/LibFuzzer.html#running on how to run the libFuzzer
+See <https://llvm.org/docs/LibFuzzer.html#running> on how to run the libFuzzer
 instrumented executable.
 
 Alternatively run the script in `./test/fuzz/test_runner.py` and provide it
