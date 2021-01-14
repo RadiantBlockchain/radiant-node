@@ -495,6 +495,113 @@ test-debian-benchmarks-clang:
     dependencies:
         - build-debian-clang
 
+## Debian native Debug build
+
+.cache-debian-debug:
+  extends: .ccache_scripts
+  cache:
+    <<: *global_cache_settings
+    key: debian_cache
+
+build-debian-debug:
+  stage: build
+  extends: .cache-debian-debug
+  needs: []
+  script:
+    - mkdir build
+    - cd build
+    - cmake -GNinja .. -DCMAKE_BUILD_TYPE=Debug
+    - ninja
+    - ccache --show-stats
+
+  artifacts:
+    paths:
+      - build
+
+build-debian-debug-tests:
+  stage: build_tests
+  extends: .cache-debian-debug
+  needs: ["build-debian-debug"]
+  dependencies:
+    - build-debian-debug
+  script:
+    - (cd build; ninja -t restat)
+    - (cd build; ninja test_bitcoin)
+  artifacts:
+    paths:
+      - ./build/src/test/test_bitcoin
+      - ./build/src/lib*
+
+test-debian-debug-unittests:
+  stage: test
+  cache: {}
+  needs: ["build-debian-debug-tests"]
+  dependencies:
+    - build-debian-debug-tests
+  script:
+    - ./build/src/test/test_bitcoin
+      --logger=HRF:JUNIT,message,junit_unit_tests.xml
+  artifacts:
+    reports:
+      junit: junit_unit_tests.xml
+
+## Debian native Debug build with clang
+
+.cache-debian-debug-clang:
+    extends: .ccache_scripts
+    cache:
+        <<: *global_cache_settings
+        key: debian_cache_debug_clang
+
+.debian-debug-clang-env:
+    extends: .cache-debian-debug-clang
+    variables:
+        CC: clang-8
+        CXX: clang++-8
+
+build-debian-debug-clang:
+    stage: build
+    extends: .debian-debug-clang-env
+    needs: []
+    script:
+        - mkdir build
+        - cd build
+        - cmake -GNinja .. -DCMAKE_BUILD_TYPE=Debug
+        - ninja -v
+        - ccache --show-stats
+
+    artifacts:
+        paths:
+            - build
+
+build-debian-debug-clang-tests:
+    stage: build_tests
+    extends: .debian-debug-clang-env
+    needs: ["build-debian-debug-clang"]
+    dependencies:
+        - build-debian-debug-clang
+    script:
+        - (cd build; ninja -t restat)
+        - (cd build; ninja test_bitcoin)
+
+    artifacts:
+        paths:
+            - ./build/src/test/test_bitcoin
+            - ./build/src/lib*
+
+test-debian-debug-clang-unittests:
+    stage: test
+    cache: {}
+    needs: ["build-debian-debug-clang-tests"]
+    dependencies:
+        - build-debian-debug-clang-tests
+    script:
+        - ./build/src/test/test_bitcoin
+          --logger=HRF:JUNIT,message,junit_unit_tests.xml
+    artifacts:
+        reports:
+            junit: junit_unit_tests.xml
+
 ## Windows build
 
 build-win-64-depends:
