@@ -275,10 +275,11 @@ def main(file):
         replacement = build_replacement(error)
         print("({}) {}".format(line_number, error.rstrip()))
         print("=> " + replacement)
+    return len(errors) > 0
 
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         sys.exit(testmod()[1])
     else:
-        main(sys.argv[1])
+        sys.exit(main(sys.argv[1]))
