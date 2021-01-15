@@ -99,10 +99,10 @@ def process_mapping(fname):
 
 def main():
     if len(sys.argv) != 2:
-        print('Usage: {} ROOT-DIR'.format(sys.argv[0]), file=sys.stderr)
-        sys.exit(1)
-
-    root = sys.argv[1]
+        root = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..')
+        print(f'Using root dir ${root}')
+    else:
+        root = sys.argv[1]
 
     # Find the sources files
     sources = []
@@ -185,7 +185,7 @@ def main():
                   "for others. Consider renaming arguments such that one name is used for strings and the other for "
                   "conversions from JSON.".format(formattedCommands, SOURCE_CLIENT))
 
-    sys.exit(0)
+    sys.exit(errors > 0)
 
 
 if __name__ == '__main__':
