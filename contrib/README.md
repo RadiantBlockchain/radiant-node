@@ -39,6 +39,3 @@ Test and Verify Tools
 
 ### [TestGen](testgen/) ###
 Utilities to generate test vectors for the data-driven Bitcoin tests.
-
-### [Verify Binaries](verifybinaries/) ###
-This script attempts to download and verify the signature file SHA256SUMS.asc from bitcoin.org.
