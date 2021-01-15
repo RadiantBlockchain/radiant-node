@@ -24,6 +24,7 @@ FALSE_POSITIVES = [
     ("src/wallet/wallet.h",
      "LogPrintf((\"%s \" + fmt).c_str(), GetDisplayName(), parameters...)"),
     ("src/logging.h", "LogPrintf(const char *fmt, const Args &... args)"),
+    ("src/univalue/lib/univalue.cpp", "snprintf(buf.data(), size_t(bufSize), std::is_signed<Int64>::value ? \"%\" PRId64 : \"%\" PRIu64, val_)"),
 ]
 
 FUNCTION_NAMES_AND_NUMBER_OF_LEADING_ARGUMENTS = [
@@ -266,6 +267,7 @@ def main(args_in):
         "r", encoding="utf-8"), nargs="*", help="C++ source code file (e.g. foo.cpp)")
     args = parser.parse_args(args_in)
 
+    errors = 0
     for f in args.file:
         file_content = f.read()
         for (function_name,
@@ -280,6 +282,7 @@ def main(args_in):
                 if len(parts) < 3 + skip_arguments:
                     print("{}: Could not parse function call string \"{}(...)\": {}".format(
                         f.name, function_name, relevant_function_call_str))
+                    errors += 1
                     continue
                 argument_count = len(parts) - 3 - skip_arguments
                 format_str = parse_string_content(parts[1 + skip_arguments])
@@ -287,9 +290,12 @@ def main(args_in):
                 if format_specifier_count != argument_count:
                     print("{}: Expected {} argument(s) after format string but found {} argument(s): {}".format(
                         f.name, format_specifier_count, argument_count, relevant_function_call_str))
+                    errors += 1
                     continue
-
+    return 1 if errors else 0
 
 if __name__ == "__main__":
-    doctest.testmod()
-    main(sys.argv[1:])
+    if len(sys.argv) != 2:
+        sys.exit(doctest.testmod())
+    else:
+        sys.exit(main(sys.argv[1:]))

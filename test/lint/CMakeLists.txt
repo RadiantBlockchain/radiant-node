@@ -14,6 +14,7 @@ TESTS
 	lint-boost-dependencies.sh
 	lint-circular-dependencies.sh
 	lint-cpp.sh
+	lint-format-strings.sh
 	lint-python-mutable-default-parameters.sh
 	lint-python-utf8-encoding.sh
 	lint-python.sh
