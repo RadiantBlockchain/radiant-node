@@ -80,7 +80,7 @@ def base58_to_byte(s, verify_checksum=True):
         assert c in chars
         digit = chars.index(c)
         n += digit
-    h = '%x' % n
+    h = '{:x}'.format(n)
     if len(h) % 2:
         h = '0' + h
     res = n.to_bytes((n.bit_length() + 7) // 8, 'big')

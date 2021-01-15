@@ -349,7 +349,7 @@ class ValidateblocktemplateTest(BitcoinTestFramework):
             h2 = hexblk
             pos = random.randint(0, len(hexblk))
             val = random.randint(0, 15)
-            h3 = h2[:pos] + ('%x' % val) + h2[pos + 1:]
+            h3 = h2[:pos] + ('{:x}'.format(val)) + h2[pos + 1:]
             try:
                 self.nodes[0].validateblocktemplate(h3)
             except JSONRPCException as e:
