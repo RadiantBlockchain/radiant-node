@@ -8,6 +8,9 @@ edit_uri: ""
 
 docs_dir: files-for-mkdocs
 
+markdown_extensions:
+  - pymdownx.superfences
+
 theme:
     name: material
     logo: doc/images/logo.svg
