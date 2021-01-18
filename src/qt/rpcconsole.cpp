@@ -24,12 +24,6 @@
 #include <util/strencodings.h>
 #include <util/system.h>
 
-#ifdef ENABLE_WALLET
-#include <wallet/wallet.h>
-
-#include <db_cxx.h>
-#endif
-
 #include <QKeyEvent>
 #include <QMenu>
 #include <QMessageBox>
@@ -549,13 +543,6 @@ RPCConsole::RPCConsole(interfaces::Node &node,
     ui->WalletSelector->setVisible(false);
     ui->WalletSelectorLabel->setVisible(false);
 
-// set library version labels
-#ifdef ENABLE_WALLET
-    ui->berkeleyDBVersion->setText(DbEnv::version(nullptr, nullptr, nullptr));
-#else
-    ui->label_berkeleyDBVersion->hide();
-    ui->berkeleyDBVersion->hide();
-#endif
     // Register RPC timer interface
     rpcTimerInterface = new QtRPCTimerInterface();
     // avoid accidentally overwriting an existing, non QTThread
@@ -770,7 +757,6 @@ void RPCConsole::setClientModel(ClientModel *model) {
         showOrHideBanTableIfRequired();
 
         // Provide initial values
-        ui->clientVersion->setText(model->formatFullVersion());
         ui->clientUserAgent->setText(model->formatSubVersion());
         ui->dataDir->setText(model->dataDir());
         ui->blocksDir->setText(model->blocksDir());
