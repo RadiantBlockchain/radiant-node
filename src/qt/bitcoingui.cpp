@@ -259,7 +259,7 @@ void BitcoinGUI::createActions() {
 
     sendCoinsMenuAction =
         new QAction(platformStyle->TextColorIcon(":/icons/send"),
-                    sendCoinsAction->text(), this);
+                    sendCoinsAction->text() + "...", this);
     sendCoinsMenuAction->setStatusTip(sendCoinsAction->statusTip());
     sendCoinsMenuAction->setToolTip(sendCoinsMenuAction->statusTip());
 
@@ -277,7 +277,7 @@ void BitcoinGUI::createActions() {
 
     receiveCoinsMenuAction =
         new QAction(platformStyle->TextColorIcon(":/icons/receiving_addresses"),
-                    receiveCoinsAction->text(), this);
+                    receiveCoinsAction->text() + "...", this);
     receiveCoinsMenuAction->setStatusTip(receiveCoinsAction->statusTip());
     receiveCoinsMenuAction->setToolTip(receiveCoinsMenuAction->statusTip());
 
