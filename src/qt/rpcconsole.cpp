@@ -993,16 +993,10 @@ void RPCConsole::setNumBlocks(int count, const QDateTime &blockDate, const QStri
     }
 }
 
-void RPCConsole::setMempoolSize(long numberOfTxs, size_t dynUsage) {
-    ui->mempoolNumberTxs->setText(QString::number(numberOfTxs));
-
-    if (dynUsage < 1000000) {
-        ui->mempoolSize->setText(QString::number(dynUsage / 1000.0, 'f', 2) +
-                                 " KB");
-    } else {
-        ui->mempoolSize->setText(QString::number(dynUsage / 1000000.0, 'f', 2) +
-                                 " MB");
-    }
+void RPCConsole::setMempoolSize(size_t count, size_t totalSize, size_t dynamicUsage) {
+    ui->mempoolNumberTxs->setText(QString::number(count));
+    ui->mempoolSize->setText(GUIUtil::formatBytes(totalSize) +
+                             " (" + tr("Memory usage:") + " " + GUIUtil::formatBytes(dynamicUsage) + ")");
 }
 
 void RPCConsole::on_lineEdit_returnPressed() {

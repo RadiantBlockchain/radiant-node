@@ -1,4 +1,5 @@
 // Copyright (c) 2011-2019 The Bitcoin Core developers
+// Copyright (c) 2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -104,8 +105,10 @@ static void initTranslations(QTranslator &qtTranslatorBase,
     QApplication::removeTranslator(&translator);
 
     // Get desired locale (e.g. "de_DE")
-    // 1) System default language
     QString lang_territory = GetLangTerritory();
+
+    // Set Qt's global locale, e.g. to get correct number notation.
+    QLocale::setDefault(QLocale(lang_territory));
 
     // Convert to "de" only by truncating "_DE"
     QString lang = lang_territory;

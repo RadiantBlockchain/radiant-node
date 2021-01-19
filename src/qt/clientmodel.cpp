@@ -94,8 +94,7 @@ int64_t ClientModel::getHeaderTipTime() const {
 void ClientModel::updateTimer() {
     // no locking required at this point
     // the following calls will acquire the required lock
-    Q_EMIT mempoolSizeChanged(m_node.getMempoolSize(),
-                              m_node.getMempoolDynamicUsage());
+    Q_EMIT mempoolSizeChanged(m_node.getMempoolSize(), m_node.getMempoolTotalTxSize(), m_node.getMempoolDynamicUsage());
     Q_EMIT bytesChanged(m_node.getTotalBytesRecv(), m_node.getTotalBytesSent());
 }
 

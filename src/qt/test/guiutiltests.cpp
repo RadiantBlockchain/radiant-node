@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Bitcoin developers
+// Copyright (c) 2017-2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -50,4 +50,42 @@ void GUIUtilTests::toCurrentEncodingTest() {
             cashaddr_pubkey);
     QVERIFY(GUIUtil::convertToCashAddr(params, base58_pubkey) ==
             cashaddr_pubkey);
+}
+
+void GUIUtilTests::formatBytesTest() {
+    QLocale::setDefault(QLocale("en_US"));
+    QVERIFY(GUIUtil::formatBytes(            0) == "0 B");
+    QVERIFY(GUIUtil::formatBytes(            1) == "1 B");
+    QVERIFY(GUIUtil::formatBytes(          999) == "999 B");
+    QVERIFY(GUIUtil::formatBytes(        1'000) == "1 kB");
+    QVERIFY(GUIUtil::formatBytes(        1'999) == "1 kB");
+    QVERIFY(GUIUtil::formatBytes(        2'000) == "2 kB");
+    QVERIFY(GUIUtil::formatBytes(      999'000) == "999 kB");
+    QVERIFY(GUIUtil::formatBytes(    1'000'000) == "1.0 MB");
+    QVERIFY(GUIUtil::formatBytes(    1'099'999) == "1.0 MB");
+    QVERIFY(GUIUtil::formatBytes(    1'100'000) == "1.1 MB");
+    QVERIFY(GUIUtil::formatBytes(    1'999'999) == "1.9 MB");
+    QVERIFY(GUIUtil::formatBytes(    2'000'000) == "2.0 MB");
+    QVERIFY(GUIUtil::formatBytes(  999'999'999) == "999.9 MB");
+    QVERIFY(GUIUtil::formatBytes(1'000'000'000) == "1.00 GB");
+    QVERIFY(GUIUtil::formatBytes(1'009'999'999) == "1.00 GB");
+    QVERIFY(GUIUtil::formatBytes(1'010'000'000) == "1.01 GB");
+    QVERIFY(GUIUtil::formatBytes(1'099'999'999) == "1.09 GB");
+    QVERIFY(GUIUtil::formatBytes(1'100'000'000) == "1.10 GB");
+    QVERIFY(GUIUtil::formatBytes(1'999'999'999) == "1.99 GB");
+    QVERIFY(GUIUtil::formatBytes(2'000'000'000) == "2.00 GB");
+    QLocale::setDefault(QLocale("de_DE"));
+    QVERIFY(GUIUtil::formatBytes(    1'000'000) == "1,0 MB");
+    QVERIFY(GUIUtil::formatBytes(    1'099'999) == "1,0 MB");
+    QVERIFY(GUIUtil::formatBytes(    1'100'000) == "1,1 MB");
+    QVERIFY(GUIUtil::formatBytes(    1'999'999) == "1,9 MB");
+    QVERIFY(GUIUtil::formatBytes(    2'000'000) == "2,0 MB");
+    QVERIFY(GUIUtil::formatBytes(  999'999'999) == "999,9 MB");
+    QVERIFY(GUIUtil::formatBytes(1'000'000'000) == "1,00 GB");
+    QVERIFY(GUIUtil::formatBytes(1'009'999'999) == "1,00 GB");
+    QVERIFY(GUIUtil::formatBytes(1'010'000'000) == "1,01 GB");
+    QVERIFY(GUIUtil::formatBytes(1'099'999'999) == "1,09 GB");
+    QVERIFY(GUIUtil::formatBytes(1'100'000'000) == "1,10 GB");
+    QVERIFY(GUIUtil::formatBytes(1'999'999'999) == "1,99 GB");
+    QVERIFY(GUIUtil::formatBytes(2'000'000'000) == "2,00 GB");
 }

@@ -96,7 +96,7 @@ private:
 Q_SIGNALS:
     void numConnectionsChanged(int count);
     void numBlocksChanged(int count, const QDateTime &blockDate, const QString &blockHash, double nVerificationProgress, bool header);
-    void mempoolSizeChanged(long count, size_t mempoolSizeInBytes);
+    void mempoolSizeChanged(size_t count, size_t totalSize, size_t dynamicUsage);
     void networkActiveChanged(bool networkActive);
     void alertsChanged(const QString &warnings);
     void bytesChanged(quint64 totalBytesIn, quint64 totalBytesOut);
