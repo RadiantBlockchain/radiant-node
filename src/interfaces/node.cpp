@@ -181,6 +181,7 @@ namespace {
             return g_connman ? g_connman->GetTotalBytesSent() : 0;
         }
         size_t getMempoolSize() override { return g_mempool.size(); }
+        size_t getMempoolTotalTxSize() override { return g_mempool.GetTotalTxSize(); }
         size_t getMempoolDynamicUsage() override {
             return g_mempool.DynamicMemoryUsage();
         }

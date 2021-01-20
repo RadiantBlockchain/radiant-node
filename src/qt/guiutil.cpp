@@ -1,4 +1,5 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
+// Copyright (c) 2020-2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -956,22 +957,20 @@ QString formatNiceTimeOffset(qint64 secs) {
 }
 
 QString formatBytes(uint64_t bytes) {
-    if (bytes < 1000) {
-        return QString("%1 B").arg(bytes);
+    if (bytes < 1'000) {
+        return QString::number(bytes) + " B";
     }
-    if (bytes < 1000 * 1000) {
-        return QString("%1 kB").arg(bytes / 1000);
+    if (bytes < 1'000'000) {
+        return QString::number(bytes / 1'000) + " kB";
     }
-    if (bytes < 1000 * 1000 * 1000) {
-        return QString("%1 MB").arg(bytes / 1000 / 1000);
+    if (bytes < 1'000'000'000) {
+        return QString::number(bytes / 1'000'000) + QLocale().decimalPoint() + QString::number(bytes % 1'000'000 / 100'000) + " MB";
     }
-
-    quint64 rest = bytes % (1000 * 1000 * 1000);
-    QString mb = QString::number(rest);
-    while (mb.length() < 9) {
-        mb = QString("0") + mb;
+    QString decimals = QString::number(bytes % 1'000'000'000 / 10'000'000);
+    if (decimals.length() < 2) {
+        decimals = QString("0") + decimals;
     }
-    return QString("%1.%2 GB").arg(bytes / 1000 / 1000 / 1000).arg(mb.left(2));
+    return QString::number(bytes / 1'000'000'000) + QLocale().decimalPoint() + decimals + " GB";
 }
 
 bool ClickableLabel::hasPixmap() const {

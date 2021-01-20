@@ -482,10 +482,10 @@ private:
     unsigned int nTransactionsUpdated;
 
     //! sum of all mempool tx's sizes.
-    uint64_t totalTxSize;
+    size_t totalTxSize;
     //! sum of dynamic memory usage of all the map elements (NOT the maps
     //! themselves)
-    uint64_t cachedInnerUsage;
+    size_t cachedInnerUsage;
 
     mutable int64_t lastRollingFeeUpdate;
     mutable bool blockSinceLastRollingFeeBump;
@@ -777,7 +777,7 @@ public:
         return mapTx.size();
     }
 
-    uint64_t GetTotalTxSize() const {
+    auto GetTotalTxSize() const {
         LOCK(cs);
         return totalTxSize;
     }

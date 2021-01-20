@@ -131,8 +131,11 @@ public:
     //! Get total bytes sent.
     virtual int64_t getTotalBytesSent() = 0;
 
-    //! Get mempool size.
+    //! Get mempool size (number of transactions).
     virtual size_t getMempoolSize() = 0;
+
+    //! Get mempool total transaction size.
+    virtual size_t getMempoolTotalTxSize() = 0;
 
     //! Get mempool dynamic usage.
     virtual size_t getMempoolDynamicUsage() = 0;
