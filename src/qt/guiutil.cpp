@@ -50,6 +50,7 @@
 #include <QFont>
 #include <QKeyEvent>
 #include <QLineEdit>
+#include <QLocale>
 #include <QMouseEvent>
 #include <QSettings>
 #include <QTextDocument> // for Qt::mightBeRichText
@@ -72,12 +73,25 @@ void ForceActivation();
 namespace GUIUtil {
 
 QString dateTimeStr(const QDateTime &date) {
-    return date.date().toString(Qt::SystemLocaleShortDate) + QString(" ") +
+    return date.date().toString(Qt::DefaultLocaleShortDate) + QString(" ") +
            date.toString("hh:mm");
 }
 
 QString dateTimeStr(qint64 nTime) {
-    return dateTimeStr(QDateTime::fromTime_t((qint32)nTime));
+    return dateTimeStr(QDateTime::fromSecsSinceEpoch(nTime));
+}
+
+QString dateTimeStrLong(const QDateTime &dateTime) {
+    const QLocale loc;
+    QString format = loc.dateTimeFormat(QLocale::FormatType::LongFormat);
+    // To save a bit of space, prefer shorter day names for our long string format, e.g.:
+    // "Thursday, January 21, 2021 9:36:29 AM EST" -> "Thu, January 21, 2021 9:36:29 AM EST"
+    format.replace("dddd", "ddd");
+    return loc.toString(dateTime, format);
+}
+
+QString dateTimeStrLong(qint64 nTime) {
+    return dateTimeStrLong(QDateTime::fromSecsSinceEpoch(nTime));
 }
 
 QFont fixedPitchFont() {

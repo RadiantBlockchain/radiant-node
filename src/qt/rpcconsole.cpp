@@ -645,7 +645,7 @@ void RPCConsole::setClientModel(ClientModel *model) {
                 &RPCConsole::setNumConnections);
 
         interfaces::Node &node = clientModel->node();
-        setNumBlocks(node.getNumBlocks(), QDateTime::fromTime_t(node.getLastBlockTime()),
+        setNumBlocks(node.getNumBlocks(), QDateTime::fromSecsSinceEpoch(node.getLastBlockTime()),
                      QString::fromStdString(node.getLastBlockHash().ToString()), node.getVerificationProgress(), false);
         connect(model, &ClientModel::numBlocksChanged, this, &RPCConsole::setNumBlocks);
 
@@ -988,7 +988,7 @@ void RPCConsole::setNetworkActive(bool networkActive) {
 void RPCConsole::setNumBlocks(int count, const QDateTime &blockDate, const QString& blockHash, double nVerificationProgress, bool headers) {
     if (!headers) {
         ui->numberOfBlocks->setText(QString::number(count));
-        ui->lastBlockTime->setText(blockDate.toString());
+        ui->lastBlockTime->setText(GUIUtil::dateTimeStrLong(blockDate));
         ui->lastBlockHash->setText(blockHash);
     }
 }
