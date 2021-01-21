@@ -1,4 +1,5 @@
 // Copyright (c) 2011-2015 The Bitcoin Core developers
+// Copyright (c) 2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -26,7 +27,7 @@ class BitcoinAmountField : public QWidget {
 public:
     explicit BitcoinAmountField(QWidget *parent = nullptr);
 
-    Amount value(bool *value = nullptr) const;
+    Amount value(bool *valid = nullptr) const;
     void setValue(const Amount value);
 
     /** Set single step in satoshis **/
@@ -60,7 +61,7 @@ Q_SIGNALS:
     void valueChanged();
 
 protected:
-    /** Intercept focus-in event and ',' key presses */
+    /** Intercept focus-in event and decimal separator key presses */
     bool eventFilter(QObject *object, QEvent *event) override;
 
 private:
