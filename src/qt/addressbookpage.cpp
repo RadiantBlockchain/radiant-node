@@ -95,10 +95,10 @@ AddressBookPage::AddressBookPage(const PlatformStyle *platformStyle, Mode _mode,
         case ForEditing:
             switch (tab) {
                 case SendingTab:
-                    setWindowTitle(tr("Sending addresses"));
+                    setWindowTitle(tr("Sending Addresses"));
                     break;
                 case ReceivingTab:
-                    setWindowTitle(tr("Receiving addresses"));
+                    setWindowTitle(tr("Receiving Addresses"));
                     break;
             }
             break;

@@ -364,19 +364,19 @@ void BitcoinGUI::createActions() {
         tr("Change the passphrase used for wallet encryption"));
     signMessageAction =
         new QAction(platformStyle->TextColorIcon(":/icons/edit"),
-                    tr("Sign &message..."), this);
+                    tr("Sign &Message..."), this);
     signMessageAction->setStatusTip(
         tr("Sign messages with your Bitcoin addresses to prove you own them"));
     verifyMessageAction =
         new QAction(platformStyle->TextColorIcon(":/icons/verify"),
-                    tr("&Verify message..."), this);
+                    tr("&Verify Message..."), this);
     verifyMessageAction->setStatusTip(
         tr("Verify messages to ensure they were signed with specified Bitcoin "
            "addresses"));
 
     openRPCConsoleAction =
         new QAction(platformStyle->TextColorIcon(":/icons/debugwindow"),
-                    tr("No&de window"), this);
+                    tr("No&de Window"), this);
     openRPCConsoleAction->setStatusTip(
         tr("Open node debugging and diagnostic console"));
     // initially disable the debug window menu item
@@ -385,12 +385,12 @@ void BitcoinGUI::createActions() {
 
     usedSendingAddressesAction =
         new QAction(platformStyle->TextColorIcon(":/icons/address-book"),
-                    tr("&Sending addresses"), this);
+                    tr("&Sending Addresses"), this);
     usedSendingAddressesAction->setStatusTip(
         tr("Show the list of used sending addresses and labels"));
     usedReceivingAddressesAction =
         new QAction(platformStyle->TextColorIcon(":/icons/address-book"),
-                    tr("&Receiving addresses"), this);
+                    tr("&Receiving Addresses"), this);
     usedReceivingAddressesAction->setStatusTip(
         tr("Show the list of used receiving addresses and labels"));
 
