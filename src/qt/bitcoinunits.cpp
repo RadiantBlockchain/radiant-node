@@ -1,4 +1,5 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
+// Copyright (c) 2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -6,6 +7,7 @@
 
 #include <primitives/transaction.h>
 
+#include <QLocale>
 #include <QStringList>
 
 BitcoinUnits::BitcoinUnits(QObject *parent)
@@ -103,10 +105,25 @@ int BitcoinUnits::decimals(int unit) {
     }
 }
 
+bool BitcoinUnits::decimalSeparatorIsComma() {
+    // Considering that:
+    // * bitcoin is an international currency;
+    // * Bitcoin-Qt uses only spaces as group separator, as recommended by SI;
+    // * Bitcoin-Qt traditionally displays amounts with the dot as decimal separator;
+    // * Bitcoin-Qt traditionally accepts both dots and commas as decimal separators in input amounts;
+    // * some locales use dots as group separator rather than decimal separator;
+    // * some locales have different decimal separators for currency amounts and other numbers;
+    // * one cannot retrieve the decimal separator for currency amounts from QLocale;
+    // * decimal separators other than dot and comma are rare, especially on computers;
+    // this function suggests the dot as decimal separator for displaying amounts,
+    // with comma as the fallback if a reader could mistake the dot for a group separator.
+    return QLocale().groupSeparator() == ".";
+}
+
 QString BitcoinUnits::format(int unit, const Amount nIn, bool fPlus,
                              SeparatorStyle separators) {
     // Note: not using straight sprintf here because we do NOT want
-    // localized number formatting.
+    // standard localized number formatting.
     if (!valid(unit)) {
         // Refuse to format invalid unit
         return QString();
@@ -139,7 +156,7 @@ QString BitcoinUnits::format(int unit, const Amount nIn, bool fPlus,
         qint64 remainder = n_abs % coin;
         QString remainder_str =
             QString::number(remainder).rightJustified(num_decimals, '0');
-        return quotient_str + QString(".") + remainder_str;
+        return quotient_str + (decimalSeparatorIsComma() ? ',' : '.') + remainder_str;
     } else {
         return quotient_str;
     }
@@ -167,19 +184,24 @@ QString BitcoinUnits::formatHtmlWithUnit(int unit, const Amount amount,
     return QString("<span style='white-space: nowrap;'>%1</span>").arg(str);
 }
 
-bool BitcoinUnits::parse(int unit, const QString &value, Amount *val_out) {
+std::optional<Amount> BitcoinUnits::parse(int unit, bool allowComma, const QString& value) {
     if (!valid(unit) || value.isEmpty()) {
         // Refuse to parse invalid unit or empty string
-        return false;
+        return std::nullopt;
     }
     int num_decimals = decimals(unit);
 
     // Ignore spaces and thin spaces when parsing
-    QStringList parts = removeSpaces(value).split(".");
+    QString trimmed = removeSpaces(value);
+    // If comma is allowed, accept both comma and dot as decimal separators
+    if (allowComma) {
+        trimmed.replace(',', '.');
+    }
+    QStringList parts = trimmed.split('.');
 
     if (parts.size() > 2) {
-        // More than one dot
-        return false;
+        // More than one decimal separator
+        return std::nullopt;
     }
     QString whole = parts[0];
     QString decimals;
@@ -189,20 +211,21 @@ bool BitcoinUnits::parse(int unit, const QString &value, Amount *val_out) {
     }
     if (decimals.size() > num_decimals) {
         // Exceeds max precision
-        return false;
+        return std::nullopt;
     }
-    bool ok = false;
-    QString str = whole + decimals.leftJustified(num_decimals, '0');
 
+    QString str = whole + decimals.leftJustified(num_decimals, '0');
     if (str.size() > 18) {
         // Longer numbers will exceed 63 bits
-        return false;
+        return std::nullopt;
     }
-    Amount retvalue(int64_t(str.toLongLong(&ok)) * SATOSHI);
-    if (val_out) {
-        *val_out = retvalue;
+    bool ok = false;
+    auto qint = str.toLongLong(&ok);
+    if (!ok) {
+        // String-to-integer conversion failed
+        return std::nullopt;
     }
-    return ok;
+    return int64_t(qint) * SATOSHI;
 }
 
 QString BitcoinUnits::getAmountColumnTitle(int unit) {
@@ -233,8 +256,4 @@ QVariant BitcoinUnits::data(const QModelIndex &index, int role) const {
         }
     }
     return QVariant();
-}
-
-Amount BitcoinUnits::maxMoney() {
-    return MAX_MONEY;
 }

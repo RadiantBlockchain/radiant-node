@@ -1,3 +1,7 @@
+// Copyright (c) 2021 The Bitcoin developers
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #include <qt/test/util.h>
 #include <qt/test/wallettests.h>
 
@@ -105,6 +109,7 @@ QModelIndex FindTx(const QAbstractItemModel &model, const uint256 &txid) {
 //     src/qt/test/test_bitcoin-qt -platform windows  # Windows
 //     src/qt/test/test_bitcoin-qt -platform cocoa    # macOS
 void TestGUI() {
+    QLocale::setDefault(QLocale("en_US"));
     // Set up wallet and chain with 105 blocks (5 mature blocks for spending).
     TestChain100Setup test;
     for (int i = 0; i < 5; ++i) {

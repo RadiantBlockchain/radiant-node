@@ -1,4 +1,5 @@
 // Copyright (c) 2011-2015 The Bitcoin Core developers
+// Copyright (c) 2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -36,10 +37,21 @@ public:
         if (text.isEmpty()) {
             return QValidator::Intermediate;
         }
+        // All spaces are ignored.
+        QString digits = BitcoinUnits::removeSpaces(text);
+        // Return Invalid for non-numeric characters - this will prevent them from being typed/pasted into the input field.
+        // Note the input field is intended for unsigned amounts only (in MoneyRange),
+        // so plus/minus signs are also rejected even though the amount parser can handle them.
+        for (int idx = 0; idx < digits.size(); ++idx) {
+            QChar chr = digits.at(idx);
+            if ((chr < '0' || chr > '9') && chr != '.' && chr != ',') {
+                return QValidator::Invalid;
+            }
+        }
+        // Also return Invalid if the digits do not form a parseable number.
+        // Otherwise return Intermediate so that fixup() is called on defocus.
         bool valid = false;
-        parse(text, &valid);
-        // Make sure we return Intermediate so that fixup() is called on
-        // defocus.
+        parse(digits, &valid);
         return valid ? QValidator::Intermediate : QValidator::Invalid;
     }
 
@@ -67,7 +79,7 @@ public:
         bool valid = false;
         Amount val = value(&valid);
         val = val + steps * singleStep;
-        val = qMin(qMax(val, Amount::zero()), BitcoinUnits::maxMoney());
+        val = qMin(qMax(val, Amount::zero()), MAX_MONEY);
         setValue(val);
     }
 
@@ -93,7 +105,7 @@ public:
             int h = lineEdit()->minimumSizeHint().height();
             int w = GUIUtil::TextWidth(
                 fm, BitcoinUnits::format(BitcoinUnits::BCH,
-                                         BitcoinUnits::maxMoney(), false,
+                                         MAX_MONEY, false,
                                          BitcoinUnits::separatorAlways));
             // Cursor blinking space.
             w += 2;
@@ -139,30 +151,27 @@ private:
      * @note Must return 0 if !valid.
      */
     Amount parse(const QString &text, bool *valid_out = nullptr) const {
-        Amount val = Amount::zero();
-        bool valid = BitcoinUnits::parse(currentUnit, text, &val);
-        if (valid) {
-            if (val < Amount::zero() || val > BitcoinUnits::maxMoney()) {
-                valid = false;
-            }
-        }
+        auto val = BitcoinUnits::parse(currentUnit, true, text);
+        bool valid = val && MoneyRange(*val);
         if (valid_out) {
             *valid_out = valid;
         }
-        return valid ? val : Amount::zero();
+        return valid ? *val : Amount::zero();
     }
 
 protected:
     bool event(QEvent *event) override {
-        if (event->type() == QEvent::KeyPress ||
-            event->type() == QEvent::KeyRelease) {
+        if (event->type() == QEvent::KeyPress || event->type() == QEvent::KeyRelease) {
             QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-            if (keyEvent->key() == Qt::Key_Comma) {
-                // Translate a comma into a period.
-                QKeyEvent periodKeyEvent(
-                    event->type(), Qt::Key_Period, keyEvent->modifiers(), ".",
-                    keyEvent->isAutoRepeat(), keyEvent->count());
-                return QAbstractSpinBox::event(&periodKeyEvent);
+            // Translate a comma into a period or vice versa, depending on locale.
+            bool preferComma = BitcoinUnits::decimalSeparatorIsComma();
+            if (keyEvent->key() == (preferComma ? Qt::Key_Period : Qt::Key_Comma)) {
+                QKeyEvent replacementKeyEvent(event->type(),
+                                              preferComma ? Qt::Key_Comma : Qt::Key_Period,
+                                              keyEvent->modifiers(),
+                                              preferComma ? "," : ".",
+                                              keyEvent->isAutoRepeat(), keyEvent->count());
+                return QAbstractSpinBox::event(&replacementKeyEvent);
             }
         }
         return QAbstractSpinBox::event(event);
@@ -185,7 +194,7 @@ protected:
             if (val > Amount::zero()) {
                 rv |= StepDownEnabled;
             }
-            if (val < BitcoinUnits::maxMoney()) {
+            if (val < MAX_MONEY) {
                 rv |= StepUpEnabled;
             }
         }

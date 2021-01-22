@@ -1,4 +1,5 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
+// Copyright (c) 2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -379,10 +380,8 @@ void TransactionView::changedAmount() {
         return;
     }
 
-    Amount amount_parsed = Amount::zero();
-    if (BitcoinUnits::parse(model->getOptionsModel()->getDisplayUnit(),
-                            amountWidget->text(), &amount_parsed)) {
-        transactionProxyModel->setMinAmount(amount_parsed);
+    if (auto amount_parsed = BitcoinUnits::parse(model->getOptionsModel()->getDisplayUnit(), true, amountWidget->text())) {
+        transactionProxyModel->setMinAmount(*amount_parsed);
     } else {
         transactionProxyModel->setMinAmount(Amount::zero());
     }

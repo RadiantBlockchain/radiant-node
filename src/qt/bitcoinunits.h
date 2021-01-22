@@ -1,4 +1,5 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
+// Copyright (c) 2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -6,6 +7,8 @@
 #define BITCOIN_QT_BITCOINUNITS_H
 
 #include <amount.h>
+
+#include <optional>
 
 #include <QAbstractListModel>
 #include <QString>
@@ -78,7 +81,10 @@ public:
     static qint64 factor(int unit);
     //! Number of decimals left
     static int decimals(int unit);
-    //! Format as string
+    //! Returns whether the locale-dependent decimal separator for currency amounts is a comma (true) or a dot (false).
+    //! Use for output formatting only - input can accept both dot and comma.
+    static bool decimalSeparatorIsComma();
+    //! Format as string (locale-dependent decimal separator)
     static QString format(int unit, const Amount amount, bool plussign = false,
                           SeparatorStyle separators = separatorStandard);
     //! Format as string (with unit)
@@ -90,7 +96,7 @@ public:
     formatHtmlWithUnit(int unit, const Amount amount, bool plussign = false,
                        SeparatorStyle separators = separatorStandard);
     //! Parse string to coin amount
-    static bool parse(int unit, const QString &value, Amount *val_out);
+    static std::optional<Amount> parse(int unit, bool allowComma, const QString& value);
     //! Gets title for amount column including current display unit if
     //! optionsModel reference available */
     static QString getAmountColumnTitle(int unit);
@@ -107,6 +113,7 @@ public:
     QVariant data(const QModelIndex &index, int role) const override;
     ///@}
 
+    [[nodiscard]]
     static QString removeSpaces(QString text) {
         text.remove(' ');
         text.remove(QChar(THIN_SP_CP));
@@ -115,9 +122,6 @@ public:
 #endif
         return text;
     }
-
-    //! Return maximum number of base units (Satoshis)
-    static Amount maxMoney();
 
 private:
     QList<BitcoinUnits::Unit> unitlist;
