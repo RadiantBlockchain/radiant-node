@@ -59,17 +59,16 @@ QString BitcoinUnits::shortName(int unit) {
 }
 
 QString BitcoinUnits::description(int unit) {
+    constexpr auto thinUtf8 = BitcoinSpaces::thinUtf8;
     switch (unit) {
         case BCH:
             return QString("Bitcoins");
         case mBCH:
-            return QString("Milli-Bitcoins (1 / 1" THIN_SP_UTF8 "000)");
+            return QString("Milli-Bitcoins (1 / 1") + thinUtf8 + "000)";
         case uBCH:
-            return QString("Micro-Bitcoins (1 / 1" THIN_SP_UTF8
-                           "000" THIN_SP_UTF8 "000)");
+            return QString("Micro-Bitcoins (1 / 1") + thinUtf8 + "000" + thinUtf8 + "000)";
         case SAT:
-            return QString("Satoshi (sat) (1 / 100" THIN_SP_UTF8
-                           "000" THIN_SP_UTF8 "000)");
+            return QString("Satoshi (sat) (1 / 100") + thinUtf8 + "000" + thinUtf8 + "000)";
         default:
             return QString("???");
     }
@@ -137,12 +136,11 @@ QString BitcoinUnits::format(int unit, const Amount nIn, bool fPlus,
 
     // Use SI-style thin space separators as these are locale independent and
     // can't be confused with the decimal marker.
-    QChar thin_sp(THIN_SP_CP);
     int q_size = quotient_str.size();
     if (separators == separatorAlways ||
         (separators == separatorStandard && q_size > 4)) {
         for (int i = 3; i < q_size; i += 3) {
-            quotient_str.insert(q_size - i, thin_sp);
+            quotient_str.insert(q_size - i, BitcoinSpaces::thin);
         }
     }
 
@@ -180,7 +178,7 @@ QString BitcoinUnits::formatHtmlWithUnit(int unit, const Amount amount,
                                          bool plussign,
                                          SeparatorStyle separators) {
     QString str(formatWithUnit(unit, amount, plussign, separators));
-    str.replace(QChar(THIN_SP_CP), QString(THIN_SP_HTML));
+    str.replace(BitcoinSpaces::thin, QString(BitcoinSpaces::thinHtml));
     return QString("<span style='white-space: nowrap;'>%1</span>").arg(str);
 }
 
@@ -189,7 +187,7 @@ std::optional<Amount> BitcoinUnits::parse(int unit, bool allowComma, const QStri
         // Refuse to parse invalid unit or empty string
         return std::nullopt;
     }
-    int num_decimals = decimals(unit);
+    const int num_decimals = decimals(unit);
 
     // Ignore spaces and thin spaces when parsing
     QString trimmed = removeSpaces(value);
@@ -197,13 +195,13 @@ std::optional<Amount> BitcoinUnits::parse(int unit, bool allowComma, const QStri
     if (allowComma) {
         trimmed.replace(',', '.');
     }
-    QStringList parts = trimmed.split('.');
+    const QStringList parts = trimmed.split('.');
 
     if (parts.size() > 2) {
         // More than one decimal separator
         return std::nullopt;
     }
-    QString whole = parts[0];
+    const QString& whole = parts[0];
     QString decimals;
 
     if (parts.size() > 1) {
@@ -214,18 +212,18 @@ std::optional<Amount> BitcoinUnits::parse(int unit, bool allowComma, const QStri
         return std::nullopt;
     }
 
-    QString str = whole + decimals.leftJustified(num_decimals, '0');
+    const QString str = whole + decimals.leftJustified(num_decimals, '0');
     if (str.size() > 18) {
         // Longer numbers will exceed 63 bits
         return std::nullopt;
     }
     bool ok = false;
-    auto qint = str.toLongLong(&ok);
+    const int64_t sats = int64_t(str.toLongLong(&ok));
     if (!ok) {
         // String-to-integer conversion failed
         return std::nullopt;
     }
-    return int64_t(qint) * SATOSHI;
+    return sats * SATOSHI;
 }
 
 QString BitcoinUnits::getAmountColumnTitle(int unit) {

@@ -196,6 +196,7 @@ BITCOIN_QT_H = \
   qt/bitcoinamountfield.h \
   qt/bitcoin.h \
   qt/bitcoingui.h \
+  qt/bitcoinspaces.h \
   qt/bitcoinunits.h \
   qt/clientmodel.h \
   qt/coincontroldialog.h \

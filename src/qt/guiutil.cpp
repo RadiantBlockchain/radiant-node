@@ -159,23 +159,21 @@ bool parseBitcoinURI(const QString &scheme, const QUrl &uri,
     }
     rv.amount = Amount::zero();
 
-    QUrlQuery uriQuery(uri);
-    QList<QPair<QString, QString>> items = uriQuery.queryItems();
-    for (QList<QPair<QString, QString>>::iterator i = items.begin();
-         i != items.end(); i++) {
+    const QUrlQuery uriQuery(uri);
+    for (auto & [key, value] : uriQuery.queryItems()) {
         bool required = false;
-        if (i->first.startsWith("req-")) {
-            i->first.remove(0, 4);
+        if (key.startsWith("req-")) {
+            key.remove(0, 4);
             required = true;
         }
 
-        if (i->first == "label") {
-            rv.label = i->second;
-        } else if (i->first == "message") {
-            rv.message = i->second;
-        } else if (i->first == "amount") {
-            if (!i->second.isEmpty()) {
-                auto amount = BitcoinUnits::parse(BitcoinUnits::BCH, false, i->second);
+        if (key == "label") {
+            rv.label = value;
+        } else if (key == "message") {
+            rv.message = value;
+        } else if (key == "amount") {
+            if (!value.isEmpty()) {
+                const auto amount = BitcoinUnits::parse(BitcoinUnits::BCH, false, value);
                 if (!amount) {
                     return false;
                 }
