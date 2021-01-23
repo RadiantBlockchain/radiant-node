@@ -1,4 +1,5 @@
 // Copyright (c) 2016 The Bitcoin Core developers
+// Copyright (c) 2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -101,8 +102,7 @@ void ModalOverlay::tipUpdate(int count, const QDateTime &blockDate,
             }
         }
         // show progress increase per hour
-        ui->progressIncreasePerH->setText(
-            QString::number(progressPerHour * 100, 'f', 2) + "%");
+        ui->progressIncreasePerH->setText(QLocale().toString(progressPerHour * 100, 'f', 2) + "%");
 
         // show expected remaining time
         if (remainingMSecs >= 0) {
@@ -123,8 +123,7 @@ void ModalOverlay::tipUpdate(int count, const QDateTime &blockDate,
     ui->newestBlockDate->setText(blockDate.toString());
 
     // show the percentage done according to nVerificationProgress
-    ui->percentageProgress->setText(
-        QString::number(nVerificationProgress * 100, 'f', 2) + "%");
+    ui->percentageProgress->setText(QLocale().toString(nVerificationProgress * 100, 'f', 2) + "%");
     ui->progressBar->setValue(nVerificationProgress * 100);
 
     if (!bestHeaderDate.isValid()) {

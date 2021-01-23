@@ -1,4 +1,5 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
+// Copyright (c) 2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -359,11 +360,7 @@ void SendCoinsDialog::on_sendButton_clicked() {
         questionString.append("</b>");
 
         // append transaction size
-        questionString.append(
-            " (" +
-            QString::number((double)currentTransaction.getTransactionSize() /
-                            1000) +
-            " kB): ");
+        questionString.append(" (" + tr("%1 bytes").arg(currentTransaction.getTransactionSize()) + "): ");
 
         // append transaction fee value
         questionString.append(
