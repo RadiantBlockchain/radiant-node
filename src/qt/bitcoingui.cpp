@@ -966,10 +966,7 @@ void BitcoinGUI::updateHeadersSyncProgressLabel() {
     if (estHeadersLeft > HEADER_HEIGHT_DELTA_SYNC) {
         progressBarLabel->setText(
             tr("Syncing Headers (%1%)...")
-                .arg(QString::number(100.0 /
-                                         (headersTipHeight + estHeadersLeft) *
-                                         headersTipHeight,
-                                     'f', 1)));
+                .arg(QLocale().toString(100.0 * headersTipHeight / (headersTipHeight + estHeadersLeft), 'f', 1)));
     }
 }
 
