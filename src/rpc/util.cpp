@@ -1,4 +1,5 @@
 // Copyright (c) 2017 The Bitcoin Core developers
+// Copyright (c) 2020-2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -130,13 +131,10 @@ struct Sections {
         m_sections.push_back(s);
     }
 
-    enum class OuterType {
-        ARR,
-        OBJ,
-        NAMED_ARG, // Only set on first recursion
-    };
-
-    void Push(const RPCArg& arg, const size_t current_indent = 5, const OuterType outer_type = OuterType::NAMED_ARG)
+    /**
+     * Recursive helper to translate an RPCArg into sections
+     */
+    void Push(const RPCArg& arg, const size_t current_indent = 5, const OuterType outer_type = OuterType::NONE)
     {
         const auto indent = std::string(current_indent, ' ');
         const auto indent_next = std::string(current_indent + 2, ' ');
@@ -146,7 +144,7 @@ struct Sections {
         case RPCArg::Type::NUM:
         case RPCArg::Type::AMOUNT:
         case RPCArg::Type::BOOL: {
-            if (outer_type == OuterType::NAMED_ARG) return; // Nothing more to do for non-recursive types on first recursion
+            if (outer_type == OuterType::NONE) return; // Nothing more to do for non-recursive types on first recursion
             auto left = indent;
             if (arg.m_type_str.size() != 0 && outer_type == OuterType::OBJ) {
                 left += "\"" + arg.m_name + "\": " + arg.m_type_str.at(0);
@@ -159,7 +157,7 @@ struct Sections {
         }
         case RPCArg::Type::OBJ:
         case RPCArg::Type::OBJ_USER_KEYS: {
-            const auto right = outer_type == OuterType::NAMED_ARG ? "" : arg.ToDescriptionString(/* implicitly_required */ outer_type == OuterType::ARR);
+            const auto right = outer_type == OuterType::NONE ? "" : arg.ToDescriptionString(/* implicitly_required */ outer_type == OuterType::ARR);
             PushSection({indent + "{", right});
             for (const auto& arg_inner : arg.m_inner) {
                 Push(arg_inner, current_indent + 2, OuterType::OBJ);
@@ -167,20 +165,20 @@ struct Sections {
             if (arg.m_type != RPCArg::Type::OBJ) {
                 PushSection({indent_next + "...", ""});
             }
-            PushSection({indent + "}" + (outer_type != OuterType::NAMED_ARG ? "," : ""), ""});
+            PushSection({indent + "}" + (outer_type != OuterType::NONE ? "," : ""), ""});
             break;
         }
         case RPCArg::Type::ARR: {
             auto left = indent;
             left += outer_type == OuterType::OBJ ? "\"" + arg.m_name + "\": " : "";
             left += "[";
-            const auto right = outer_type == OuterType::NAMED_ARG ? "" : arg.ToDescriptionString(/* implicitly_required */ outer_type == OuterType::ARR);
+            const auto right = outer_type == OuterType::NONE ? "" : arg.ToDescriptionString(/* implicitly_required */ outer_type == OuterType::ARR);
             PushSection({left, right});
             for (const auto& arg_inner : arg.m_inner) {
                 Push(arg_inner, current_indent + 2, OuterType::ARR);
             }
             PushSection({indent_next + "...", ""});
-            PushSection({indent + "]" + (outer_type != OuterType::NAMED_ARG ? "," : ""), ""});
+            PushSection({indent + "]" + (outer_type != OuterType::NONE ? "," : ""), ""});
             break;
         }
 
