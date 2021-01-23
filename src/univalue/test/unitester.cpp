@@ -1,5 +1,5 @@
 // Copyright 2014 BitPay Inc.
-// Copyright (c) 2020 The Bitcoin developers
+// Copyright (c) 2020-2021 The Bitcoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
@@ -21,7 +21,8 @@
 std::string srcdir(JSON_TEST_SRC);
 static bool test_failed = false;
 
-#define d_assert(expr) { if (!(expr)) { test_failed = true; fprintf(stderr, "%s failed\n", filename.c_str()); } }
+#define r_assert(expr) { if (!(expr)) { test_failed = true; fprintf(stderr, "%s read failed\n", filename.c_str()); } }
+#define w_assert(expr) { if (!(expr)) { test_failed = true; fprintf(stderr, "%s write failed\n", filename.c_str()); } }
 #define f_assert(expr) { if (!(expr)) { test_failed = true; fprintf(stderr, "%s failed\n", __func__); } }
 
 static std::string rtrim(std::string s)
@@ -44,14 +45,10 @@ static void runtest(const std::string& filename, const std::string& jdata)
         UniValue val;
         bool testResult = val.read(jdata);
 
-        if (wantPass) {
-            d_assert(testResult == true);
-            if (wantRoundTrip) {
-                std::string odata = UniValue::stringify(val, wantPrettyRoundTrip ? 4 : 0);
-                assert(odata == rtrim(jdata));
-            }
-        } else {
-            d_assert(testResult == false);
+        r_assert(testResult == wantPass);
+        if (wantRoundTrip) {
+            std::string odata = UniValue::stringify(val, wantPrettyRoundTrip ? 4 : 0);
+            w_assert(odata == rtrim(jdata));
         }
 }
 

@@ -190,7 +190,7 @@ UniValue::Array& UniValue::operator=(Array&& array) noexcept
     return values = std::move(array);
 }
 
-static std::optional<std::string> validateAndStripNumStr(std::string_view s)
+static std::optional<std::string> validateAndStripNumStr(const char* s)
 {
     std::optional<std::string> ret;
     // string must contain a number and no junk at the end
@@ -200,7 +200,7 @@ static std::optional<std::string> validateAndStripNumStr(std::string_view s)
     return ret;
 }
 
-void UniValue::setNumStr(std::string_view val_)
+void UniValue::setNumStr(const char* val_)
 {
     if (auto optStr = validateAndStripNumStr(val_)) {
         setNull();
