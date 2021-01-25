@@ -52,6 +52,7 @@ from test_framework.messages import (
     msg_extversion,
     NODE_NETWORK,
     sha256,
+    msg_dsproof
 )
 from test_framework.util import wait_until
 
@@ -80,7 +81,8 @@ MESSAGEMAP = {
     b"tx": msg_tx,
     b"verack": msg_verack,
     b"version": msg_version,
-    b"extversion": msg_extversion
+    b"extversion": msg_extversion,
+    b"dsproof-beta": msg_dsproof,
 }
 
 MAGIC_BYTES = {
@@ -338,7 +340,8 @@ class P2PInterface(P2PConnection):
                 command = message.command.decode('ascii')
                 self.message_count[command] += 1
                 self.last_message[command] = message
-                getattr(self, 'on_' + command)(message)
+                command_no_hyphens = command.replace('-', '')
+                getattr(self, 'on_' + command_no_hyphens)(message)
             except Exception:
                 print("ERROR delivering {} ({})".format(
                     repr(message), sys.exc_info()[0]))
@@ -370,6 +373,8 @@ class P2PInterface(P2PConnection):
     def on_getblocktxn(self, message): pass
 
     def on_getdata(self, message): pass
+
+    def on_dsproofbeta(self, message): pass
 
     def on_getheaders(self, message): pass
 
