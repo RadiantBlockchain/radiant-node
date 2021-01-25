@@ -519,7 +519,7 @@ public:
     Array& setArray() noexcept;
     Array& operator=(const Array& array);
     Array& operator=(Array&& array) noexcept;
-    void setNumStr(std::string_view val); // TODO: refactor to assign null on failure
+    void setNumStr(const char* val); // TODO: refactor to assign null on failure
     void operator=(short val);
     void operator=(int val);
     void operator=(long val);
@@ -773,8 +773,29 @@ public:
         return s;
     }
 
+    /**
+     * Parses a NUL-terminated JSON string.
+     *
+     * If valid JSON, a pointer to the terminating NUL of the JSON is returned, and the object state represents the read value.
+     * If invalid JSON, nullptr is returned, and the object is in a valid but unspecified state.
+     *
+     * (If the return value is cast to bool, the resulting boolean indicates success.)
+     *
+     * Compatible with the upstream UniValue API, although upstream simply returns a bool.
+     */
     [[nodiscard]]
-    bool read(std::string_view raw);
+    const char* read(const char* raw);
+
+    /**
+     * Parses a JSON std::string.
+     *
+     * If valid JSON, true is returned, and the object state represents the read value.
+     * If invalid JSON, false is returned, and the object is in a valid but unspecified state.
+     *
+     * Compatible with the upstream UniValue API.
+     */
+    [[nodiscard]]
+    bool read(const std::string& raw);
 
 private:
     UniValue::VType typ = VNULL;
@@ -877,7 +898,7 @@ enum jtokentype {
     JTOK_STRING,
 };
 
-extern jtokentype getJsonToken(std::string& tokenVal, std::string_view& buffer);
+extern jtokentype getJsonToken(std::string& tokenVal, const char*& buffer);
 
 /**
  * Returns the human-readable name of the JSON value type.

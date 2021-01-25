@@ -1,5 +1,5 @@
 // Copyright (c) 2012-2016 The Bitcoin Core developers
-// Copyright (c) 2020 The Bitcoin developers
+// Copyright (c) 2020-2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -280,7 +280,7 @@ BOOST_AUTO_TEST_CASE(rpc_format_monetary_values) {
     BOOST_CHECK_EQUAL(UniValue::stringify(ValueFromAmount(COIN / 100000000)), "0.00000001");
 }
 
-static UniValue ValueFromString(const std::string &str) {
+static UniValue ValueFromString(const char* str) {
     UniValue value;
     value.setNumStr(str);
     BOOST_CHECK(value.isNum());
