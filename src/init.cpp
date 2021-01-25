@@ -19,6 +19,8 @@
 #include <compat/sanity.h>
 #include <config.h>
 #include <consensus/validation.h>
+#include <dsproof/dsproof.h>
+#include <dsproof/storage.h>
 #include <extversion.h>
 #include <flatfile.h>
 #include <fs.h>
@@ -1152,6 +1154,12 @@ void SetupServerArgs() {
                            gbtl::DEFAULT_JOB_DATA_EXPIRY_SECS),
                  false, OptionsCategory::RPC);
 
+    // Double Spend Proof
+    gArgs.AddArg("-doublespendproof",
+                 strprintf("Specify whether to enable or disable the double-spend proof subsystem. If enabled, the node"
+                           " will send and receive double-spend proof messages (default: %d).",
+                           DoubleSpendProof::IsEnabled()), false, OptionsCategory::NODE_RELAY);
+
     // Add the hidden options
     gArgs.AddHiddenArgs(hidden_args);
 }
@@ -1973,6 +1981,11 @@ bool AppInitParameterInteraction(Config &config) {
 
     nMaxTipAge = gArgs.GetArg("-maxtipage", DEFAULT_MAX_TIP_AGE);
 
+    // Option to enable/disable the double-spend proof subsystem (default: enabled)
+    if (const bool def = DoubleSpendProof::IsEnabled(), en = gArgs.GetBoolArg("-doublespendproof", def); en != def) {
+        DoubleSpendProof::SetEnabled(en);
+    }
+
     return true;
 }
 
@@ -2167,6 +2180,13 @@ bool AppInitMain(Config &config, RPCServer &rpcServer,
             return InitError(
                 _("Unable to start HTTP server. See debug log for details."));
         }
+    }
+
+    /// If the double-spend proof subsystem is enabled, enable the periodic dsproof orphan cleaner task.
+    if (DoubleSpendProof::IsEnabled()) {
+        auto *dspStorage = g_mempool.doubleSpendProofStorage();
+        assert(dspStorage != nullptr);
+        scheduler.scheduleEvery(std::bind(&DoubleSpendProofStorage::periodicCleanup, dspStorage), 60 * 1000);
     }
 
     // Step 5: verify wallet database integrity

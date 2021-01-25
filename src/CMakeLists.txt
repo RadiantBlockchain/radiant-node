@@ -481,6 +481,11 @@ add_library(server
 	consensus/activation.cpp
 	consensus/tx_verify.cpp
 	consensus/tx_check.cpp
+	dsproof/dsproof.cpp
+	dsproof/dsproof_create.cpp
+	dsproof/dsproof_validate.cpp
+	dsproof/storage.cpp
+	dsproof/storage_cleanup.cpp
 	dbwrapper.cpp
 	flatfile.cpp
 	gbtlight.cpp

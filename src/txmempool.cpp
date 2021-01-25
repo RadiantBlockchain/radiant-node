@@ -12,6 +12,8 @@
 #include <consensus/consensus.h>
 #include <consensus/tx_verify.h>
 #include <consensus/validation.h>
+#include <dsproof/dsproof.h>
+#include <dsproof/storage.h>
 #include <mempool/defaultbatchupdater.h>
 #include <policy/fees.h>
 #include <policy/policy.h>
@@ -389,7 +391,10 @@ void CTxMemPoolEntry::UpdateAncestorState(int64_t modifySize, Amount modifyFee,
     assert(int(nSigOpCountWithAncestors) >= 0);
 }
 
-CTxMemPool::CTxMemPool() : nTransactionsUpdated(0) {
+CTxMemPool::CTxMemPool()
+    : nTransactionsUpdated(0),
+      m_dspStorage(std::make_unique<DoubleSpendProofStorage>())
+{
     // lock free clear
     _clear();
 
@@ -469,6 +474,8 @@ void CTxMemPool::addUnchecked(const CTxMemPoolEntry &entry,
 
 void CTxMemPool::removeUnchecked(txiter it, MemPoolRemovalReason reason) {
     NotifyEntryRemoved(it->GetSharedTx(), reason);
+    if (it->dspHash)
+        m_dspStorage->remove(*it->dspHash);
     for (const CTxIn &txin : it->GetTx().vin) {
         mapNextTx.erase(txin.prevout);
     }
@@ -648,6 +655,7 @@ void CTxMemPool::_clear() {
     lastRollingFeeUpdate = GetTime();
     blockSinceLastRollingFeeBump = false;
     rollingMinimumFeeRate = 0;
+    m_dspStorage->clear();
     ++nTransactionsUpdated;
 }
 
@@ -1120,6 +1128,39 @@ CTxMemPool::GetMemPoolChildren(txiter entry) const {
     txlinksMap::const_iterator it = mapLinks.find(entry);
     assert(it != mapLinks.end());
     return it->second.children;
+}
+
+CTransactionRef CTxMemPool::addDoubleSpendProof(const DoubleSpendProof &proof, const std::optional<txiter> &optIter) {
+    LOCK(cs);
+    txiter iter;
+    if (!optIter) {
+        auto spendingTx = mapNextTx.find(proof.outPoint());
+        if (spendingTx == mapNextTx.end()) {
+            // Nothing spent this or tx disappeared in the meantime
+            // -- proof no longer valid. Caller will accept the situation.
+            return CTransactionRef();
+        }
+        iter = mapTx.find(spendingTx->second->GetId());
+    } else
+        iter = *optIter;
+
+    if (iter->dspHash)  {
+        // A DSProof already exists for this tx, don't propagate new one.
+        return CTransactionRef();
+    }
+
+    CTransactionRef ret{iter->GetSharedTx()};
+
+    // Add to storage. If this was an orphan it will implicitly be flagged as a non-orphan
+    m_dspStorage->add(proof);
+    // Update mempool entry to save the dspHash
+    const auto &hash = proof.GetId();
+    mapTx.modify(iter, [&hash](CTxMemPoolEntry &entry){ entry.dspHash = hash; });
+    return ret;
+}
+
+DoubleSpendProofStorage *CTxMemPool::doubleSpendProofStorage() const {
+    return m_dspStorage.get();
 }
 
 CFeeRate CTxMemPool::GetMinFee(size_t sizelimit) const {

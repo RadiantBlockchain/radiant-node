@@ -19,6 +19,8 @@
 #include <consensus/tx_check.h>
 #include <consensus/tx_verify.h>
 #include <consensus/validation.h>
+#include <dsproof/dsproof.h>
+#include <dsproof/storage.h>
 #include <flatfile.h>
 #include <fs.h>
 #include <hash.h>
@@ -53,9 +55,11 @@
 
 #include <atomic>
 #include <future>
+#include <list>
 #include <sstream>
 #include <string>
 #include <thread>
+#include <utility>
 
 #define MICRO 0.000001
 #define MILLI 0.001
@@ -550,13 +554,52 @@ AcceptToMemoryPoolWorker(const Config &config, CTxMemPool &pool,
         return state.Invalid(false, REJECT_DUPLICATE, "txn-already-in-mempool");
     }
 
+    std::list<std::pair<DspId, NodeId>> rescuedDSPOrphans; //! always empty in test_accept mode
+
     // Check for conflicts with in-memory transactions
     for (const CTxIn &txin : tx.vin) {
+        if (!test_accept && DoubleSpendProof::IsEnabled()) {
+            // add existing DSProof orphans (if any) to the rescued set
+            rescuedDSPOrphans.splice(rescuedDSPOrphans.end(),
+                                     pool.doubleSpendProofStorage()->findOrphans(txin.prevout));
+        }
         auto itConflicting = pool.mapNextTx.find(txin.prevout);
         if (itConflicting != pool.mapNextTx.end()) {
-            // Disable replacement feature for good
-            return state.Invalid(false, REJECT_DUPLICATE,
-                                 "txn-mempool-conflict");
+            // double-spend detected
+            if (!test_accept && DoubleSpendProof::IsEnabled()) {
+                const auto txidConflicting = itConflicting->second->GetId();
+                const auto entryIt = pool.mapTx.find(txidConflicting);
+                if (!entryIt->dspHash) {
+                    // if no DS proof exists, we make one
+                    try {
+                        LogPrint(BCLog::DSPROOF, "Double spend found, creating double spend proof (mempool tx: %s; doublespend tx: %s)\n",
+                                 txidConflicting.ToString(), txid.ToString());
+
+                        const CCoinsViewMemPool viewMemPool(pcoinsTip.get(), pool); // always sees mempool-spent
+                        Coin coin;
+                        if (!viewMemPool.GetCoin(txin.prevout, coin))
+                            throw std::runtime_error(strprintf("Could not find coin: %s", txin.prevout.ToString()));
+
+                        const auto proof = DoubleSpendProof::create(*itConflicting->second, tx, txin.prevout, &coin.GetTxOut());
+
+                        if (proof.validate(pool, entryIt->GetSharedTx()) != DoubleSpendProof::Valid)
+                            throw std::runtime_error("Proof is not valid (doublespend tx may be bad)");
+                        if (!pool.addDoubleSpendProof(proof, entryIt))
+                            throw std::runtime_error("Failed to add proof to mempool store");
+
+                        const auto &proofHash = proof.GetId();
+                        LogPrint(BCLog::DSPROOF, "  DSProof created: %s (outpoint: %s)\n", proofHash.ToString(), proof.outPoint().ToString());
+
+                        // This tells calling code in net_processing.cpp to forward the DSP to peers
+                        state.SetDSPHash(proofHash);
+                    } catch (const std::exception &e) {
+                        // We don't support 100% of the types of transactions yet, failures are possible.
+                        LogPrint(BCLog::DSPROOF, "DS Proof create & add failed: %s\n", e.what());
+                    }
+                }
+            }
+
+            return state.Invalid(false, REJECT_DUPLICATE, "txn-mempool-conflict");
         }
     }
 
@@ -761,6 +804,42 @@ AcceptToMemoryPoolWorker(const Config &config, CTxMemPool &pool,
             if (!pool.exists(txid)) {
                 return state.DoS(0, false, REJECT_INSUFFICIENTFEE,
                                  "mempool full");
+            }
+        }
+
+        // Handle double spend proof orphans (if any)
+        for (auto i = rescuedDSPOrphans.begin(); i != rescuedDSPOrphans.end(); ++i) {
+            const auto dsp = pool.doubleSpendProofStorage()->lookup(i->first);
+            LogPrint(BCLog::DSPROOF, "Rescued a DSP orphan %s\n", dsp.GetId().ToString());
+            const auto rc = dsp.validate(pool);
+
+            if (rc == DoubleSpendProof::Valid) {
+                LogPrint(BCLog::DSPROOF, "  Using it, it validated just fine\n");
+
+                // this will implicitly claim the orphan and assign it to this tx
+                auto resTx = pool.addDoubleSpendProof(dsp);
+
+                if (!resTx) {
+                    // could not be added (this should never happen)
+                    LogPrint(BCLog::DSPROOF, "  Error claiming orphan, addDoubleSpendProof() returned nullptr!\n");
+                    pool.doubleSpendProofStorage()->remove(i->first);
+                    continue;
+                }
+
+                while (++i != rescuedDSPOrphans.end()) {
+                    LogPrint(BCLog::DSPROOF, "Killing unneeded orphan: %s\n", i->first.ToString());
+                    pool.doubleSpendProofStorage()->remove(i->first);
+                }
+                break;
+            } else if (rc == DoubleSpendProof::Invalid) {
+                LogPrint(BCLog::DSPROOF, "  DSP didn't validate!\n");
+                pool.doubleSpendProofStorage()->remove(i->first);
+                state.PushDSPBadNodeId(i->second); // only actually pushes iff i->second > -1
+            } else { // MissingUTXO / MissingTransaction
+                // This should never happen, but we will log this error here
+                // because dsproof is still in beta.
+                LogPrint(BCLog::DSPROOF, "  DSP unexpected failure reason: %d!\n", int(rc));
+                pool.doubleSpendProofStorage()->remove(i->first);
             }
         }
     }

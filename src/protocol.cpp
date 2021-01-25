@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (C) 2020 Tom Zander <tomz@freedommail.ch>
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -45,6 +46,7 @@ const char *const CMPCTBLOCK = "cmpctblock";
 const char *const GETBLOCKTXN = "getblocktxn";
 const char *const BLOCKTXN = "blocktxn";
 const char *const EXTVERSION = "extversion";
+const char *const DSPROOF = "dsproof-beta";
 
 bool IsBlockLike(const std::string &strCommand) {
     return strCommand == NetMsgType::BLOCK ||
@@ -67,6 +69,7 @@ static const std::vector<std::string> allNetMessageTypesVec{{
     NetMsgType::FILTERCLEAR, NetMsgType::REJECT,     NetMsgType::SENDHEADERS,
     NetMsgType::FEEFILTER,   NetMsgType::SENDCMPCT,  NetMsgType::CMPCTBLOCK,
     NetMsgType::GETBLOCKTXN, NetMsgType::BLOCKTXN,   NetMsgType::EXTVERSION,
+    NetMsgType::DSPROOF,
 }};
 
 CMessageHeader::CMessageHeader(const MessageMagic &pchMessageStartIn) {
@@ -227,6 +230,8 @@ std::string CInv::GetCommand() const {
             return cmd.append(NetMsgType::MERKLEBLOCK);
         case MSG_CMPCT_BLOCK:
             return cmd.append(NetMsgType::CMPCTBLOCK);
+        case MSG_DOUBLESPENDPROOF:
+             return cmd.append(NetMsgType::DSPROOF);
         default:
             throw std::out_of_range(
                 strprintf("CInv::GetCommand(): type=%d unknown type", type));

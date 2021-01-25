@@ -11,6 +11,7 @@
 #include <coins.h>
 #include <core_memusage.h>
 #include <crypto/siphash.h>
+#include <dsproof/dspid.h>
 #include <indirectmap.h>
 #include <primitives/transaction.h>
 #include <random.h>
@@ -24,6 +25,7 @@
 
 #include <map>
 #include <optional>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -31,7 +33,11 @@
 
 class CBlockIndex;
 class Config;
+class DoubleSpendProof;
+class DoubleSpendProofStorage;
+
 namespace mempool { class BatchUpdater; }
+
 
 extern RecursiveMutex cs_main;
 
@@ -164,6 +170,12 @@ public:
 
     //! Index in mempool's vTxHashes
     mutable size_t vTxHashesIdx = 0;
+
+    //! If not nullptr, this entry has an associated DoubleSpendProof.
+    //! We use a DspIdPtr here to use less memory than a direct DspId would
+    //! in the common case of no proof for this entry, while still keeping this
+    //! class copy constructible.
+    DspIdPtr dspHash;
 };
 
 // Helpers for modifying CTxMemPool::mapTx, which is a boost multi_index.
@@ -581,6 +593,21 @@ public:
     uint64_t CalculateDescendantMaximum(txiter entry) const
         EXCLUSIVE_LOCKS_REQUIRED(cs);
 
+    /**
+     * Add a double-spend proof to an existing mempool entry.
+     * Returns the CTransactionRef of the mempool entry we added it to.
+     *
+     * The returned CTransactionRef may be null if no mempool transaction was found
+     * for the supplied proof, of it the mempool transaction already has a proof.
+     *
+     * The optional second argument is a mapTx iterator for the existing mempool entry
+     * to update and associate with this proof.  This argument is a performance
+     * optimization used by AcceptToMemoryPoolWorker, and it is not checked for sanity.
+     */
+    CTransactionRef addDoubleSpendProof(const DoubleSpendProof &proof, const std::optional<txiter> &iter = {});
+
+    DoubleSpendProofStorage *doubleSpendProofStorage() const;
+
 private:
     typedef std::map<txiter, setEntries, CompareIteratorById> cacheMap;
 
@@ -847,6 +874,8 @@ private:
     removeUnchecked(txiter entry,
                     MemPoolRemovalReason reason = MemPoolRemovalReason::UNKNOWN)
         EXCLUSIVE_LOCKS_REQUIRED(cs);
+
+    std::unique_ptr<DoubleSpendProofStorage> m_dspStorage;
 };
 
 /**

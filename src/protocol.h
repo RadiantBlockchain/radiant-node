@@ -258,12 +258,16 @@ extern const char *const GETBLOCKTXN;
  * @since protocol version 70014 as described by BIP 152
  */
 extern const char *const BLOCKTXN;
-
 /**
  * The extversion message provides additional information about the transmitting
  * node to the receiving node at the beginning of a connection.
  */
 extern const char *const EXTVERSION;
+/**
+ * Double spend proof
+ */
+extern const char *const DSPROOF;
+
 
 /**
  * Indicate if the message is used to transmit the content of a block.
@@ -432,6 +436,8 @@ enum GetDataMsg {
     MSG_FILTERED_BLOCK = 3,
     //! Defined in BIP152
     MSG_CMPCT_BLOCK = 4,
+    //! Double spend proof
+    MSG_DOUBLESPENDPROOF = 0x94a0
 };
 
 /**

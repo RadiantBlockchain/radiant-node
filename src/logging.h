@@ -57,6 +57,7 @@ enum LogFlags : uint32_t {
     LEVELDB = (1 << 20),
     FINALIZATION = (1 << 21),
     PARKING = (1 << 22),
+    DSPROOF = (1 << 23),
     ALL = ~uint32_t(0),
 };
 

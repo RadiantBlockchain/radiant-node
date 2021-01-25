@@ -143,6 +143,9 @@ BITCOIN_CORE_H = \
   core_io.h \
   core_memusage.h \
   cuckoocache.h \
+  dsproof/dspid.h \
+  dsproof/dsproof.h \
+  dsproof/storage.h \
   extversion.h \
   flatfile.h \
   fs.h \
@@ -169,6 +172,7 @@ BITCOIN_CORE_H = \
   merkleblock.h \
   miner.h \
   net.h \
+  net_nodeid.h \
   net_permissions.h \
   net_processing.h \
   netaddress.h \
@@ -272,6 +276,11 @@ libbitcoin_server_a_SOURCES = \
   config.cpp \
   consensus/activation.cpp \
   consensus/tx_verify.cpp \
+  dsproof/dsproof.cpp \
+  dsproof/dsproof_create.cpp \
+  dsproof/dsproof_validate.cpp \
+  dsproof/storage.cpp \
+  dsproof/storage_cleanup.cpp \
   flatfile.cpp \
   gbtlight.cpp \
   httprpc.cpp \

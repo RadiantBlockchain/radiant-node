@@ -91,6 +91,7 @@ const CLogCategoryDesc LogCategories[] = {
     {BCLog::LEVELDB, "leveldb"},
     {BCLog::FINALIZATION, "finalization"},
     {BCLog::PARKING, "parking"},
+    {BCLog::DSPROOF, "dsproof"},
     {BCLog::ALL, "1"},
     {BCLog::ALL, "all"},
 };
