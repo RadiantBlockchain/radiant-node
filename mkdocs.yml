@@ -318,6 +318,7 @@ nav:
         - Bitcoin Cash upgrades: doc/bch-upgrades.md
         - getblocktemplatelight: doc/getblocktemplatelight.md
         - XVersionMessage: doc/xversionmessage.md
+        - DSProof implementation notes: doc/dsproof-implementation-notes.md
     - Development:
         - Contributing: CONTRIBUTING.md
         - GitLab rules & guidelines: doc/bchn-gitlab-usage-rules-and-guidelines.md
