@@ -38,6 +38,7 @@ static constexpr int DEFAULT_PORT = 53;
 static constexpr int DEFAULT_NUM_DNS_THREADS = 4;
 static constexpr bool DEFAULT_WIPE_BAN = false;
 static constexpr bool DEFAULT_WIPE_IGNORE = false;
+static constexpr bool DEFAULT_RESEED = false;
 static const std::string DEFAULT_EMAIL = "";
 static const std::string DEFAULT_NAMESERVER = "";
 static const std::string DEFAULT_HOST = "";
@@ -52,6 +53,7 @@ public:
     int nDnsThreads         = DEFAULT_NUM_DNS_THREADS;
     bool fWipeBan           = DEFAULT_WIPE_BAN;
     bool fWipeIgnore        = DEFAULT_WIPE_IGNORE;
+    bool fReseed            = DEFAULT_RESEED;
     std::string mbox        = DEFAULT_EMAIL;
     std::string ns          = DEFAULT_NAMESERVER;
     std::string host        = DEFAULT_HOST;
@@ -87,6 +89,7 @@ public:
         nDnsThreads = gArgs.GetArg("-dnsthreads", DEFAULT_NUM_DNS_THREADS);
         fWipeBan = gArgs.GetBoolArg("-wipeban", DEFAULT_WIPE_BAN);
         fWipeIgnore = gArgs.GetBoolArg("-wipeignore", DEFAULT_WIPE_IGNORE);
+        fReseed = gArgs.GetBoolArg("-reseed", DEFAULT_RESEED);
         mbox = gArgs.GetArg("-mbox", DEFAULT_EMAIL);
         ns = gArgs.GetArg("-ns", DEFAULT_NAMESERVER);
         host = gArgs.GetArg("-host", DEFAULT_HOST);
@@ -151,6 +154,8 @@ private:
         gArgs.AddArg("-wipeban", strprintf("Wipe list of banned nodes (default: %d)", DEFAULT_WIPE_BAN), false,
                      OptionsCategory::CONNECTION);
         gArgs.AddArg("-wipeignore", strprintf("Wipe list of ignored nodes (default: %d)", DEFAULT_WIPE_IGNORE), false,
+                     OptionsCategory::CONNECTION);
+        gArgs.AddArg("-reseed", strprintf("Reseed the database from the fixed seed list (default: %d)", DEFAULT_RESEED), false,
                      OptionsCategory::CONNECTION);
         SetupChainParamsBaseOptions();
     }
@@ -524,6 +529,14 @@ int main(int argc, char **argv) {
             std::fprintf(stdout, "Ignore list wiped...");
         }
         std::fprintf(stdout, "done\n");
+    }
+    CAddrDbStats dbStats;
+    db.GetStats(dbStats);
+    if (opts.fReseed || dbStats.nAvail < 1) {
+        // The database is empty or reseed was requested, fill it with fixed seeds
+        for (const SeedSpec6 &seed : Params().FixedSeeds()) {
+            db.Add(CAddress(seed, ServiceFlags()), true);
+        }
     }
     pthread_t threadDns, threadSeed, threadDump, threadStats;
     if (fDNS) {
