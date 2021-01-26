@@ -32,8 +32,9 @@ enum Network {
 /** IP address (IPv6, or IPv4 using mapped IPv6 range (::FFFF:0:0/96)) */
 class CNetAddr {
 protected:
+    static constexpr size_t ADDRLEN = 16;
     // in network byte order
-    uint8_t ip[16];
+    uint8_t ip[ADDRLEN];
     // for scoped/link-local ipv6 addresses
     uint32_t scopeId{0};
 
@@ -102,11 +103,7 @@ public:
     //! Returns a pointer to the raw bytes of the IP address. Data is of GetAddressLen() length.
     const uint8_t *GetAddressBytes() const { return ip; }
     //! Returns the byte length of the pointer returned by GetAddressBytes()
-    static constexpr size_t GetAddressLen() {
-        static_assert(std::is_array<decltype(ip)>::value,
-                      "Assumption here is that `ip` is an array. If this changes fix the below line.");
-        return sizeof(ip);
-    }
+    static constexpr size_t GetAddressLen() { return ADDRLEN; }
     unsigned int GetByte(int n) const;
     uint64_t GetHash() const;
     bool GetInAddr(struct in_addr *pipv4Addr) const;

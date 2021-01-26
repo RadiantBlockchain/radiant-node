@@ -15,12 +15,9 @@
 #include <memory>
 #include <vector>
 
-struct SeedSpec6 {
-    static constexpr int ADDRLEN = 16;
-
-    uint8_t addr[ADDRLEN]{};
-    uint16_t port{};
-
+//! Convenience class that is a CService but is aggregate-initializable.
+//! See chainparamseeds.h for where it is used.
+struct SeedSpec6 : public CService {
     constexpr SeedSpec6() noexcept {}
 
     //! Parses a human readable host:port pair to construct a valid SeedSpec6.
@@ -35,22 +32,16 @@ struct SeedSpec6 {
     SeedSpec6(const char *pszHostPort);
     SeedSpec6(const std::string &s) : SeedSpec6(s.c_str()) {}
 
-    //! Constructor used for inline aggregate initialization
-    constexpr SeedSpec6(const std::array<uint8_t, ADDRLEN> &addr_, uint16_t port_) noexcept
-        : port(port_) {
-        for (int i = 0; i < ADDRLEN; ++i)
-            addr[i] = addr_[i];
-    }
+    //! Convenience -- copy-construct this from a CService
+    SeedSpec6(const CService &cs) : CService(cs) {}
 
-    constexpr bool operator==(const SeedSpec6 &o) const noexcept {
-        if (port != o.port)
-            return false;
-        for (int i = 0; i < ADDRLEN; ++i)
-            if (addr[i] != o.addr[i])
-                return false;
-        return true;
+    //! Constructor used for inline aggregate initialization
+    constexpr SeedSpec6(const std::array<uint8_t, GetAddressLen()> &addr_, uint16_t port_) noexcept {
+        static_assert(sizeof(ip[0]) == 1);
+        port = port_;
+        for (size_t i = 0; i < GetAddressLen(); ++i)
+            ip[i] = addr_[i];
     }
-    constexpr bool operator!=(const SeedSpec6 &o) const noexcept { return !(*this == o); }
 };
 
 typedef std::map<int, BlockHash> MapCheckpoints;
