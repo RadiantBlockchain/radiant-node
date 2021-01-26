@@ -83,7 +83,7 @@ static enum RetFormat ParseDataFormat(std::string &param,
     param = strReq.substr(0, pos);
     const std::string suff(strReq, pos + 1);
 
-    for (size_t i = 0; i < ARRAYLEN(rf_names); i++) {
+    for (size_t i = 0; i < std::size(rf_names); ++i) {
         if (suff == rf_names[i].name) {
             return rf_names[i].rf;
         }
@@ -96,7 +96,7 @@ static enum RetFormat ParseDataFormat(std::string &param,
 
 static std::string AvailableDataFormatsString() {
     std::string formats;
-    for (size_t i = 0; i < ARRAYLEN(rf_names); i++) {
+    for (size_t i = 0; i < std::size(rf_names); ++i) {
         if (strlen(rf_names[i].name) > 0) {
             formats.append(".");
             formats.append(rf_names[i].name);
@@ -673,7 +673,7 @@ static const struct {
 };
 
 void StartREST() {
-    for (size_t i = 0; i < ARRAYLEN(uri_prefixes); i++) {
+    for (size_t i = 0; i < std::size(uri_prefixes); ++i) {
         RegisterHTTPHandler(uri_prefixes[i].prefix, false,
                             uri_prefixes[i].handler);
     }
@@ -682,7 +682,7 @@ void StartREST() {
 void InterruptREST() {}
 
 void StopREST() {
-    for (size_t i = 0; i < ARRAYLEN(uri_prefixes); i++) {
+    for (size_t i = 0; i < std::size(uri_prefixes); ++i) {
         UnregisterHTTPHandler(uri_prefixes[i].prefix, false);
     }
 }

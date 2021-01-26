@@ -204,8 +204,7 @@ public:
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x88, 0xAD, 0xE4};
         cashaddrPrefix = "bitcoincash";
 
-        vFixedSeeds = std::vector<SeedSpec6>(
-            pnSeed6_main, pnSeed6_main + ARRAYLEN(pnSeed6_main));
+        vFixedSeeds.assign(std::begin(pnSeed6_main), std::end(pnSeed6_main));
 
         fDefaultConsistencyChecks = false;
         fRequireStandard = true;
@@ -396,8 +395,7 @@ public:
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x35, 0x87, 0xCF};
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x35, 0x83, 0x94};
         cashaddrPrefix = "bchtest";
-        vFixedSeeds = std::vector<SeedSpec6>(
-            pnSeed6_testnet3, pnSeed6_testnet3 + ARRAYLEN(pnSeed6_testnet3));
+        vFixedSeeds.assign(std::begin(pnSeed6_testnet3), std::end(pnSeed6_testnet3));
 
         fDefaultConsistencyChecks = false;
         fRequireStandard = false;
@@ -558,7 +556,7 @@ public:
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x35, 0x87, 0xCF};
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x35, 0x83, 0x94};
         cashaddrPrefix = "bchtest";
-        vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_testnet4, pnSeed6_testnet4 + ARRAYLEN(pnSeed6_testnet4));
+        vFixedSeeds.assign(std::begin(pnSeed6_testnet4), std::end(pnSeed6_testnet4));
 
         fDefaultConsistencyChecks = false;
         fRequireStandard = true;
@@ -699,8 +697,7 @@ public:
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x35, 0x87, 0xCF};
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x35, 0x83, 0x94};
         cashaddrPrefix = "bchtest";
-        vFixedSeeds = std::vector<SeedSpec6>(
-            pnSeed6_scalenet, pnSeed6_scalenet + ARRAYLEN(pnSeed6_scalenet));
+        vFixedSeeds.assign(std::begin(pnSeed6_scalenet), std::end(pnSeed6_scalenet));
 
         fDefaultConsistencyChecks = false;
         fRequireStandard = false;

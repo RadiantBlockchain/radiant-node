@@ -18,9 +18,6 @@
 #include <string>
 #include <vector>
 
-// Note: ARRAYLEN should be replaced by std::size once we switch to C++17 or above
-#define ARRAYLEN(array) (sizeof(array) / sizeof((array)[0]))
-
 /** Used by SanitizeString() */
 enum SafeChars {
     //! The full set of allowed chars

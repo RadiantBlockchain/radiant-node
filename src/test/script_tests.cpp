@@ -97,7 +97,7 @@ static ScriptErrorDesc script_errors[] = {
 };
 
 static const char *FormatScriptError(ScriptError err) {
-    for (size_t i = 0; i < ARRAYLEN(script_errors); ++i) {
+    for (size_t i = 0; i < std::size(script_errors); ++i) {
         if (script_errors[i].err == err) {
             return script_errors[i].name;
         }
@@ -109,7 +109,7 @@ static const char *FormatScriptError(ScriptError err) {
 }
 
 static ScriptError ParseScriptError(const std::string &name) {
-    for (size_t i = 0; i < ARRAYLEN(script_errors); ++i) {
+    for (size_t i = 0; i < std::size(script_errors); ++i) {
         if (script_errors[i].name == name) {
             return script_errors[i].err;
         }
