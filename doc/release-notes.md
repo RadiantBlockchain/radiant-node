@@ -16,12 +16,28 @@ Bitcoin Cash Node version 22.3.0 is now available from:
 
 ## Network changes
 
-...
+The `dsproof-beta` network message can be emitted and relayed
+when Double Spend Proofs are enabled (which they are by default).
 
 
 ## Added functionality
 
-...
+### Double Spend Proofs (DSProof)
+
+This release adds Double Spend Proofs that are compatible
+with the published `dsproof-beta` message specification and
+existing implementations in Bitcoin Unlimited and Flowee The Hub.
+
+Double spend proofs are enabled by default, but can be turned
+off with the `doublespendproof=0` configuration setting.
+
+This functionality is still in beta. In future BCHN releases
+we plan to gradually add more application interfaces to query
+double spend proof information about transactions and to provide
+wallet user with double spend notifications.
+
+Please refer to </doc/dsproof-implementation-notes.md> for more
+information details on the DSProof implementation in BCHN.
 
 
 ## Deprecated functionality
@@ -163,7 +179,7 @@ all of them on our GitLab repository.
 
 #### Interfaces / RPC
 
-...
+- TODO: double spend proof network message commits
 
 #### Peformance optimizations
 

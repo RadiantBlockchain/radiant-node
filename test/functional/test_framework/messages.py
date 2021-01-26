@@ -58,6 +58,7 @@ MSG_TX = 1
 MSG_BLOCK = 2
 MSG_CMPCTBLOCK = 4
 MSG_TYPE_MASK = 0xffffffff >> 2
+MSG_DSPROOF = 0x94a0 # Temporary type id
 
 # Serialization/deserialization tools
 
@@ -270,7 +271,8 @@ class CInv:
         0: "Error",
         1: "TX",
         2: "Block",
-        4: "CompactBlock"
+        4: "CompactBlock",
+        0x94a0: "DoubleSpendProofbeta"
     }
 
     def __init__(self, t=0, h=0):
@@ -588,6 +590,105 @@ class CBlock(CBlockHeader):
             self.nVersion, self.hashPrevBlock, self.hashMerkleRoot,
             self.nTime, self.nBits, self.nNonce, repr(self.vtx))
 
+
+class CDSProof:
+    __slots__ = ("prevTxId",
+                 "prevOutIndex",
+                 "spender1",
+                 "spender2")
+
+    def __init__(self, dsproof=None):
+        if dsproof is None:
+            self.prevTxId = None
+            self.prevOutIndex = 0
+            self.spender1 = CDSProofSpender()
+            self.spender2 = CDSProofSpender()
+        else:
+            self.prevTxId = dsproof.prevTxId
+            self.prevOutIndex = dsproof.prevOutIndex
+            self.spender1 = dsproof.spender1
+            self.spender2 = dsproof.spender2
+
+    def deserialize(self, f):
+        self.prevTxId = deser_uint256(f)
+        self.prevOutIndex = struct.unpack("<i", f.read(4))[0]
+        self.spender1 = CDSProofSpender()
+        self.spender1.deserialize(f)
+        self.spender2 = CDSProofSpender()
+        self.spender2.deserialize(f)
+
+    def serialize(self):
+        r = self.getPrevOutput()
+        r += self.spender1.serialize()
+        r += self.spender2.serialize()
+        return r
+
+    def getPrevOutput(self):
+        r = b""
+        r += ser_uint256(self.prevTxId)
+        r += struct.pack("<I", self.prevOutIndex)
+        return r
+
+    def __repr__(self):
+        return "CDSProof(prevTxId={:064x} prevOutIndex={}\nspender1={}\nspender2={})".format(
+            self.prevTxId, self.prevOutIndex, self.spender1, self.spender2)
+
+
+class CDSProofSpender:
+
+    __slots__ = ("txVersion",
+                 "outSequence",
+                 "lockTime",
+                 "hashPrevOutputs",
+                 "hashSequence",
+                 "hashOutputs",
+                 "pushData")
+
+    def __init__(self, spender=None):
+        if spender is None:
+            self.txVersion = 0
+            self.outSequence = 0
+            self.lockTime = 0
+            self.hashPrevOutputs = None
+            self.hashSequence = None
+            self.hashOutputs = None
+            self.pushData = []
+        else:
+            self.txVersion = spender.txVersion
+            self.outSequence = spender.outSequence
+            self.lockTime = spender.lockTime
+            self.hashPrevOutputs = spender.hashPrevOutputs
+            self.hashSequence = spender.hashSequence
+            self.hashOutputs = spender.hashOutputs
+            self.pushData = spender.pushData
+
+    def deserialize(self, f):
+        self.txVersion = struct.unpack("<i", f.read(4))[0]
+        self.outSequence = struct.unpack("<I", f.read(4))[0]
+        self.lockTime = struct.unpack("<I", f.read(4))[0]
+        self.hashPrevOutputs = deser_uint256(f)
+        self.hashSequence = deser_uint256(f)
+        self.hashOutputs = deser_uint256(f)
+        self.pushData = deser_string_vector(f)
+
+    def serialize(self):
+        r = b""
+        r += struct.pack("<i", self.txVersion)
+        r += struct.pack("<I", self.outSequence)
+        r += struct.pack("<I", self.lockTime)
+        r += ser_uint256(self.hashPrevOutputs)
+        r += ser_uint256(self.hashSequence)
+        r += ser_uint256(self.hashOutputs)
+        r += ser_string_vector(self.pushData)
+        return r
+
+    def pushDataToHex(self, data):
+        return "[" + ",".join(map(bytes.hex, data)) + "]"
+
+    def __repr__(self):
+        return "spender1txVersion={} spender1outSequence={} spender1lockTime={} spender1hashPrevOutputs={:064x} spender1hashSequence={:064x} spender1hashOutputs={:064x} spender1pushData={}".format(
+            self.txVersion, self.outSequence, self.lockTime, self.hashPrevOutputs, self.hashSequence, self.hashOutputs, self.pushDataToHex(self.pushData)
+        )
 
 class PrefilledTransaction:
     __slots__ = ("index", "tx")
@@ -1070,6 +1171,25 @@ class msg_block:
 
     def __repr__(self):
         return "msg_block(block={})".format(repr(self.block))
+
+class msg_dsproof:
+    __slots__ = ("dsproof",)
+    command = b"dsproof-beta"
+
+    def __init__(self, dsproof=None):
+        if dsproof is None:
+            self.dsproof = CDSProof()
+        else:
+            self.dsproof = dsproof
+
+    def deserialize(self, f):
+        self.dsproof.deserialize(f)
+
+    def serialize(self):
+        return self.dsproof.serialize()
+
+    def __repr__(self):
+        return "msg_dsproof(dsproof-beta={})".format(repr(self.dsproof))
 
 
 # for cases where a user needs tighter control over what is sent over the wire

@@ -17,6 +17,7 @@
 #include <extversion.h>
 #include <hash.h>
 #include <limitedmap.h>
+#include <net_nodeid.h>
 #include <net_permissions.h>
 #include <netaddress.h>
 #include <protocol.h>
@@ -91,8 +92,6 @@ static const int64_t DEFAULT_PEER_CONNECT_TIMEOUT = 60;
 static const bool DEFAULT_FORCEDNSSEED = false;
 static const size_t DEFAULT_MAXRECEIVEBUFFER = 5 * 1000;
 static const size_t DEFAULT_MAXSENDBUFFER = 1 * 1000;
-
-typedef int64_t NodeId;
 
 struct AddedNodeInfo {
     std::string strAddedNode;
@@ -752,6 +751,7 @@ public:
     // before sending, as they are always sent immediately and in the order
     // requested.
     std::vector<BlockHash> vInventoryBlockToSend GUARDED_BY(cs_inventory);
+    std::deque<CInv> vInventoryToSend GUARDED_BY(cs_inventory);
     RecursiveMutex cs_inventory;
     int64_t nNextInvSend{0};
     // Used for headers announcements - unfiltered blocks to relay.
@@ -873,6 +873,8 @@ public:
         } else if (inv.type == MSG_BLOCK) {
             // inv.hash is a BlockHash
             vInventoryBlockToSend.emplace_back(inv.hash);
+        } else if (inv.type) {
+            vInventoryToSend.push_back(inv);
         }
     }
 

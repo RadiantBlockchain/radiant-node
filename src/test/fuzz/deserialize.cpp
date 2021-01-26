@@ -8,6 +8,7 @@
 #include <coins.h>
 #include <compressor.h>
 #include <consensus/merkle.h>
+#include <dsproof/dsproof.h>
 #include <net.h>
 #include <primitives/block.h>
 #include <protocol.h>
@@ -177,6 +178,13 @@ void test_one_input(std::vector<uint8_t> buffer) {
     try {
         BlockTransactionsRequest btr;
         ds >> btr;
+    } catch (const std::ios_base::failure &e) {
+        return;
+    }
+#elif DSPROOF_DESERIALIZE
+    try {
+        DoubleSpendProof dsp;
+        ds >> dsp;
     } catch (const std::ios_base::failure &e) {
         return;
     }

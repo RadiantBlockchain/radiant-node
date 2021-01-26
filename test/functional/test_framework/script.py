@@ -734,16 +734,41 @@ def SignatureHashForkId(script, txTo, inIdx, hashtype, amount):
         serialize_outputs = txTo.vout[inIdx].serialize()
         hashOutputs = uint256_from_str(hash256(serialize_outputs))
 
+    return SignatureHashForkIdFromValues(
+        txTo.nVersion,
+        hashPrevouts,
+        hashSequence,
+        txTo.vin[inIdx].prevout.serialize(),
+        script,
+        amount,
+        txTo.vin[inIdx].nSequence,
+        hashOutputs,
+        txTo.nLockTime,
+        hashtype)
+
+
+def SignatureHashForkIdFromValues(
+        nVersion,
+        hashPrevouts,
+        hashSequence,
+        prevout,
+        script,
+        amount,
+        nSequence,
+        hashOutputs,
+        nLockTime,
+        hashtype):
+
     ss = bytes()
-    ss += struct.pack("<i", txTo.nVersion)
+    ss += struct.pack("<i", nVersion)
     ss += ser_uint256(hashPrevouts)
     ss += ser_uint256(hashSequence)
-    ss += txTo.vin[inIdx].prevout.serialize()
+    ss += prevout
     ss += ser_string(script)
     ss += struct.pack("<q", amount)
-    ss += struct.pack("<I", txTo.vin[inIdx].nSequence)
+    ss += struct.pack("<I", nSequence)
     ss += ser_uint256(hashOutputs)
-    ss += struct.pack("<i", txTo.nLockTime)
+    ss += struct.pack("<i", nLockTime)
     ss += struct.pack("<I", hashtype)
 
     return hash256(ss)

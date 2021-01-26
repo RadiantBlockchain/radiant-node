@@ -45,6 +45,7 @@ add_deserialize_fuzz_targets(
 	bloomfilter_deserialize
 	coins_deserialize
 	diskblockindex_deserialize
+	dsproof_deserialize
 	inv_deserialize
 	messageheader_deserialize
 	netaddr_deserialize

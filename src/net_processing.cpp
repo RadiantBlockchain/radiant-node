@@ -1,5 +1,7 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (C) 2019-2020 Tom Zander <tomz@freedommail.ch>
+// Copyright (c) 2020-2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -14,6 +16,8 @@
 #include <chainparams.h>
 #include <config.h>
 #include <consensus/validation.h>
+#include <dsproof/dsproof.h>
+#include <dsproof/storage.h>
 #include <extversion.h>
 #include <hash.h>
 #include <merkleblock.h>
@@ -37,10 +41,13 @@
 #include <validationinterface.h>
 
 #include <memory>
+#include <stdexcept>
+#include <type_traits>
 
 #if defined(NDEBUG)
 #error "Bitcoin cannot be compiled without assertions."
 #endif
+
 
 /** Expiration time for orphan transactions in seconds */
 static constexpr int64_t ORPHAN_TX_EXPIRE_TIME = 20 * 60;
@@ -1435,6 +1442,9 @@ static bool AlreadyHave(const CInv &inv) EXCLUSIVE_LOCKS_REQUIRED(cs_main) {
         }
         case MSG_BLOCK:
             return LookupBlockIndex(BlockHash(inv.hash)) != nullptr;
+        case MSG_DOUBLESPENDPROOF:
+            return g_mempool.doubleSpendProofStorage()->exists(inv.hash)
+                    || g_mempool.doubleSpendProofStorage()->isRecentlyRejectedProof(inv.hash);
     }
     // Don't know what it is, just say we already got one
     return true;
@@ -1674,7 +1684,8 @@ static void ProcessGetData(const Config &config, CNode *pfrom,
     {
         LOCK(cs_main);
 
-        while (it != pfrom->vRecvGetData.end() && it->type == MSG_TX) {
+        while (it != pfrom->vRecvGetData.end() &&
+               (it->type == MSG_TX || it->type == MSG_DOUBLESPENDPROOF)) {
             if (interruptMsgProc) {
                 return;
             }
@@ -1704,6 +1715,12 @@ static void ProcessGetData(const Config &config, CNode *pfrom,
                     connman->PushMessage(
                         pfrom,
                         msgMaker.Make(nSendFlags, NetMsgType::TX, *txinfo.tx));
+                    push = true;
+                }
+            } else if (inv.type == MSG_DOUBLESPENDPROOF && DoubleSpendProof::IsEnabled()) {
+                DoubleSpendProof dsp = g_mempool.doubleSpendProofStorage()->lookup(inv.hash);
+                if (!dsp.isEmpty()) {
+                    connman->PushMessage(pfrom, msgMaker.Make(nSendFlags, NetMsgType::DSPROOF, dsp));
                     push = true;
                 }
             }
@@ -2552,7 +2569,21 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
                              inv.hash.ToString(), pfrom->GetId());
                 } else if (!fAlreadyHave && !fImporting && !fReindex &&
                            !IsInitialBlockDownload()) {
-                    RequestTx(State(pfrom->GetId()), TxId(inv.hash), nNow);
+                    if (inv.type == MSG_DOUBLESPENDPROOF) {
+                        if (DoubleSpendProof::IsEnabled()) {
+                            // dsproof subsystem enabled, ask peer for the proof
+                            LogPrint(BCLog::DSPROOF, "Got DSProof INV %s\n", inv.hash.ToString());
+                            connman->PushMessage(pfrom,
+                                                 msgMaker.Make(NetMsgType::GETDATA, std::vector<CInv>{inv}));
+                        } else {
+                            // dsproof subsystem disabled, ignore this inv
+                            LogPrint(BCLog::DSPROOF, "Got DSProof INV %s (ignored, -doublespendproof=0)\n",
+                                     inv.hash.ToString());
+                        }
+                    }
+                    else if (inv.type == MSG_TX) {
+                        RequestTx(State(pfrom->GetId()), TxId(inv.hash), nNow);
+                    }
                 }
             }
         }
@@ -2921,6 +2952,19 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
             for (const TxId &idOfOrphanTxToErase : vEraseQueue) {
                 EraseOrphanTx(idOfOrphanTxToErase);
             }
+
+            // If a tx validates and is accepted, it may have some orphan doublespend proofs associated with it that
+            // turned out ot be fake proofs, in which case we need to punish the peers that gave us those proofs.
+            // NB: The below branch will not be taken if dsproofs are globally disabled (-doublespendproof=0).
+            if (state.HasDSPBadNodeIds()) {
+                static_assert (std::is_same<std::decay<decltype(state.GetDSPBadNodeIds()[0])>::type, NodeId>::value,
+                               "Please update consensus/validation.h to match types for dsp.badNodeIds[0] with NodeId");
+                for (const auto &nId : state.GetDSPBadNodeIds()) {
+                    // Punish peer that gave us an invalid orphan tx, if they are still connected
+                    Misbehaving(nId, 10, "bad-dsproof");
+                }
+                LogPrint(BCLog::DSPROOF, "Recovered dsproof-orphan didn't validate\n");
+            }
         } else if (fMissingInputs) {
             // It may be the case that the orphans parents have all been
             // rejected.
@@ -2973,6 +3017,27 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
                 recentRejects->insert(tx.GetId());
                 if (RecursiveDynamicUsage(*ptx) < 100000) {
                     AddToCompactExtraTransactions(ptx);
+                }
+            }
+
+            // NB: The below branch will not be taken if dsproofs are globally disabled (-doublespendproof=0).
+            if (state.HasDSPHash()) { // tx was double-spent, now broadcast the proof
+                static_assert (std::is_same<std::decay<decltype(state.GetDSPHash())>::type, DspId>::value,
+                               "Please update consensus/validation.h to match types for dsp.hash with DspId");
+
+                const auto dsp = g_mempool.doubleSpendProofStorage()->lookup(state.GetDSPHash());
+                if (!dsp.isEmpty()) {
+                    LogPrint(BCLog::DSPROOF, "  DSP found, broadcasting an INV\n");
+                    inv = CInv(MSG_DOUBLESPENDPROOF, dsp.GetId());
+                    connman->ForEachNode([ptx, inv](CNode *pnode) {
+                        {
+                            LOCK(pnode->cs_filter);
+                            if (pnode->pfilter && !pnode->pfilter->IsRelevantAndUpdate(*ptx))
+                                return;
+
+                        }
+                        pnode->PushInventory(inv);
+                    });
                 }
             }
 
@@ -3710,6 +3775,71 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
             LogPrint(BCLog::NET, "received: feefilter of %s from peer=%d\n",
                      CFeeRate(newFeeFilter).ToString(), pfrom->GetId());
         }
+        return true;
+    }
+
+    if (strCommand == NetMsgType::DSPROOF) {
+        LogPrint(BCLog::DSPROOF, "Received a Double Spend Proof from peer %d\n", pfrom->GetId());
+        if (!DoubleSpendProof::IsEnabled()) {
+            // -doublespendproof=0; dsproof subsystem disabled. Accept the message, but don't act on it.
+            //
+            // Note: this branch should not normally be taken, since we would never GETDATA on an inv of type
+            // MSG_DOUBLESPENDPROOF if the dsproof subsystem is disabled. However, if we ever enable dynamic runtime
+            // tweaks to enable/disable dsproofs in the future, then this branch could potentially be taken then.
+            LogPrint(BCLog::DSPROOF, "  dsproof subsystem is disabled, ignoring message\n");
+            return true;
+        }
+        DoubleSpendProof dsp;
+        CTransactionRef addedForTx; // if !nullptr, the proof validated and we should broadcast the inv
+        // whitelisted peers are marked with -1 so they do not get punished for invalid proofs
+        const auto bannablePeerId = pfrom->HasPermission(PF_NOBAN) ? -1 : pfrom->GetId();
+        try {
+            vRecv >> dsp;
+            // NOTE: We must hold cs_main and pool.cs here to get a "transactional"
+            // and consistent view of the mempool while we perform the validation
+            // operation & add operations.
+            // See: https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/merge_requests/700#note_417716740
+            // Also see: The comments in txmempool.h about mempool consistency guarantees.
+            LOCK2(cs_main, g_mempool.cs);
+            switch ( dsp.validate(g_mempool) ) {
+            case DoubleSpendProof::Valid:
+                addedForTx = g_mempool.addDoubleSpendProof(dsp);
+                break;
+            case DoubleSpendProof::MissingUTXO:
+            case DoubleSpendProof::MissingTransaction:
+                LogPrint(BCLog::DSPROOF, "DoubleSpend Proof postponed: is orphan (outpoint: %s)\n", dsp.outPoint().ToString());
+                g_mempool.doubleSpendProofStorage()->addOrphan(dsp, bannablePeerId);
+                break;
+            case DoubleSpendProof::Invalid:
+            default:
+                throw std::runtime_error(strprintf("Proof didn't validate (%s)", dsp.GetId().ToString()));
+            }
+        } catch (const std::exception &e) {
+            LogPrint(BCLog::DSPROOF, "Failure handling double spend proof. Peer: %d Reason: %s\n", pfrom->GetId(), e.what());
+            if (!dsp.GetId().IsNull())
+                g_mempool.doubleSpendProofStorage()->markProofRejected(dsp.GetId());
+            if (bannablePeerId > -1) {
+                LOCK(cs_main);
+                Misbehaving(bannablePeerId, 10, "bad-dsproof");
+            }
+            return false;
+        }
+        if (addedForTx && !dsp.GetId().IsNull()) { // added to mempool correctly, forward to nodes.
+            const CInv inv(MSG_DOUBLESPENDPROOF, dsp.GetId());
+            LogPrint(BCLog::DSPROOF, "  Good DSP, broadcasting an INV (Id: %s; outpoint: %s)\n",
+                                     inv.hash.ToString(), dsp.outPoint().ToString());
+            connman->ForEachNode([pfrom, &addedForTx, &inv](CNode *pnode) {
+                {
+                    LOCK(pnode->cs_filter);
+                    if(!pnode->fRelayTxes || pnode == pfrom)
+                        return;
+                    if (pnode->pfilter && !pnode->pfilter->IsRelevantAndUpdate(*addedForTx))
+                        return;
+                }
+                pnode->PushInventory(inv);
+            });
+        }
+
         return true;
     }
 
@@ -4490,6 +4620,16 @@ bool PeerLogicValidation::SendMessages(const Config &config, CNode *pto,
             }
         }
         pto->vInventoryBlockToSend.clear();
+
+        // add generic INVs (such as DSProofs, which will be sent immediately without delay)
+        for (const CInv &inv : pto->vInventoryToSend) {
+            vInv.push_back(inv);
+            if (vInv.size() == MAX_INV_SZ) {
+                connman->PushMessage(pto, msgMaker.Make(NetMsgType::INV, vInv));
+                vInv.clear();
+            }
+        }
+        pto->vInventoryToSend.clear();
 
         // Check whether periodic sends should happen
         bool fSendTrickle = pto->HasPermission(PF_NOBAN);
