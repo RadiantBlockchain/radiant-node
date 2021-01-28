@@ -544,15 +544,15 @@ pay attention to for reviewers of Bitcoin Cash Node code.
 
 - Initialize all non-static class members where they are defined
 
+    ```cpp
+    class A
+    {
+        uint32_t m_count{0};
+    }
+    ```
+
     - *Rationale*: Initializing the members in the declaration makes it easy to
       spot uninitialized ones, and avoids accidentally reading uninitialized memory
-
-```cpp
-class A
-{
-    uint32_t m_count{0};
-}
-```
 
 ### Strings and formatting
 
@@ -603,23 +603,23 @@ source code.
   the current scope, so surround the statement and the code that needs the lock
   with braces
 
-  OK:
+    OK:
 
-```c++
-{
+    ```c++
+    {
+        TRY_LOCK(cs_vNodes, lockNodes);
+        ...
+    }
+    ```
+
+    Wrong:
+
+    ```c++
     TRY_LOCK(cs_vNodes, lockNodes);
-    ...
-}
-```
-
-  Wrong:
-
-```c++
-TRY_LOCK(cs_vNodes, lockNodes);
-{
-    ...
-}
-```
+    {
+        ...
+    }
+    ```
 
 ### Scripts
 
@@ -630,14 +630,16 @@ TRY_LOCK(cs_vNodes, lockNodes);
       `#!/bin/bash` assumes it is always installed to /bin/ which can cause issues;
       `#!/usr/bin/env bash` searches the user's PATH to find the bash binary.
 
-  OK:
-```bash
-#!/usr/bin/env bash
-```
-  Wrong:
-```bash
-#!/bin/bash
-```
+    OK:
+    ```bash
+    #!/usr/bin/env bash
+    ```
+
+    Wrong:
+
+    ```bash
+    #!/bin/bash
+    ```
 
 ### Source code organization
 
@@ -663,15 +665,15 @@ TRY_LOCK(cs_vNodes, lockNodes);
 - Terminate namespaces with a comment (`// namespace mynamespace`). The comment
   should be placed on the same line as the brace closing the namespace, e.g.
 
-```c++
-namespace mynamespace {
-    ...
-} // namespace mynamespace
+    ```c++
+    namespace mynamespace {
+        ...
+    } // namespace mynamespace
 
-namespace {
-    ...
-} // namespace
-```
+    namespace {
+        ...
+    } // namespace
+    ```
 
     - *Rationale*: Avoids confusion about the namespace context
 
@@ -699,12 +701,12 @@ All headers should be lexically ordered inside their block.
 - Use include guards to avoid the problem of double inclusion. The header file
   `foo/bar.h` should use the include guard identifier `BITCOIN_FOO_BAR_H`, e.g.
 
-```c++
-#ifndef BITCOIN_FOO_BAR_H
-#define BITCOIN_FOO_BAR_H
-...
-#endif // BITCOIN_FOO_BAR_H
-```
+    ```c++
+    #ifndef BITCOIN_FOO_BAR_H
+    #define BITCOIN_FOO_BAR_H
+    ...
+    #endif // BITCOIN_FOO_BAR_H
+    ```
 
 ### GUI
 
@@ -828,23 +830,27 @@ Git and GitLab tips
 - For resolving merge/rebase conflicts, it can be useful to enable diff3 style using
   `git config merge.conflictstyle diff3`. Instead of
 
-        <<<
-        yours
-        ===
-        theirs
-        >>>
+    ```
+    <<<
+    yours
+    ===
+    theirs
+    >>>
+    ```
 
-  you will see
+    you will see
 
-        <<<
-        yours
-        |||
-        original
-        ===
-        theirs
-        >>>
+    ```
+    <<<
+    yours
+    |||
+    original
+    ===
+    theirs
+    >>>
+    ```
 
-  This may make it much clearer what caused the conflict. In this style, you can
+    This may make it much clearer what caused the conflict. In this style, you can
   often just look at what changed between *original* and *theirs*, and mechanically
   apply that to *yours* (or the other way around).
 
@@ -866,9 +872,11 @@ Git and GitLab tips
 - When looking at other's pull requests, it may make sense to add the following
   section to your `.git/config` file:
 
-        [remote "upstream-merges"]
-                url = git@gitlab.com:bitcoin-cash-node/bitcoin-cash-node.git
-                fetch = +refs/merge-requests/*/head:refs/remotes/upstream-merges/merge-requests/*
+    ```
+    [remote "upstream-merges"]
+            url = git@gitlab.com:bitcoin-cash-node/bitcoin-cash-node.git
+            fetch = +refs/merge-requests/*/head:refs/remotes/upstream-merges/merge-requests/*
+    ```
 
   This will add an `upstream-merges` remote to your git repository, which can be
   fetched using `git fetch --all` or `git fetch upstream-merges`. Afterwards, you

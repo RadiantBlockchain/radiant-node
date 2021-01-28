@@ -95,16 +95,20 @@ still compatible with the minimum supported Linux distribution versions.
 
 Example usage after a gitian build:
 
-    find ../gitian-builder/build -type f -executable | xargs python3 contrib/devtools/symbol-check.py
+```
+find ../gitian-builder/build -type f -executable | xargs python3 contrib/devtools/symbol-check.py
+```
 
 If only supported symbols are used the return value will be 0 and the output will be empty.
 
 If there are 'unsupported' symbols, the return value will be 1 a list like this will be printed:
 
-    .../64/test_bitcoin: symbol memcpy from unsupported version GLIBC_2.14
-    .../64/test_bitcoin: symbol __fdelt_chk from unsupported version GLIBC_2.15
-    .../64/test_bitcoin: symbol std::out_of_range::~out_of_range() from unsupported version GLIBCXX_3.4.15
-    .../64/test_bitcoin: symbol _ZNSt8__detail15_List_nod from unsupported version GLIBCXX_3.4.15
+```
+.../64/test_bitcoin: symbol memcpy from unsupported version GLIBC_2.14
+.../64/test_bitcoin: symbol __fdelt_chk from unsupported version GLIBC_2.15
+.../64/test_bitcoin: symbol std::out_of_range::~out_of_range() from unsupported version GLIBCXX_3.4.15
+.../64/test_bitcoin: symbol _ZNSt8__detail15_List_nod from unsupported version GLIBCXX_3.4.15
+```
 
 update-translations.py
 ======================
@@ -126,5 +130,7 @@ This looks only at which files include other files, treating the `.cpp` and `.h`
 
 Example usage:
 
-    cd <project root>/src
-    ../contrib/devtools/circular-dependencies.py {*,*/*,*/*/*}.{h,cpp}
+```
+cd <project root>/src
+../contrib/devtools/circular-dependencies.py {*,*/*,*/*/*}.{h,cpp}
+```
