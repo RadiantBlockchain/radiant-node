@@ -160,7 +160,7 @@ bool parseBitcoinURI(const QString &scheme, const QUrl &uri,
     rv.amount = Amount::zero();
 
     const QUrlQuery uriQuery(uri);
-    for (auto & [key, value] : uriQuery.queryItems()) {
+    for (auto [key, value] : uriQuery.queryItems()) {
         bool required = false;
         if (key.startsWith("req-")) {
             key.remove(0, 4);
