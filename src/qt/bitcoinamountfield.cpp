@@ -16,6 +16,8 @@
 #include <QKeyEvent>
 #include <QLineEdit>
 
+#include <cassert>
+
 /**
  * QSpinBox that uses fixed-point numbers internally and uses our own
  * formatting/parsing functions.
@@ -33,7 +35,7 @@ public:
                 &AmountSpinBox::valueChanged);
     }
 
-    QValidator::State validate(QString &text, int &pos) const override {
+    QValidator::State validate(QString &text, int &pos [[maybe_unused]]) const override {
         if (text.isEmpty()) {
             return QValidator::Intermediate;
         }
@@ -42,8 +44,7 @@ public:
         // Return Invalid for non-numeric characters - this will prevent them from being typed/pasted into the input field.
         // Note the input field is intended for unsigned amounts only (in MoneyRange),
         // so plus/minus signs are also rejected even though the amount parser can handle them.
-        for (int idx = 0; idx < digits.size(); ++idx) {
-            QChar chr = digits.at(idx);
+        for (const QChar& chr : digits) {
             if ((chr < '0' || chr > '9') && chr != '.' && chr != ',') {
                 return QValidator::Invalid;
             }
@@ -162,7 +163,8 @@ private:
 protected:
     bool event(QEvent *event) override {
         if (event->type() == QEvent::KeyPress || event->type() == QEvent::KeyRelease) {
-            QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+            QKeyEvent *keyEvent = dynamic_cast<QKeyEvent *>(event);
+            assert(keyEvent != nullptr);
             // Translate a comma into a period or vice versa, depending on locale.
             bool preferComma = BitcoinUnits::decimalSeparatorIsComma();
             if (keyEvent->key() == (preferComma ? Qt::Key_Period : Qt::Key_Comma)) {
