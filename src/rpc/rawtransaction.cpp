@@ -1757,7 +1757,7 @@ static const ContextFreeRPCCommand commands[] = {
 // clang-format on
 
 void RegisterRawTransactionRPCCommands(CRPCTable &t) {
-    for (unsigned int vcidx = 0; vcidx < ARRAYLEN(commands); vcidx++) {
+    for (unsigned int vcidx = 0; vcidx < std::size(commands); ++vcidx) {
         t.appendCommand(commands[vcidx].name, &commands[vcidx]);
     }
 }
