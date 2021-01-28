@@ -1,148 +1,166 @@
 Translations
 ============
 
-Bitcoin Cash Node does not have an automated process set up to assist
-with translation.
+The Bitcoin Cash Node graphical user interface is translated on Crowdin:
 
-The description retained below is for the Bitcoin Core project.
+  <https://crowdin.com/project/bitcoin-cash-node>
 
-Bitcoin Cash Node developers may use translation data made available by
-Bitcoin Core or other projects that publish translations under compatible
-licenses until a specific process is established.
+Contributing to translations
+----------------------------
 
+### Step 1: Join the Crowdin project
 
-Translations in Bitcoin Cash Node
----------------------------------
+To contribute to translations, you must create a Crowdin account and join the
+[BCHN project on Crowdin](https://crowdin.com/project/bitcoin-cash-node).
 
-The Bitcoin-Core project has been designed to support multiple localisations. This
-makes adding new phrases, and completely new languages easily achievable. For managing
-all application translations, Bitcoin-Core makes use of the Transifex online translation
-management tool.
+### Step 2: Activate your language
 
-### Helping to translate (using Transifex)
-Transifex is setup to monitor the GitHub repo for updates, and when code containing
-new translations is found, Transifex will process any changes. It may take several
-hours after a pull-request has been merged, to appear in the Transifex web interface.
+If you already see your language in the
+[BCHN project on Crowdin](https://crowdin.com/project/bitcoin-cash-node), you
+can proceed with the next step.
 
-Multiple language support is critical in assisting Bitcoin’s global adoption, and
-growth. One of Bitcoin’s greatest strengths is cross-border money transfers, any
-help making that easier is greatly appreciated.
+If not, then a maintainer first needs to turn on your language in the Crowdin
+project. To do so, we need at least one proofreader for the language (see
+*Proofread translations* below).
 
-See the [Transifex Bitcoin project](https://www.transifex.com/projects/p/bitcoin/)
-to assist in translations. You should also join the translation mailing list for
-announcements - see details below.
+Note that the BCHN software contains translations in languages that are not
+currently active in Crowdin. Software users can still use those translations,
+but at the moment they are not maintained.
 
-### Writing code with translations
-We use automated scripts to help extract translations in both Qt, and non-Qt source
-files. It is rarely necessary to manually edit the files in `src/qt/locale/`. The
-translation source files must adhere to the following format:
-`bitcoin_xx_YY.ts or bitcoin_xx.ts`
+### Step 3: Translate strings
 
-`src/qt/locale/bitcoin_en.ts` is treated in a special way. It is used as the source
-for all other translations. Whenever a string in the source code is changed, this
-file must be updated to reflect those changes. A custom script is used to extract
-strings from the non-Qt parts. This script makes use of `gettext`, so make sure
-that utility is installed (ie, `apt-get install gettext` on Ubuntu/Debian). Once
-this has been updated, `lupdate` (included in the Qt SDK) is used to update `bitcoin_en.ts`.
+On [Crowdin](https://crowdin.com/project/bitcoin-cash-node), click on your
+language and then on `bitcoin_en.ts` to begin translating. Select a source
+string you want to translate and enter your translation.
 
+At the bottom of the screen, you will find helpful automatic suggestions. Click
+on a suggestion to use it, and adapt it as needed. The suggestions consist of
+translation memory and machine translations. Translation memory is previous
+translations of similar source strings, which includes other translations within
+BCHN,
+[imported translations from Bitcoin Core](https://crowdin.com/project/bchn-copy-of-bitcoin-core),
+and other translations from other software projects on Crowdin. Machine
+translations are computer-generated suggestions.
+
+For inspiration, you can also see how a string was translated into other languages.
+
+Ensure that terminology is consistent throughout your language. You can use the
+search functionality to find out how particular technical terms were translated
+in other sentences in the same language.
+
+### Step 4: Proofread translations
+
+For quality assurance purposes, every proposed translation must be verified by a
+proofreader before it can be included in the BCHN software. To do so, you first
+need to obtain the proofreader permission for your language. Contact us if you
+are a member of the Bitcoin Cash community we can trust and you want to be a
+proofreader for a particular language.
+
+As a proofreader, you can click the checkmark to mark a translation as verified.
+Verifying a translation means that it is good enough for inclusion in our
+software: if unverified, the original American English text will be shown to
+users instead. It is fine to approve your own translation proposals. If needed,
+proofreaders can always change previously verified translations at a later
+moment.
+
+Managing translations
+---------------------
+
+### Exporting source strings from Git to Crowdin
+
+We use automated scripts to help extract translations in both Qt, and non-Qt
+source files. It is rarely necessary to manually edit the files in
+`src/qt/locale/`. The translation files adhere to the format `bitcoin_xx_YY.ts`
+or `bitcoin_xx.ts`.
+
+`src/qt/locale/bitcoin_en.ts` is used as the source for all other translations.
 To regenerate the `bitcoin_en.ts` file, run the following commands:
+
 ```sh
 cd <build-dir>
 ninja translate
 ```
 
-`contrib/bitcoin-qt.pro` takes care of generating `.qm` (binary compiled) files
-from `.ts` (source files) files. It’s mostly automated, and you shouldn’t need to
-worry about it.
+Create a Merge Request to update the regenerated files in our Git repository.
+You can use the following commands to create the commit:
 
-**Example Qt translation**
-```cpp
-QToolBar *toolbar = addToolBar(tr("Tabs toolbar"));
-```
-
-### Creating a pull-request
-For general PRs, you shouldn’t include any updates to the translation source files.
-They will be updated periodically, primarily around pre-releases, allowing time for
-any new phrases to be translated before public releases. This is also important
-in avoiding translation related merge conflicts.
-
-When an updated source file is merged into the GitHub repo, Transifex will automatically
-detect it (although it can take several hours). Once processed, the new strings
-will show up as "Remaining" in the Transifex web interface and are ready for translators.
-
-To create the pull-request, use the following commands:
-```
+```sh
 git add src/qt/bitcoinstrings.cpp src/qt/locale/bitcoin_en.ts
 git commit
 ```
 
-### Creating a Transifex account
-Visit the [Transifex Signup](https://www.transifex.com/signup/) page to create an
-account. Take note of your username and password, as they will be required to configure
-the command-line tool.
+On Crowdin, go to
+[*Settings*, *Files*](https://crowdin.com/project/bitcoin-cash-node/settings#files),
+click *Update*, and upload the new version of `bitcoin_en.ts` you just
+generated. Translators can now begin translating new/modified source strings.
 
-You can find the Bitcoin translation project at [https://www.transifex.com/projects/p/bitcoin/](https://www.transifex.com/projects/p/bitcoin/).
+#### Notes
 
-### Installing the Transifex client command-line tool
-The client it used to fetch updated translations. If you are having problems, or
-need more details, see [http://docs.transifex.com/developer/client/setup](http://docs.transifex.com/developer/client/setup)
+* A custom script is used to extract strings from the non-Qt parts. This script
+  makes use of `gettext`, so make sure that utility is installed (i.e.,
+  `apt-get install gettext` on Ubuntu/Debian). Once this has been updated,
+  `lupdate` (included in the Qt SDK) is used to update `bitcoin_en.ts`.
+* `contrib/bitcoin-qt.pro` takes care of generating `.qm` (binary compiled)
+  files from `.ts` (source files) files. It’s mostly automated, and you
+  shouldn’t need to worry about it.
+* For general MRs, you shouldn’t include any updates to the translation source
+  files. They will be updated periodically in separate MRs. This is important to
+  avoid translation-related merge conflicts.
 
-**For Linux and Mac**
+#### Plurals
 
-`pip install transifex-client`
+When new plurals are added to the source file, it’s important to do the
+following steps:
 
-Setup your Transifex client config as follows. Please *ignore the token field*.
+1. Open `bitcoin_en.ts` in Qt Linguist (included in the Qt SDK).
+2. Search for `%n`, which will take you to the parts in the translation that
+   use plurals.
+3. Look for empty `English Translation (Singular)` and
+   `English Translation (Plural)` fields.
+4. Add the appropriate strings for the singular and plural form of the base
+   string.
+5. Mark the item as done (via the green arrow symbol in the toolbar).
+6. Repeat from step 2, until all singular and plural forms are in the source
+   file.
+7. Save the source file.
 
-```ini
-nano ~/.transifexrc
+### Importing verified translations from Crowdin into Git
 
-[https://www.transifex.com]
-hostname = https://www.transifex.com
-password = PASSWORD
-token =
-username = USERNAME
-```
+On Crowdin, go to
+[*Settings*, *Translations*](https://crowdin.com/project/bitcoin-cash-node/settings#translations),
+and click *Build & Download*. Replace the files in the `src/qt/locale/`
+directory with the files you just downloaded from Crowdin (some may need to be
+renamed). Commit the changes and submit them as a Merge Request.
 
-**For Windows**
+Since *Export only approved translations* is enabled in the Crowdin project
+settings, any unverified translations won’t be included in your download.
 
-Please see [http://docs.transifex.com/developer/client/setup#windows](http://docs.transifex.com/developer/client/setup#windows)
-for details on installation.
+### Updating Bitcoin Core translation memory in Crowdin
 
-The Transifex Bitcoin project config file is included as part of the repo. It can
-be found at `.tx/config`, however you shouldn’t need change anything.
+In order to provide translators with helpful automatic suggestions based on
+previous translation work in Bitcoin Core, BCHN maintains a copy of Bitcoin
+Core’s translations in a separate Crowdin project:
 
-### Synchronising translations
-To assist in updating translations, we have created a script to help.
+  <https://crowdin.com/project/bchn-copy-of-bitcoin-core>
 
-1. `python contrib/devtools/update-translations.py`
-2. Update `src/qt/bitcoin_locale.qrc` manually or via
-   `ls src/qt/locale/*ts|xargs -n1 basename|sed 's/\(bitcoin_\(.*\)\).ts/<file alias="\2">locale\/\1.qm<\/file>/'`
-3. Update `src/Makefile.qt.include` manually or via
-   `ls src/qt/locale/*ts|xargs -n1 basename|sed 's/\(bitcoin_\(.*\)\).ts/
-   qt\/locale\/\1.ts \\/'`
-4. `git add` new translations from `src/qt/locale/`
+To update these:
 
-**Do not directly download translations** one by one from the Transifex website,
-as we do a few post-processing steps before committing the translations.
+1. Go to
+   [*Settings*, *Files*](https://crowdin.com/project/bchn-copy-of-bitcoin-core/settings#files),
+   and upload `src/qt/locale/bitcoin_en.ts` from the
+   [Bitcoin Core Git repository](https://github.com/bitcoin/bitcoin).
+2. Go to
+   [*Settings*, *Translations*](https://crowdin.com/project/bchn-copy-of-bitcoin-core/settings#translations),
+   and upload the other `src/qt/locale/bitcoin_*.ts` files.
+3. Go to
+   [*Settings*, *General*](https://crowdin.com/project/bchn-copy-of-bitcoin-core/settings#general)
+   and change the version number to the last Bitcoin Core release.
 
-### Handling Plurals (in source files)
-When new plurals are added to the source file, it's important to do the following
-steps:
+### Registering languages in Bitcoin-Qt
 
-1. Open `bitcoin_en.ts` in Qt Linguist (included in the Qt SDK)
-2. Search for `%n`, which will take you to the parts in the translation that use
-   plurals
-3. Look for empty `English Translation (Singular)` and `English Translation (Plural)`
-   fields
-4. Add the appropriate strings for the singular and plural form of the base string
-5. Mark the item as done (via the green arrow symbol in the toolbar)
-6. Repeat from step 2, until all singular and plural forms are in the source file
-7. Save the source file
-
-### Translating a new language
-To create a new language template, you will need to edit the languages manifest file
-`src/qt/bitcoin_locale.qrc` and add a new entry. Below is an example of the English
-language entry.
+To create a new language template, you will need to edit the languages manifest
+file `src/qt/bitcoin_locale.qrc` and add a new entry. Below is an example of the
+English language entry.
 
 ```xml
 <qresource prefix="/translations">
@@ -151,14 +169,5 @@ language entry.
 </qresource>
 ```
 
-**Note:** that the language translation file **must end in `.qm`**
-(the compiled extension), and not `.ts`.
-
-### Questions and general assistance
-The Bitcoin-Core translation maintainers include *tcatm, seone, Diapolo, wumpus
-and luke-jr*. You can find them, and others, in the Freenode IRC
-chatroom - `irc.freenode.net #bitcoin-core-dev`.
-
-If you are a translator, you should also subscribe to the mailing list,
-<https://groups.google.com/forum/#!forum/bitcoin-translators>. Announcements will
-be posted during application pre-releases to notify translators to check for updates.
+Note that the language translation file must end in `.qm` (the compiled
+extension), and not `.ts`.
