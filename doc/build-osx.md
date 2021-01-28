@@ -40,7 +40,9 @@ When the popup appears, click *Install*.
 
 If you want to run ZMQ tests with the test framework, you need the zmq python module:
 
-    pip3 install pyzmq
+```
+pip3 install pyzmq
+```
 
 Build Bitcoin Cash Node
 ------------------------

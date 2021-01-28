@@ -28,27 +28,29 @@ tail -f var/build.log
 
 Output from `gbuild` will look something like
 
-    Initialized empty Git repository in /home/gitianuser/gitian-builder/inputs/bitcoin/.git/
-    remote: Counting objects: 57959, done.
-    remote: Total 57959 (delta 0), reused 0 (delta 0), pack-reused 57958
-    Receiving objects: 100% (57959/57959), 53.76 MiB | 484.00 KiB/s, done.
-    Resolving deltas: 100% (41590/41590), done.
-    From https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node.git
-    ... (new tags, new branch etc)
-    --- Building for trusty amd64 ---
-    Stopping target if it is up
-    Making a new image copy
-    stdin: is not a tty
-    Starting target
-    Checking if target is up
-    Preparing build environment
-    Updating apt-get repository (log in var/install.log)
-    Installing additional packages (log in var/install.log)
-    Grabbing package manifest
-    stdin: is not a tty
-    Creating build script (var/build-script)
-    lxc-start: Connection refused - inotify event with no name (mask 32768)
-    Running build script (log in var/build.log)
+```
+Initialized empty Git repository in /home/gitianuser/gitian-builder/inputs/bitcoin/.git/
+remote: Counting objects: 57959, done.
+remote: Total 57959 (delta 0), reused 0 (delta 0), pack-reused 57958
+Receiving objects: 100% (57959/57959), 53.76 MiB | 484.00 KiB/s, done.
+Resolving deltas: 100% (41590/41590), done.
+From https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node.git
+... (new tags, new branch etc)
+--- Building for trusty amd64 ---
+Stopping target if it is up
+Making a new image copy
+stdin: is not a tty
+Starting target
+Checking if target is up
+Preparing build environment
+Updating apt-get repository (log in var/install.log)
+Installing additional packages (log in var/install.log)
+Grabbing package manifest
+stdin: is not a tty
+Creating build script (var/build-script)
+lxc-start: Connection refused - inotify event with no name (mask 32768)
+Running build script (log in var/build.log)
+```
 
 Building an alternative repository
 ----------------------------------

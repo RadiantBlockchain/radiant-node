@@ -60,20 +60,20 @@ Make sure you install all the build requirements mentioned above.
 Then, install the toolchain and some additional dependencies:
 
 ```bash
-    sudo apt-get install autoconf automake curl g++-arm-linux-gnueabihf gcc-arm-linux-gnueabihf gperf pkg-config libtool
+sudo apt-get install autoconf automake curl g++-arm-linux-gnueabihf gcc-arm-linux-gnueabihf gperf pkg-config libtool
 ```
 
 To build executables for ARM:
 
 ```bash
-    cd depends
-    make build-linux-arm
-    cd ..
-    mkdir build
-    cd build
-    cmake -GNinja .. -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/LinuxARM.cmake -DENABLE_GLIBC_BACK_COMPAT=ON -DENABLE_STATIC_LIBSTDCXX=ON
-    ninja
-    ninja check # recommended
+cd depends
+make build-linux-arm
+cd ..
+mkdir build
+cd build
+cmake -GNinja .. -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/LinuxARM.cmake -DENABLE_GLIBC_BACK_COMPAT=ON -DENABLE_STATIC_LIBSTDCXX=ON
+ninja
+ninja check # recommended
 ```
 
 For further documentation on the depends system see [README.md](../depends/README.md)
@@ -89,19 +89,19 @@ Make sure you install all the build requirements mentioned above.
 Then, install the toolchain and some additional dependencies:
 
 ```bash
-    sudo apt-get install autoconf automake curl gcc-aarch64-linux-gnu g++-aarch64-linux-gnu gperf pkg-config libtool
+sudo apt-get install autoconf automake curl gcc-aarch64-linux-gnu g++-aarch64-linux-gnu gperf pkg-config libtool
 ```
 
 To build executables for AArch64:
 
 ```bash
-    cd depends
-    make build-linux-aarch64
-    cd ..
-    mkdir build
-    cd build
-    cmake -GNinja .. -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/LinuxAArch64.cmake -DBUILD_BITCOIN_ZMQ=OFF
-    ninja
+cd depends
+make build-linux-aarch64
+cd ..
+mkdir build
+cd build
+cmake -GNinja .. -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/LinuxAArch64.cmake -DBUILD_BITCOIN_ZMQ=OFF
+ninja
 ```
 
 For further documentation on the depends system see [README.md](../depends/README.md)
@@ -124,7 +124,7 @@ memory available when compiling Bitcoin Cash Node. On systems with less, gcc can
 be tuned to conserve memory with additional CXXFLAGS:
 
 ```bash
-    cmake -GNinja -DCXXFLAGS="--param ggc-min-expand=1 --param ggc-min-heapsize=32768" ..
+cmake -GNinja -DCXXFLAGS="--param ggc-min-expand=1 --param ggc-min-heapsize=32768" ..
 ```
 
 ### Strip debug symbols
@@ -139,8 +139,10 @@ It can be downloaded from [here](http://miniupnp.tuxfamily.org/files/).
 UPnP support is compiled in and turned off by default.
 See the cmake options for upnp behavior desired:
 
-    ENABLE_UPNP            Enable UPnP support (miniupnp required, default ON)
-    START_WITH_UPNP        UPnP support turned on by default at runtime (default OFF)
+```
+ENABLE_UPNP            Enable UPnP support (miniupnp required, default ON)
+START_WITH_UPNP        UPnP support turned on by default at runtime (default OFF)
+```
 
 ## Security
 
@@ -164,16 +166,16 @@ Hardening enables the following features:
     To test that you have built PIE executable, install `scanelf`, part of `pax-utils`,
     and use:
 
-```bash
-      scanelf -e ./bitcoin
-```
+    ```bash
+    scanelf -e ./bitcoin
+    ```
 
     The output should contain:
 
-```bash
-      TYPE
-      ET_DYN
-```
+    ```bash
+    TYPE
+    ET_DYN
+    ```
 
 * _Non-executable Stack_: If the stack is executable then trivial stack-based buffer
   overflow exploits are possible if vulnerable buffers are found. By default, Bitcoin
@@ -184,16 +186,16 @@ Hardening enables the following features:
 
     To verify that the stack is non-executable after compiling use:
 
-```bash
-      scanelf -e ./bitcoin
-```
+    ```bash
+    scanelf -e ./bitcoin
+    ```
 
     The output should contain:
 
-```
-      STK/REL/PTL
-      RW- R-- RW-
-```
+    ```
+    STK/REL/PTL
+    RW- R-- RW-
+    ```
 
     The `STK RW-` means that the stack is readable and writeable but not executable.
 

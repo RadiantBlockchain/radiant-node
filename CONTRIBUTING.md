@@ -140,8 +140,10 @@ Getting set up with the Bitcoin Cash Node Repository
 
 8. You may want to add the `mreq` alias to your `.git/config`:
 
-        [alias]
-        mreq = !sh -c 'git fetch $1 merge-requests/$2/head:mr-$1-$2 && git checkout mr-$1-$2' -
+    ```
+    [alias]
+    mreq = !sh -c 'git fetch $1 merge-requests/$2/head:mr-$1-$2 && git checkout mr-$1-$2' -
+    ```
 
     This `mreq` alias can be used to easily check out Merge Requests from our
     main repository if you intend to test them or work on them.
@@ -177,9 +179,11 @@ as a Merge Request.
 
     For example, for macOS:
 
-        curl http://releases.llvm.org/8.0.0/clang+llvm-8.0.0-x86_64-apple-darwin.tar.xz | tar -xJv
-        ln -s $PWD/clang+llvm-8.0.0-x86_64-apple-darwin/bin/clang-format /usr/local/bin/clang-format
-        ln -s $PWD/clang+llvm-8.0.0-x86_64-apple-darwin/bin/clang-tidy /usr/local/bin/clang-tidy
+    ```
+    curl http://releases.llvm.org/8.0.0/clang+llvm-8.0.0-x86_64-apple-darwin.tar.xz | tar -xJv
+    ln -s $PWD/clang+llvm-8.0.0-x86_64-apple-darwin/bin/clang-format /usr/local/bin/clang-format
+    ln -s $PWD/clang+llvm-8.0.0-x86_64-apple-darwin/bin/clang-tidy /usr/local/bin/clang-tidy
+    ```
 
     To install `autopep8`, `flake8` and `phpcs` on Ubuntu:
 

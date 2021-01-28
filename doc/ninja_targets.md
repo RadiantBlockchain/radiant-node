@@ -240,7 +240,9 @@ Builds and installs the project.
 You can override the installation root (which defaults to /usr/local) by defining
 the `CMAKE_INSTALL_PREFIX` when you configure your build, like this:
 
-    cmake -DCMAKE_INSTALL_PREFIX=${your_install_root_path} -GNinja ..
+```
+cmake -DCMAKE_INSTALL_PREFIX=${your_install_root_path} -GNinja ..
+```
 
 where you can use `$HOME` or `$(pwd)` (if you want to install into your build folder)
 or whatever you prefer for `${your_install_root_path}`.

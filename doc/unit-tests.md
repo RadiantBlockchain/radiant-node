@@ -42,11 +42,15 @@ that implement new `BOOST_AUTO_TEST_SUITE` sections.
 `test_bitcoin` has some built-in command-line arguments; for
 example, to run just the `getarg_tests` verbosely:
 
-    test_bitcoin --log_level=all --run_test=getarg_tests
+```
+test_bitcoin --log_level=all --run_test=getarg_tests
+```
 
 ... or to run just the doubledash test:
 
-    test_bitcoin --run_test=getarg_tests/doubledash
+```
+test_bitcoin --run_test=getarg_tests/doubledash
+```
 
 Run `test_bitcoin --help` for the full list.
 
@@ -69,6 +73,7 @@ explaining how the boost unit test framework works:
 ### Debugging unit tests
 
 Simple example of debugging unit tests with GDB on Linux:
+
 ```
 cd /build/src/test
 gdb test_bitcoin
@@ -80,6 +85,7 @@ c           # continue
 ```
 
 Simple example of debugging unit tests with LLDB (OSX or Linux):
+
 ```
 cd /build/src/test
 lldb -- test_bitcoin

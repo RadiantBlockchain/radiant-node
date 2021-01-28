@@ -125,20 +125,20 @@ To select a different button, press `Tab`.
 - Disk setup
     - Partitioning method: Guided - Use the entire disk
 
-![](figs/debian_install_11_partition_disks.png)
+    ![](figs/debian_install_11_partition_disks.png)
 
     - Select disk to partition: SCSI1 (0,0,0)
 
-![](figs/debian_install_12_choose_disk.png)
+    ![](figs/debian_install_12_choose_disk.png)
 
     - Partition Disks -> *All files in one partition*
 
-![](figs/all_files_in_one_partition.png)
+    ![](figs/all_files_in_one_partition.png)
 
     - Finish partitioning and write changes to disk -> *Yes* (`Tab`, `Enter` to select the `Yes` button)
 
-![](figs/debian_install_14_finish.png)
-![](figs/debian_install_15_write_changes.png)
+    ![](figs/debian_install_14_finish.png)
+    ![](figs/debian_install_15_write_changes.png)
 
 - The base system will be installed, this will take a minute or so
 - Scan another CD or DVD? -> *No*
@@ -180,20 +180,22 @@ On Windows you can use [putty](https://www.chiark.greenend.org.uk/~sgtatham/putt
 
 For example, to connect as `gitianuser` from a Linux command prompt use
 
-    $ ssh gitianuser@localhost -p 22222
-    The authenticity of host '[localhost]:22222 ([127.0.0.1]:22222)' can't be established.
-    RSA key fingerprint is ae:f5:c8:9f:17:c6:c7:1b:c2:1b:12:31:1d:bb:d0:c7.
-    Are you sure you want to continue connecting (yes/no)? yes
-    Warning: Permanently added '[localhost]:22222' (RSA) to the list of known hosts.
-    gitianuser@localhost's password: (enter gitianuser password configured during install)
+```
+$ ssh gitianuser@localhost -p 22222
+The authenticity of host '[localhost]:22222 ([127.0.0.1]:22222)' can't be established.
+RSA key fingerprint is ae:f5:c8:9f:17:c6:c7:1b:c2:1b:12:31:1d:bb:d0:c7.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added '[localhost]:22222' (RSA) to the list of known hosts.
+gitianuser@localhost's password: (enter gitianuser password configured during install)
 
-    The programs included with the Debian GNU/Linux system are free software;
-    the exact distribution terms for each program are described in the
-    individual files in /usr/share/doc/*/copyright.
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
 
-    Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
-    permitted by applicable law.
-    gitianuser@debian:~$
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+gitianuser@debian:~$
+```
 
 Use `sudo` to execute commands as root.
 
