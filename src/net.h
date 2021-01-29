@@ -14,6 +14,7 @@
 #include <chainparams.h>
 #include <compat.h>
 #include <crypto/siphash.h>
+#include <dsproof/dspid.h>
 #include <extversion.h>
 #include <hash.h>
 #include <limitedmap.h>
@@ -873,6 +874,11 @@ public:
         } else if (inv.type == MSG_BLOCK) {
             // inv.hash is a BlockHash
             vInventoryBlockToSend.emplace_back(inv.hash);
+        } else if (inv.type == MSG_DOUBLESPENDPROOF) {
+            // inv.hash is a DspId
+            if (!filterInventoryKnown.contains(inv.hash)) {
+                vInventoryToSend.push_back(inv);
+            }
         } else if (inv.type) {
             vInventoryToSend.push_back(inv);
         }

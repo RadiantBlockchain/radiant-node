@@ -6,11 +6,14 @@
 #ifndef BITCOIN_VALIDATIONINTERFACE_H
 #define BITCOIN_VALIDATIONINTERFACE_H
 
+#include <dsproof/dspid.h>
+#include <net_nodeid.h>
 #include <primitives/transaction.h> // CTransaction(Ref)
 #include <sync.h>
 
 #include <functional>
 #include <memory>
+#include <vector>
 
 extern RecursiveMutex cs_main;
 class CBlock;
@@ -96,6 +99,25 @@ protected:
      * Called on a background thread.
      */
     virtual void TransactionAddedToMempool(const CTransactionRef &ptxn) {}
+
+    /**
+     * Notifies listeners of a new valid double-spend proof having been
+     * created or received from peers, and having been just associated
+     * with a transaction.
+     *
+     * Called on a background thread.
+     */
+    virtual void TransactionDoubleSpent(const CTransactionRef &ptxn, const DspId &dspId) {}
+
+    /**
+     * Notifies listeners that a received double-spend proof turned out to be
+     * bad or invalid. The nodeIds are (possibly already-disconnected) peer(s)
+     * from which the invalid dsproofs originated.
+     *
+     * Called on a background thread.
+     */
+    virtual void BadDSProofsDetectedFromNodeIds(const std::vector<NodeId> &nodeIds) {}
+
     /**
      * Notifies listeners of a transaction leaving mempool.
      *
@@ -107,6 +129,7 @@ protected:
      * Called on a background thread.
      */
     virtual void TransactionRemovedFromMempool(const CTransactionRef &ptx) {}
+
     /**
      * Notifies listeners of a block being connected.
      * Provides a vector of transactions evicted from the mempool as a result.
@@ -200,6 +223,8 @@ public:
     void UpdatedBlockTip(const CBlockIndex *, const CBlockIndex *,
                          bool fInitialDownload);
     void TransactionAddedToMempool(const CTransactionRef &);
+    void TransactionDoubleSpent(const CTransactionRef &, const DspId &);
+    void BadDSProofsDetectedFromNodeIds(const std::vector<NodeId> &);
     void
     BlockConnected(const std::shared_ptr<const CBlock> &,
                    const CBlockIndex *pindex,

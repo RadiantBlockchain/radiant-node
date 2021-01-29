@@ -2953,18 +2953,6 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
                 EraseOrphanTx(idOfOrphanTxToErase);
             }
 
-            // If a tx validates and is accepted, it may have some orphan doublespend proofs associated with it that
-            // turned out ot be fake proofs, in which case we need to punish the peers that gave us those proofs.
-            // NB: The below branch will not be taken if dsproofs are globally disabled (-doublespendproof=0).
-            if (state.HasDSPBadNodeIds()) {
-                static_assert (std::is_same<std::decay<decltype(state.GetDSPBadNodeIds()[0])>::type, NodeId>::value,
-                               "Please update consensus/validation.h to match types for dsp.badNodeIds[0] with NodeId");
-                for (const auto &nId : state.GetDSPBadNodeIds()) {
-                    // Punish peer that gave us an invalid orphan tx, if they are still connected
-                    Misbehaving(nId, 10, "bad-dsproof");
-                }
-                LogPrint(BCLog::DSPROOF, "Recovered dsproof-orphan didn't validate\n");
-            }
         } else if (fMissingInputs) {
             // It may be the case that the orphans parents have all been
             // rejected.
@@ -3017,27 +3005,6 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
                 recentRejects->insert(tx.GetId());
                 if (RecursiveDynamicUsage(*ptx) < 100000) {
                     AddToCompactExtraTransactions(ptx);
-                }
-            }
-
-            // NB: The below branch will not be taken if dsproofs are globally disabled (-doublespendproof=0).
-            if (state.HasDSPHash()) { // tx was double-spent, now broadcast the proof
-                static_assert (std::is_same<std::decay<decltype(state.GetDSPHash())>::type, DspId>::value,
-                               "Please update consensus/validation.h to match types for dsp.hash with DspId");
-
-                const auto dsp = g_mempool.doubleSpendProofStorage()->lookup(state.GetDSPHash());
-                if (!dsp.isEmpty()) {
-                    LogPrint(BCLog::DSPROOF, "  DSP found, broadcasting an INV\n");
-                    inv = CInv(MSG_DOUBLESPENDPROOF, dsp.GetId());
-                    connman->ForEachNode([ptx, inv](CNode *pnode) {
-                        {
-                            LOCK(pnode->cs_filter);
-                            if (pnode->pfilter && !pnode->pfilter->IsRelevantAndUpdate(*ptx))
-                                return;
-
-                        }
-                        pnode->PushInventory(inv);
-                    });
                 }
             }
 
@@ -3819,25 +3786,17 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
             if (!dsp.GetId().IsNull())
                 g_mempool.doubleSpendProofStorage()->markProofRejected(dsp.GetId());
             if (bannablePeerId > -1) {
-                LOCK(cs_main);
-                Misbehaving(bannablePeerId, 10, "bad-dsproof");
+                // signal that a bad proof was seen & punish peer
+                GetMainSignals().BadDSProofsDetectedFromNodeIds(std::vector<NodeId>(1, bannablePeerId));
             }
             return false;
         }
         if (addedForTx && !dsp.GetId().IsNull()) { // added to mempool correctly, forward to nodes.
-            const CInv inv(MSG_DOUBLESPENDPROOF, dsp.GetId());
-            LogPrint(BCLog::DSPROOF, "  Good DSP, broadcasting an INV (Id: %s; outpoint: %s)\n",
-                                     inv.hash.ToString(), dsp.outPoint().ToString());
-            connman->ForEachNode([pfrom, &addedForTx, &inv](CNode *pnode) {
-                {
-                    LOCK(pnode->cs_filter);
-                    if(!pnode->fRelayTxes || pnode == pfrom)
-                        return;
-                    if (pnode->pfilter && !pnode->pfilter->IsRelevantAndUpdate(*addedForTx))
-                        return;
-                }
-                pnode->PushInventory(inv);
-            });
+            const auto &dspId = dsp.GetId();
+            LogPrint(BCLog::DSPROOF, "  Good DSP (tx: %s  dspId: %s  outpoint: %s)\n",
+                                     addedForTx->GetId().ToString(), dspId.ToString(), dsp.outPoint().ToString());
+            // broadcast inv to peers and/or tell other subsystems about this dsp<->tx association
+            GetMainSignals().TransactionDoubleSpent(addedForTx, dspId);
         }
 
         return true;
@@ -4987,6 +4946,30 @@ bool PeerLogicValidation::SendMessages(const Config &config, CNode *pto,
         }
     }
     return true;
+}
+
+void PeerLogicValidation::TransactionDoubleSpent(const CTransactionRef &ptx, const DspId &dspId) {
+    // NB: This will not be called if dsproofs are globally disabled (-doublespendproof=0).
+    LogPrint(BCLog::DSPROOF, "  DSP broadcasting an INV for dspId: %s txId: %s\n", dspId.ToString(), ptx->GetId().ToString());
+    connman->ForEachNode([ptx, inv = CInv(MSG_DOUBLESPENDPROOF, dspId)](CNode *pnode) {
+        {
+            LOCK(pnode->cs_filter);
+            if (!pnode->fRelayTxes)
+                return;
+            if (pnode->pfilter && !pnode->pfilter->IsRelevantAndUpdate(*ptx))
+                return;
+        }
+        pnode->PushInventory(inv);
+    });
+}
+
+void PeerLogicValidation::BadDSProofsDetectedFromNodeIds(const std::vector<NodeId> &nodeIds) {
+    // NB: This will not be called if dsproofs are globally disabled (-doublespendproof=0).
+    LOCK(cs_main);
+    for (const auto &nodeId : nodeIds) {
+        // Punish peer that gave us an invalid proof (if they are still connected)
+        Misbehaving(nodeId, 10, "bad-dsproof");
+    }
 }
 
 class CNetProcessingCleanup {

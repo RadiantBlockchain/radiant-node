@@ -21,6 +21,8 @@
 struct ValidationInterfaceConnections {
     boost::signals2::scoped_connection UpdatedBlockTip;
     boost::signals2::scoped_connection TransactionAddedToMempool;
+    boost::signals2::scoped_connection TransactionDoubleSpent;
+    boost::signals2::scoped_connection BadDSProofsDetectedFromNodeIds;
     boost::signals2::scoped_connection BlockConnected;
     boost::signals2::scoped_connection BlockDisconnected;
     boost::signals2::scoped_connection TransactionRemovedFromMempool;
@@ -36,6 +38,10 @@ struct MainSignalsInstance {
         UpdatedBlockTip;
     boost::signals2::signal<void(const CTransactionRef &)>
         TransactionAddedToMempool;
+    boost::signals2::signal<void(const CTransactionRef &, const DspId &)>
+        TransactionDoubleSpent;
+    boost::signals2::signal<void(const std::vector<NodeId> &)>
+        BadDSProofsDetectedFromNodeIds;
     boost::signals2::signal<void(const std::shared_ptr<const CBlock> &,
                                  const CBlockIndex *pindex,
                                  const std::vector<CTransactionRef> &)>
@@ -145,6 +151,14 @@ void RegisterValidationInterface(CValidationInterface *pwalletIn) {
     conns.NewPoWValidBlock = g_signals.m_internals->NewPoWValidBlock.connect(
         std::bind(&CValidationInterface::NewPoWValidBlock, pwalletIn,
                   std::placeholders::_1, std::placeholders::_2));
+    conns.TransactionDoubleSpent =
+        g_signals.m_internals->TransactionDoubleSpent.connect(
+            std::bind(&CValidationInterface::TransactionDoubleSpent,
+                      pwalletIn, std::placeholders::_1, std::placeholders::_2));
+    conns.BadDSProofsDetectedFromNodeIds =
+        g_signals.m_internals->BadDSProofsDetectedFromNodeIds.connect(
+            std::bind(&CValidationInterface::BadDSProofsDetectedFromNodeIds,
+                      pwalletIn, std::placeholders::_1));
 }
 
 void UnregisterValidationInterface(CValidationInterface *pwalletIn) {
@@ -198,6 +212,16 @@ void CMainSignals::UpdatedBlockTip(const CBlockIndex *pindexNew,
 void CMainSignals::TransactionAddedToMempool(const CTransactionRef &ptx) {
     m_internals->m_schedulerClient.AddToProcessQueue(
         [ptx, this] { m_internals->TransactionAddedToMempool(ptx); });
+}
+
+void CMainSignals::TransactionDoubleSpent(const CTransactionRef &ptx, const DspId &dspId) {
+    m_internals->m_schedulerClient.AddToProcessQueue(
+        [ptx, dspId, this] { m_internals->TransactionDoubleSpent(ptx, dspId); });
+}
+
+void CMainSignals::BadDSProofsDetectedFromNodeIds(const std::vector<NodeId> &nodeIds) {
+    m_internals->m_schedulerClient.AddToProcessQueue(
+        [nodeIds, this] { m_internals->BadDSProofsDetectedFromNodeIds(nodeIds); });
 }
 
 void CMainSignals::BlockConnected(

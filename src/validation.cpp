@@ -584,17 +584,21 @@ AcceptToMemoryPoolWorker(const Config &config, CTxMemPool &pool,
 
                         if (proof.validate(pool, entryIt->GetSharedTx()) != DoubleSpendProof::Valid)
                             throw std::runtime_error("Proof is not valid (doublespend tx may be bad)");
-                        if (!pool.addDoubleSpendProof(proof, entryIt))
+
+                        const auto txRef = pool.addDoubleSpendProof(proof, entryIt);
+                        if (!txRef)
                             throw std::runtime_error("Failed to add proof to mempool store");
 
                         const auto &proofHash = proof.GetId();
                         LogPrint(BCLog::DSPROOF, "  DSProof created: %s (outpoint: %s)\n", proofHash.ToString(), proof.outPoint().ToString());
 
-                        // This tells calling code in net_processing.cpp to forward the DSP to peers
-                        state.SetDSPHash(proofHash);
+                        // inform caller & other subsystems via signal
+                        state.SetDspId(proofHash);
+                        GetMainSignals().TransactionDoubleSpent(txRef, proofHash);
+
                     } catch (const std::exception &e) {
                         // We don't support 100% of the types of transactions yet, failures are possible.
-                        LogPrint(BCLog::DSPROOF, "DS Proof create & add failed: %s\n", e.what());
+                        LogPrint(BCLog::DSPROOF, "DSProof create & add failed: %s\n", e.what());
                     }
                 }
             }
@@ -807,9 +811,15 @@ AcceptToMemoryPoolWorker(const Config &config, CTxMemPool &pool,
             }
         }
 
-        // Handle double spend proof orphans (if any)
-        for (auto i = rescuedDSPOrphans.begin(); i != rescuedDSPOrphans.end(); ++i) {
-            const auto dsp = pool.doubleSpendProofStorage()->lookup(i->first);
+    }
+
+    GetMainSignals().TransactionAddedToMempool(ptx);
+
+    // Handle double spend proof orphans (if any)
+    if (!rescuedDSPOrphans.empty()) {
+        std::vector<NodeId> badProofNodeIds;
+        for (auto it = rescuedDSPOrphans.begin(); it != rescuedDSPOrphans.end(); ++it) {
+            const auto dsp = pool.doubleSpendProofStorage()->lookup(it->first);
             LogPrint(BCLog::DSPROOF, "Rescued a DSP orphan %s\n", dsp.GetId().ToString());
             const auto rc = dsp.validate(pool);
 
@@ -822,29 +832,35 @@ AcceptToMemoryPoolWorker(const Config &config, CTxMemPool &pool,
                 if (!resTx) {
                     // could not be added (this should never happen)
                     LogPrint(BCLog::DSPROOF, "  Error claiming orphan, addDoubleSpendProof() returned nullptr!\n");
-                    pool.doubleSpendProofStorage()->remove(i->first);
+                    pool.doubleSpendProofStorage()->remove(it->first);
                     continue;
                 }
 
-                while (++i != rescuedDSPOrphans.end()) {
-                    LogPrint(BCLog::DSPROOF, "Killing unneeded orphan: %s\n", i->first.ToString());
-                    pool.doubleSpendProofStorage()->remove(i->first);
+                while (++it != rescuedDSPOrphans.end()) {
+                    LogPrint(BCLog::DSPROOF, "Killing unneeded orphan: %s\n", it->first.ToString());
+                    pool.doubleSpendProofStorage()->remove(it->first);
                 }
+
+                // tell other subsystems about the claimed orphan
+                GetMainSignals().TransactionDoubleSpent(resTx, dsp.GetId());
+
                 break;
             } else if (rc == DoubleSpendProof::Invalid) {
                 LogPrint(BCLog::DSPROOF, "  DSP didn't validate!\n");
-                pool.doubleSpendProofStorage()->remove(i->first);
-                state.PushDSPBadNodeId(i->second); // only actually pushes iff i->second > -1
+                pool.doubleSpendProofStorage()->remove(it->first);
+                if (it->second > -1)
+                    badProofNodeIds.push_back(it->second);
             } else { // MissingUTXO / MissingTransaction
                 // This should never happen, but we will log this error here
                 // because dsproof is still in beta.
                 LogPrint(BCLog::DSPROOF, "  DSP unexpected failure reason: %d!\n", int(rc));
-                pool.doubleSpendProofStorage()->remove(i->first);
+                pool.doubleSpendProofStorage()->remove(it->first);
             }
         }
+        if (!badProofNodeIds.empty())
+            GetMainSignals().BadDSProofsDetectedFromNodeIds(badProofNodeIds); // punish peer(s)
     }
 
-    GetMainSignals().TransactionAddedToMempool(ptx);
     return true;
 }
 

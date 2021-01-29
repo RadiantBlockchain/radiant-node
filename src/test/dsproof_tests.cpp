@@ -429,14 +429,14 @@ BOOST_FIXTURE_TEST_CASE(dsproof_doublespend_mempool, TestChain100Setup) {
             BOOST_CHECK(!ok);
             BOOST_CHECK(!state.IsValid());
             BOOST_CHECK_EQUAL(state.GetRejectReason(), "txn-mempool-conflict");
-            BOOST_CHECK(state.HasDSPHash());
+            BOOST_CHECK(state.HasDspId());
             auto dsproof = DoubleSpendProof::create(CTransaction{spend2}, CTransaction{spend1},
                                                     spend1.vin[0].prevout, &cbTxRef->vout[0]);
             BOOST_CHECK(!dsproof.isEmpty());
             auto val = dsproof.validate(g_mempool, {});
             BOOST_CHECK_EQUAL(val, DoubleSpendProof::Validity::Valid);
-            BOOST_CHECK_EQUAL(dsproof.GetId(), state.GetDSPHash());
-            BOOST_CHECK(!state.GetDSPHash().IsNull());
+            BOOST_CHECK_EQUAL(dsproof.GetId(), state.GetDspId());
+            BOOST_CHECK(!state.GetDspId().IsNull());
 
             // Ensure mempool entry has the proper hash as well
             auto optIter = g_mempool.GetIter(spend1.GetId());
