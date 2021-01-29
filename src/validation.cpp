@@ -53,6 +53,7 @@
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/thread.hpp> // boost::this_thread::interruption_point() (mingw)
 
+#include <algorithm>
 #include <atomic>
 #include <future>
 #include <list>
@@ -2562,7 +2563,7 @@ bool CChainState::ConnectTip(const Config &config, CValidationState &state,
 
         nTime3 = GetTimeMicros();
         nTimeConnectTotal += nTime3 - nTime2;
-        assert(nBlocksTotal > 0);
+        nBlocksTotal = std::max(nBlocksTotal, int64_t(1));
         LogPrint(BCLog::BENCH,
                  "  - Connect total: %.2fms [%.2fs (%.2fms/blk)]\n",
                  (nTime3 - nTime2) * MILLI, nTimeConnectTotal * MICRO,
