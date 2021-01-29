@@ -331,7 +331,7 @@ bool CSeederNode::Run() {
 
 bool TestNode(const CService &cip, int &ban, int &clientV,
               std::string &clientSV, int &blocks,
-              std::vector<CAddress> *vAddr) {
+              std::vector<CAddress> *vAddr, ServiceFlags &services) {
     try {
         CSeederNode node(cip, vAddr);
         bool ret = node.Run();
@@ -343,6 +343,7 @@ bool TestNode(const CService &cip, int &ban, int &clientV,
         clientV = node.GetClientVersion();
         clientSV = node.GetClientSubVersion();
         blocks = node.GetStartingHeight();
+        services = node.GetServices();
         // std::fprintf(stdout, "%s: %s!!!\n", cip.ToString().c_str(), ret ? "GOOD" :
         //              "BAD");
         return ret;

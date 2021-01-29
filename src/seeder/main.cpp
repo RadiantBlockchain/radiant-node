@@ -179,10 +179,12 @@ extern "C" void *ThreadCrawler(void *data) {
             res.nClientV = 0;
             res.nHeight = 0;
             res.strClientV = "";
+            res.services = NODE_NONE;
             bool getaddr = res.ourLastSuccess + 86400 < now;
             res.fGood = TestNode(res.service, res.nBanTime, res.nClientV,
                                  res.strClientV, res.nHeight,
-                                 getaddr ? &addr : nullptr);
+                                 getaddr ? &addr : nullptr,
+                                 res.services);
         }
 
         db.ResultMany(ips);

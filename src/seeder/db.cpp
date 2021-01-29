@@ -88,7 +88,7 @@ int CAddrDb::Lookup_(const CService &ip) const {
 }
 
 void CAddrDb::Good_(const CService &addr, int clientV, const std::string &clientSV,
-                    int blocks) {
+                    int blocks, uint64_t services) {
     int id = Lookup_(addr);
     if (id == -1) {
         return;
@@ -99,6 +99,7 @@ void CAddrDb::Good_(const CService &addr, int clientV, const std::string &client
     info.clientVersion = clientV;
     info.clientSubVersion = clientSV;
     info.blocks = blocks;
+    info.services = services;
     info.Update(true);
     if (info.IsReliable() && goodId.count(id) == 0) {
         goodId.insert(id);
@@ -158,9 +159,8 @@ void CAddrDb::Add_(const CAddress &addr, bool force) {
     }
     if (ipToId.count(ipp)) {
         CAddrInfo &ai = idToInfo[ipToId[ipp]];
-        if (addr.nTime > ai.lastTry || ai.services != addr.nServices) {
+        if (addr.nTime > ai.lastTry) {
             ai.lastTry = addr.nTime;
-            ai.services |= addr.nServices;
             //      std::fprintf(stdout, "%s: updated\n", ToString(addr).c_str());
         }
         if (force) {
