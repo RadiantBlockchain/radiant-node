@@ -255,6 +255,7 @@ struct CAddrDbStats {
 
 struct CServiceResult {
     CService service;
+    ServiceFlags services;
     bool fGood;
     int nBanTime;
     int nHeight;
@@ -297,7 +298,7 @@ protected:
     bool Get_(CServiceResult &ip, int &wait);
     // mark an IP as good (must have been returned by Get_)
     void Good_(const CService &ip, int clientV, const std::string &clientSV,
-               int blocks);
+               int blocks, uint64_t services);
     // mark an IP as bad (and optionally ban it) (must have been returned by
     // Get_)
     void Bad_(const CService &ip, int ban);
@@ -437,7 +438,7 @@ public:
         for (size_t i = 0; i < ips.size(); i++) {
             if (ips[i].fGood) {
                 Good_(ips[i].service, ips[i].nClientV, ips[i].strClientV,
-                      ips[i].nHeight);
+                      ips[i].nHeight, ips[i].services);
             } else {
                 Bad_(ips[i].service, ips[i].nBanTime);
             }

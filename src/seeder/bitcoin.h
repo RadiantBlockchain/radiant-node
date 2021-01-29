@@ -74,9 +74,11 @@ public:
     const std::string & GetClientSubVersion() const { return strSubVer; }
 
     int GetStartingHeight() const { return nStartingHeight; }
+
+    ServiceFlags GetServices() const { return you.nServices; }
 };
 
 bool TestNode(const CService &cip, int &ban, int &client, std::string &clientSV,
-              int &blocks, std::vector<CAddress> *vAddr);
+              int &blocks, std::vector<CAddress> *vAddr, ServiceFlags &services);
 
 #endif // BITCOIN_SEEDER_BITCOIN_H
