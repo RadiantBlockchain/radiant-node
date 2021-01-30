@@ -16,9 +16,6 @@
 #include <cstring>
 #include <ctime>
 
-// The network magic to use.
-CMessageHeader::MessageMagic netMagic = {{0xe3, 0xe1, 0xf3, 0xe8}};
-
 #define BITCOIN_SEED_NONCE 0x0539a019ca550825ULL
 
 static const uint32_t allones(-1);
@@ -28,7 +25,7 @@ void CSeederNode::BeginMessage(const char *pszCommand) {
         AbortMessage();
     }
     nHeaderStart = vSend.size();
-    vSend << CMessageHeader(netMagic, pszCommand, 0);
+    vSend << CMessageHeader(Params().NetMagic(), pszCommand, 0);
     nMessageStart = vSend.size();
     // std::fprintf(stdout, "%s: SEND %s\n", ToString(you).c_str(), pszCommand);
 }
@@ -170,6 +167,8 @@ bool CSeederNode::ProcessMessages() {
     if (vRecv.empty()) {
         return false;
     }
+
+    const CMessageHeader::MessageMagic netMagic = Params().NetMagic();
 
     do {
         CDataStream::iterator pstart = std::search(
