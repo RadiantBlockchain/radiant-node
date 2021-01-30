@@ -115,9 +115,7 @@ QVariant BanTableModel::data(const QModelIndex &index, int role) const {
             case Address:
                 return QString::fromStdString(rec->subnet.ToString());
             case Bantime:
-                QDateTime date = QDateTime::fromMSecsSinceEpoch(0);
-                date = date.addSecs(rec->banEntry.nBanUntil);
-                return date.toString(Qt::SystemLocaleLongDate);
+                return GUIUtil::dateTimeStrLong(rec->banEntry.nBanUntil);
         }
     }
 

@@ -151,7 +151,7 @@ bool ClientModel::isReleaseVersion() const {
 }
 
 QString ClientModel::formatClientStartupTime() const {
-    return QDateTime::fromTime_t(GetStartupTime()).toString();
+    return GUIUtil::dateTimeStrLong(GetStartupTime());
 }
 
 QString ClientModel::dataDir() const {
@@ -227,7 +227,7 @@ static void BlockTipChanged(ClientModel *clientmodel, bool initialSync,
         QMetaObject::invokeMethod(
             clientmodel, "numBlocksChanged", Qt::QueuedConnection,
             Q_ARG(int, height),
-            Q_ARG(QDateTime, QDateTime::fromTime_t(blockTime)),
+            Q_ARG(QDateTime, QDateTime::fromSecsSinceEpoch(blockTime)),
             Q_ARG(QString, QString::fromStdString(blockHash.ToString())),
             Q_ARG(double, verificationProgress), Q_ARG(bool, fHeader));
         nLastUpdateNotification = now;

@@ -41,9 +41,15 @@ QT_END_NAMESPACE
  */
 namespace GUIUtil {
 
-// Create human-readable string from date
+// Create short human-readable string from a QDateTime, e.g.: 8/1/17 13:00
 QString dateTimeStr(const QDateTime &datetime);
+// Like the above but takes a time value as a time_t equivalent (seconds since epoch)
 QString dateTimeStr(qint64 nTime);
+
+// Create a longer human-readable string from a QDateTime, e.g.: Thu, January 21, 2021 9:36:29 AM EST
+QString dateTimeStrLong(const QDateTime &dateTime);
+// Like the above but takes a time value as a time_t equivalent (seconds since epoch)
+QString dateTimeStrLong(qint64 nTime);
 
 // Return a monospace font
 QFont fixedPitchFont();
