@@ -1,4 +1,5 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
+// Copyright (c) 2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -18,7 +19,6 @@
 #include <qt/walletmodel.h>
 
 #include <QApplication>
-#include <QClipboard>
 
 SendCoinsEntry::SendCoinsEntry(const PlatformStyle *_platformStyle,
                                WalletModel *_model, QWidget *parent)
@@ -73,7 +73,10 @@ SendCoinsEntry::~SendCoinsEntry() {
 
 void SendCoinsEntry::on_pasteButton_clicked() {
     // Paste text from clipboard into recipient field
-    ui->payTo->setText(QApplication::clipboard()->text());
+    // The field is focused so that the pasted address is validated/normalized on blur
+    ui->payTo->clear();
+    ui->payTo->setFocus();
+    ui->payTo->paste();
 }
 
 void SendCoinsEntry::on_addressBookButton_clicked() {
@@ -162,8 +165,7 @@ bool SendCoinsEntry::validate(interfaces::Node &node) {
     }
 #endif
 
-    if (!model->validateAddress(ui->payTo->text())) {
-        ui->payTo->setValid(false);
+    if (!ui->payTo->validate()) {
         retval = false;
     }
 
