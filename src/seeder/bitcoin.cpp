@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019 The Bitcoin developers
+// Copyright (c) 2017-2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -11,6 +11,7 @@
 #include <seeder/db.h>
 #include <serialize.h>
 #include <uint256.h>
+#include <validation.h>
 
 #include <algorithm>
 #include <cstddef>
@@ -165,6 +166,31 @@ PeerMessagingState CSeederNode::ProcessMessage(const std::string &strCommand,
             }
         }
         return PeerMessagingState::AwaitingMessages;
+    }
+
+    if (strCommand == NetMsgType::HEADERS) {
+        unsigned int nCount = ReadCompactSize(recv);
+        if (nCount > MAX_HEADERS_RESULTS) {
+            // std::fprintf(stdout, "%s: BAD \"%s\" (too many headers)\n",
+            //              ToString(you).c_str(), strSubVer.c_str());
+            ban = 100000;
+            return PeerMessagingState::Finished;
+        }
+
+        CBlockHeader header;
+        recv >> header;
+
+        if (!Params().Checkpoints().mapCheckpoints.empty() && nStartingHeight > GetRequireHeight() &&
+            header.hashPrevBlock != Params().Checkpoints().mapCheckpoints.rbegin()->second) {
+            /* This node is synced higher than the last checkpoint height but does not have the checkpoint block in
+             * its chain. This means it must be on the wrong chain. We treat these nodes the same as nodes with
+             * the wrong net magic.
+             */
+            // std::fprintf(stdout, "%s: BAD \"%s\" (wrong chain)\n",
+            //              ToString(you).c_str(), strSubVer.c_str());
+            ban = 100000;
+            return PeerMessagingState::Finished;
+        }
     }
 
     return PeerMessagingState::AwaitingMessages;
