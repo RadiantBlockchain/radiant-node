@@ -879,9 +879,5 @@ SeedSpec6::SeedSpec6(const char *pszHostPort)
         throw std::invalid_argument(strprintf("Unable to parse numeric-IP:port pair: %s", pszHostPort));
     if (!service.IsRoutable())
         throw std::invalid_argument(strprintf("Not routable: %s", pszHostPort));
-    static_assert (sizeof(addr[0]) == 1 && ADDRLEN == service.GetAddressLen(),
-                   "CNetAddr and SeedSpec6 must both be of the same exact data format");
-
-    std::memcpy(&addr[0], service.GetAddressBytes(), service.GetAddressLen());
-    port = service.GetPort();
+    *this = SeedSpec6(service);
 }

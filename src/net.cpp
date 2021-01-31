@@ -137,10 +137,7 @@ convertSeed6(const std::vector<SeedSpec6> &vSeedsIn) {
     vSeedsOut.reserve(vSeedsIn.size());
     FastRandomContext rng;
     for (const auto &seed_in : vSeedsIn) {
-        struct in6_addr ip;
-        memcpy(&ip, seed_in.addr, sizeof(ip));
-        CAddress addr(CService(ip, seed_in.port),
-                      GetDesirableServiceFlags(NODE_NONE));
+        CAddress addr(seed_in, GetDesirableServiceFlags(NODE_NONE));
         addr.nTime = GetTime() - rng.randrange(nOneWeek) - nOneWeek;
         vSeedsOut.push_back(addr);
     }
