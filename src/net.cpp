@@ -20,6 +20,7 @@
 #include <net_permissions.h>
 #include <netbase.h>
 #include <primitives/transaction.h>
+#include <protocol.h>
 #include <scheduler.h>
 #include <ui_interface.h>
 #include <util/strencodings.h>
@@ -658,14 +659,14 @@ int CNode::GetSendVersion() const {
 int CNetMessage::readHeader(const Config &config, const char *pch,
                             uint32_t nBytes) {
     // copy data to temporary parsing buffer
-    uint32_t nRemaining = 24 - nHdrPos;
+    uint32_t nRemaining = CMessageHeader::HEADER_SIZE - nHdrPos;
     uint32_t nCopy = std::min(nRemaining, nBytes);
 
     memcpy(&hdrbuf[nHdrPos], pch, nCopy);
     nHdrPos += nCopy;
 
     // if header incomplete, exit
-    if (nHdrPos < 24) {
+    if (nHdrPos < CMessageHeader::HEADER_SIZE) {
         return nCopy;
     }
 
