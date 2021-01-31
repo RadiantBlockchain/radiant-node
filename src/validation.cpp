@@ -53,6 +53,7 @@
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/thread.hpp> // boost::this_thread::interruption_point() (mingw)
 
+#include <algorithm>
 #include <atomic>
 #include <future>
 #include <list>
@@ -1736,6 +1737,8 @@ bool CChainState::ConnectBlock(const CBlock &block, CValidationState &state,
         pindex->pprev == nullptr ? BlockHash() : pindex->pprev->GetBlockHash();
     assert(hashPrevBlock == view.GetBestBlock());
 
+    nBlocksTotal++;
+
     // Special case for the genesis block, skipping connection of its
     // transactions (its coinbase is unspendable)
     if (block.GetHash() == consensusParams.hashGenesisBlock) {
@@ -1745,8 +1748,6 @@ bool CChainState::ConnectBlock(const CBlock &block, CValidationState &state,
 
         return true;
     }
-
-    nBlocksTotal++;
 
     bool fScriptChecks = true;
     if (!hashAssumeValid.IsNull()) {
@@ -2562,6 +2563,7 @@ bool CChainState::ConnectTip(const Config &config, CValidationState &state,
 
         nTime3 = GetTimeMicros();
         nTimeConnectTotal += nTime3 - nTime2;
+        nBlocksTotal = std::max(nBlocksTotal, int64_t(1));
         LogPrint(BCLog::BENCH,
                  "  - Connect total: %.2fms [%.2fs (%.2fms/blk)]\n",
                  (nTime3 - nTime2) * MILLI, nTimeConnectTotal * MICRO,
