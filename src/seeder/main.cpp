@@ -185,11 +185,15 @@ extern "C" void *ThreadCrawler(void *data) {
             res.nHeight = 0;
             res.strClientV = "";
             res.services = NODE_NONE;
-            bool getaddr = res.ourLastSuccess + 86400 < now;
+            bool getaddr = res.lastAddressRequest + 86400 < now;
+
             res.fGood = TestNode(res.service, res.nBanTime, res.nClientV,
                                  res.strClientV, res.nHeight,
                                  getaddr ? &addr : nullptr,
                                  res.services);
+
+            if (res.fGood && getaddr)
+                res.lastAddressRequest = now;
         }
 
         db.ResultMany(ips);

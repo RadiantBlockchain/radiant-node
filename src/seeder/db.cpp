@@ -71,6 +71,7 @@ bool CAddrDb::Get_(CServiceResult &ip, int &wait) {
         } else {
             ip.service = idToInfo[ret].ip;
             ip.ourLastSuccess = idToInfo[ret].ourLastSuccess;
+            ip.lastAddressRequest = idToInfo[ret].lastAddressRequest;
             break;
         }
     } while (1);
@@ -87,19 +88,19 @@ int CAddrDb::Lookup_(const CService &ip) const {
     return -1;
 }
 
-void CAddrDb::Good_(const CService &addr, int clientV, const std::string &clientSV,
-                    int blocks, uint64_t services) {
-    int id = Lookup_(addr);
+void CAddrDb::Good_(const CServiceResult &res) {
+    int id = Lookup_(res.service);
     if (id == -1) {
         return;
     }
     unkId.erase(id);
-    banned.erase(addr);
+    banned.erase(res.service);
     CAddrInfo &info = idToInfo[id];
-    info.clientVersion = clientV;
-    info.clientSubVersion = clientSV;
-    info.blocks = blocks;
-    info.services = services;
+    info.clientVersion = res.nClientV;
+    info.clientSubVersion = res.strClientV;
+    info.blocks = res.nHeight;
+    info.services = res.services;
+    info.lastAddressRequest = res.lastAddressRequest;
     info.Update(true);
     if (info.IsReliable() && goodId.count(id) == 0) {
         goodId.insert(id);
@@ -110,8 +111,9 @@ void CAddrDb::Good_(const CService &addr, int clientV, const std::string &client
     ourId.push_back(id);
 }
 
-void CAddrDb::Bad_(const CService &addr, int ban) {
-    int id = Lookup_(addr);
+void CAddrDb::Bad_(const CServiceResult &res) {
+    int ban = res.nBanTime;
+    int id = Lookup_(res.service);
     if (id == -1) {
         return;
     }
