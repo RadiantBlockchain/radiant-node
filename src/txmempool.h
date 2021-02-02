@@ -24,8 +24,8 @@
 #include <boost/signals2/signal.hpp>
 
 #include <map>
-#include <optional>
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <utility>
@@ -175,7 +175,7 @@ public:
     //! We use a DspIdPtr here to use less memory than a direct DspId would
     //! in the common case of no proof for this entry, while still keeping this
     //! class copy constructible.
-    DspIdPtr dspHash;
+    DspIdPtr dspId;
 };
 
 // Helpers for modifying CTxMemPool::mapTx, which is a boost multi_index.
@@ -598,7 +598,8 @@ public:
      * Returns the CTransactionRef of the mempool entry we added it to.
      *
      * The returned CTransactionRef may be null if no mempool transaction was found
-     * for the supplied proof, of it the mempool transaction already has a proof.
+     * spending the supplied proof's outpoint, or if the mempool transaction that does
+     * spend it already has a proof.
      *
      * The optional second argument is a mapTx iterator for the existing mempool entry
      * to update and associate with this proof.  This argument is a performance
@@ -608,7 +609,72 @@ public:
 
     DoubleSpendProofStorage *doubleSpendProofStorage() const;
 
+    // -- Query double spend proofs (used by RPC) --
+
+    //! Result type for some of the dsp getters below
+    using DspTxIdPair = std::pair<DoubleSpendProof, TxId>;
+    //! All of the in-memory descendants of an in-memory tx associated with a double-spend proof, including the
+    //! tx itself.
+    using DspDescendants = std::set<TxId>;
+    //! The in-memory ancestry path leading up to the double-spend, most recent tx first. The last txId in this vector
+    //! is the double-spend itself. The first element in this vector is the TxId used for the query.
+    //! Note that this is not the full ancestor set, but merely an ordered path leading from query tx -> dsp tx.
+    using DspQueryPath = std::vector<TxId>;
+    //! Result type for recursiveDSProofSearch
+    using DspRecurseResult = std::pair<DoubleSpendProof, DspQueryPath>;
+
+    //! list all known proofs, optionally also returning all known orphans (orphans have an .IsNull() TxId)
+    //! @throws std::runtime_error on internal error
+    std::vector<DspTxIdPair> listDoubleSpendProofs(bool includeOrphans = false) const;
+
+    //! Lookup a proof by DspId. If the proof is an orphan, it will have an .IsNull() TxId
+    //! @param dspId - The double-spend proof id to look up.
+    //! @param descendants - If not nullptr, also populate the set with all the tx's that descend from the TxId
+    //!     associated with the result (if there is a non-orphan result), including the result TxId itself.
+    //! @throws may throw std::runtime_error on internal error
+    std::optional<DspTxIdPair> getDoubleSpendProof(const DspId &dspId, DspDescendants *descendants = nullptr) const;
+    //! Lookup a proof by TxId. Does not do a recursive search. For recursion, @see recursiveDSProofSearch.
+    //! @param txId - The TxId for which to lookup the proof.
+    //! @param descendants - If not nullptr, also populate the set with all the tx's that descend from the TxId
+    //!     associated with the result, including the result TxId itself.
+    //! @throws std::runtime_error on internal error
+    std::optional<DoubleSpendProof> getDoubleSpendProof(const TxId &txId, DspDescendants *descendants = nullptr) const;
+    //! Lookup a proof by the double spent COutPoint.
+    //! @returns A valid optional if there is a hit. If the proof is an orphan, it will have an .IsNull() TxId.
+    //!     If there are multiple orphan proofs for an output point, only the first one found will be returned.
+    //!     If there exists a non-orphan proofs, it will be preferentially returned over any orphan(s) that may
+    //!     also exist.
+    //! @param outpoint - output point for which to search for a proof.
+    //! @param descendants - If not nullptr, also populate the set with all the tx's that descend from the TxId
+    //!     associated with the result (if there is a non-orphan result), including the result TxId itself.
+    //! @throws std::runtime_error on internal error
+    std::optional<DspTxIdPair> getDoubleSpendProof(const COutPoint &outpoint, DspDescendants *descendants = nullptr) const;
+    //!
+    //! Recrusive search for a double-spend proof for a TxId and all its in-mempool ancestors.
+    //!
+    //! @returns A valid optional if `txId` or any of its in-mempool ancestors have a dsproof. Note: The DspQueryPath
+    //!     vector is ordered such that the children come before their parents (most recent first ordering). If
+    //!     this function finds a result, then the first element of the DspQueryPath vector is always `txId`, and
+    //!     the last element is the double-spent TxId. In-between elements (if any) are the unconfirmed tx chain
+    //!     of ancestor tx's leading to the double-spent tx.
+    //! @param descendants - If not nullptr, also populate the set with all the tx's that descend from the TxId
+    //!     associated with the result, including the result TxId itself.
+    //! @throws std::runtime_error on internal error
+    std::optional<DspRecurseResult> recursiveDSProofSearch(const TxId &txId, DspDescendants *descendants = nullptr) const;
+
 private:
+    //! Lookup a dsproof by TxId -- caller must hold cs.
+    //! @returns a valid optional contaning the proof if such a proof exists for `txId`.
+    //! @param tx - if non-nullptr, `*tx` will be set to point to the in-mempool txiter for `txId`, or will be set to
+    //!     mapTx.end() if `txId` is not found in the mempool.
+    //! @param desc - if non-nullptr, `*desc` will be set to contain all the in-memory descendants of `txId` (including
+    //!     `txId` itself). This set is only populated when there is a successful result.
+    //! @throws std::runtime_error on internal error
+    std::optional<DoubleSpendProof>
+    getDoubleSpendProof_common(const TxId &txId, txiter *tx = nullptr, DspDescendants *desc = nullptr) const EXCLUSIVE_LOCKS_REQUIRED(cs);
+    //! Helper function for getDoubleSpendProof_common and others
+    DspDescendants getDspDescendantsForIter(txiter) const EXCLUSIVE_LOCKS_REQUIRED(cs);
+
     typedef std::map<txiter, setEntries, CompareIteratorById> cacheMap;
 
     struct TxLinks {

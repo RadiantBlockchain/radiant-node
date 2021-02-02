@@ -7,6 +7,7 @@
 
 /** These are in one header file to avoid creating tons of single-function
  * headers for everything under src/rpc/ */
+class Config;
 class CRPCTable;
 class RPCServer;
 
@@ -22,6 +23,8 @@ void RegisterMiningRPCCommands(CRPCTable &tableRPC);
 void RegisterRawTransactionRPCCommands(CRPCTable &tableRPC);
 /** Register ABC RPC commands */
 void RegisterABCRPCCommands(CRPCTable &tableRPC);
+/** Register DSProof RPC commands */
+void RegisterDSProofRPCCommands(CRPCTable &tableRPC);
 
 /**
  * Register all context-free (legacy) RPC commands, except for wallet and dump
@@ -34,13 +37,14 @@ static inline void RegisterAllContextFreeRPCCommands(CRPCTable &t) {
     RegisterMiningRPCCommands(t);
     RegisterRawTransactionRPCCommands(t);
     RegisterABCRPCCommands(t);
+    RegisterDSProofRPCCommands(t);
 }
 
 /**
  * Register all context-sensitive RPC commands.
  */
-static inline void RegisterAllRPCCommands(const Config &config,
-                                          RPCServer &rpcServer,
+static inline void RegisterAllRPCCommands(const Config &,
+                                          RPCServer &,
                                           CRPCTable &rpcTable) {
     // TODO Register context-sensitive RPC commands using rpcServer
 

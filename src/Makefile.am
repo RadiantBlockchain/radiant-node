@@ -307,6 +307,7 @@ libbitcoin_server_a_SOURCES = \
   rpc/abc.cpp \
   rpc/blockchain.cpp \
   rpc/command.cpp \
+  rpc/dsproof.cpp \
   rpc/jsonrpcrequest.cpp \
   rpc/mining.cpp \
   rpc/misc.cpp \

@@ -512,6 +512,7 @@ add_library(server
 	rpc/abc.cpp
 	rpc/blockchain.cpp
 	rpc/command.cpp
+	rpc/dsproof.cpp
 	rpc/jsonrpcrequest.cpp
 	rpc/mining.cpp
 	rpc/misc.cpp
