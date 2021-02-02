@@ -87,8 +87,9 @@ void CSeederNode::PushVersion() {
     BeginMessage("version");
     const int nBestHeight = GetRequireHeight();
     const std::string ver = "/bitcoin-cash-seeder:0.15/";
+    const uint8_t fRelayTxs = 0;
     vSend << PROTOCOL_VERSION << nLocalServices << nTime << you << me
-          << nLocalNonce << ver << nBestHeight;
+          << nLocalNonce << ver << nBestHeight << fRelayTxs;
     EndMessage();
 }
 
