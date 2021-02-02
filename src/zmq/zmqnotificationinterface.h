@@ -27,15 +27,15 @@ protected:
 
     // CValidationInterface
     void TransactionAddedToMempool(const CTransactionRef &tx) override;
-    void
-    BlockConnected(const std::shared_ptr<const CBlock> &pblock,
-                   const CBlockIndex *pindexConnected,
-                   const std::vector<CTransactionRef> &vtxConflicted) override;
-    void
-    BlockDisconnected(const std::shared_ptr<const CBlock> &pblock) override;
+    void BlockConnected(const std::shared_ptr<const CBlock> &pblock,
+                        const CBlockIndex *pindexConnected,
+                        const std::vector<CTransactionRef> &vtxConflicted) override;
+    void BlockDisconnected(const std::shared_ptr<const CBlock> &pblock) override;
     void UpdatedBlockTip(const CBlockIndex *pindexNew,
                          const CBlockIndex *pindexFork,
                          bool fInitialDownload) override;
+    void TransactionDoubleSpent(const CTransactionRef &ptxn,
+                                const DspId &dspId) override;
 
 private:
     CZMQNotificationInterface();

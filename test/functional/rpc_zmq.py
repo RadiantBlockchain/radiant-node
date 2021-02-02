@@ -28,10 +28,13 @@ class RPCZMQTest(BitcoinTestFramework):
         assert_equal(self.nodes[0].getzmqnotifications(), [])
 
         self.restart_node(
-            0, extra_args=["-zmqpubhashtx={}".format(self.address)])
-        assert_equal(self.nodes[0].getzmqnotifications(), [
-            {"type": "pubhashtx", "address": self.address},
-        ])
+            0, extra_args=["-zmqpubhashtx={}".format(self.address),
+                           "-zmqpubhashds={}".format(self.address),
+                           "-zmqpubrawds={}".format(self.address)])
+        notifs = self.nodes[0].getzmqnotifications()
+        assert {"type": "pubhashtx", "address": self.address} in notifs
+        assert {"type": "pubhashds", "address": self.address} in notifs
+        assert {"type": "pubrawds", "address": self.address} in notifs
 
 
 if __name__ == '__main__':

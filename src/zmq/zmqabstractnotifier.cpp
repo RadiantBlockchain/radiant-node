@@ -18,3 +18,7 @@ bool CZMQAbstractNotifier::NotifyTransaction(
     const CTransaction & /*transaction*/) {
     return true;
 }
+
+bool CZMQAbstractNotifier::NotifyDoubleSpend(const CTransaction & /*transaction*/) {
+    return true;
+}

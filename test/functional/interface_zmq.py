@@ -6,10 +6,12 @@
 import struct
 from io import BytesIO
 
+from test_framework.blocktools import create_raw_transaction
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.messages import CTransaction
 from test_framework.util import (
     assert_equal,
+    assert_raises_rpc_error,
     hash256_reversed,
 )
 
@@ -61,10 +63,12 @@ class ZMQTest (BitcoinTestFramework):
         self.hashtx = ZMQSubscriber(socket, b"hashtx")
         self.rawblock = ZMQSubscriber(socket, b"rawblock")
         self.rawtx = ZMQSubscriber(socket, b"rawtx")
+        self.hashds = ZMQSubscriber(socket, b"hashds")
+        self.rawds = ZMQSubscriber(socket, b"rawds")
 
         self.extra_args = [
             ["-zmqpub{}={}".format(sub.topic.decode(), address) for sub in [
-                self.hashblock, self.hashtx, self.rawblock, self.rawtx]],
+                self.hashblock, self.hashtx, self.rawblock, self.rawtx, self.hashds, self.rawds]],
             [],
         ]
         self.add_nodes(self.num_nodes, self.extra_args)
@@ -118,6 +122,55 @@ class ZMQTest (BitcoinTestFramework):
         # Should receive the broadcasted raw transaction.
         hex = self.rawtx.receive()
         assert_equal(payment_txid, hash256_reversed(hex).hex())
+
+        # Do a double-spend and verify that we got the double-spend tx notifications (hashds & rawds)
+        self.log.info("Creating double-spend transactions")
+        fee = 1000 / 1e8
+        amt, vout = None, None
+        tx = CTransaction()
+        tx.deserialize(BytesIO(hex))
+        # Find the vout that we are able to sign from the previous payment tx
+        for i, txout in enumerate(tx.vout):
+            if txout.nValue == int(1.0 * 1e8):
+                vout = i
+                amt = txout.nValue
+        assert amt is not None
+        amt /= 1e8
+        assert amt > fee*2
+        self.log.info(f"Spending {amt} from {payment_txid}:{vout}, fee: {fee}")
+        ds_txs = [None, None]
+        addr = self.nodes[0].getnewaddress()
+        ds_txs[0] = create_raw_transaction(self.nodes[0], payment_txid, addr, amt - fee, vout)
+        self.log.info("Signed tx 0")
+        ds_txs[1] = create_raw_transaction(self.nodes[0], payment_txid, addr, amt - fee*2, vout)
+        self.log.info("Signed tx 1 (conflicting tx)")
+
+        # Broadcast the two tx's via the other node
+        ds_txid = self.nodes[1].sendrawtransaction(ds_txs[0])
+        # Gobble up the two zmq notifs for hashtx and verify them again
+        txid = self.hashtx.receive()
+        # Should receive the broadcasted raw transaction.
+        hex = self.rawtx.receive()
+        assert_equal(ds_txid, hash256_reversed(hex).hex())
+        assert_equal(ds_txid, txid.hex())
+        # this is normal, it gets rejected as an attempted double-spend
+        assert_raises_rpc_error(
+            -26,
+            "txn-mempool-conflict (code 18)",
+            self.nodes[1].sendrawtransaction,
+            ds_txs[1]
+        )
+        self.sync_all()
+
+        # Should receive the in-mempool txid as a double-spend notification
+        self.log.info("Receiving hashds")
+        ds_txid_zmq: bytes = self.hashds.receive()
+        assert_equal(ds_txid, ds_txid_zmq.hex())
+
+        # Should also receive the raw double-spent tx data
+        self.log.info("Receiving rawds")
+        ds_tx_zmq: bytes = self.rawds.receive()
+        assert_equal(ds_txs[0], ds_tx_zmq.hex())
 
 
 if __name__ == '__main__':
