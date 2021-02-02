@@ -84,6 +84,7 @@ private:
     int64_t lastTry{};
     int64_t ourLastTry{};
     int64_t ourLastSuccess{};
+    int64_t lastAddressRequest{};
     int64_t ignoreTill{};
     CAddrStat stat2H;
     CAddrStat stat8H;
@@ -207,7 +208,7 @@ public:
 
     template <typename Stream, typename Operation>
     inline void SerializationOp(Stream &s, Operation ser_action) {
-        uint8_t version = 4;
+        uint8_t version = 5;
         READWRITE(version);
         READWRITE(ip);
         READWRITE(services);
@@ -241,6 +242,9 @@ public:
         if (version >= 4) {
             READWRITE(ourLastSuccess);
         }
+        if (version >= 5) {
+            READWRITE(lastAddressRequest);
+        }
     }
 };
 
@@ -262,6 +266,7 @@ struct CServiceResult {
     int nClientV;
     std::string strClientV;
     int64_t ourLastSuccess;
+    int64_t lastAddressRequest;
 };
 
 /**
@@ -297,11 +302,10 @@ protected:
     // get an IP to test (must call Good_ or Bad_ on result afterwards)
     bool Get_(CServiceResult &ip, int &wait);
     // mark an IP as good (must have been returned by Get_)
-    void Good_(const CService &ip, int clientV, const std::string &clientSV,
-               int blocks, uint64_t services);
+    void Good_(const CServiceResult &res);
     // mark an IP as bad (and optionally ban it) (must have been returned by
     // Get_)
-    void Bad_(const CService &ip, int ban);
+    void Bad_(const CServiceResult &res);
     // look up id of an IP
     int Lookup_(const CService &ip) const;
     // get a random set of IPs (shared lock only)
@@ -437,10 +441,9 @@ public:
         LOCK(cs);
         for (size_t i = 0; i < ips.size(); i++) {
             if (ips[i].fGood) {
-                Good_(ips[i].service, ips[i].nClientV, ips[i].strClientV,
-                      ips[i].nHeight, ips[i].services);
+                Good_(ips[i]);
             } else {
-                Bad_(ips[i].service, ips[i].nBanTime);
+                Bad_(ips[i]);
             }
         }
     }
