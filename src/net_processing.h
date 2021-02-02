@@ -126,6 +126,16 @@ public:
     void EvictExtraOutboundPeers(int64_t time_in_seconds)
         EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
+    /// Called when AcceptToMemoryPool creates a double-spend proof for a tx
+    /// and associates it with said tx. Only ever called at most once per
+    /// proof. Notifies all peers of the new dsproof inv.
+    void TransactionDoubleSpent(const CTransactionRef &ptx, const DspId &dspId) override;
+
+    /// Called when a double-spend proof turns out to be bad either because it
+    /// was a rescued orphan that was bad, or because a peer sent us a bad proof.
+    /// We punish the nodeid(s) in question in that case (if they are still connected).
+    void BadDSProofsDetectedFromNodeIds(const std::vector<NodeId> &nodeIds) override;
+
 private:
     //! Next time to check for stale tip
     int64_t m_stale_tip_check_time;

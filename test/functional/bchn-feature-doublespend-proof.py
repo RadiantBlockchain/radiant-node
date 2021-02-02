@@ -15,7 +15,8 @@ from test_framework.mininode import P2PInterface, mininode_lock
 from test_framework.script import CScript, OP_TRUE, OP_FALSE, SignatureHashForkIdFromValues
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import (
-    assert_greater_than, assert_equal, assert_raises, connect_nodes, disconnect_nodes, wait_until, find_output
+    assert_greater_than, assert_equal, assert_raises, assert_raises_rpc_error, connect_nodes, disconnect_nodes,
+    find_output, wait_until
 )
 
 
@@ -296,6 +297,33 @@ class DoubleSpendProofTest(BitcoinTestFramework):
         dsps.add(last_dsp.serialize())
         assert(len(dsps) == 4)
 
+        # Next, test that submitting a double-spend via the RPC interface also results in a broadcasted
+        # dsproof
+        self.nodes[0].generate(1)
+        self.sync_all()
+        fundingtxid = self.nodes[0].getblock(self.nodes[0].getblockhash(6))['tx'][0]
+        # Create 2 new double-spends
+        firstDSTx = create_raw_transaction(self.nodes[0], fundingtxid, self.nodes[0].getnewaddress(), 49.95)
+        secondDSTx = create_raw_transaction(self.nodes[0], fundingtxid, self.nodes[0].getnewaddress(), 49.95)
+
+        # Send the two conflicting transactions to the same node via RPC
+        assert_equal(dspReceiver.message_count["dsproof-beta"], 4)
+        self.nodes[0].sendrawtransaction(firstDSTx)
+        # send second tx to same node via RPC
+        # -- it's normal for it to reject the tx, but it should still generate a dsproof broadcast
+        assert_raises_rpc_error(
+            -26,
+            "txn-mempool-conflict (code 18)",
+            self.nodes[0].sendrawtransaction,
+            secondDSTx
+        )
+        wait_until(
+            lambda: dspReceiver.message_count["dsproof-beta"] == 5,
+            lock=mininode_lock,
+            timeout=5
+        )
+
+
         # Finally, ensure that the non-dsproof node has the messages we expect in its log
         # (this checks that dsproof was disabled for this node)
         debug_log = os.path.join(non_dsproof_node.datadir, 'regtest', 'debug.log')
@@ -308,7 +336,8 @@ class DoubleSpendProofTest(BitcoinTestFramework):
                     dsp_inv_ctr += 1
                 else:
                     # Ensure this node is not processing dsproof messages and not requesting them via getdata
-                    assert "received: dsproof-beta" not in line and "Good DSP" not in line
+                    assert ("received: dsproof-beta" not in line and "Good DSP" not in line
+                            and "DSP broadcasting" not in line and "bad-dsproof" not in line)
         # We expect it to have received at least some DSP inv broadcasts
         assert_greater_than(dsp_inv_ctr, 0)
 
