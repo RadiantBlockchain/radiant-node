@@ -1,5 +1,5 @@
 // Copyright (c) 2011-2014 The Bitcoin Core developers
-// Copyright (c) 2017-2019 The Bitcoin developers
+// Copyright (c) 2017-2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -20,9 +20,7 @@ BitcoinAddressEntryValidator::BitcoinAddressEntryValidator(
     const std::string &cashaddrprefixIn, QObject *parent)
     : QValidator(parent), cashaddrprefix(cashaddrprefixIn) {}
 
-QValidator::State BitcoinAddressEntryValidator::validate(QString &input,
-                                                         int &pos) const {
-    Q_UNUSED(pos);
+QValidator::State BitcoinAddressEntryValidator::validate(QString &input, [[maybe_unused]] int &pos) const {
 
     // Empty address is "intermediate" input
     if (input.isEmpty()) {
@@ -60,32 +58,30 @@ QValidator::State BitcoinAddressEntryValidator::validate(QString &input,
     }
 
     // Validation
-    QValidator::State state = QValidator::Acceptable;
     for (int idx = 0; idx < input.size(); ++idx) {
         int ch = input.at(idx).unicode();
 
-        if ((ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'z') ||
-            (ch >= 'A' && ch <= 'Z') || (ch == ':')) {
-            // Alphanumeric and not a 'forbidden' character
+        if ((ch < '0' || ch > '9') && (ch < 'a' || ch > 'z') && (ch < 'A' || ch > 'Z') && ch != ':') {
+            // Only alphanumeric allowed.
             // We also include ':' for cashaddr.
-        } else {
             return QValidator::Invalid;
         }
     }
 
-    return state;
+    return QValidator::Acceptable;
 }
 
 BitcoinAddressCheckValidator::BitcoinAddressCheckValidator(QObject *parent)
     : QValidator(parent) {}
 
-QValidator::State BitcoinAddressCheckValidator::validate(QString &input,
-                                                         int &pos) const {
-    Q_UNUSED(pos);
+QValidator::State BitcoinAddressCheckValidator::validate(QString &input, [[maybe_unused]] int &pos) const {
 
     // Validate the passed Bitcoin address
-    if (IsValidDestinationString(input.toStdString(),
-                                 GetConfig().GetChainParams())) {
+    CTxDestination destination = DecodeDestination(input.toStdString(), GetConfig().GetChainParams());
+    if (IsValidDestination(destination)) {
+        // Address is valid
+        // Normalize address notation (e.g. convert to CashAddr/Base58, add CashAddr prefix, uppercase CashAddr to lowercase)
+        input = QString::fromStdString(EncodeDestination(destination, GetConfig()));
         return QValidator::Acceptable;
     }
 

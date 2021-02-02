@@ -1,4 +1,5 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
+// Copyright (c) 2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -34,7 +35,7 @@ void QValidatedLineEdit::focusInEvent(QFocusEvent *evt) {
 }
 
 void QValidatedLineEdit::focusOutEvent(QFocusEvent *evt) {
-    checkValidity();
+    validate();
 
     QLineEdit::focusOutEvent(evt);
 }
@@ -55,13 +56,13 @@ void QValidatedLineEdit::setEnabled(bool enabled) {
         setValid(true);
     } else {
         // Recheck validity when QValidatedLineEdit gets enabled
-        checkValidity();
+        validate();
     }
 
     QLineEdit::setEnabled(enabled);
 }
 
-void QValidatedLineEdit::checkValidity() {
+bool QValidatedLineEdit::validate() {
     if (text().isEmpty()) {
         setValid(true);
     } else if (hasAcceptableInput()) {
@@ -69,20 +70,19 @@ void QValidatedLineEdit::checkValidity() {
 
         // Check contents on focus out
         if (checkValidator) {
-            QString address = text();
+            QString input = text();
             int pos = 0;
-            if (checkValidator->validate(address, pos) ==
-                QValidator::Acceptable) {
-                setValid(true);
-            } else {
-                setValid(false);
-            }
+            setValid(checkValidator->validate(input, pos) == QValidator::Acceptable);
+            // note: checkValidator may have modified the text, so update the text
+            setText(input);
         }
     } else {
         setValid(false);
     }
 
     Q_EMIT validationDidChange(this);
+
+    return valid;
 }
 
 void QValidatedLineEdit::setCheckValidator(const QValidator *v) {
@@ -92,9 +92,9 @@ void QValidatedLineEdit::setCheckValidator(const QValidator *v) {
 bool QValidatedLineEdit::isValid() {
     // use checkValidator in case the QValidatedLineEdit is disabled
     if (checkValidator) {
-        QString address = text();
+        QString input = text();
         int pos = 0;
-        if (checkValidator->validate(address, pos) == QValidator::Acceptable) {
+        if (checkValidator->validate(input, pos) == QValidator::Acceptable) {
             return true;
         }
     }
