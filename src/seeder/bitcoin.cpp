@@ -121,11 +121,13 @@ PeerMessagingState CSeederNode::ProcessMessage(const std::string &strCommand,
         if (vAddr) {
             BeginMessage("getaddr");
             EndMessage();
-            std::vector<BlockHash> locatorHash(
-                1, Params().Checkpoints().mapCheckpoints.rbegin()->second);
-            BeginMessage(NetMsgType::GETHEADERS);
-            vSend << CBlockLocator(locatorHash) << uint256();
-            EndMessage();
+            // request headers starting after last checkpoint (only if we have checkpoints for this network)
+            if (const auto &mapCheckpoints = Params().Checkpoints().mapCheckpoints; !mapCheckpoints.empty()) {
+                std::vector<BlockHash> locatorHash(1, mapCheckpoints.rbegin()->second);
+                BeginMessage(NetMsgType::GETHEADERS);
+                vSend << CBlockLocator(locatorHash) << uint256();
+                EndMessage();
+            }
             doneAfter = std::time(nullptr) + GetTimeout();
         } else {
             doneAfter = std::time(nullptr) + 1;
@@ -201,12 +203,14 @@ bool CSeederNode::ProcessMessages() {
         return false;
     }
 
-    const CMessageHeader::MessageMagic netMagic = Params().NetMagic();
+    const CMessageHeader::MessageMagic &netMagic = Params().NetMagic();
 
     do {
-        CDataStream::iterator pstart = std::search(
-            vRecv.begin(), vRecv.end(), BEGIN(netMagic), END(netMagic));
-        std::size_t nHeaderSize =
+        using CharPtrT = const CDataStream::value_type *; // ensure compare of the same sign of char * for std::search
+        const CDataStream::iterator pstart = std::search(
+            vRecv.begin(), vRecv.end(),
+            reinterpret_cast<CharPtrT>(netMagic.data()), reinterpret_cast<CharPtrT>(netMagic.data() + netMagic.size()));
+        const std::size_t nHeaderSize =
             GetSerializeSize(CMessageHeader(netMagic), vRecv.GetVersion());
         if (std::size_t(vRecv.end() - pstart) < nHeaderSize) {
             if (vRecv.size() > nHeaderSize) {

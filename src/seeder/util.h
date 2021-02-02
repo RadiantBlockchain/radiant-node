@@ -5,14 +5,12 @@
 #ifndef BITCOIN_SEEDER_UTIL_H
 #define BITCOIN_SEEDER_UTIL_H
 
+#include <algorithm>
 #include <chrono>
 #include <thread>
 
-#define BEGIN(a) ((char *)&(a))
-#define END(a) ((char *)&((&(a))[1]))
-
-static inline void Sleep(int nMilliSec) {
-    std::this_thread::sleep_for(std::chrono::milliseconds{nMilliSec});
+inline void Sleep(int nMilliSec) {
+    std::this_thread::sleep_for(std::chrono::milliseconds{std::max(0, nMilliSec)});
 }
 
 #endif // BITCOIN_SEEDER_UTIL_H
