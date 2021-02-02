@@ -1,4 +1,4 @@
-// Copyright (c) 2019 The Bitcoin developers
+// Copyright (c) 2019-2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -13,14 +13,14 @@
 #include <streams.h>
 #include <util/system.h>
 #include <version.h>
+#include <test/setup_common.h>
+#include <validation.h>
 
 #include <ctime>
 #include <memory>
 #include <ostream>
 #include <string>
 #include <vector>
-
-const std::function<std::string(const char *)> G_TRANSLATION_FUN = nullptr;
 
 #include <boost/test/unit_test.hpp>
 
@@ -47,9 +47,8 @@ public:
 
 static const unsigned short SERVICE_PORT = 18444;
 
-struct SeederTestingSetup {
+struct SeederTestingSetup : public TestChain100Setup {
     SeederTestingSetup() {
-        SelectParams(CBaseChainParams::REGTEST);
         CNetAddr ip;
         ip.SetInternal("bitcoin.test");
         CService service = {ip, SERVICE_PORT};
@@ -123,6 +122,59 @@ BOOST_AUTO_TEST_CASE(process_verack_msg) {
         Params().Checkpoints().mapCheckpoints.rbegin()->second};
     BOOST_CHECK(locator.vHave == expectedLocator);
     BOOST_CHECK(hashStop == uint256());
+}
+
+BOOST_AUTO_TEST_CASE(process_headers_msg) {
+    CService serviceFrom;
+    CAddress addrFrom(serviceFrom,
+                      ServiceFlags(NODE_NETWORK | NODE_BITCOIN_CASH));
+
+    CDataStream versionMessage =
+        CreateVersionMessage(std::time(nullptr), vAddr[0], addrFrom,
+                             GetRequireHeight() + 1, INIT_PROTO_VERSION);
+
+    testNode->TestProcessMessage(NetMsgType::VERSION, versionMessage,
+                                 PeerMessagingState::AwaitingMessages);
+
+    auto blockOneHeader = ::ChainActive()[1]->GetBlockHeader();
+
+    CDataStream headersMessage(SER_NETWORK, 0);
+    headersMessage.SetVersion(INIT_PROTO_VERSION);
+    WriteCompactSize(headersMessage, 1);
+    headersMessage << blockOneHeader;
+    WriteCompactSize(headersMessage, 0);
+
+    testNode->TestProcessMessage(NetMsgType::HEADERS, headersMessage,
+                                 PeerMessagingState::AwaitingMessages);
+    BOOST_CHECK(testNode->GetBan() == 0);
+
+    auto badBlockOneHeader = CBlockHeader();
+
+    CDataStream badHeadersMessage(SER_NETWORK, 0);
+    badHeadersMessage.SetVersion(INIT_PROTO_VERSION);
+    WriteCompactSize(badHeadersMessage, 1);
+    badHeadersMessage << badBlockOneHeader;
+    WriteCompactSize(badHeadersMessage, 0);
+
+    testNode->TestProcessMessage(NetMsgType::HEADERS, badHeadersMessage,
+                                 PeerMessagingState::Finished);
+    BOOST_CHECK(testNode->GetBan() > 0);
+}
+
+BOOST_AUTO_TEST_CASE(ban_too_many_headers) {
+    auto blockOneHeader = ::ChainActive()[1]->GetBlockHeader();
+
+    CDataStream tooManyHeadersMessage(SER_NETWORK, 0);
+    tooManyHeadersMessage.SetVersion(INIT_PROTO_VERSION);
+    WriteCompactSize(tooManyHeadersMessage, 2001);
+    for (size_t i = 0; i < 2001; i++) {
+        tooManyHeadersMessage << blockOneHeader;
+        WriteCompactSize(tooManyHeadersMessage, 0);
+    }
+
+    testNode->TestProcessMessage(NetMsgType::HEADERS, tooManyHeadersMessage,
+                                 PeerMessagingState::Finished);
+    BOOST_CHECK(testNode->GetBan() > 0);
 }
 
 static CDataStream CreateAddrMessage(std::vector<CAddress> sendAddrs,
