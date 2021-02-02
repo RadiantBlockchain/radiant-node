@@ -5,6 +5,7 @@
 #include <config.h>
 #include <consensus/validation.h>
 #include <dsproof/storage.h>
+#include <policy/mempool.h>
 #include <script/interpreter.h>
 #include <script/sighashtype.h>
 #include <script/sign.h>
@@ -361,9 +362,12 @@ BOOST_AUTO_TEST_CASE(dsproof_dspidptr) {
     }
 }
 
-static std::pair<bool, CValidationState> ToMemPool(const CMutableTransaction &tx) EXCLUSIVE_LOCKS_REQUIRED(cs_main) {
+static std::pair<bool, CValidationState> ToMemPool(const CMutableTransaction &tx, CTransactionRef *pref = nullptr)
+EXCLUSIVE_LOCKS_REQUIRED(cs_main) {
     CValidationState state;
-    const bool b = AcceptToMemoryPool(GetConfig(), g_mempool, state, MakeTransactionRef(tx),
+    auto txref = MakeTransactionRef(tx);
+    if (pref) *pref = txref;
+    const bool b = AcceptToMemoryPool(GetConfig(), g_mempool, state, txref,
                                       nullptr /* pfMissingInputs */, true /* bypass_limits */,
                                       Amount::zero() /* nAbsurdFee */);
     return {b, std::move(state)};
@@ -409,6 +413,7 @@ BOOST_FIXTURE_TEST_CASE(dsproof_doublespend_mempool, TestChain100Setup) {
         BOOST_CHECK(ok);
     }
 
+    std::map<DspId, TxId> dspIdTxIdMap;
     std::vector<DoubleSpendProof> proofs;
 
     for (size_t i = 0; i+1 < spends.size(); i += 2) {
@@ -443,15 +448,49 @@ BOOST_FIXTURE_TEST_CASE(dsproof_doublespend_mempool, TestChain100Setup) {
             BOOST_CHECK(optIter);
             if (optIter) {
                 const auto & entry = *(*optIter);
-                BOOST_CHECK(entry.dspHash);
-                BOOST_CHECK(entry.dspHash == dsproof.GetId());
+                BOOST_CHECK(entry.dspId);
+                BOOST_CHECK(entry.dspId == dsproof.GetId());
+                dspIdTxIdMap[dsproof.GetId()] = spend1.GetId(); // save txid
             }
+
+            // test higher-level mempool access methods
+            auto optPair = g_mempool.getDoubleSpendProof(dsproof.GetId());
+            auto optProof = g_mempool.getDoubleSpendProof(spend1.GetId());
+            auto optPair2 = g_mempool.getDoubleSpendProof(dsproof.outPoint());
+            BOOST_CHECK(bool(optPair));
+            BOOST_CHECK(bool(optPair2));
+            BOOST_CHECK(bool(optProof));
+            BOOST_CHECK(*optPair == *optPair2);
+            BOOST_CHECK(!optPair->second.IsNull());
+            BOOST_CHECK(optPair->first == *optProof);
+            BOOST_CHECK(dsproof == *optProof);
+            BOOST_CHECK(optPair->second == dspIdTxIdMap[dsproof.GetId()]); // we expect the proof to be associated with this txid
 
             proofs.emplace_back(std::move(dsproof));
         }
 
         BOOST_CHECK_EQUAL(g_mempool.size(), txNum + 1); // mempool should have grown by 1
     }
+
+    const auto sortById = [](const DoubleSpendProof &a, const DoubleSpendProof &b) {
+        return a.GetId() < b.GetId();
+    };
+    {
+        // check listDoubleSpendProofs call returns what we expect
+        std::vector<DoubleSpendProof> proofs2;
+        for (const auto & [dsproof, txid] : g_mempool.listDoubleSpendProofs(true)) {
+            BOOST_CHECK(!txid.IsNull()); // we expect none of these to be orphans
+            BOOST_CHECK(!dsproof.isEmpty()); // we expect all proofs to not be empty
+            BOOST_CHECK(txid == dspIdTxIdMap[dsproof.GetId()]); // we expect the proof to be associated with this txid
+            proofs2.push_back(dsproof); // save
+        }
+        std::sort(proofs2.begin(), proofs2.end(), sortById);
+        auto proofsCpy = proofs;
+        std::sort(proofsCpy.begin(), proofsCpy.end(), sortById);
+
+        BOOST_CHECK(proofs2 == proofsCpy);
+    }
+
     g_mempool.clear();
     BOOST_CHECK_EQUAL(g_mempool.size(), 0u);
     BOOST_CHECK_EQUAL(g_mempool.doubleSpendProofStorage()->size(), 0u);
@@ -466,6 +505,34 @@ BOOST_FIXTURE_TEST_CASE(dsproof_doublespend_mempool, TestChain100Setup) {
     NodeId nid = 0;
     for (const auto & proof : proofs) {
         storage->addOrphan(proof, ++nid);
+    }
+
+    {
+        // check listDoubleSpendProofs call returns what we expect
+        std::vector<DoubleSpendProof> proofs2;
+        for (const auto & [dsproof, txid] : g_mempool.listDoubleSpendProofs(true)) {
+            BOOST_CHECK(txid.IsNull()); // we expect all of these to be orphans
+            proofs2.push_back(dsproof); // save
+            BOOST_CHECK(!dsproof.isEmpty()); // we expect all proofs to not be empty
+        }
+        std::sort(proofs2.begin(), proofs2.end(), sortById);
+        auto proofsCpy = proofs;
+        std::sort(proofsCpy.begin(), proofsCpy.end(), sortById);
+
+        BOOST_CHECK(proofs2 == proofsCpy);
+    }
+
+    // test finding the getDoubleSpendProof* calls for an orphan
+    for (const auto & proof : proofs) {
+        auto optPair = g_mempool.getDoubleSpendProof(proof.GetId()); // should be found, null txid
+        auto optPair2 = g_mempool.getDoubleSpendProof(proof.outPoint()); // should be found, null txid
+        auto optProof = g_mempool.getDoubleSpendProof(dspIdTxIdMap[proof.GetId()]); // should be not found
+        BOOST_CHECK(bool(optPair));
+        BOOST_CHECK(bool(optPair2));
+        BOOST_CHECK(!optProof);
+        BOOST_CHECK(*optPair == *optPair2);
+        BOOST_CHECK(optPair->second.IsNull());
+        BOOST_CHECK(optPair->first == proof);
     }
 
     BOOST_CHECK_EQUAL(storage->numOrphans(), std::min(proofs.size(), storage->maxOrphans()));
@@ -484,6 +551,19 @@ BOOST_FIXTURE_TEST_CASE(dsproof_doublespend_mempool, TestChain100Setup) {
             // added, but should have claimed orphan(s)
             ++okCt;
             BOOST_CHECK_EQUAL(storage->numOrphans(), nOrphans-1);
+
+            // check that getDoubleSpendProof() overloads now return pairs with !txId.IsNull()
+            auto optPair = g_mempool.getDoubleSpendProof(spend.vin[0].prevout); // should be found, valid txid
+            BOOST_CHECK(bool(optPair));
+            BOOST_CHECK(!optPair->second.IsNull());
+            auto optPair2 = g_mempool.getDoubleSpendProof(optPair->first.GetId()); // find by dspId
+            BOOST_CHECK(bool(optPair2));
+            BOOST_CHECK(*optPair == *optPair2);
+            BOOST_CHECK(optPair->second == dspIdTxIdMap[optPair->first.GetId()]); // txid should be what we expect
+            // check find by txId
+            auto optProof = g_mempool.getDoubleSpendProof(dspIdTxIdMap[optPair->first.GetId()]);
+            BOOST_CHECK(bool(optProof));
+            BOOST_CHECK(*optProof == optPair->first);
         }
     }
     BOOST_CHECK(okCt > 0);
@@ -493,11 +573,151 @@ BOOST_FIXTURE_TEST_CASE(dsproof_doublespend_mempool, TestChain100Setup) {
     // ensure all orphans are gone now
     BOOST_CHECK_EQUAL(storage->numOrphans(), 0u);
 
+    // listDoubleSpendProofs should not contain any orphans either
+    for (const auto & [dsproof, txid] : g_mempool.listDoubleSpendProofs(true)) {
+        BOOST_CHECK(!txid.IsNull());
+    }
+
     // storage should still have the proofs though for tx's that have proofs
     BOOST_CHECK_EQUAL(g_mempool.doubleSpendProofStorage()->size(), nokCt);
 
 
     // finally, clear the mempool
+    g_mempool.clear();
+    BOOST_CHECK_EQUAL(g_mempool.size(), 0u);
+    BOOST_CHECK_EQUAL(g_mempool.doubleSpendProofStorage()->size(), 0u);
+}
+
+/// Comprehensive test that adds real tx's to the mempool and double-spends them,
+/// and also makes the double-spent tx's a chain of unconfirmed children. This
+/// tests the CTxMemPool::recursiveDSProofSearch facility.
+BOOST_FIXTURE_TEST_CASE(dsproof_recursive_search_mempool, TestChain100Setup) {
+    FlatSigningProvider provider;
+    provider.keys[coinbaseKey.GetPubKey().GetID()] = coinbaseKey;
+    provider.pubkeys[coinbaseKey.GetPubKey().GetID()] = coinbaseKey.GetPubKey();
+
+    const CScript scriptPubKey = GetScriptForDestination(coinbaseKey.GetPubKey().GetID());
+    const size_t firstTxIdx = m_coinbase_txns.size();
+
+    for (int i = 0; i < COINBASE_MATURITY*2 + 1; ++i) {
+        const CBlock b = CreateAndProcessBlock({}, scriptPubKey);
+        m_coinbase_txns.push_back(b.vtx[0]);
+    }
+
+    // Some code-paths below need locks held
+    LOCK2(cs_main, g_mempool.cs);
+    BOOST_CHECK(DoubleSpendProof::IsEnabled()); // default state should be enabled
+    g_mempool.clear(); // ensure mempool is clean
+    BOOST_CHECK_EQUAL(g_mempool.doubleSpendProofStorage()->size(), 0u);
+
+
+    // Create 5 double-spend pairs of mature coinbase txn:
+    std::vector<CMutableTransaction> spends;
+    spends.resize(2 * 5 /* 5 pairs */);
+    for (size_t i = 0; i < spends.size(); ++i) {
+        const auto &cbTxRef = m_coinbase_txns.at(firstTxIdx + i/2);
+        spends[i].nVersion = 1;
+        spends[i].vin.resize(1);
+        spends[i].vin[0].prevout = COutPoint(cbTxRef->GetId(), 0);
+        spends[i].vout.resize(2);
+        // ensure spends are unique amounts (thus unique txid)
+        spends[i].vout[0].nValue = cbTxRef->GetValueOut() - int64_t(i+1) * CENT;
+        spends[i].vout[0].scriptPubKey = scriptPubKey;
+        spends[i].vout[1].nValue = cbTxRef->GetValueOut() - spends[i].vout[0].nValue;
+        spends[i].vout[1].scriptPubKey = scriptPubKey;
+
+        // Sign:
+        const auto ok = SignSignature(provider, *cbTxRef, spends[i], 0, SigHashType().withForkId());
+        BOOST_CHECK(ok);
+    }
+    size_t nokCt = 0, okCt = 0;
+    std::vector<CTransactionRef> dblSpendRoots;
+
+    for (const auto &spend : spends) {
+        CTransactionRef tx;
+        auto [ok, state] = ToMemPool(spend, &tx);
+        if (!ok) {
+            // not added (was dupe)
+            ++nokCt;
+            BOOST_CHECK_EQUAL(state.GetRejectReason(), "txn-mempool-conflict");
+        } else {
+            // added, but should have claimed orphan(s)
+            ++okCt;
+            dblSpendRoots.push_back(std::move(tx));
+        }
+    }
+    BOOST_CHECK(g_mempool.size() == dblSpendRoots.size());
+    BOOST_CHECK(g_mempool.listDoubleSpendProofs().size() == dblSpendRoots.size());
+
+    std::map<TxId, DoubleSpendProof> txIdDspMap;
+    for (const auto & [proof, txid] : g_mempool.listDoubleSpendProofs()) {
+        txIdDspMap[txid] = proof;
+    }
+
+    const size_t txChainLen =
+            std::max<size_t>(0, std::min<int64_t>(gArgs.GetArg("-limitancestorcount",  DEFAULT_ANCESTOR_LIMIT),
+                                                  gArgs.GetArg("-limitdescendantcount",  DEFAULT_DESCENDANT_LIMIT)) - 1);
+    BOOST_CHECK(txChainLen > 1);
+    std::map<TxId, std::list<CTransactionRef>> dblSpendChildren;
+    for (const auto &ds : dblSpendRoots) {
+        // for each root dbl spend, create a chain of txChainLen child tx's
+        CTransactionRef parent = ds;
+        auto & l = dblSpendChildren[parent->GetId()];
+        for (size_t i = 0; i < txChainLen; ++i) {
+            CMutableTransaction tx;
+            tx.nVersion = 1;
+            tx.vin.resize(parent->vout.size());
+            for (size_t n = 0; n < parent->vout.size(); ++n)
+                tx.vin[n].prevout = COutPoint(parent->GetId(), n);
+            tx.vout.resize(2);
+            const Amount prevValueOut = parent->GetValueOut();
+            tx.vout[0].nValue =  prevValueOut / 2;
+            tx.vout[0].scriptPubKey = scriptPubKey;
+            tx.vout[1].nValue = prevValueOut  / 2;
+            tx.vout[1].scriptPubKey = scriptPubKey;
+
+            // Sign:
+            for (size_t n = 0; n < tx.vin.size(); ++n) {
+                const auto ok = SignSignature(provider, *parent, tx, n, SigHashType().withForkId());
+                BOOST_CHECK(ok);
+            }
+            l.emplace_back();
+            CTransactionRef &txRef = l.back();
+            auto [ok2, state] = ToMemPool(tx, &txRef);
+            BOOST_CHECK(ok2);
+            if (!ok2) {
+                BOOST_WARN_MESSAGE(ok2, state.GetRejectReason());
+                // to avoid error spam
+                return;
+            }
+            parent = txRef;
+        }
+    }
+    BOOST_CHECK(dblSpendRoots.size() > 0);
+    BOOST_CHECK(g_mempool.size() == dblSpendRoots.size() + dblSpendRoots.size() * txChainLen);
+
+    // Now, check that the recursive search returns what we expect in its "ancestry" vector
+    for (const auto & [txid, l] : dblSpendChildren) {
+        std::vector<TxId> expectedTxids;
+        expectedTxids.reserve(l.size() + 1);
+        for (const auto &tx : l)
+            expectedTxids.insert(expectedTxids.begin(), tx->GetId());
+        expectedTxids.push_back(txid);
+
+        for (auto it = expectedTxids.begin(), end = expectedTxids.end(); it != end; ++it) {
+            const auto optResult = g_mempool.recursiveDSProofSearch(*it);
+            BOOST_CHECK(bool(optResult));
+            if (!optResult) continue;
+            auto & [proof, ancestry] = *optResult;
+            const std::vector<TxId> expected(it, end);
+            BOOST_CHECK(expected == ancestry); // ensure ancestry chain of tx's matches what we expect
+            BOOST_CHECK(!proof.isEmpty());
+            BOOST_CHECK(proof.validate(g_mempool) == DoubleSpendProof::Validity::Valid);
+            BOOST_CHECK(!ancestry.empty());
+            BOOST_CHECK(txIdDspMap[ancestry.back()] == proof); // ensure proof matches what we expect
+        }
+    }
+
     g_mempool.clear();
     BOOST_CHECK_EQUAL(g_mempool.size(), 0u);
     BOOST_CHECK_EQUAL(g_mempool.doubleSpendProofStorage()->size(), 0u);

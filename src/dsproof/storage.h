@@ -68,6 +68,10 @@ public:
     /// Each item is a pair of a uint256 and the nodeId that send the proof to us.
     std::list<std::pair<DspId, NodeId>> findOrphans(const COutPoint &prevOut) const;
 
+    /// Returns all the proofs known to this storage instance.
+    /// For each item, pair.second is true if the proof was flagged as an orphan in storage, false otherwise.
+    std::vector<std::pair<DoubleSpendProof, bool>> getAll(bool includeOrphans=false) const;
+
     /// Flags the proof associated with hash as not an orphan, and thus
     /// not subject to automatic expiry.
     void claimOrphan(const DspId &hash);

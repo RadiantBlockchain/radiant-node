@@ -86,6 +86,18 @@ std::list<std::pair<DspId, NodeId>> DoubleSpendProofStorage::findOrphans(const C
     return answer;
 }
 
+/// Returns all the orphans known to this storage instance.
+std::vector<std::pair<DoubleSpendProof, bool>> DoubleSpendProofStorage::getAll(bool includeOrphans) const {
+    std::vector<std::pair<DoubleSpendProof, bool>> ret;
+    LOCK(m_lock);
+    for (const auto & entry: m_proofs) {
+        if (entry.orphan && !includeOrphans)
+            continue;
+        ret.emplace_back(entry.proof, entry.orphan);
+    }
+    return ret;
+}
+
 void DoubleSpendProofStorage::claimOrphan(const DspId &hash)
 {
     LOCK(m_lock);

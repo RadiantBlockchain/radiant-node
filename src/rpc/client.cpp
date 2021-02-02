@@ -141,6 +141,16 @@ static const CRPCConvertParam vRPCConvertParams[] = {
     {"disconnectnode", 1, "nodeid"},
     {"logging", 0, "include"},
     {"logging", 1, "exclude"},
+    // double spend proof facility
+    {"getdsproof", 0, "dspid"},
+    {"getdsproof", 0, "txid"},
+    {"getdsproof", 0, "outpoint"},
+    {"getdsproof", 1, "verbosity"},
+    {"getdsproof", 1, "verbose"},
+    {"getdsproof", 2, "recursive"},
+    {"getdsprooflist", 0, "verbosity"},
+    {"getdsprooflist", 0, "verbose"},
+    {"getdsprooflist", 1, "include_orphans"},
     // Echo with conversion (For testing only)
     {"echojson", 0, "arg0"},
     {"echojson", 1, "arg1"},

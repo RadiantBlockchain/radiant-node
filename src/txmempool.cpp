@@ -16,6 +16,7 @@
 #include <dsproof/storage.h>
 #include <mempool/defaultbatchupdater.h>
 #include <policy/fees.h>
+#include <policy/mempool.h>
 #include <policy/policy.h>
 #include <reverse_iterator.h>
 #include <streams.h>
@@ -27,7 +28,9 @@
 #include <version.h>
 
 #include <algorithm>
+#include <functional>
 #include <optional>
+#include <stdexcept>
 
 CTxMemPoolEntry::CTxMemPoolEntry(const CTransactionRef &_tx, const Amount _nFee,
                                  int64_t _nTime, unsigned int _entryHeight,
@@ -474,8 +477,8 @@ void CTxMemPool::addUnchecked(const CTxMemPoolEntry &entry,
 
 void CTxMemPool::removeUnchecked(txiter it, MemPoolRemovalReason reason) {
     NotifyEntryRemoved(it->GetSharedTx(), reason);
-    if (it->dspHash)
-        m_dspStorage->remove(*it->dspHash);
+    if (it->dspId)
+        m_dspStorage->remove(*it->dspId);
     for (const CTxIn &txin : it->GetTx().vin) {
         mapNextTx.erase(txin.prevout);
     }
@@ -1144,7 +1147,7 @@ CTransactionRef CTxMemPool::addDoubleSpendProof(const DoubleSpendProof &proof, c
     } else
         iter = *optIter;
 
-    if (iter->dspHash)  {
+    if (iter->dspId)  {
         // A DSProof already exists for this tx, don't propagate new one.
         return CTransactionRef();
     }
@@ -1153,15 +1156,217 @@ CTransactionRef CTxMemPool::addDoubleSpendProof(const DoubleSpendProof &proof, c
 
     // Add to storage. If this was an orphan it will implicitly be flagged as a non-orphan
     m_dspStorage->add(proof);
-    // Update mempool entry to save the dspHash
+    // Update mempool entry to save the dspId
     const auto &hash = proof.GetId();
-    mapTx.modify(iter, [&hash](CTxMemPoolEntry &entry){ entry.dspHash = hash; });
+    mapTx.modify(iter, [&hash](CTxMemPoolEntry &entry){ entry.dspId = hash; });
     return ret;
 }
 
 DoubleSpendProofStorage *CTxMemPool::doubleSpendProofStorage() const {
     return m_dspStorage.get();
 }
+
+//! list all known proofs, optionally also returning all known orphans (orphans have an .IsNull() TxId)
+auto CTxMemPool::listDoubleSpendProofs(const bool includeOrphans) const -> std::vector<DspTxIdPair> {
+    std::vector<DspTxIdPair> ret;
+    LOCK(cs);
+    auto proofs = m_dspStorage->getAll(includeOrphans);
+    ret.reserve(proofs.size());
+    for (auto & [proof, isOrphan] : proofs) {
+        TxId txId;
+        if (proof.isEmpty())
+            throw std::runtime_error("Internal error: m_dspStorage returned an empty proof");
+        if (isOrphan && !includeOrphans)
+            throw std::runtime_error("Internal error: m_dspStorage returned orphans unexpectedly");
+        if (!isOrphan) {
+            // find the txId for this proof
+            if (auto it = mapNextTx.find(proof.outPoint()); it != mapNextTx.end()) {
+                txId = it->second->GetId();
+                // Sanity check that actual CTxMemPoolEntry also has this DspId associated
+                if (auto optiter = GetIter(txId); !optiter || (*optiter)->dspId != proof.GetId()) {
+                    // should never happen, indicates bug in code
+                    throw std::runtime_error(strprintf("Unexpected state: DspId %s for COutPoint %s is not associated"
+                                                       " with the expected txId %s!",
+                                                       proof.GetId().ToString(), proof.outPoint().ToString(),
+                                                       txId.ToString()));
+                }
+            } else {
+                // should never happen, indicates bug in code
+                throw std::runtime_error(strprintf("Unexpected state: DspId %s for COutPoint %s is missing its tx from"
+                                                   " mempool, yet is not marked as an orphan!",
+                                                   proof.GetId().ToString(), proof.outPoint().ToString()));
+            }
+        }
+        ret.emplace_back(std::move(proof), std::move(txId) /* if orphan txId will be .IsNull() here */);
+    }
+    return ret;
+}
+
+//! Lookup a dsproof by dspId. If the proof is an orphan, it will have an .IsNull() TxId
+auto CTxMemPool::getDoubleSpendProof(const DspId &dspId, DspDescendants *desc) const -> std::optional<DspTxIdPair> {
+    std::optional<DspTxIdPair> ret;
+    LOCK(cs);
+
+    if (auto dsproof = m_dspStorage->lookup(dspId); dsproof.isEmpty()) {
+        // not found, return nullopt
+        return ret;
+    } else {
+        // found, populate ret
+        ret.emplace(std::piecewise_construct, std::forward_as_tuple(std::move(dsproof)), std::forward_as_tuple());
+    }
+    // next, see if it's an orphan or not by looking up its COutPoint
+    auto & [dsproof, txId] = *ret;
+    if (auto it = mapNextTx.find(dsproof.outPoint()); it != mapNextTx.end()) {
+        // Not an orphan, set txId
+        txId = it->second->GetId();
+        if (desc) {
+            // caller supplied a descendants set they want populated, so populate it on this hit
+            if (auto optIter = GetIter(txId))
+                *desc = getDspDescendantsForIter(*optIter);
+        }
+    }
+    return ret;
+}
+
+//! Lookup a dsproof by TxId.
+auto CTxMemPool::getDoubleSpendProof(const TxId &txId, DspDescendants *desc) const -> std::optional<DoubleSpendProof> {
+    LOCK(cs);
+    return getDoubleSpendProof_common(txId, nullptr, desc);
+}
+
+//! Helper (requires cs is held)
+auto CTxMemPool::getDspDescendantsForIter(txiter it) const -> DspDescendants {
+    DspDescendants ret;
+    setEntries iters;
+    CalculateDescendants(it, iters);
+    for (const auto &iter : iters)
+        ret.emplace(iter->GetTx().GetId());
+    return ret;
+}
+
+auto CTxMemPool::getDoubleSpendProof_common(const TxId &txId, txiter *txit, DspDescendants *desc) const
+-> std::optional<DoubleSpendProof> {
+    std::optional<DoubleSpendProof> ret;
+
+    auto it = mapTx.find(txId);
+    if (txit)
+        *txit = it; // tell caller about `it` (even if no hit for txId)
+    if (it != mapTx.end()) {
+        // txId found in mempool
+        if (it->dspId) {
+            ret.emplace(m_dspStorage->lookup(*it->dspId));
+            if (ret->isEmpty()) {
+                // hash points to missing dsp from storage -- should never happen
+                throw std::runtime_error(strprintf("Unexpected state: DspId %s for TxId %s missing from storage",
+                                                   it->dspId->ToString(), txId.ToString()));
+            }
+            if (desc) {
+                // caller supplied a descendants set they want populated, so populate it on this hit
+                *desc = getDspDescendantsForIter(it);
+            }
+        }
+    }
+    return ret;
+}
+
+//! If txId or any of its in-mempool ancestors have a dsproof, then a valid optional will be returned.
+auto CTxMemPool::recursiveDSProofSearch(const TxId &txIdIn, DspDescendants *desc) const -> std::optional<DspRecurseResult> {
+    constexpr auto recursionMax = 10'000u; // limit recursion depth to prevent stack overflow
+    static_assert(recursionMax >= DEFAULT_ANCESTOR_LIMIT && recursionMax >= DEFAULT_DESCENDANT_LIMIT);
+    std::optional<DspRecurseResult> ret;
+    DspQueryPath path;
+    std::optional<DoubleSpendProof> optProof;
+    std::set<TxId> seenTxIds; // to prevent recursion into tx's we've already searched
+
+    // we must use a std::function because lambdas cannot see themselves
+    std::function<void(const TxId &)> search = [&](const TxId &txId) EXCLUSIVE_LOCKS_REQUIRED(cs) {
+        path.push_back(txId);
+
+        if (path.size() > recursionMax) {
+            // this should never happen; guard against stack overflow.
+            throw std::runtime_error(strprintf("recursiveDSProofSearch: recursion limit (%d) exceeded", recursionMax));
+        }
+
+        // search this txId
+        txiter txit;
+        if ((optProof = getDoubleSpendProof_common(txId, &txit, desc))) {
+            // dsp found for this txId. Setting `ret` ends any recursion
+            ret.emplace(std::move(*optProof), std::move(path));
+            return;
+        }
+        // `txit` will be valid only if txId is a mempool tx, in which case it may have unconfirmed parents,
+        // so keep searching recursively.
+        if (txit != mapTx.end()) {
+            const auto &parents = GetMemPoolParents(txit);
+            // recurse for each input's txId (only if never seen)
+            for (const auto &parent : parents) {
+                const TxId &parentTxId = parent->GetTx().GetId();
+
+                // if we have already searched this parentTxId, skip
+                if (!seenTxIds.insert(parentTxId).second)
+                    continue;
+
+                // recurse; NB: this may modify `optProof`, `seenTxIds` and/or `ret`
+                search(parentTxId);
+
+                if (ret) {
+                    // recursive search yielded a result, return early
+                    return;
+                }
+            }
+        }
+
+        // this recursive branch yielded no results (dead end), pop txId off stack
+        path.pop_back();
+    };
+
+    LOCK(cs);
+    search(txIdIn);
+
+    return ret;
+}
+
+//! Lookup a dsproof by the double spent COutPoint.
+auto CTxMemPool::getDoubleSpendProof(const COutPoint &outpoint, DspDescendants *desc) const -> std::optional<DspTxIdPair> {
+    std::optional<DspTxIdPair> ret;
+    LOCK(cs);
+
+    if (auto it = mapNextTx.find(outpoint); it != mapNextTx.end()) {
+        const auto &txId = it->second->GetId();
+        auto it2 = mapTx.find(txId);
+        assert(it2 != mapTx.end());
+        if (it2->dspId) {
+            // mempool entry has a double-spend, get its proof from storage
+            ret.emplace(m_dspStorage->lookup(*it2->dspId), txId);
+            if (ret->first.isEmpty()) {
+                // hash points to missing dsp from storage -- should never happen
+                throw std::runtime_error(strprintf("Unexpected state: DspId %s for TxId %s missing from storage",
+                                                   it2->dspId->ToString(), txId.ToString()));
+            }
+            if (desc) {
+                // caller supplied a descendants set they want populated, so populate it on this hit
+                if (auto optIter = GetIter(txId))
+                    *desc = getDspDescendantsForIter(*optIter);
+            }
+        }
+    } else {
+        // outpoint not spent -- search for orphan proofs for this outpoint
+        for (const auto & [dspId, ignored] : m_dspStorage->findOrphans(outpoint)) {
+            ret.emplace(std::piecewise_construct,
+                        std::forward_as_tuple(m_dspStorage->lookup(dspId)),
+                        std::forward_as_tuple() /* default-constructed txid indicates orphan */);
+            if (ret->first.isEmpty()) {
+                // hash points to missing dsp from storage -- should never happen
+                throw std::runtime_error(strprintf("Unexpected state: Orphan DspId %s missing actual proof in storage",
+                                                   dspId.ToString()));
+            }
+            break; // iterate once; ranged for-loop was used so that we no-op if there are no orphans for outpoint
+        }
+    }
+
+    return ret;
+}
+
 
 CFeeRate CTxMemPool::GetMinFee(size_t sizelimit) const {
     LOCK(cs);

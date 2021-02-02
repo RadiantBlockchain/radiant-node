@@ -12,10 +12,6 @@
 /* static */
 bool DoubleSpendProof::s_enabled = true;
 
-DoubleSpendProof::DoubleSpendProof()
-{
-}
-
 bool DoubleSpendProof::isEmpty() const
 {
     // NB: default constructed COutPout has GetN() == 0xffffffff, GetTxId().IsNull().

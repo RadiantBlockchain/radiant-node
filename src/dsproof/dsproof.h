@@ -22,7 +22,7 @@ public:
     static constexpr size_t MaxPushDataSize = MAX_SCRIPT_ELEMENT_SIZE;
 
     //! Creates an empty DoubleSpendProof
-    DoubleSpendProof();
+    DoubleSpendProof() = default;
 
     //! Creates a DoubleSpendProof for tx1 and tx2 for the given prevout.
     //!
@@ -117,6 +117,13 @@ public:
     //! Enable/disable the dsproof subsystem. Called by init.cpp at startup. Default is enabled. Note that this
     //! function is not thread-safe and should only be called once before threads are started to disable.
     static void SetEnabled(bool b) { s_enabled = b; }
+
+    // Equality comparison supported
+    bool operator==(const DoubleSpendProof &o) const {
+        return m_outPoint == o.m_outPoint && m_spender1 == o.m_spender1 && m_spender2 == o.m_spender2
+                && m_hash == o.m_hash;
+    }
+    bool operator!=(const DoubleSpendProof &o) const { return !(*this == o); }
 
 private:
     COutPoint m_outPoint;           //! Serializable
