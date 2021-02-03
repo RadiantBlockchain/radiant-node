@@ -489,6 +489,8 @@ void BitcoinGUI::createMenuBar() {
     QMenu *window_menu = appMenuBar->addMenu(tr("&Window"));
 
     QAction *minimize_action = window_menu->addAction(tr("Minimize"));
+    minimize_action->setStatusTip(tr("Minimize the Main Window"));
+    minimize_action->setToolTip(minimize_action->statusTip());
     minimize_action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_M));
     connect(minimize_action, &QAction::triggered,
             [] { QApplication::activeWindow()->showMinimized(); });
@@ -502,6 +504,7 @@ void BitcoinGUI::createMenuBar() {
 
 #ifdef Q_OS_MAC
     QAction *zoom_action = window_menu->addAction(tr("Zoom"));
+    // No setStatusTip+setToolTip here because these don't work on the MacOS menu bar.
     connect(zoom_action, &QAction::triggered, [] {
         QWindow *window = qApp->focusWindow();
         if (window->windowState() != Qt::WindowMaximized) {
@@ -521,6 +524,7 @@ void BitcoinGUI::createMenuBar() {
 #ifdef Q_OS_MAC
         window_menu->addSeparator();
         QAction *main_window_action = window_menu->addAction(tr("Main Window"));
+        // No setStatusTip+setToolTip here because these don't work on the MacOS menu bar.
         connect(main_window_action, &QAction::triggered,
                 [this] { GUIUtil::bringToFront(this); });
 #endif
@@ -531,8 +535,15 @@ void BitcoinGUI::createMenuBar() {
 
     window_menu->addSeparator();
     for (RPCConsole::TabTypes tab_type : rpcConsole->tabs()) {
-        QAction *tab_action =
-            window_menu->addAction(rpcConsole->tabTitle(tab_type));
+        QString title = rpcConsole->tabTitle(tab_type);
+        QAction *tab_action = window_menu->addAction(platformStyle->TextColorIcon(":/icons/debugwindow"), title);
+        int shortcutKeyPosition = title.indexOf('&');
+        if (shortcutKeyPosition != -1) {
+            // Strip first ampersand from the title (keyboard shortcut) before putting it in the status tip.
+            title.remove(shortcutKeyPosition, 1);
+        }
+        tab_action->setStatusTip(tr("Show the %1 tab of the Node Window").arg(title));
+        tab_action->setToolTip(tab_action->statusTip());
         tab_action->setShortcut(rpcConsole->tabShortcut(tab_type));
         connect(tab_action, &QAction::triggered, [this, tab_type] {
             rpcConsole->setTabFocus(tab_type);
@@ -1490,6 +1501,7 @@ void UnitDisplayStatusBarControl::createContextMenu() {
     for (const BitcoinUnits::Unit u : BitcoinUnits::availableUnits()) {
         QAction *menuAction = new QAction(BitcoinUnits::ticker(u), this);
         menuAction->setStatusTip(tr("Change unit to %1").arg(BitcoinUnits::description(u)));
+        menuAction->setToolTip(menuAction->statusTip());
         menuAction->setData(QVariant(u));
         menu->addAction(menuAction);
     }
