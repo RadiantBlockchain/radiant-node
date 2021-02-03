@@ -1,4 +1,5 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
+// Copyright (c) 2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -81,7 +82,7 @@ void OptionsModel::Init(bool resetSettings) {
         // User might be running us after having run a new version that saved
         // a unit we don't know about, so just default back to BCH.
         qWarning() << "Unrecognized display unit (" << nDisplayUnit << ") read from settings, setting display unit back to"
-                   <<  BitcoinUnits::shortName(defaultDisplayUnit);
+                   <<  BitcoinUnits::ticker(defaultDisplayUnit);
         nDisplayUnit = defaultDisplayUnit;
     }
 
