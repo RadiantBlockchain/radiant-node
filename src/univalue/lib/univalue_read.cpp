@@ -3,8 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or https://opensource.org/licenses/mit-license.php.
 
-#include <utility>
-#include <vector>
+#include <optional>
+
 #include "univalue.h"
 #include "univalue_utffilter.h"
 
