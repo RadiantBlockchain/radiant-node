@@ -1,4 +1,5 @@
 // Copyright (c) 2015-2018 The Bitcoin Core developers
+// Copyright (c) 2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -9,6 +10,7 @@
 
 #include <list>
 #include <map>
+#include <memory>
 
 class CBlockIndex;
 class CZMQAbstractNotifier;
@@ -41,7 +43,7 @@ private:
     CZMQNotificationInterface();
 
     void *pcontext;
-    std::list<CZMQAbstractNotifier *> notifiers;
+    std::list<std::unique_ptr<CZMQAbstractNotifier>> notifiers;
 };
 
 extern CZMQNotificationInterface *g_zmq_notification_interface;

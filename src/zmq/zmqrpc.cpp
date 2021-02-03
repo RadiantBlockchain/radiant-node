@@ -1,20 +1,20 @@
 // Copyright (c) 2018 The Bitcoin Core developers
-// Copyright (c) 2020 The Bitcoin developers
+// Copyright (c) 2020-2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <zmq/zmqrpc.h>
 
 #include <rpc/server.h>
 #include <rpc/util.h>
 #include <zmq/zmqabstractnotifier.h>
 #include <zmq/zmqnotificationinterface.h>
+#include <zmq/zmqrpc.h>
 
 #include <univalue.h>
 
 namespace {
 
-UniValue getzmqnotifications(const Config &config,
+UniValue getzmqnotifications(const Config &,
                              const JSONRPCRequest &request) {
     if (request.fHelp || request.params.size() != 0) {
         throw std::runtime_error(RPCHelpMan{
