@@ -102,6 +102,7 @@ BITCOIN_TESTS =\
   test/denialofservice_tests.cpp \
   test/descriptor_tests.cpp \
   test/dstencode_tests.cpp \
+  test/dsproof_tests.cpp \
   test/excessiveblock_tests.cpp \
   test/extversion_tests.cpp \
   test/feerate_tests.cpp \
