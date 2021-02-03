@@ -1,6 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2017 The Bitcoin Core developers
-// Copyright (c) 2018-2019 The Bitcoin developers
+// Copyright (c) 2018-2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -274,7 +274,7 @@ bool VerifyWallets(const CChainParams &chainParams, interfaces::Chain &chain,
 
     LogPrintf("Using wallet directory %s\n", GetWalletDir().string());
 
-    uiInterface.InitMessage(_("Verifying wallet(s)..."));
+    uiInterface.InitMessage(wallet_files.size() == 1 ? _("Verifying wallet...") : _("Verifying wallets..."));
 
     // Parameter interaction code should have thrown an error if -salvagewallet
     // was enabled with more than wallet file, so the wallet_files size check
