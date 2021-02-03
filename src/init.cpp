@@ -784,11 +784,19 @@ void SetupServerArgs() {
     gArgs.AddArg("-zmqpubrawtx=<address>",
                  "Enable publish raw transaction in <address>", false,
                  OptionsCategory::ZMQ);
+    gArgs.AddArg("-zmqpubhashds=<address>",
+                 "Enable publish hash double spend transaction in <address>", false,
+                 OptionsCategory::ZMQ);
+    gArgs.AddArg("-zmqpubrawds=<address>",
+                 "Enable publish raw double spend transaction in <address>", false,
+                 OptionsCategory::ZMQ);
 #else
     hidden_args.emplace_back("-zmqpubhashblock=<address>");
     hidden_args.emplace_back("-zmqpubhashtx=<address>");
     hidden_args.emplace_back("-zmqpubrawblock=<address>");
     hidden_args.emplace_back("-zmqpubrawtx=<address>");
+    hidden_args.emplace_back("-zmqpubhashds=<address>");
+    hidden_args.emplace_back("-zmqpubrawds=<address>");
 #endif
 
     gArgs.AddArg(

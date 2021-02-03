@@ -47,4 +47,15 @@ public:
     bool NotifyTransaction(const CTransaction &transaction) override;
 };
 
+
+class CZMQPublishHashDoubleSpendNotifier : public CZMQAbstractPublishNotifier {
+public:
+    bool NotifyDoubleSpend(const CTransaction &transaction) override;
+};
+
+class CZMQPublishRawDoubleSpendNotifier : public CZMQAbstractPublishNotifier {
+public:
+    bool NotifyDoubleSpend(const CTransaction &transaction) override;
+};
+
 #endif // BITCOIN_ZMQ_ZMQPUBLISHNOTIFIER_H

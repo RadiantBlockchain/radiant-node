@@ -14,15 +14,18 @@
 #include <util/system.h>
 #include <validation.h>
 
+#include <algorithm>
 #include <cstdarg>
 
 static std::multimap<std::string, CZMQAbstractPublishNotifier *>
     mapPublishNotifiers;
 
-static const char *MSG_HASHBLOCK = "hashblock";
-static const char *MSG_HASHTX = "hashtx";
-static const char *MSG_RAWBLOCK = "rawblock";
-static const char *MSG_RAWTX = "rawtx";
+inline constexpr auto MSG_HASHBLOCK = "hashblock";
+inline constexpr auto MSG_HASHTX = "hashtx";
+inline constexpr auto MSG_RAWBLOCK = "rawblock";
+inline constexpr auto MSG_RAWTX = "rawtx";
+inline constexpr auto MSG_HASHDS = "hashds";
+inline constexpr auto MSG_RAWDS = "rawds";
 
 // Internal function to send multipart message
 static int zmq_send_multipart(void *sock, const void *data, size_t size, ...) {
@@ -195,4 +198,19 @@ bool CZMQPublishRawTransactionNotifier::NotifyTransaction(
     CDataStream ss(SER_NETWORK, PROTOCOL_VERSION | RPCSerializationFlags());
     ss << transaction;
     return SendMessage(MSG_RAWTX, &(*ss.begin()), ss.size());
+}
+
+bool CZMQPublishHashDoubleSpendNotifier::NotifyDoubleSpend(const CTransaction &transaction) {
+    const TxId txid = transaction.GetId();
+    LogPrint(BCLog::ZMQ, "zmq: Publish hashds %s\n", txid.GetHex());
+    TxId revtxid{TxId::Uninitialized};
+    std::reverse_copy(txid.begin(), txid.end(), revtxid.begin());
+    return SendMessage(MSG_HASHDS, &*revtxid.begin(), revtxid.size());
+}
+
+bool CZMQPublishRawDoubleSpendNotifier::NotifyDoubleSpend(const CTransaction &transaction) {
+    LogPrint(BCLog::ZMQ, "zmq: Publish rawds %s\n", transaction.GetId().GetHex());
+    CDataStream ss(SER_NETWORK, PROTOCOL_VERSION | RPCSerializationFlags());
+    ss << transaction;
+    return SendMessage(MSG_RAWDS, &*ss.begin(), ss.size());
 }

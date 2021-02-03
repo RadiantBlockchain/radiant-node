@@ -48,6 +48,10 @@ CZMQNotificationInterface *CZMQNotificationInterface::Create() {
         CZMQAbstractNotifier::Create<CZMQPublishRawBlockNotifier>;
     factories["pubrawtx"] =
         CZMQAbstractNotifier::Create<CZMQPublishRawTransactionNotifier>;
+    factories["pubhashds"] =
+        CZMQAbstractNotifier::Create<CZMQPublishHashDoubleSpendNotifier>;
+    factories["pubrawds"] =
+        CZMQAbstractNotifier::Create<CZMQPublishRawDoubleSpendNotifier>;
 
     for (const auto &entry : factories) {
         std::string arg("-zmq" + entry.first);
@@ -179,5 +183,20 @@ void CZMQNotificationInterface::BlockDisconnected(
         TransactionAddedToMempool(ptx);
     }
 }
+
+void CZMQNotificationInterface::TransactionDoubleSpent(const CTransactionRef &ptx, const DspId &) {
+    const CTransaction &tx = *ptx;
+
+    for (auto it = notifiers.begin(); it != notifiers.end(); /**/) {
+        CZMQAbstractNotifier *notifier = *it;
+        if (notifier->NotifyDoubleSpend(tx)) {
+            ++it;
+        } else {
+            notifier->Shutdown();
+            it = notifiers.erase(it);
+        }
+    }
+}
+
 
 CZMQNotificationInterface *g_zmq_notification_interface = nullptr;
