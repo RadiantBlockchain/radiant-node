@@ -1469,7 +1469,7 @@ UnitDisplayStatusBarControl::UnitDisplayStatusBarControl(
     int max_width = 0;
     const QFontMetrics fm(font());
     for (const BitcoinUnits::Unit unit : units) {
-        max_width = qMax(max_width, GUIUtil::TextWidth(fm, BitcoinUnits::longName(unit)));
+        max_width = qMax(max_width, GUIUtil::TextWidth(fm, BitcoinUnits::ticker(unit)));
     }
     setMinimumSize(max_width, 0);
     setAlignment(Qt::AlignRight | Qt::AlignVCenter);
@@ -1487,8 +1487,8 @@ void UnitDisplayStatusBarControl::mousePressEvent(QMouseEvent *event) {
 void UnitDisplayStatusBarControl::createContextMenu() {
     menu = new QMenu(this);
     for (const BitcoinUnits::Unit u : BitcoinUnits::availableUnits()) {
-        QAction *menuAction =
-            new QAction(QString(BitcoinUnits::longName(u)), this);
+        QAction *menuAction = new QAction(BitcoinUnits::ticker(u), this);
+        menuAction->setStatusTip(tr("Change unit to %1").arg(BitcoinUnits::description(u)));
         menuAction->setData(QVariant(u));
         menu->addAction(menuAction);
     }
@@ -1515,7 +1515,7 @@ void UnitDisplayStatusBarControl::setOptionsModel(OptionsModel *_optionsModel) {
 /** When Display Units are changed on OptionsModel it will refresh the display
  * text of the control on the status bar */
 void UnitDisplayStatusBarControl::updateDisplayUnit(int newUnits) {
-    setText(BitcoinUnits::longName(newUnits));
+    setText(BitcoinUnits::ticker(newUnits));
 }
 
 /** Shows context menu with Display Unit options by the mouse coordinates */
