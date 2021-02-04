@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>740</width>
-    <height>430</height>
+    <height>501</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -66,7 +66,7 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="1" colspan="2">
+       <item row="1" column="1">
         <widget class="QLabel" name="dataDir">
          <property name="cursor">
           <cursorShape>IBeamCursor</cursorShape>
@@ -88,6 +88,19 @@
          </property>
         </widget>
        </item>
+       <item row="1" column="2" rowspan="3" alignment="Qt::AlignTop">
+        <widget class="QPushButton" name="openDebugLogfileButton">
+         <property name="toolTip">
+          <string>Open the %1 debug log file from the current data directory. This can take a few seconds for large log files.</string>
+         </property>
+         <property name="text">
+          <string>&amp;Open Log File</string>
+         </property>
+         <property name="autoDefault">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
        <item row="2" column="0">
         <widget class="QLabel" name="label_11">
          <property name="text">
@@ -95,7 +108,7 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="1" colspan="2">
+       <item row="2" column="1">
         <widget class="QLabel" name="blocksDir">
          <property name="cursor">
           <cursorShape>IBeamCursor</cursorShape>
@@ -124,7 +137,7 @@
          </property>
         </widget>
        </item>
-       <item row="3" column="1" colspan="2">
+       <item row="3" column="1">
         <widget class="QLabel" name="startupTime">
          <property name="cursor">
           <cursorShape>IBeamCursor</cursorShape>
@@ -141,17 +154,17 @@
         </widget>
        </item>
        <item row="4" column="0">
-           <widget class="QLabel" name="labelNetwork">
-               <property name="font">
-                   <font>
-                       <weight>75</weight>
-                       <bold>true</bold>
-                   </font>
-               </property>
-               <property name="text">
-                   <string>Network</string>
-               </property>
-           </widget>
+        <widget class="QLabel" name="labelNetwork">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Network</string>
+         </property>
+        </widget>
        </item>
        <item row="5" column="0">
         <widget class="QLabel" name="label_8">
@@ -288,7 +301,7 @@
          </property>
         </widget>
        </item>
-       <item row="11" column="1">
+       <item row="11" column="1" colspan="2">
         <widget class="QLabel" name="lastBlockHash">
          <property name="cursor">
           <cursorShape>IBeamCursor</cursorShape>
@@ -324,7 +337,7 @@
          </property>
         </widget>
        </item>
-       <item row="13" column="1">
+       <item row="13" column="1" colspan="2">
         <widget class="QLabel" name="mempoolNumberTxs">
          <property name="cursor">
           <cursorShape>IBeamCursor</cursorShape>
@@ -347,7 +360,7 @@
          </property>
         </widget>
        </item>
-       <item row="14" column="1">
+       <item row="14" column="1" colspan="2">
         <widget class="QLabel" name="mempoolSize">
          <property name="cursor">
           <cursorShape>IBeamCursor</cursorShape>
@@ -362,46 +375,6 @@
           <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
          </property>
         </widget>
-       </item>
-       <item row="12" column="2" rowspan="3">
-        <layout class="QVBoxLayout" name="verticalLayoutDebugButton">
-         <property name="spacing">
-          <number>3</number>
-         </property>
-         <item>
-          <spacer name="verticalSpacer_2">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>10</width>
-             <height>5</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QLabel" name="labelDebugLogfile">
-           <property name="text">
-            <string>Debug log file</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="openDebugLogfileButton">
-           <property name="toolTip">
-            <string>Open the %1 debug log file from the current data directory. This can take a few seconds for large log files.</string>
-           </property>
-           <property name="text">
-            <string>&amp;Open</string>
-           </property>
-           <property name="autoDefault">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-        </layout>
        </item>
        <item row="15" column="0">
         <spacer name="verticalSpacer">
@@ -471,11 +444,11 @@
              <height>24</height>
             </size>
            </property>
-           <property name="text">
-            <string/>
-           </property>
            <property name="toolTip">
             <string>Decrease font size</string>
+           </property>
+           <property name="text">
+            <string/>
            </property>
            <property name="icon">
             <iconset resource="../bitcoin.qrc">
