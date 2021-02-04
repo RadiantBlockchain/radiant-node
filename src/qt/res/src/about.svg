@@ -1,0 +1,16 @@
+<svg id="a7701647-d95c-4a0b-bb43-5e937a4da219" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 -15 185 185">
+<defs>
+<style>.b30897bd-cc3e-438d-a89f-aa28cf4eeed8{fill:black;stroke:white;stroke-miterlimit:10;stroke-width:9.6212px;}</style>
+<filter id="bw"><feColorMatrix type="matrix"
+values=" 0 0 0 0 0
+         0 0 0 0 0
+         0 0 0 0 0
+        -1 0 0 1 0"/></filter>
+</defs>
+<title>BitcoinCashNode-Icon</title>
+<g filter="url(#bw)">
+<rect class="b30897bd-cc3e-438d-a89f-aa28cf4eeed8" x="32.5" y="2.5" width="150" height="150" rx="6.8723" transform="translate(215 155) rotate(-180)"/>
+<rect class="b30897bd-cc3e-438d-a89f-aa28cf4eeed8" x="17.5" y="25" width="105" height="105" rx="4.8106" transform="translate(140 155) rotate(-180)"/>
+<rect class="b30897bd-cc3e-438d-a89f-aa28cf4eeed8" x="2.5" y="47.5" width="60" height="60" rx="2.7489" transform="translate(65 155) rotate(-180)"/>
+</g>
+</svg>
