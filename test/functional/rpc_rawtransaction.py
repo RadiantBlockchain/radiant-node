@@ -142,7 +142,7 @@ class RawTransactionsTest(BitcoinTestFramework):
                                 self.nodes[0].createrawtransaction, [], {'data': '9'})
         assert_raises_rpc_error(-8, "Data must be hexadecimal string",
                                 self.nodes[0].createrawtransaction, [], {'data': ''})
-        assert_raises_rpc_error(-5, "Invalid Bitcoin address",
+        assert_raises_rpc_error(-5, "Invalid Bitcoin Cash address",
                                 self.nodes[0].createrawtransaction, [], {'foo': 0})
         assert_raises_rpc_error(-3, "Invalid amount",
                                 self.nodes[0].createrawtransaction, [], {address: 'foo'})

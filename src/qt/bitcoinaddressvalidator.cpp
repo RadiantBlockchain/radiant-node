@@ -76,7 +76,7 @@ BitcoinAddressCheckValidator::BitcoinAddressCheckValidator(QObject *parent)
 
 QValidator::State BitcoinAddressCheckValidator::validate(QString &input, [[maybe_unused]] int &pos) const {
 
-    // Validate the passed Bitcoin address
+    // Validate the passed Bitcoin Cash address
     CTxDestination destination = DecodeDestination(input.toStdString(), GetConfig().GetChainParams());
     if (IsValidDestination(destination)) {
         // Address is valid

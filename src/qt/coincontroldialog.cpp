@@ -1,4 +1,5 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
+// Copyright (c) 2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -730,7 +731,7 @@ void CoinControlDialog::updateView() {
                 sAddress = QString::fromStdString(
                     EncodeCashAddr(outputAddress, model->getChainParams()));
 
-                // if listMode or change => show bitcoin address. In tree mode,
+                // if listMode or change => show Bitcoin Cash address. In tree mode,
                 // address is not shown again for direct wallet address outputs
                 if (!treeMode || (!(sAddress == sWalletAddress))) {
                     itemOutput->setText(COLUMN_ADDRESS, sAddress);

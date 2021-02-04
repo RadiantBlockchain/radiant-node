@@ -1,5 +1,5 @@
 // Copyright (c) 2009-2016 The Bitcoin Core developers
-// Copyright (c) 2020 The Bitcoin developers
+// Copyright (c) 2020-2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -294,7 +294,7 @@ UniValue importaddress(const Config &config, const JSONRPCRequest &request) {
             RPCHelpMan{"importaddress",
                 "\nAdds an address or script (in hex) that can be watched as if it were in your wallet but cannot be used to spend. Requires a new wallet backup.\n",
                 {
-                    {"address", RPCArg::Type::STR, /* opt */ false, /* default_val */ "", "The Bitcoin address (or hex-encoded script)"},
+                    {"address", RPCArg::Type::STR, /* opt */ false, /* default_val */ "", "The Bitcoin Cash address (or hex-encoded script)"},
                     {"label", RPCArg::Type::STR, /* opt */ true, /* default_val */ "\"\"", "An optional label"},
                     {"rescan", RPCArg::Type::BOOL, /* opt */ true, /* default_val */ "true", "Rescan the wallet for transactions"},
                     {"p2sh", RPCArg::Type::BOOL, /* opt */ true, /* default_val */ "false", "Add the P2SH version of the script as well"},
@@ -369,7 +369,7 @@ UniValue importaddress(const Config &config, const JSONRPCRequest &request) {
                          fP2SH);
         } else {
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY,
-                               "Invalid Bitcoin address or script");
+                               "Invalid Bitcoin Cash address or script");
         }
     }
     if (fRescan) {
@@ -800,7 +800,7 @@ UniValue dumpprivkey(const Config &config, const JSONRPCRequest &request) {
                 "\nReveals the private key corresponding to 'address'.\n"
                 "Then the importprivkey can be used with this output\n",
                 {
-                    {"address", RPCArg::Type::STR, /* opt */ false, /* default_val */ "", "The bitcoin address for the private key"},
+                    {"address", RPCArg::Type::STR, /* opt */ false, /* default_val */ "", "The Bitcoin Cash address for the private key"},
                 }}
                 .ToString() +
             "\nResult:\n"
@@ -821,7 +821,7 @@ UniValue dumpprivkey(const Config &config, const JSONRPCRequest &request) {
         DecodeDestination(strAddress, config.GetChainParams());
     if (!IsValidDestination(dest)) {
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY,
-                           "Invalid Bitcoin address");
+                           "Invalid Bitcoin Cash address");
     }
     auto keyid = GetKeyForDestination(*pwallet, dest);
     if (keyid.IsNull()) {

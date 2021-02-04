@@ -1,4 +1,5 @@
 // Copyright (c) 2011-2019 The Bitcoin Core developers
+// Copyright (c) 2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -166,7 +167,7 @@ WalletModel::prepareTransaction(WalletModelTransaction &transaction,
             total += subtotal;
         }
 
-        // User-entered bitcoin address / amount:
+        // User-entered Bitcoin Cash address / amount:
         else
 #endif
         {
