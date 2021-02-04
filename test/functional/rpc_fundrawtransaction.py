@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # Copyright (c) 2014-2019 The Bitcoin Core developers
+# Copyright (c) 2021 The Bitcoin developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -225,7 +226,7 @@ class RawTransactionsTest(BitcoinTestFramework):
         assert_equal(utx['txid'], dec_tx['vin'][0]['txid'])
 
         assert_raises_rpc_error(
-            -5, "changeAddress must be a valid bitcoin address",
+            -5, "changeAddress must be a valid Bitcoin Cash address",
             self.nodes[2].fundrawtransaction, rawTx, {'changeAddress': 'foobar'})
 
         #

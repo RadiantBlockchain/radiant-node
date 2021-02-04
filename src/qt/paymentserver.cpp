@@ -1,4 +1,5 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
+// Copyright (c) 2021 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -362,7 +363,7 @@ bool PaymentServer::handleURI(const CChainParams &params, const QString &s) {
         Q_EMIT message(
             tr("URI handling"),
             tr("URI cannot be parsed! This can be caused by an invalid "
-               "Bitcoin address or malformed URI parameters."),
+               "Bitcoin Cash address or malformed URI parameters."),
             CClientUIInterface::ICON_WARNING);
     }
 
@@ -643,7 +644,7 @@ bool PaymentServer::processPaymentRequest(const PaymentRequestPlus &request,
             addresses.append(
                 QString::fromStdString(EncodeCashAddr(dest, Params())));
         } else if (!recipient.authenticatedMerchant.isEmpty()) {
-            // Unauthenticated payment requests to custom bitcoin addresses are
+            // Unauthenticated payment requests to custom Bitcoin Cash addresses are
             // not supported (there is no good way to tell the user where they
             // are paying in a way they'd have a chance of understanding).
             Q_EMIT message(tr("Payment request rejected"),

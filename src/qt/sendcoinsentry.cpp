@@ -44,9 +44,9 @@ SendCoinsEntry::SendCoinsEntry(const PlatformStyle *_platformStyle,
     ui->addAsLabel->setPlaceholderText(
         tr("Enter a label for this address to add it to your address book"));
 
-    // normal bitcoin address field
+    // normal Bitcoin Cash address field
     GUIUtil::setupAddressWidget(ui->payTo, this);
-    // just a label for displaying bitcoin address(es)
+    // just a label for displaying Bitcoin Cash address(es)
     ui->payTo_is->setFont(GUIUtil::fixedPitchFont());
 
     // Connect signals
