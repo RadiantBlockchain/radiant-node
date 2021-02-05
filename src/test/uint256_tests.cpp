@@ -1,9 +1,12 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
+// Copyright (c) 2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 #include <uint256.h>
 
 #include <arith_uint256.h>
+#include <crypto/common.h> // ReadLE64
+#include <random.h>
 #include <streams.h>
 #include <version.h>
 
@@ -82,6 +85,13 @@ BOOST_AUTO_TEST_CASE(basics) {
     BOOST_CHECK(OneL.ToString() != ArrayToString(ZeroArray, 32));
     BOOST_CHECK(OneS.ToString() != ArrayToString(ZeroArray, 20));
 
+    // .GetUint64
+    for (int i = 0; i < 4; ++i) {
+        if (i < 2) BOOST_CHECK(R1L.GetUint64(i) == R1S.GetUint64(i));
+        const uint64_t val = ReadLE64(R1Array + i*8);
+        BOOST_CHECK_EQUAL(R1L.GetUint64(i), val);
+    }
+
     // == and !=
     BOOST_CHECK(R1L != R2L && R1S != R2S);
     BOOST_CHECK(ZeroL != OneL && ZeroS != OneS);
@@ -115,6 +125,20 @@ BOOST_AUTO_TEST_CASE(basics) {
     BOOST_CHECK(uint160(R1S) == R1S);
     BOOST_CHECK(uint160(ZeroS) == ZeroS);
     BOOST_CHECK(uint160(OneS) == OneS);
+
+    // ensure a string with a short, odd number of hex digits parses ok, and clears remaining bytes ok
+    const std::string oddHex = "12a4507c9";
+    uint256 oddHexL;
+    uint160 oddHexS;
+    GetRandBytes(oddHexL.begin(), 32);
+    GetRandBytes(oddHexS.begin(), 20);
+    oddHexL.SetHex(oddHex);
+    oddHexS.SetHex(oddHex);
+    BOOST_CHECK_EQUAL(oddHexL.ToString(), std::string(64 - oddHex.size(), '0') + oddHex);
+    BOOST_CHECK_EQUAL(oddHexS.ToString(), std::string(40 - oddHex.size(), '0') + oddHex);
+    // also test GetUint64
+    BOOST_CHECK_EQUAL(oddHexL.GetUint64(0), 5004134345ull);
+    BOOST_CHECK_EQUAL(oddHexS.GetUint64(0), 5004134345ull);
 }
 
 static void CheckComparison(const uint256 &a, const uint256 &b) {
@@ -183,11 +207,11 @@ BOOST_AUTO_TEST_CASE(methods) {
     BOOST_CHECK(TmpL == uint256());
 
     TmpL.SetHex(R1L.ToString());
-    BOOST_CHECK(memcmp(R1L.begin(), R1Array, 32) == 0);
-    BOOST_CHECK(memcmp(TmpL.begin(), R1Array, 32) == 0);
-    BOOST_CHECK(memcmp(R2L.begin(), R2Array, 32) == 0);
-    BOOST_CHECK(memcmp(ZeroL.begin(), ZeroArray, 32) == 0);
-    BOOST_CHECK(memcmp(OneL.begin(), OneArray, 32) == 0);
+    BOOST_CHECK(std::memcmp(R1L.begin(), R1Array, 32) == 0);
+    BOOST_CHECK(std::memcmp(TmpL.begin(), R1Array, 32) == 0);
+    BOOST_CHECK(std::memcmp(R2L.begin(), R2Array, 32) == 0);
+    BOOST_CHECK(std::memcmp(ZeroL.begin(), ZeroArray, 32) == 0);
+    BOOST_CHECK(std::memcmp(OneL.begin(), OneArray, 32) == 0);
     BOOST_CHECK(R1L.size() == sizeof(R1L));
     BOOST_CHECK(sizeof(R1L) == 32);
     BOOST_CHECK(R1L.size() == 32);
@@ -231,11 +255,11 @@ BOOST_AUTO_TEST_CASE(methods) {
     BOOST_CHECK(TmpS == uint160());
 
     TmpS.SetHex(R1S.ToString());
-    BOOST_CHECK(memcmp(R1S.begin(), R1Array, 20) == 0);
-    BOOST_CHECK(memcmp(TmpS.begin(), R1Array, 20) == 0);
-    BOOST_CHECK(memcmp(R2S.begin(), R2Array, 20) == 0);
-    BOOST_CHECK(memcmp(ZeroS.begin(), ZeroArray, 20) == 0);
-    BOOST_CHECK(memcmp(OneS.begin(), OneArray, 20) == 0);
+    BOOST_CHECK(std::memcmp(R1S.begin(), R1Array, 20) == 0);
+    BOOST_CHECK(std::memcmp(TmpS.begin(), R1Array, 20) == 0);
+    BOOST_CHECK(std::memcmp(R2S.begin(), R2Array, 20) == 0);
+    BOOST_CHECK(std::memcmp(ZeroS.begin(), ZeroArray, 20) == 0);
+    BOOST_CHECK(std::memcmp(OneS.begin(), OneArray, 20) == 0);
     BOOST_CHECK(R1S.size() == sizeof(R1S));
     BOOST_CHECK(sizeof(R1S) == 20);
     BOOST_CHECK(R1S.size() == 20);
@@ -275,8 +299,22 @@ BOOST_AUTO_TEST_CASE(methods) {
     const auto wrongHexstringWithCharactersToSkip{uint256S(
         " 0X7d1de5eaf9b156d53208f033b5aa8122d2d2355d5e12292b121156cfdb4a529d")};
 
+    BOOST_CHECK(baseHexstring.GetHex() == "7d1de5eaf9b156d53208f033b5aa8122d2d2355d5e12292b121156cfdb4a529c");
     BOOST_CHECK(baseHexstring == hexstringWithCharactersToSkip);
     BOOST_CHECK(baseHexstring != wrongHexstringWithCharactersToSkip);
+
+    // Test IsNull, SetNull, operator==, operator!=, and size()
+    auto hexCpy = baseHexstring;
+    BOOST_CHECK(hexCpy != ZeroL);
+    BOOST_CHECK(ZeroL.IsNull());
+    BOOST_CHECK(!hexCpy.IsNull());
+    hexCpy.SetNull();
+    BOOST_CHECK(hexCpy.IsNull());
+    BOOST_CHECK(hexCpy == ZeroL);
+    BOOST_CHECK(0 == std::memcmp(hexCpy.begin(), ZeroL.begin(), hexCpy.size()));
+    BOOST_CHECK(0 == std::memcmp(hexCpy.begin(), ZeroArray, hexCpy.size()));
+    BOOST_CHECK(hexCpy.size() == 32);
+    BOOST_CHECK(uint160::size() == 20);
 
     // check the uninitilized vs initialized constructor
     constexpr size_t wordSize = sizeof(void *);

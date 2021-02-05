@@ -68,11 +68,11 @@ const signed char p_util_hexdigit[256] = {
     -1, -1,  -1,  -1,  -1,  -1,  -1,  -1, -1, -1, -1, -1, -1, -1, -1, -1,
 };
 
-signed char HexDigit(char c) {
+signed char HexDigit(char c) noexcept {
     return p_util_hexdigit[(uint8_t)c];
 }
 
-bool IsHex(const std::string &str) {
+bool IsHex(const std::string &str) noexcept {
     for (std::string::const_iterator it(str.begin()); it != str.end(); ++it) {
         if (HexDigit(*it) < 0) {
             return false;
