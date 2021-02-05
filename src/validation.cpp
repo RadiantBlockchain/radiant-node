@@ -4631,9 +4631,14 @@ bool CChainState::LoadBlockIndex(const Config &config,
     // Calculate nChainWork
     std::vector<std::pair<int, CBlockIndex *>> vSortedByHeight;
     vSortedByHeight.reserve(mapBlockIndex.size());
-    for (const std::pair<const BlockHash, CBlockIndex *> &item :
-         mapBlockIndex) {
+    for (const std::pair<const BlockHash, CBlockIndex *> &item : mapBlockIndex) {
         CBlockIndex *pindex = item.second;
+        // Check sanity that we actually loaded all referenced hashes (detects leveldb corruption)
+        if (pindex->nHeight == 0 && pindex->hashMerkleRoot.IsNull()) {
+            // oops! this block index was never loaded from the disk db! Corruption likely. See BCHN issue #244.
+            return error("%s: block hash %s is missing from the block database", __func__, item.first.ToString());
+        }
+        // Sanity check ok, add pair
         vSortedByHeight.push_back(std::make_pair(pindex->nHeight, pindex));
     }
 
