@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Copyright (c) 2016-2019 The Bitcoin Core developers
-# Copyright (c) 2020 The Bitcoin developers
+# Copyright (c) 2020-2021 The Bitcoin developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -55,7 +55,7 @@ done
 mkdir -p "$TOPDIR/doc/json-rpc/tmp"
 "$BITCOIND" -daemon -debuglogfile=0 -regtest -datadir="$TOPDIR/doc/json-rpc/tmp" -rpcuser=gen-manpages -rpcpassword=gen-manpages
 # Create temporary new mkdocs file.
-rm -f "$TOPDIR/mkdocs-tmp.yml"
+rm -f "$TOPDIR/doc/mkdocs-tmp.yml"
 # Remove any existing JSON-RPC documentation.
 rm "$TOPDIR"/doc/json-rpc/*.md
 # Get daemon version which will be included in footer.
@@ -65,7 +65,7 @@ indentation=""
 while IFS= read -r line; do
   if [ "${line: -23}" == " doc/json-rpc/README.md" ]; then
     # json-rpc/README.md found; preserve it.
-    echo "$line" >> "$TOPDIR/mkdocs-tmp.yml"
+    echo "$line" >> "$TOPDIR/doc/mkdocs-tmp.yml"
     indentation="${line%%-*}"
     # The list of RPC commands will be inserted into the new mkdocs file below the readme entry.
     # Get the list of RPC commands from the node and process it.
@@ -77,7 +77,7 @@ while IFS= read -r line; do
           # Found a category.
           category="${helpline:3:-3}"
           # Write category to new mkdocs file.
-          echo "$indentation- $category:" >> "$TOPDIR/mkdocs-tmp.yml"
+          echo "$indentation- $category:" >> "$TOPDIR/doc/mkdocs-tmp.yml"
           # Write category to readme file.
           {
               echo
@@ -88,7 +88,7 @@ while IFS= read -r line; do
           # Found a command.
           command=${helpline%% *}
           # Write command to new mkdocs file.
-          echo "$indentation    - $command: doc/json-rpc/$command.md" >> "$TOPDIR/mkdocs-tmp.yml"
+          echo "$indentation    - $command: doc/json-rpc/$command.md" >> "$TOPDIR/doc/mkdocs-tmp.yml"
           # Create command help page.
           "$TOPDIR/contrib/devtools/rpc-help-to-markdown.py" "$($BITCOINCLI -rpcwait -regtest -datadir="$TOPDIR/doc/json-rpc/tmp" -rpcuser=gen-manpages -rpcpassword=gen-manpages help $command)" > "$TOPDIR/doc/json-rpc/$command.md"
           {
@@ -123,13 +123,13 @@ while IFS= read -r line; do
     # skip all existing entries below the readme entry on the same indentation level.
     # This removes previously generated RPC documentation.
     if [ "$indentation" == "" ]; then
-      echo "$line" >> "$TOPDIR/mkdocs-tmp.yml"
+      echo "$line" >> "$TOPDIR/doc/mkdocs-tmp.yml"
     fi
   fi
-done < "$TOPDIR/mkdocs.yml"
+done < "$TOPDIR/doc/mkdocs.yml"
 # Stop the regtest node
 "$BITCOINCLI" -rpcwait -regtest -datadir="$TOPDIR/doc/json-rpc/tmp" -rpcuser=gen-manpages -rpcpassword=gen-manpages stop
 # Replace the old mkdocs file with the new one.
-mv -f "$TOPDIR/mkdocs-tmp.yml" "$TOPDIR/mkdocs.yml"
+mv -f "$TOPDIR/doc/mkdocs-tmp.yml" "$TOPDIR/doc/mkdocs.yml"
 # Remove the temporary node data directory
 rm -r "$TOPDIR/doc/json-rpc/tmp"

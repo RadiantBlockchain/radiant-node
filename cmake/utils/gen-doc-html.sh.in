@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Copyright (c) 2020-2021 The Bitcoin developers
+# Distributed under the MIT software license, see the accompanying
+# file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
+cd "@CMAKE_BINARY_DIR@"
+rm -rf doc-html-src
+mkdir doc-html-src
+cd "@CMAKE_SOURCE_DIR@"
+tar cf - $(find -name \*.md -o -wholename ./doc/\*) | tar xf - --directory "@CMAKE_BINARY_DIR@/doc-html-src"
+cd "@CMAKE_BINARY_DIR@"
+mkdocs build
+

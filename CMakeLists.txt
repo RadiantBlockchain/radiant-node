@@ -1,4 +1,6 @@
 # Copyright (c) 2017-2021 The Bitcoin developers
+# Distributed under the MIT software license, see the accompanying
+# file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 cmake_minimum_required(VERSION 3.13)
 
@@ -116,5 +118,22 @@ add_subdirectory(test)
 
 add_subdirectory(contrib)
 add_subdirectory(doc)
+
+configure_file(
+	"${CMAKE_SOURCE_DIR}/doc/mkdocs.yml"
+	"${CMAKE_BINARY_DIR}/mkdocs.yml"
+	COPYONLY
+)
+configure_file(
+	"${CMAKE_SOURCE_DIR}/cmake/utils/gen-doc-html.sh.in"
+	"${CMAKE_BINARY_DIR}/gen-doc-html.sh"
+	@ONLY
+)
+add_custom_target(doc-html
+	COMMENT "Building HTML documentation..."
+	DEPENDS "${CMAKE_BINARY_DIR}/mkdocs.yml"
+	DEPENDS "${CMAKE_BINARY_DIR}/gen-doc-html.sh"
+	COMMAND "${CMAKE_BINARY_DIR}/gen-doc-html.sh"
+)
 
 include(PackageOptions.cmake)
