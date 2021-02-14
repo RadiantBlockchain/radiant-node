@@ -1,5 +1,5 @@
 // Copyright (c) 2012-2016 The Bitcoin Core developers
-// Copyright (c) 2020 The Bitcoin developers
+// Copyright (c) 2020-2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -390,6 +390,10 @@ public:
                           wallet->CreateTransaction(
                               *m_locked_chain, {recipient}, tx, reservekey, fee,
                               changePos, error, dummy, true, coinsel));
+
+        // The anti-fee-sniping feature should set the lock time equal to the block height.
+        BOOST_CHECK_EQUAL(::ChainActive().Height(), tx->nLockTime);
+
         CValidationState state;
         BOOST_CHECK(
             wallet->CommitTransaction(tx, {}, {}, reservekey, nullptr, state));
