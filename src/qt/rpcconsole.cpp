@@ -517,10 +517,6 @@ RPCConsole::RPCConsole(interfaces::Node &node,
     ui->openDebugLogfileButton->setToolTip(
         ui->openDebugLogfileButton->toolTip().arg(PACKAGE_NAME));
 
-    if (platformStyle->getImagesOnButtons()) {
-        ui->openDebugLogfileButton->setIcon(
-            platformStyle->SingleColorIcon(":/icons/export"));
-    }
     ui->clearButton->setIcon(platformStyle->SingleColorIcon(":/icons/remove"));
     ui->fontBiggerButton->setIcon(
         platformStyle->SingleColorIcon(":/icons/fontbigger"));
