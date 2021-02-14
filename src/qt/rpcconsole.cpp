@@ -516,6 +516,7 @@ RPCConsole::RPCConsole(interfaces::Node &node,
         QString(nonbreaking_hyphen) + "blocksdir"));
     ui->openDebugLogfileButton->setToolTip(
         ui->openDebugLogfileButton->toolTip().arg(PACKAGE_NAME));
+    ui->lastBlockHash->setFont(GUIUtil::fixedPitchFont());
 
     ui->clearButton->setIcon(platformStyle->SingleColorIcon(":/icons/remove"));
     ui->fontBiggerButton->setIcon(
