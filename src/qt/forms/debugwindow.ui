@@ -62,7 +62,7 @@
        <item row="1" column="0">
         <widget class="QLabel" name="label_12">
          <property name="text">
-          <string>Datadir</string>
+          <string>Data directory:</string>
          </property>
         </widget>
        </item>
@@ -104,7 +104,7 @@
        <item row="2" column="0">
         <widget class="QLabel" name="label_11">
          <property name="text">
-          <string>Blocksdir</string>
+          <string>Blocks directory:</string>
          </property>
         </widget>
        </item>
@@ -133,7 +133,7 @@
        <item row="3" column="0">
         <widget class="QLabel" name="label_13">
          <property name="text">
-          <string>Startup time</string>
+          <string>Startup time:</string>
          </property>
         </widget>
        </item>
@@ -169,7 +169,7 @@
        <item row="5" column="0">
         <widget class="QLabel" name="label_8">
          <property name="text">
-          <string>Name</string>
+          <string>Name:</string>
          </property>
         </widget>
        </item>
@@ -192,7 +192,7 @@
        <item row="6" column="0">
         <widget class="QLabel" name="labelClientUserAgent">
          <property name="text">
-          <string>User Agent</string>
+          <string>User agent:</string>
          </property>
         </widget>
        </item>
@@ -215,7 +215,7 @@
        <item row="7" column="0">
         <widget class="QLabel" name="label_7">
          <property name="text">
-          <string>Number of connections</string>
+          <string>Number of connections:</string>
          </property>
         </widget>
        </item>
@@ -244,14 +244,14 @@
           </font>
          </property>
          <property name="text">
-          <string>Block chain</string>
+          <string>Block Chain</string>
          </property>
         </widget>
        </item>
        <item row="9" column="0">
         <widget class="QLabel" name="label_3">
          <property name="text">
-          <string>Current number of blocks</string>
+          <string>Number of blocks:</string>
          </property>
         </widget>
        </item>
@@ -274,7 +274,7 @@
        <item row="10" column="0">
         <widget class="QLabel" name="labelLastBlockTime">
          <property name="text">
-          <string>Last block time</string>
+          <string>Last block time:</string>
          </property>
         </widget>
        </item>
@@ -297,7 +297,7 @@
        <item row="11" column="0">
         <widget class="QLabel" name="lastBlockHashLabel">
          <property name="text">
-          <string>Last block hash</string>
+          <string>Last block hash:</string>
          </property>
         </widget>
        </item>
@@ -333,7 +333,7 @@
        <item row="13" column="0">
         <widget class="QLabel" name="labelNumberOfTransactions">
          <property name="text">
-          <string>Current number of transactions</string>
+          <string>Number of transactions:</string>
          </property>
         </widget>
        </item>
@@ -356,7 +356,7 @@
        <item row="14" column="0">
         <widget class="QLabel" name="labelTotalSize">
          <property name="text">
-          <string>Total size</string>
+          <string>Total size:</string>
          </property>
         </widget>
        </item>
