@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -8,15 +9,14 @@
 
 #include <cassert>
 #include <cstdint>
-#include <cstring>
-#include <stdexcept>
 #include <string>
 #include <vector>
 
 /** Template base class for fixed-sized opaque blobs. */
 template <unsigned int BITS> class base_blob {
 protected:
-    static constexpr int WIDTH = BITS / 8;
+    static constexpr unsigned WIDTH = BITS / 8;
+    static_assert(WIDTH * 8 == BITS && WIDTH > 0, "BITS must be evenly divisible by 8 and larger than 0");
     uint8_t data[WIDTH];
 
 public:
@@ -33,68 +33,71 @@ public:
 
     explicit base_blob(const std::vector<uint8_t> &vch) noexcept;
 
-    bool IsNull() const {
-        for (int i = 0; i < WIDTH; i++) {
-            if (data[i] != 0) {
+    constexpr bool IsNull() const noexcept {
+        unsigned i = 0;
+        do {
+            if (data[i] != 0)
                 return false;
-            }
-        }
+        } while (++i < WIDTH);
         return true;
     }
 
-    void SetNull() { memset(data, 0, sizeof(data)); }
+    constexpr void SetNull() noexcept { *this = base_blob{}; }
 
-    inline int Compare(const base_blob &other) const {
-        for (size_t i = 0; i < sizeof(data); i++) {
-            uint8_t a = data[sizeof(data) - 1 - i];
-            uint8_t b = other.data[sizeof(data) - 1 - i];
+    constexpr int Compare(const base_blob &other) const noexcept {
+        // compare MSB-first (in reverse because data is little endian)
+        unsigned i = WIDTH - 1;
+        do {
+            const uint8_t a = data[i];
+            const uint8_t b = other.data[i];
+
             if (a > b) {
                 return 1;
             }
             if (a < b) {
                 return -1;
             }
-        }
+        } while (i-- != 0);
 
         return 0;
     }
 
-    friend inline bool operator==(const base_blob &a, const base_blob &b) {
+    friend inline constexpr bool operator==(const base_blob &a, const base_blob &b) noexcept {
         return a.Compare(b) == 0;
     }
-    friend inline bool operator!=(const base_blob &a, const base_blob &b) {
+    friend inline constexpr bool operator!=(const base_blob &a, const base_blob &b) noexcept {
         return a.Compare(b) != 0;
     }
-    friend inline bool operator<(const base_blob &a, const base_blob &b) {
+    friend inline constexpr bool operator<(const base_blob &a, const base_blob &b) noexcept {
         return a.Compare(b) < 0;
     }
-    friend inline bool operator<=(const base_blob &a, const base_blob &b) {
+    friend inline constexpr bool operator<=(const base_blob &a, const base_blob &b) noexcept {
         return a.Compare(b) <= 0;
     }
-    friend inline bool operator>(const base_blob &a, const base_blob &b) {
+    friend inline constexpr bool operator>(const base_blob &a, const base_blob &b) noexcept {
         return a.Compare(b) > 0;
     }
-    friend inline bool operator>=(const base_blob &a, const base_blob &b) {
+    friend inline constexpr bool operator>=(const base_blob &a, const base_blob &b) noexcept {
         return a.Compare(b) >= 0;
     }
 
     std::string GetHex() const;
-    void SetHex(const char *psz);
-    void SetHex(const std::string &str);
+    void SetHex(const char *psz) noexcept;
+    void SetHex(const std::string &str) noexcept;
     std::string ToString() const { return GetHex(); }
 
-    uint8_t *begin() { return &data[0]; }
+    constexpr uint8_t *begin() noexcept { return &data[0]; }
 
-    uint8_t *end() { return &data[WIDTH]; }
+    constexpr uint8_t *end() noexcept { return begin() + size(); }
 
-    const uint8_t *begin() const { return &data[0]; }
+    constexpr const uint8_t *begin() const noexcept { return &data[0]; }
 
-    const uint8_t *end() const { return &data[WIDTH]; }
+    constexpr const uint8_t *end() const noexcept { return begin() + size(); }
 
-    static constexpr unsigned int size() { return sizeof(data); }
+    static constexpr unsigned size() noexcept { return WIDTH; }
 
-    uint64_t GetUint64(int pos) const {
-        const uint8_t *ptr = data + pos * 8;
+    constexpr uint64_t GetUint64(int pos) const noexcept {
+        const uint8_t *const ptr = &data[pos * 8];
         return uint64_t(ptr[0]) | (uint64_t(ptr[1]) << 8) |
                (uint64_t(ptr[2]) << 16) | (uint64_t(ptr[3]) << 24) |
                (uint64_t(ptr[4]) << 32) | (uint64_t(ptr[5]) << 40) |
@@ -102,11 +105,11 @@ public:
     }
 
     template <typename Stream> void Serialize(Stream &s) const {
-        s.write((char *)data, sizeof(data));
+        s.write(reinterpret_cast<const char *>(begin()), size());
     }
 
     template <typename Stream> void Unserialize(Stream &s) {
-        s.read((char *)data, sizeof(data));
+        s.read(reinterpret_cast<char *>(begin()), size());
     }
 };
 
@@ -136,7 +139,7 @@ public:
  * This is a separate function because the constructor uint256(const char*) can
  * result in dangerously catching uint256(0).
  */
-inline uint256 uint256S(const char *str) {
+inline uint256 uint256S(const char *str) noexcept {
     uint256 rv{uint256::Uninitialized};
     rv.SetHex(str);
     return rv;
@@ -148,18 +151,18 @@ inline uint256 uint256S(const char *str) {
  * &str) can result in dangerously catching uint256(0) via std::string(const
  * char*).
  */
-inline uint256 uint256S(const std::string &str) {
+inline uint256 uint256S(const std::string &str) noexcept {
     uint256 rv{uint256::Uninitialized};
     rv.SetHex(str);
     return rv;
 }
 
-inline uint160 uint160S(const char *str) {
+inline uint160 uint160S(const char *str) noexcept {
     uint160 rv{uint160::Uninitialized};
     rv.SetHex(str);
     return rv;
 }
-inline uint160 uint160S(const std::string &str) {
+inline uint160 uint160S(const std::string &str) noexcept {
     uint160 rv{uint160::Uninitialized};
     rv.SetHex(str);
     return rv;

@@ -22,9 +22,9 @@ class CScript;
 /** A reference to a CScript: the Hash160 of its serialization (see script.h) */
 class CScriptID : public uint160 {
 public:
-    CScriptID() : uint160() {}
+    constexpr CScriptID() noexcept : uint160() {}
     explicit CScriptID(const CScript &in);
-    CScriptID(const uint160 &in) : uint160(in) {}
+    constexpr CScriptID(const uint160 &in) noexcept : uint160(in) {}
 };
 
 /**

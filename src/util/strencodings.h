@@ -42,12 +42,12 @@ std::string SanitizeString(const std::string &str,
                            int rule = SAFE_CHARS_DEFAULT);
 std::vector<uint8_t> ParseHex(const char *psz);
 std::vector<uint8_t> ParseHex(const std::string &str);
-signed char HexDigit(char c);
+signed char HexDigit(char c) noexcept;
 /**
  * Returns true if each character in str is a hex character, and has an even
  * number of hex digits.
  */
-bool IsHex(const std::string &str);
+bool IsHex(const std::string &str) noexcept;
 /**
  * Return true if the string is a hex number, optionally prefixed with "0x"
  */
@@ -73,7 +73,7 @@ int atoi(const std::string &str);
  * @param[in] c     character to test
  * @return          true if the argument is a decimal digit; otherwise false.
  */
-constexpr bool IsDigit(char c) {
+inline constexpr bool IsDigit(char c) noexcept {
     return c >= '0' && c <= '9';
 }
 
@@ -89,7 +89,7 @@ constexpr bool IsDigit(char c) {
  * @return          true if the argument is a whitespace character; otherwise
  * false
  */
-constexpr inline bool IsSpace(char c) noexcept {
+inline constexpr bool IsSpace(char c) noexcept {
     return c == ' ' || c == '\f' || c == '\n' || c == '\r' || c == '\t' ||
            c == '\v';
 }
@@ -254,7 +254,7 @@ bool ConvertBits(const O &outfn, I it, I end) {
  * @return          the lowercase equivalent of c; or the argument
  *                  if no conversion is possible.
  */
-constexpr uint8_t ToLower(uint8_t c) {
+inline constexpr uint8_t ToLower(uint8_t c) noexcept {
     return (c >= 'A' && c <= 'Z' ? (c - 'A') + 'a' : c);
 }
 
@@ -274,7 +274,7 @@ void Downcase(std::string &str);
  * @return          the uppercase equivalent of c; or the argument
  *                  if no conversion is possible.
  */
-constexpr uint8_t ToUpper(uint8_t c) {
+inline constexpr uint8_t ToUpper(uint8_t c) noexcept {
     return (c >= 'a' && c <= 'z' ? (c - 'a') + 'A' : c);
 }
 
