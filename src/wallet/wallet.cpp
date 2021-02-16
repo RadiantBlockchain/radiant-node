@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -2969,7 +2970,6 @@ static bool IsCurrentForAntiFeeSniping(interfaces::Chain::Lock &locked_chain) {
  */
 static uint32_t
 GetLocktimeForNewTransaction(interfaces::Chain::Lock &locked_chain) {
-    uint32_t const height = locked_chain.getHeight().value_or(-1);
     uint32_t locktime;
     // Discourage fee sniping.
     //
@@ -2992,23 +2992,13 @@ GetLocktimeForNewTransaction(interfaces::Chain::Lock &locked_chain) {
     // now we ensure code won't be written that makes assumptions about
     // nLockTime that preclude a fix later.
     if (IsCurrentForAntiFeeSniping(locked_chain)) {
-        locktime = height;
-
-        // Secondly occasionally randomly pick a nLockTime even further back, so
-        // that transactions that are delayed after signing for whatever reason,
-        // e.g. high-latency mix networks and some CoinJoin implementations,
-        // have better privacy.
-        if (GetRandInt(10) == 0) {
-            locktime = std::max(0, int(locktime) - GetRandInt(100));
-        }
+        locktime = locked_chain.getHeight().value_or(0);
     } else {
-        // If our chain is lagging behind, we can't discourage fee sniping nor
-        // help the privacy of high-latency transactions. To avoid leaking a
-        // potentially unique "nLockTime fingerprint", set nLockTime to a
-        // constant.
+        // If our chain is lagging behind, we can't discourage fee sniping. To
+        // avoid leaking a potentially unique "nLockTime fingerprint", set
+        // nLockTime to a constant.
         locktime = 0;
     }
-    assert(locktime <= height);
     assert(locktime < LOCKTIME_THRESHOLD);
     return locktime;
 }
