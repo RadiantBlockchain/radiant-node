@@ -1,12 +1,26 @@
-# Remember to copy relevant files to files-for-mkdocs before running
+# Copyright (c) 2020-2021 The Bitcoin developers
+# Distributed under the MIT software license, see the accompanying
+# file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
+# Use the following command to build HTML documentation:
+#
+#     ninja doc-html
+
 site_name: Bitcoin Cash Node documentation
 site_description: Documentation for the Bitcoin Cash Node project
-site_author: The Bitcoin Developers
+site_author: The Bitcoin developers
+site_dir: doc-html
 
 repo_url: https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node
 edit_uri: ""
 
-docs_dir: files-for-mkdocs
+docs_dir: doc-html-src
+
+# Directory URLs do not work when browsing local HTML files, so disable them.
+use_directory_urls: false
+
+# Search plug-in does not work when browsing local HTML files (due to same-origin policy), so disable it.
+plugins: []
 
 markdown_extensions:
   - pymdownx.superfences
@@ -18,10 +32,12 @@ theme:
 extra_css:
   - doc/stylesheets/custom.css
 
+
 nav:
     - Home: README.md
     - Setup instructions: doc/README.md
     - Release notes:
+        - Current release notes: doc/release-notes.md
         - Bitcoin Cash Node v22.2.0: doc/release-notes/release-notes-22.2.0.md
         - Bitcoin Cash Node v22.1.0: doc/release-notes/release-notes-22.1.0.md
         - Bitcoin Cash Node v22.0.0: doc/release-notes/release-notes-22.0.0.md

@@ -231,6 +231,10 @@ Build the GUI wallet's C++ unit test runner (executable produced at
 Build the DNS seeder's C++ unit test runner (executable produced at
 `src/seeder/test/test_bitcoin-seeder`)
 
+### doc-html
+
+Build the [HTML documentation](publishing-documentation.md).
+
 ## Deployment / installation-related targets
 
 ### install
