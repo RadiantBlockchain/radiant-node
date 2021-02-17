@@ -36,6 +36,8 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(__NO_USER_CMAKE_BUILD_TYPE ON CACHE BOOL "True if the user didn't set a build type on the command line")
 endif()
 
+set(BITCOIN_QT_OSX_BUNDLE_NAME "BitcoinCashNode-Qt")
+
 # Find the python interpreter. This is required for several targets.
 find_package(Python 3.6 COMPONENTS Interpreter REQUIRED)
 
@@ -118,22 +120,5 @@ add_subdirectory(test)
 
 add_subdirectory(contrib)
 add_subdirectory(doc)
-
-configure_file(
-	"${CMAKE_SOURCE_DIR}/doc/mkdocs.yml"
-	"${CMAKE_BINARY_DIR}/mkdocs.yml"
-	COPYONLY
-)
-configure_file(
-	"${CMAKE_SOURCE_DIR}/cmake/utils/gen-doc-html.sh.in"
-	"${CMAKE_BINARY_DIR}/gen-doc-html.sh"
-	@ONLY
-)
-add_custom_target(doc-html
-	COMMENT "Building HTML documentation..."
-	DEPENDS "${CMAKE_BINARY_DIR}/mkdocs.yml"
-	DEPENDS "${CMAKE_BINARY_DIR}/gen-doc-html.sh"
-	COMMAND "${CMAKE_BINARY_DIR}/gen-doc-html.sh"
-)
 
 include(PackageOptions.cmake)
