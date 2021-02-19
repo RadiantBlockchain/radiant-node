@@ -6,13 +6,14 @@
 #include <bench/bench.h>
 #include <config.h>
 #include <consensus/validation.h>
+#include <miner.h>
 #include <primitives/transaction.h>
 #include <script/script.h>
-#include <test/util.h>
 #include <test/setup_common.h>
+#include <test/util.h>
 #include <txmempool.h>
-#include <validation.h>
 #include <util/system.h>
+#include <validation.h>
 
 #include <vector>
 #include <queue>
@@ -41,7 +42,6 @@ static std::vector<CTxIn> createUTXOs(const Config& config, size_t n) {
         utxos.emplace_back(MineBlock(config, SCRIPT_PUB_KEY));
     }
 
-    // Mature our utxos
     for (size_t i = 0; i < COINBASE_MATURITY + 1; ++i) {
         MineBlock(config, SCRIPT_PUB_KEY);
     }
@@ -188,6 +188,8 @@ static void benchReorg(const Config& config,
             LOCK2(cs_main, g_mempool.cs);
             for (auto tx : chain) {
                 g_mempool.addUnchecked(entry.FromTx(tx));
+                // Setting spendCoinbase to false here assumes it's a chain
+                // of 1-in-1-out transaction chain.
                 entry.spendsCoinbase = false;
             }
         }
@@ -241,6 +243,39 @@ static void benchReorg(const Config& config,
     }
 }
 
+static void benchGenerateNewBlock(const Config& config,
+                                  benchmark::State& state,
+                                  const std::vector<std::vector<CTransactionRef>>& chains)
+{
+    TestMemPoolEntryHelper entry;
+    entry.nFee = 1337 * SATOSHI;
+
+    CTxMemPool mempool;
+
+    // Fill mempool
+    size_t txCount = 0;
+    for (auto chain : chains) {
+        entry.spendsCoinbase = true;
+        LOCK2(cs_main, mempool.cs);
+        for (auto tx : chain) {
+            mempool.addUnchecked(entry.FromTx(tx));
+            // Setting spendCoinbase to false here assumes it's a chain
+            // of 1-in-1-out transaction chain.
+            entry.spendsCoinbase = false;
+            ++txCount;
+        }
+    }
+    assert(mempool.size() == txCount);
+
+    const CScript dummy = CScript() << OP_TRUE;
+    while (state.KeepRunning()) {
+        auto blocktemplate = BlockAssembler(config, mempool).CreateNewBlock(dummy);
+        assert(blocktemplate);
+        // +1 for coinbase
+        assert(blocktemplate->block.vtx.size() == txCount + 1);
+    }
+}
+
 /// Tests a chain of 50 1-input-1-output transactions.
 static void MempoolAcceptance50ChainedTxs(benchmark::State& state) {
     const Config &config = GetConfig();
@@ -285,6 +320,20 @@ static void Reorg10BlocksWith500TxChain(benchmark::State& state) {
     benchReorg(config, state, 10, 500);
 }
 
+/// Generate a block with 50 1-input-1-output transactions
+static void GenerateBlock50ChainedTxs(benchmark::State& state) {
+    const Config& config = GetConfig();
+    const CTxIn utxo = createUTXOs(config, 1).back();
+    benchGenerateNewBlock(config, state, { oneInOneOutChain(config, utxo, 50) });
+}
+
+/// Generate a block with 500 1-input-1-output transactions
+static void GenerateBlock500ChainedTxs(benchmark::State& state) {
+    const Config& config = GetConfig();
+    const CTxIn utxo = createUTXOs(config, 1).back();
+    benchGenerateNewBlock(config, state, { oneInOneOutChain(config, utxo, 500) });
+}
+
 BENCHMARK(MempoolAcceptance50ChainedTxs, 600);
 BENCHMARK(MempoolAcceptance500ChainedTxs, 6);
 BENCHMARK(MempoolAcceptance63TxTree, 800);
@@ -292,3 +341,6 @@ BENCHMARK(MempoolAcceptance511TxTree, 80);
 
 BENCHMARK(Reorg10BlocksWith50TxChain, 10);
 BENCHMARK(Reorg10BlocksWith500TxChain, 1);
+
+BENCHMARK(GenerateBlock50ChainedTxs, 800);
+BENCHMARK(GenerateBlock500ChainedTxs, 8);
