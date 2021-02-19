@@ -12,6 +12,7 @@ add_executable(bench_bitcoin
 	block_assemble.cpp
 	cashaddr.cpp
 	ccoins_caching.cpp
+	chained_tx.cpp
 	checkblock.cpp
 	checkqueue.cpp
 	crypto_aes.cpp
