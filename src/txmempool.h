@@ -254,49 +254,6 @@ struct mempoolentry_txid {
     }
 };
 
-/** \class CompareTxMemPoolEntryByDescendantScore
- *
- *  Sort an entry by max(score/size of entry's tx, score/size with all
- * descendants).
- */
-class CompareTxMemPoolEntryByDescendantScore {
-public:
-    bool operator()(const CTxMemPoolEntry &a, const CTxMemPoolEntry &b) const {
-        double a_mod_fee, a_size, b_mod_fee, b_size;
-
-        GetModFeeAndSize(a, a_mod_fee, a_size);
-        GetModFeeAndSize(b, b_mod_fee, b_size);
-
-        // Avoid division by rewriting (a/b > c/d) as (a*d > c*b).
-        double f1 = a_mod_fee * b_size;
-        double f2 = a_size * b_mod_fee;
-
-        if (f1 == f2) {
-            return a.GetTime() > b.GetTime();
-        }
-        return f1 < f2;
-    }
-
-    // Return the fee/size we're using for sorting this entry.
-    void GetModFeeAndSize(const CTxMemPoolEntry &a, double &mod_fee,
-                          double &size) const {
-        // Compare feerate with descendants to feerate of the transaction, and
-        // return the fee/size for the max.
-        double f1 =
-            a.GetVirtualSizeWithDescendants() * (a.GetModifiedFee() / SATOSHI);
-        double f2 =
-            a.GetTxVirtualSize() * (a.GetModFeesWithDescendants() / SATOSHI);
-
-        if (f2 > f1) {
-            mod_fee = a.GetModFeesWithDescendants() / SATOSHI;
-            size = a.GetVirtualSizeWithDescendants();
-        } else {
-            mod_fee = a.GetModifiedFee() / SATOSHI;
-            size = a.GetTxVirtualSize();
-        }
-    }
-};
-
 /** \class CompareTxMemPoolEntryByScore
  *
  *  Sort by feerate of entry (fee/size) in descending order
@@ -386,7 +343,6 @@ public:
 };
 
 // Multi_index tag names
-struct descendant_score {};
 struct entry_time {};
 struct ancestor_score {};
 struct modified_feerate {};
@@ -534,16 +490,11 @@ public:
                              // sorted by txid
                              boost::multi_index::hashed_unique<
                                  mempoolentry_txid, SaltedTxIdHasher>,
-                             // sorted by fee rate (non-CPFP)
+                             // sorted by fee rate
                              boost::multi_index::ordered_non_unique<
                                  boost::multi_index::tag<modified_feerate>,
                                  boost::multi_index::identity<CTxMemPoolEntry>,
                                  CompareTxMemPoolEntryByModifiedFeeRate>,
-                             // sorted by fee rate (with CPFP)
-                             boost::multi_index::ordered_non_unique<
-                                 boost::multi_index::tag<descendant_score>,
-                                 boost::multi_index::identity<CTxMemPoolEntry>,
-                                 CompareTxMemPoolEntryByDescendantScore>,
                              // sorted by entry time
                              boost::multi_index::ordered_non_unique<
                                  boost::multi_index::tag<entry_time>,
