@@ -9,6 +9,7 @@
 #include <primitives/transaction.h>
 #include <script/script.h>
 #include <test/util.h>
+#include <test/setup_common.h>
 #include <txmempool.h>
 #include <validation.h>
 #include <util/system.h>
@@ -59,9 +60,10 @@ static CTransactionRef toTx(const Config& config, CTxIn txin) {
 
 /// Creates a chain of transactions with 1-input-1-output.
 static std::vector<CTransactionRef> oneInOneOutChain(const Config& config,
+                                                     CTxIn utxo,
                                                      const size_t chainLength)
 {
-    auto firstTx = toTx(config, createUTXOs(config, 1).back());
+    auto firstTx = toTx(config, std::move(utxo));
 
     // Build the chain
     std::vector<CTransactionRef> chain = { firstTx };
@@ -127,7 +129,8 @@ static std::vector<CTransactionRef> twoInOneOutTree(const Config& config,
 }
 
 
-static void benchTxs(const Config& config,
+/// Run benchmark on AcceptToMemoryPool
+static void benchATMP(const Config& config,
                      benchmark::State& state,
                      const std::vector<CTransactionRef> chainedTxs)
 {
@@ -154,18 +157,104 @@ static void benchTxs(const Config& config,
     }
 }
 
+
+/// Run benchmark that reorganizes blocks with one-input-one-output transaction
+/// chains in them.
+static void benchReorg(const Config& config,
+                       benchmark::State& state,
+                       size_t reorgDepth,
+                       size_t chainSizePerBlock)
+{
+    auto utxos = createUTXOs(config, reorgDepth);
+    std::vector<std::vector<CTransactionRef>> chains;
+    for (auto utxo : utxos) {
+        chains.emplace_back(oneInOneOutChain(config, std::move(utxo), chainSizePerBlock));
+    }
+
+    // Current tip will be last valid block.
+    CBlockIndex *tipBeforeInvalidate = ::ChainActive().Tip();
+    assert(tipBeforeInvalidate != nullptr);
+
+    CBlockIndex *blockToInvalidate = nullptr;
+
+    assert(g_mempool.size() == 0);
+
+    // Build blocks
+    TestMemPoolEntryHelper entry;
+    entry.nFee = 1337 * SATOSHI;
+    for (auto chain : chains) {
+        {
+            entry.spendsCoinbase = true;
+            LOCK2(cs_main, g_mempool.cs);
+            for (auto tx : chain) {
+                g_mempool.addUnchecked(entry.FromTx(tx));
+                entry.spendsCoinbase = false;
+            }
+        }
+        assert(g_mempool.size() == chain.size());
+        MineBlock(config, SCRIPT_PUB_KEY);
+        assert(g_mempool.size() == 0);
+
+        assert(ChainActive().Tip()->nTx == chain.size() + 1 /* coinbase */);
+
+        if (blockToInvalidate == nullptr) {
+            blockToInvalidate = ::ChainActive().Tip();
+        }
+    }
+    CBlockIndex* mostWorkTip  = ::ChainActive().Tip();
+
+
+    // `AcceptToMemoryPool` is used during re-org, so we need to ajust its
+    // limits.
+    gArgs.ForceSetArg("-limitdescendantcount",
+                      std::to_string(chainSizePerBlock));
+    gArgs.ForceSetArg("-limitancestorcount",
+                      std::to_string(chainSizePerBlock));
+    gArgs.ForceSetArg("-limitancestorsize",
+                      std::to_string(chainSizePerBlock * 1000));
+    gArgs.ForceSetArg("-limitdescendantsize",
+                      std::to_string(chainSizePerBlock * 1000));
+
+    while (state.KeepRunning()) {
+        CValidationState vstate;
+
+        // Disconnect blocks with long transaction chains
+        InvalidateBlock(config, vstate, blockToInvalidate);
+        assert(vstate.IsValid());
+
+        ActivateBestChain(config, vstate);
+        assert(vstate.IsValid());
+        assert(::ChainActive().Tip() == tipBeforeInvalidate);
+
+        // Transactions should be stuffed back into the mempool.
+        assert(g_mempool.size() == reorgDepth * chainSizePerBlock);
+
+        // Reconnect block
+        {
+            LOCK(cs_main);
+            ResetBlockFailureFlags(blockToInvalidate);
+        }
+
+        ActivateBestChain(config, vstate);
+        assert(vstate.IsValid());
+        assert(::ChainActive().Tip() == mostWorkTip);
+    }
+}
+
 /// Tests a chain of 50 1-input-1-output transactions.
 static void MempoolAcceptance50ChainedTxs(benchmark::State& state) {
     const Config &config = GetConfig();
-    const std::vector<CTransactionRef> chainedTxs = oneInOneOutChain(config, 50);
-    benchTxs(config, state, chainedTxs);
+    const std::vector<CTransactionRef> chainedTxs
+        = oneInOneOutChain(config, createUTXOs(config, 1).back(), 50);
+    benchATMP(config, state, chainedTxs);
 }
 
 /// Tests a chain of 500 1-input-1-output transactions.
 static void MempoolAcceptance500ChainedTxs(benchmark::State& state) {
     const Config &config = GetConfig();
-    const std::vector<CTransactionRef> chainedTxs = oneInOneOutChain(config, 500);
-    benchTxs(config, state, chainedTxs);
+    const std::vector<CTransactionRef> chainedTxs
+        = oneInOneOutChain(config, createUTXOs(config, 1).back(), 500);
+    benchATMP(config, state, chainedTxs);
 }
 
 /// Test a tree of 63 2-inputs-1-output transactions
@@ -173,7 +262,7 @@ static void MempoolAcceptance63TxTree(benchmark::State& state) {
     const Config &config = GetConfig();
     const std::vector<CTransactionRef> chainedTxs = twoInOneOutTree(config, 5);
     assert(chainedTxs.size() == 63);
-    benchTxs(config, state, chainedTxs);
+    benchATMP(config, state, chainedTxs);
 }
 
 /// Test a tree of 511 2-inputs-1-output transactions
@@ -181,10 +270,25 @@ static void MempoolAcceptance511TxTree(benchmark::State& state) {
     const Config &config = GetConfig();
     const std::vector<CTransactionRef> chainedTxs = twoInOneOutTree(config, 8);
     assert(chainedTxs.size() == 511);
-    benchTxs(config, state, chainedTxs);
+    benchATMP(config, state, chainedTxs);
+}
+
+/// Try to reorg a chain of depth 10 where each block has a 50 tx 1-input-1-output chain.
+static void Reorg10BlocksWith50TxChain(benchmark::State& state) {
+    const Config &config = GetConfig();
+    benchReorg(config, state, 10, 50);
+}
+
+/// Try to reorg a chain of depth 10 where each block has a 500 tx 1-input-1-output chain.
+static void Reorg10BlocksWith500TxChain(benchmark::State& state) {
+    const Config &config = GetConfig();
+    benchReorg(config, state, 10, 500);
 }
 
 BENCHMARK(MempoolAcceptance50ChainedTxs, 600);
 BENCHMARK(MempoolAcceptance500ChainedTxs, 6);
 BENCHMARK(MempoolAcceptance63TxTree, 800);
 BENCHMARK(MempoolAcceptance511TxTree, 80);
+
+BENCHMARK(Reorg10BlocksWith50TxChain, 10);
+BENCHMARK(Reorg10BlocksWith500TxChain, 1);
