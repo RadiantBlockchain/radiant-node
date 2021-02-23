@@ -18,10 +18,6 @@ Utility to generate the pnSeed[] array that is compiled into the client.
 Build Tools and Keys
 ---------------------
 
-### [Debian](debian/) ###
-Contains files used to package bitcoind/bitcoin-qt
-for Debian-based Linux systems. If you compile bitcoind/bitcoin-qt yourself, there are some useful files here.
-
 ### [Gitian-descriptors](gitian-descriptors/) ###
 Notes on getting Gitian builds up and running using KVM.
 
