@@ -451,8 +451,8 @@ BENCHMARK(Reorg10BlocksWith500TxChain, 1);
 BENCHMARK(Reorg10BlocksWith50TxChainSkipMempool, 25);
 BENCHMARK(Reorg10BlocksWith500TxChainSkipMempool, 1);
 
-BENCHMARK(GenerateBlock50ChainedTxs, 800);
-BENCHMARK(GenerateBlock500ChainedTxs, 8);
+BENCHMARK(GenerateBlock50ChainedTxs, 3000);
+BENCHMARK(GenerateBlock500ChainedTxs, 300);
 
 BENCHMARK(EvictChained50Tx, 2);
 BENCHMARK(EvictChained50TxRev, 2);
