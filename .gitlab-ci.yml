@@ -1,3 +1,7 @@
+# Copyright (c) 2020-2021 The Bitcoin developers
+# Distributed under the MIT software license, see the accompanying
+# file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 # Top-level general rules determine when this pipeline is run:
 # - only on merge requests, new tags and changes to master
 # - NOT on any branch except master
@@ -215,7 +219,7 @@ build-debian:
     extends: .cache-debian
     needs: []
     script:
-        - (cd build; cmake -GNinja ..)
+        - (cd build; cmake -GNinja .. -DDOC_ONLINE=ON)
         - (cd build; ninja)
 
     artifacts:
@@ -738,7 +742,7 @@ fuzz-libfuzzer:
 pages:
     stage: deployment
     extends: .cache-debian
-    needs: []
+    needs: ["build-debian"]
     cache:
         key: docs
         paths:
@@ -746,15 +750,14 @@ pages:
     before_script:
         - pip3 install mkdocs mkdocs-material
     script:
-        - rm -f doc/release-notes.md # Delete next release draft release notes for online publication
-        - 'sed -i "s/^.* doc\\/release-notes.md$//" doc/mkdocs.yml' # Remove draft release notes from menu for online publication
-        - 'sed -i "s/^use_directory_urls: false$//" doc/mkdocs.yml' # Enable directory URLs for online publication
-        - 'sed -i "s/^plugins: \\[\\]$//" doc/mkdocs.yml' # Enable search plug-in for online publication
-        - cmake -GNinja .
-        - ninja doc-html
-        - mv doc-html public
+        - (cd build; ninja -t restat)
+        - (cd build; ninja doc-html)
+        - mv build/doc/html public
+    dependencies:
+        - build-debian
     artifacts:
         paths:
             - public
     rules:
         - if: $CI_COMMIT_BRANCH == "master"
+

@@ -365,7 +365,6 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 		"${EMPTY_LPROJ_FILE}"
 	)
 
-	set(BITCOIN_QT_OSX_BUNDLE_NAME "BitcoinCashNode-Qt")
 	set_target_properties(bitcoin-qt PROPERTIES
 		MACOSX_BUNDLE ON
 		OUTPUT_NAME "${BITCOIN_QT_OSX_BUNDLE_NAME}"

@@ -119,10 +119,10 @@ test/cache/*
 
 /doc/doxygen/
 
-/mkdocs.yml
-/gen-doc-html.sh
-/doc-html-src/
-/doc-html/
+/doc/mkdocs.yml
+/doc/gen-doc-md.sh
+/doc/md/
+/doc/html/
 
 libbitcoinconsensus.pc
 contrib/devtools/split-debug.sh

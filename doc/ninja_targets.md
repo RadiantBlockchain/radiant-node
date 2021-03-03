@@ -233,7 +233,11 @@ Build the DNS seeder's C++ unit test runner (executable produced at
 
 ### doc-html
 
-Build the [HTML documentation](publishing-documentation.md).
+Build the [HTML documentation](publishing-documentation.md) in the `doc-html` folder.
+
+### doc-md
+
+Build the Markdown documentation in the `doc-md` folder and generate `mkdocs.yml`. The HTML documentation depends on this.
 
 ## Deployment / installation-related targets
 
@@ -334,3 +338,6 @@ All these options are passed via `-D` (defines) to the `cmake` command.
 
 - -DEXCLUDE_FUNCTIONAL_TESTS # Skip specified functional tests for
   `check-functional` targets.
+
+- -DDOC_ONLINE=ON # Adapt Markdown and HTML documentation for publication on docs.bitcoincashnode.org
+
