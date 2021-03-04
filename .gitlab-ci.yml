@@ -56,8 +56,8 @@ static-checks-master:
         - if: $CI_COMMIT_BRANCH == "master"
     allow_failure: true
     variables:
-       GIT_STRATEGY: clone
-       GIT_LFS_SKIP_SMUDGE: 1
+        GIT_STRATEGY: clone
+        GIT_LFS_SKIP_SMUDGE: 1
     script:
         - pip3 install -r .static-checks-python-requirements.txt
         - git clone https://github.com/ekho/checkstyle2junit.git --branch master --single-branch --depth=1 build-aux/checkstyle2junit
@@ -85,12 +85,12 @@ static-checks-branch:
         - if: $CI_COMMIT_BRANCH != "master"
     allow_failure: true
     variables:
-       GIT_STRATEGY: clone
-       GIT_LFS_SKIP_SMUDGE: 1
+        GIT_STRATEGY: clone
+        GIT_LFS_SKIP_SMUDGE: 1
     script:
         - export GIT_DIR=$CI_PROJECT_DIR/.git
-          # Last merge commit is used as reference for branch starts.
-          # MR's should not have merges within them.
+        # Last merge commit is used as reference for branch starts.
+        # MR's should not have merges within them.
         - export MR_START=`git show :/^Merge --format=format:%H`
         - pip3 install -r .static-checks-python-requirements.txt
         - git clone https://github.com/ekho/checkstyle2junit.git --branch master --single-branch --depth=1 build-aux/checkstyle2junit
@@ -134,8 +134,8 @@ static-run-linters:
         - export CCACHE_COMPILERCHECK=content
         - ccache --zero-stats || true
 
-          # Limit ccache to 3 GB (from default 5 GB).
-          # 'ninja all check bench_bitcoin' produces ~2.1GB cache (Jan 2021)
+        # Limit ccache to 3 GB (from default 5 GB).
+        # 'ninja all check bench_bitcoin' produces ~2.1GB cache (Jan 2021)
         - ccache -M 3G
     after_script:
         # after_script somehow loses CCACHE environent variables.
@@ -493,49 +493,49 @@ test-debian-benchmarks-clang:
 ## Debian native Debug build
 
 .cache-debian-debug:
-  extends: .build_common
-  cache:
-    <<: *global_cache_settings
-    key: debian_debug_cache
+    extends: .build_common
+    cache:
+        <<: *global_cache_settings
+        key: debian_debug_cache
 
 build-debian-debug:
-  stage: build
-  extends: .cache-debian-debug
-  needs: []
-  script:
-    - (cd build; cmake -GNinja .. -DCMAKE_BUILD_TYPE=Debug)
-    - (cd build; ninja)
+    stage: build
+    extends: .cache-debian-debug
+    needs: []
+    script:
+        - (cd build; cmake -GNinja .. -DCMAKE_BUILD_TYPE=Debug)
+        - (cd build; ninja)
 
-  artifacts:
-    paths:
-      - build
+    artifacts:
+        paths:
+            - build
 
 build-debian-debug-tests:
-  stage: build_tests
-  extends: .cache-debian-debug
-  needs: ["build-debian-debug"]
-  dependencies:
-    - build-debian-debug
-  script:
-    - (cd build; ninja -t restat)
-    - (cd build; ninja test_bitcoin)
-  artifacts:
-    paths:
-      - ./build/src/test/test_bitcoin
-      - ./build/src/lib*
+    stage: build_tests
+    extends: .cache-debian-debug
+    needs: ["build-debian-debug"]
+    dependencies:
+        - build-debian-debug
+    script:
+        - (cd build; ninja -t restat)
+        - (cd build; ninja test_bitcoin)
+    artifacts:
+        paths:
+            - ./build/src/test/test_bitcoin
+            - ./build/src/lib*
 
 test-debian-debug-unittests:
-  stage: test
-  cache: {}
-  needs: ["build-debian-debug-tests"]
-  dependencies:
-    - build-debian-debug-tests
-  script:
-    - ./build/src/test/test_bitcoin
-      --logger=HRF:JUNIT,message,junit_unit_tests.xml
-  artifacts:
-    reports:
-      junit: junit_unit_tests.xml
+    stage: test
+    cache: {}
+    needs: ["build-debian-debug-tests"]
+    dependencies:
+        - build-debian-debug-tests
+    script:
+        - ./build/src/test/test_bitcoin
+            --logger=HRF:JUNIT,message,junit_unit_tests.xml
+    artifacts:
+        reports:
+            junit: junit_unit_tests.xml
 
 ## Debian native Debug build with clang
 
@@ -662,8 +662,8 @@ build-aarch64:
     needs: ["build-aarch64-depends"]
     script:
         - cd build
-          # The following tests are excluded:
-          # - bchn-rpc-getblocktemplate-sigops - OOM issues for aarch64 (see #211)
+        # The following tests are excluded:
+        # - bchn-rpc-getblocktemplate-sigops - OOM issues for aarch64 (see #211)
         - cmake -GNinja .. -DBUILD_BITCOIN_ZMQ=OFF
                            -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/LinuxAArch64.cmake
                            -DCMAKE_CROSSCOMPILING_EMULATOR=$(command -v qemu-aarch64-static)
@@ -760,4 +760,3 @@ pages:
             - public
     rules:
         - if: $CI_COMMIT_BRANCH == "master"
-
