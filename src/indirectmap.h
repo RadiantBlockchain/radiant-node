@@ -6,6 +6,7 @@
 #define BITCOIN_INDIRECTMAP_H
 
 #include <map>
+#include <utility>
 
 template <class T> struct DereferencingComparator {
     bool operator()(const T a, const T b) const { return *a < *b; }
@@ -37,6 +38,12 @@ public:
     // passthrough (pointer interface)
     std::pair<iterator, bool> insert(const value_type &value) {
         return m.insert(value);
+    }
+
+    // passthrough (pointer interface)
+    template <typename ...Args>
+    std::pair<iterator, bool> emplace(Args && ...args) {
+        return m.emplace(std::forward<Args>(args)...);
     }
 
     // pass address (value interface)
