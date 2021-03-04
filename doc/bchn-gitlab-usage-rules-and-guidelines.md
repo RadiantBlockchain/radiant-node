@@ -230,6 +230,10 @@ NOTE: MR = "Merge Request"
 
 - "user-interface": issue/MR relates to a user interface (not only graphical!)
 
+- "mining": issue/MR relates to mining functionality
+
+- "wallet": issue/MR relates to wallet functionality
+
 - "bitcoin-seeder": issue/MR relates to bitcoin-seeder component
 
 - "HODL" : issue/MR is on hold until further notice, usually because of a technical
