@@ -50,7 +50,7 @@ static std::vector<CTxIn> createUTXOs(const Config& config, size_t n) {
 }
 
 /// Create a transaction spending a coinbase utxo
-static CTransactionRef toTx(const Config& config, CTxIn txin) {
+static CTransactionRef toTx(const Config&, CTxIn txin) {
     CMutableTransaction tx;
     tx.vin.emplace_back(txin);
     tx.vin.back().scriptSig = SCRIPT_SIG;
@@ -186,11 +186,11 @@ static void benchReorg(const Config& config,
     // Build blocks
     TestMemPoolEntryHelper entry;
     entry.nFee = 1337 * SATOSHI;
-    for (auto chain : chains) {
+    for (const auto& chain : chains) {
         {
             entry.spendsCoinbase = true;
             LOCK2(cs_main, g_mempool.cs);
-            for (auto tx : chain) {
+            for (const auto& tx : chain) {
                 g_mempool.addUnchecked(entry.FromTx(tx));
                 // Setting spendCoinbase to false here assumes it's a chain
                 // of 1-in-1-out transaction chain.
@@ -265,10 +265,10 @@ static void benchGenerateNewBlock(const Config& config,
 
     // Fill mempool
     size_t txCount = 0;
-    for (auto chain : chains) {
+    for (const auto& chain : chains) {
         entry.spendsCoinbase = true;
         LOCK2(cs_main, mempool.cs);
-        for (auto tx : chain) {
+        for (const auto& tx : chain) {
             mempool.addUnchecked(entry.FromTx(tx));
             // Setting spendCoinbase to false here assumes it's a chain
             // of 1-in-1-out transaction chain.

@@ -2,8 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_MEMPOOL_BATCHUPDATER
-#define BITCOIN_MEMPOOL_BATCHUPDATER
+#ifndef BITCOIN_MEMPOOL_BATCHUPDATER_H
+#define BITCOIN_MEMPOOL_BATCHUPDATER_H
 
 #include <primitives/transaction.h>
 
