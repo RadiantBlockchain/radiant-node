@@ -218,3 +218,4 @@ nav:
       - Publishing documentation: doc/publishing-documentation.md
       - DNS seed policy: doc/dnsseed-policy.md
       - doc/assets-attribution.md
+  - License: COPYING.md

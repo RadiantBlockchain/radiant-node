@@ -69,10 +69,3 @@ Drag `bitcoin-cash-node` to your applications folder, and then run `bitcoin-cash
 
 * Ask for help on the [Bitcoin Cash Node Subreddit](https://www.reddit.com/r/bitcoincashnode/).
 
-License
----------------------
-Distribution is done under the [MIT software license](../COPYING).
-This product includes software developed by the OpenSSL Project for use in the
-[OpenSSL Toolkit](https://www.openssl.org/), cryptographic software written by
-Eric Young ([eay@cryptsoft.com](mailto:eay@cryptsoft.com)), and UPnP software
-written by Thomas Bernard.

@@ -34,6 +34,11 @@ Bitcoin Cash Node is released under the terms of the MIT license. See
 [COPYING](COPYING) for more information or see
 [https://opensource.org/licenses/MIT](https://opensource.org/licenses/MIT).
 
+This product includes software developed by the OpenSSL Project for use in the
+[OpenSSL Toolkit](https://www.openssl.org/), cryptographic software written by
+[Eric Young](mailto:eay@cryptsoft.com), and UPnP software written by Thomas
+Bernard.
+
 Development Process
 -------------------
 

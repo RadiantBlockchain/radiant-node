@@ -11,8 +11,20 @@ rm -f mkdocs.yml
 rm -rf md
 mkdir md
 cd "@CMAKE_SOURCE_DIR@"
-tar cf - $(find . \( -name \*.md -a -not -path ./\*/\*.md -o -path ./contrib/\*.md -o -path ./depends/\*.md -o -path ./share/\*.md -o -path ./src/\*.md -o -path ./test/\*.md -o -path ./doc/\*.md -o -path ./doc/\*.png -o -path ./doc/\*.css \) -a -not -path ./doc/html/\*) | tar xf - --directory "@CMAKE_CURRENT_BINARY_DIR@/md"
+tar cf - $(find . \( -name \*.md -a -not -path ./\*/\*.md -o -path ./contrib/\*.md -o -path ./depends/\*.md -o -path ./share/\*.md -o -path ./src/\*.md -o -path ./test/\*.md -o -path ./doc/\*.md -o -path ./doc/\*.png -o -path ./doc/\*.svg -o -path ./doc/\*.css \) -a -not -path ./doc/html/\*) | tar xf - --directory "@CMAKE_CURRENT_BINARY_DIR@/md"
 cd "@CMAKE_CURRENT_BINARY_DIR@"
+
+# Create Markdown version of license.
+first=1
+while IFS= read -r line; do
+  if [ $first == 1 ]; then
+    echo "# $line" > md/COPYING.md
+    first=0
+  else
+    echo "    $line" >> md/COPYING.md
+  fi
+done < "@CMAKE_SOURCE_DIR@/COPYING"
+sed -i s/\]\(COPYING\)/\]\(COPYING.md\)/ md/README.md
 
 # Generate command-line interface documentation.
 mkdir -p md/doc/cli
@@ -43,8 +55,10 @@ while IFS= read -r line; do
     indentation="${line%%-*}"
     # The list of RPC commands will be inserted into the new mkdocs file below the readme entry.
     # Get the list of RPC commands from the node and process it.
-    echo "Bitcoin Cash Node JSON-RPC commands" > md/doc/json-rpc/README.md
-    echo "===================================" >> md/doc/json-rpc/README.md
+    {
+        echo "Bitcoin Cash Node JSON-RPC commands"
+        echo "==================================="
+    } > md/doc/json-rpc/README.md
     ../src/bitcoin-cli -rpcwait -regtest -datadir="@CMAKE_CURRENT_BINARY_DIR@/md/doc/json-rpc/tmp" -rpcuser=gen-manpages -rpcpassword=gen-manpages help | while read -r helpline; do
       if [ -n "$helpline" ]; then
         if [[ "$helpline" =~ ^==[[:space:]](.*)[[:space:]]==$ ]]; then
