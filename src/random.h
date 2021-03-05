@@ -71,6 +71,7 @@
  */
 void GetRandBytes(uint8_t *buf, int num) noexcept;
 uint64_t GetRand(uint64_t nMax) noexcept;
+uint64_t GetRand64() noexcept; ///< Like above, but returns a random number over the full 64-bit range
 int GetRandInt(int nMax) noexcept;
 uint256 GetRandHash() noexcept;
 
