@@ -20,7 +20,7 @@ QT_TRANSLATE_NOOP("bitcoin-cash-node", ""
 "Cannot obtain a lock on data directory %s. %s is probably already running."),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", ""
 "Cannot provide specific connections and have addrman find outgoing "
-"connections at the same."),
+"connections at the same time."),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", ""
 "Cannot upgrade a non HD split wallet without upgrading to support pre split "
 "keypool. Please use -upgradewallet=200300 or -upgradewallet with no version "
@@ -195,7 +195,8 @@ QT_TRANSLATE_NOOP("bitcoin-cash-node", "Upgrading txindex database"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "User Agent comment (%s) contains unsafe characters."),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Using %s."),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Verifying blocks..."),
-QT_TRANSLATE_NOOP("bitcoin-cash-node", "Verifying wallet(s)..."),
+QT_TRANSLATE_NOOP("bitcoin-cash-node", "Verifying wallet..."),
+QT_TRANSLATE_NOOP("bitcoin-cash-node", "Verifying wallets..."),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Wallet %s resides outside wallet directory %s"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Wallet needed to be rewritten: restart %s to complete"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Warning"),
