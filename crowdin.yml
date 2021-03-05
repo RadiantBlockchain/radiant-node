@@ -1,0 +1,13 @@
+# Configuration for https://crowdin.com/project/bitcoin-cash-node
+
+"project_id": "398054"
+"base_path": "."
+"base_url": "https://api.crowdin.com"
+"preserve_hierarchy": true
+
+files: [
+ {
+  "source": "/src/qt/locale/bitcoin_en.ts",
+  "translation": "/src/qt/locale/bitcoin_%locale_with_underscore%.ts",
+ }
+]
