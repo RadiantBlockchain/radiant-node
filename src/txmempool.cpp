@@ -477,8 +477,8 @@ void CTxMemPool::addUnchecked(const CTxMemPoolEntry &entry,
 
 void CTxMemPool::removeUnchecked(txiter it, MemPoolRemovalReason reason) {
     NotifyEntryRemoved(it->GetSharedTx(), reason);
-    if (it->dspId)
-        m_dspStorage->remove(*it->dspId);
+    if (it->HasDsp())
+        m_dspStorage->remove(it->GetDspId());
     for (const CTxIn &txin : it->GetTx().vin) {
         mapNextTx.erase(txin.prevout);
     }
@@ -1147,7 +1147,7 @@ CTransactionRef CTxMemPool::addDoubleSpendProof(const DoubleSpendProof &proof, c
     } else
         iter = *optIter;
 
-    if (iter->dspId)  {
+    if (iter->HasDsp())  {
         // A DSProof already exists for this tx, don't propagate new one.
         return CTransactionRef();
     }
@@ -1158,7 +1158,7 @@ CTransactionRef CTxMemPool::addDoubleSpendProof(const DoubleSpendProof &proof, c
     m_dspStorage->add(proof);
     // Update mempool entry to save the dspId
     const auto &hash = proof.GetId();
-    mapTx.modify(iter, [&hash](CTxMemPoolEntry &entry){ entry.dspId = hash; });
+    mapTx.modify(iter, [&hash](CTxMemPoolEntry &entry){ entry.SetDspId(hash); });
     return ret;
 }
 
@@ -1183,7 +1183,7 @@ auto CTxMemPool::listDoubleSpendProofs(const bool includeOrphans) const -> std::
             if (auto it = mapNextTx.find(proof.outPoint()); it != mapNextTx.end()) {
                 txId = it->second->GetId();
                 // Sanity check that actual CTxMemPoolEntry also has this DspId associated
-                if (auto optiter = GetIter(txId); !optiter || (*optiter)->dspId != proof.GetId()) {
+                if (auto optiter = GetIter(txId); !optiter || (*optiter)->GetDspId() != proof.GetId()) {
                     // should never happen, indicates bug in code
                     throw std::runtime_error(strprintf("Unexpected state: DspId %s for COutPoint %s is not associated"
                                                        " with the expected txId %s!",
@@ -1253,12 +1253,12 @@ auto CTxMemPool::getDoubleSpendProof_common(const TxId &txId, txiter *txit, DspD
         *txit = it; // tell caller about `it` (even if no hit for txId)
     if (it != mapTx.end()) {
         // txId found in mempool
-        if (it->dspId) {
-            ret.emplace(m_dspStorage->lookup(*it->dspId));
+        if (it->HasDsp()) {
+            ret.emplace(m_dspStorage->lookup(it->GetDspId()));
             if (ret->isEmpty()) {
                 // hash points to missing dsp from storage -- should never happen
                 throw std::runtime_error(strprintf("Unexpected state: DspId %s for TxId %s missing from storage",
-                                                   it->dspId->ToString(), txId.ToString()));
+                                                   it->GetDspId().ToString(), txId.ToString()));
             }
             if (desc) {
                 // caller supplied a descendants set they want populated, so populate it on this hit
@@ -1335,13 +1335,13 @@ auto CTxMemPool::getDoubleSpendProof(const COutPoint &outpoint, DspDescendants *
         const auto &txId = it->second->GetId();
         auto it2 = mapTx.find(txId);
         assert(it2 != mapTx.end());
-        if (it2->dspId) {
+        if (it2->HasDsp()) {
             // mempool entry has a double-spend, get its proof from storage
-            ret.emplace(m_dspStorage->lookup(*it2->dspId), txId);
+            ret.emplace(m_dspStorage->lookup(it2->GetDspId()), txId);
             if (ret->first.isEmpty()) {
                 // hash points to missing dsp from storage -- should never happen
                 throw std::runtime_error(strprintf("Unexpected state: DspId %s for TxId %s missing from storage",
-                                                   it2->dspId->ToString(), txId.ToString()));
+                                                   it2->GetDspId().ToString(), txId.ToString()));
             }
             if (desc) {
                 // caller supplied a descendants set they want populated, so populate it on this hit

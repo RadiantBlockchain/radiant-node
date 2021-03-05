@@ -120,6 +120,12 @@ private:
     Amount nModFeesWithAncestors;
     int64_t nSigOpCountWithAncestors;
 
+    //! If not nullptr, this entry has an associated DoubleSpendProof.
+    //! We use a DspIdPtr here to use less memory than a direct DspId would
+    //! in the common case of no proof for this entry, while still keeping this
+    //! class copy constructible.
+    DspIdPtr dspIdPtr;
+
 public:
     CTxMemPoolEntry(const CTransactionRef &_tx, const Amount _nFee,
                     int64_t _nTime, unsigned int _entryHeight,
@@ -169,14 +175,16 @@ public:
         return nSigOpCountWithAncestors;
     }
 
+    bool HasDsp() const { return dspIdPtr && !dspIdPtr->IsNull(); }
+    //! @returns the dspId if this entry has a dsp or an IsNull() DspId if it does not
+    const DspId & GetDspId() const {
+        static const DspId staticNull;
+        return dspIdPtr ? *dspIdPtr : staticNull;
+    }
+    void SetDspId(const DspId &dspId) { dspIdPtr = dspId; }
+
     //! Index in mempool's vTxHashes
     mutable size_t vTxHashesIdx = 0;
-
-    //! If not nullptr, this entry has an associated DoubleSpendProof.
-    //! We use a DspIdPtr here to use less memory than a direct DspId would
-    //! in the common case of no proof for this entry, while still keeping this
-    //! class copy constructible.
-    DspIdPtr dspId;
 };
 
 // Helpers for modifying CTxMemPool::mapTx, which is a boost multi_index.
