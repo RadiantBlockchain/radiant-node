@@ -246,10 +246,6 @@ OP_CHECKDATASIGVERIFY = CScriptOp(0xbb)
 # additional byte string operations
 OP_REVERSEBYTES = CScriptOp(0xbc)
 
-# multi-byte opcodes
-OP_PREFIX_BEGIN = CScriptOp(0xf0)
-OP_PREFIX_END = CScriptOp(0xf7)
-
 # template matching params
 OP_SMALLINTEGER = CScriptOp(0xfa)
 OP_PUBKEYS = CScriptOp(0xfb)

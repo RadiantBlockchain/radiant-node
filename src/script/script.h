@@ -188,10 +188,6 @@ enum opcodetype {
     // The first op_code value after all defined opcodes
     FIRST_UNDEFINED_OP_VALUE,
 
-    // multi-byte opcodes
-    OP_PREFIX_BEGIN = 0xf0,
-    OP_PREFIX_END = 0xf7,
-
     OP_INVALIDOPCODE = 0xff,
 };
 
