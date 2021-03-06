@@ -3169,7 +3169,7 @@ BOOST_AUTO_TEST_CASE(script_HasValidOps) {
     script =
         ScriptFromHex("76a914ff34567890abcdefa1a2a3a4a5a6a7a8a9a0aaab88ac");
     BOOST_CHECK(script.HasValidOps());
-    // Script with OP_INVALIDOPCODE explicit
+    // Script with INVALIDOPCODE explicit
     script = ScriptFromHex("ff88ac");
     BOOST_CHECK(!script.HasValidOps());
     // Script with undefined opcode

@@ -257,9 +257,6 @@ const char *GetOpName(opcodetype opcode) {
         case OP_NOP10:
             return "OP_NOP10";
 
-        case OP_INVALIDOPCODE:
-            return "OP_INVALIDOPCODE";
-
         default:
             return "OP_UNKNOWN";
     }
@@ -447,7 +444,7 @@ bool CScript::IsPushOnly() const {
 bool GetScriptOp(CScriptBase::const_iterator &pc,
                  CScriptBase::const_iterator end, opcodetype &opcodeRet,
                  std::vector<uint8_t> *pvchRet) {
-    opcodeRet = OP_INVALIDOPCODE;
+    opcodeRet = INVALIDOPCODE;
     if (pvchRet) {
         pvchRet->clear();
     }

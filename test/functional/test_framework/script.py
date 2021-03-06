@@ -246,13 +246,7 @@ OP_CHECKDATASIGVERIFY = CScriptOp(0xbb)
 # additional byte string operations
 OP_REVERSEBYTES = CScriptOp(0xbc)
 
-# template matching params
-OP_SMALLINTEGER = CScriptOp(0xfa)
-OP_PUBKEYS = CScriptOp(0xfb)
-OP_PUBKEYHASH = CScriptOp(0xfd)
-OP_PUBKEY = CScriptOp(0xfe)
-
-OP_INVALIDOPCODE = CScriptOp(0xff)
+INVALIDOPCODE = CScriptOp(0xff)
 
 OPCODE_NAMES.update({
     OP_0: 'OP_0',
@@ -368,11 +362,6 @@ OPCODE_NAMES.update({
     OP_NOP8: 'OP_NOP8',
     OP_NOP9: 'OP_NOP9',
     OP_NOP10: 'OP_NOP10',
-    OP_SMALLINTEGER: 'OP_SMALLINTEGER',
-    OP_PUBKEYS: 'OP_PUBKEYS',
-    OP_PUBKEYHASH: 'OP_PUBKEYHASH',
-    OP_PUBKEY: 'OP_PUBKEY',
-    OP_INVALIDOPCODE: 'OP_INVALIDOPCODE',
 })
 
 
@@ -606,7 +595,7 @@ class CScript(bytes):
         Note that this is consensus-critical.
         """
         n = 0
-        lastOpcode = OP_INVALIDOPCODE
+        lastOpcode = INVALIDOPCODE
         for (opcode, data, sop_idx) in self.raw_iter():
             if opcode in (OP_CHECKSIG, OP_CHECKSIGVERIFY):
                 n += 1
