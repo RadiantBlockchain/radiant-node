@@ -140,14 +140,14 @@ BOOST_AUTO_TEST_CASE(norecurse) {
     // Make sure only the outer pay-to-script-hash does the
     // extra-validation thing:
     CScript invalidAsScript;
-    invalidAsScript << OP_INVALIDOPCODE << OP_INVALIDOPCODE;
+    invalidAsScript << INVALIDOPCODE << INVALIDOPCODE;
 
     CScript p2sh = GetScriptForDestination(CScriptID(invalidAsScript));
 
     CScript scriptSig;
     scriptSig << Serialize(invalidAsScript);
 
-    // Should not verify, because it will try to execute OP_INVALIDOPCODE
+    // Should not verify, because it will try to execute INVALIDOPCODE
     BOOST_CHECK(!Verify(scriptSig, p2sh, true, err));
     BOOST_CHECK_MESSAGE(err == ScriptError::BAD_OPCODE, ScriptErrorString(err));
 

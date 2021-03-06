@@ -33,7 +33,7 @@ from test_framework.script import (
     OP_ENDIF,
     OP_FALSE,
     OP_IF,
-    OP_INVALIDOPCODE,
+    INVALIDOPCODE,
     OP_RETURN,
     OP_TRUE,
     SIGHASH_ALL,
@@ -925,7 +925,7 @@ class FullBlockTest(BitcoinTestFramework):
         self.log.info(
             "Accept a block with invalid opcodes in dead execution paths")
         b83 = self.next_block(83)
-        op_codes = [OP_IF, OP_INVALIDOPCODE, OP_ELSE, OP_TRUE, OP_ENDIF]
+        op_codes = [OP_IF, INVALIDOPCODE, OP_ELSE, OP_TRUE, OP_ENDIF]
         script = CScript(op_codes)
         tx1 = self.create_and_sign_transaction(
             out[28], out[28].vout[0].nValue, script)

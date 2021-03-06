@@ -188,7 +188,7 @@ enum opcodetype {
     // The first op_code value after all defined opcodes
     FIRST_UNDEFINED_OP_VALUE,
 
-    OP_INVALIDOPCODE = 0xff,
+    INVALIDOPCODE = 0xff,   ///< Not a real OPCODE!
 };
 
 // Maximum value that an opcode can be
