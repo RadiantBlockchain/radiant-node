@@ -15,8 +15,9 @@
 #include <util/system.h>
 #include <validation.h>
 
-#include <vector>
+#include <list>
 #include <queue>
+#include <vector>
 
 /// This file contains benchmarks focusing on chained transactions in the
 /// mempool.
@@ -171,7 +172,7 @@ static void benchReorg(const Config& config,
 {
     auto utxos = createUTXOs(config, reorgDepth);
     std::vector<std::vector<CTransactionRef>> chains;
-    for (auto utxo : utxos) {
+    for (const auto &utxo : utxos) {
         chains.emplace_back(oneInOneOutChain(config, std::move(utxo), chainSizePerBlock));
     }
 
@@ -287,6 +288,57 @@ static void benchGenerateNewBlock(const Config& config,
     }
 }
 
+static void benchEviction(const Config&,
+                          benchmark::State& state,
+                          const std::vector<std::vector<CTransactionRef>>& chains, bool revFee = true)
+{
+    std::list<CTxMemPool> pools;
+
+    // Note: in order to isolate how long eviction takes (as opposed to add + eviction),
+    // we are forced to pre-create all the pools we will be needing up front.
+
+    for (uint64_t i = 0; i < state.m_num_iters * state.m_num_evals + 1; ++i) {
+        pools.emplace_back();
+        CTxMemPool &pool = pools.back();
+        TestMemPoolEntryHelper entry;
+        // Fill mempool
+        size_t txCount = 0;
+        entry.nFee = 1337 * SATOSHI;
+        // add in order of decreasing fee if revFee, increasing otherwise
+        const Amount feeBump = revFee ? int64_t(-1) * SATOSHI : int64_t(1) * SATOSHI;
+        for (const auto &chain : chains) {
+            entry.spendsCoinbase = true;
+            if (revFee)
+                entry.nFee += int64_t(chain.size()) * SATOSHI;
+            LOCK2(cs_main, pool.cs);
+            for (const auto &tx : chain) {
+                pool.addUnchecked(entry.FromTx(tx));
+                entry.nFee += feeBump;
+                // Setting spendCoinbase to false here assumes it's a chain
+                // of 1-in-1-out transaction chain.
+                entry.spendsCoinbase = false;
+                ++txCount;
+            }
+            if (revFee)
+                entry.nFee += int64_t(chain.size()) * SATOSHI;
+        }
+        assert(pool.size() == txCount);
+    }
+
+    auto it = pools.begin();
+
+    while (state.KeepRunning()) {
+        assert(it != pools.end());
+        auto & pool = *it++;
+        LOCK2(cs_main, pool.cs);
+        while (auto prevSize = pool.size()) {
+            pool.TrimToSize(pool.DynamicMemoryUsage() * 99 / 100);
+            assert(pool.size() < prevSize);
+        }
+    }
+
+}
+
 /// Tests a chain of 50 1-input-1-output transactions.
 static void MempoolAcceptance50ChainedTxs(benchmark::State& state) {
     const Config &config = GetConfig();
@@ -319,6 +371,7 @@ static void MempoolAcceptance511TxTree(benchmark::State& state) {
     benchATMP(config, state, chainedTxs);
 }
 
+
 /// Try to reorg a chain of depth 10 where each block has a 50 tx 1-input-1-output chain.
 static void Reorg10BlocksWith50TxChain(benchmark::State& state) {
     const Config &config = GetConfig();
@@ -345,6 +398,7 @@ static void Reorg10BlocksWith500TxChainSkipMempool(benchmark::State& state) {
     benchReorg(config, state, 10, 500, false);
 }
 
+
 /// Generate a block with 50 1-input-1-output transactions
 static void GenerateBlock50ChainedTxs(benchmark::State& state) {
     const Config& config = GetConfig();
@@ -359,6 +413,34 @@ static void GenerateBlock500ChainedTxs(benchmark::State& state) {
     benchGenerateNewBlock(config, state, { oneInOneOutChain(config, utxo, 500) });
 }
 
+
+/// Fill a mempool then evict 2000 x 50 1-input-1-output transactions, CTxMemPool version, in order of increasing fee
+static void EvictChained50Tx(benchmark::State& state) {
+    const Config& config = GetConfig();
+    // create 2000 chains of 50 1-in-1-out each
+    std::vector<std::vector<CTransactionRef>> chains;
+    constexpr int NChains = 2000;
+    const auto utxos = createUTXOs(config, NChains);
+    for (int i = 0; i < NChains; ++i) {
+        chains.push_back( oneInOneOutChain(config, utxos[i], 50) );
+    }
+    benchEviction(config, state, chains, false);
+}
+
+/// Fill a mempool then evict 2000 x 50 1-input-1-output transactions, CTxMemPool version, in order of decreasing fee
+static void EvictChained50TxRev(benchmark::State& state) {
+    const Config& config = GetConfig();
+    // create 2000 chains of 50 1-in-1-out each
+    std::vector<std::vector<CTransactionRef>> chains;
+    constexpr int NChains = 2000;
+    const auto utxos = createUTXOs(config, NChains);
+    for (int i = 0; i < NChains; ++i) {
+        chains.push_back( oneInOneOutChain(config, utxos[i], 50) );
+    }
+    benchEviction(config, state, chains, true);
+}
+
+
 BENCHMARK(MempoolAcceptance50ChainedTxs, 600);
 BENCHMARK(MempoolAcceptance500ChainedTxs, 6);
 BENCHMARK(MempoolAcceptance63TxTree, 800);
@@ -371,3 +453,6 @@ BENCHMARK(Reorg10BlocksWith500TxChainSkipMempool, 1);
 
 BENCHMARK(GenerateBlock50ChainedTxs, 800);
 BENCHMARK(GenerateBlock500ChainedTxs, 8);
+
+BENCHMARK(EvictChained50Tx, 2);
+BENCHMARK(EvictChained50TxRev, 2);
