@@ -34,13 +34,7 @@ trap "cleanup" EXIT
 echo "[COPYRIGHT]" > footer.h2m
 "$BITCOIND" --version | sed -n '1!p' >> footer.h2m
 
-for cmd in "$BITCOIND" "$BITCOINQT"; do
-  cmdname="${cmd##*/}"
-  help2man -N --version-string=${BTCVER[0]} --include=footer.h2m -o "$TOPDIR/doc/man/$cmdname.1" --help-option="-? -lang=en_US" --version-option="-version -lang=en_US" "$cmd"
-  sed -i "s/\\\-${BTCVER[1]}\(\\\-dirty\)\?//g" "$TOPDIR/doc/man/$cmdname.1"
-done
-
-for cmd in "$BITCOINCLI" "$BITCOINTX" "$BITCOINSEEDER"; do
+for cmd in "$BITCOIND" "$BITCOINQT" "$BITCOINCLI" "$BITCOINTX" "$BITCOINSEEDER"; do
   cmdname="${cmd##*/}"
   help2man -N --version-string=${BTCVER[0]} --include=footer.h2m -o "$TOPDIR/doc/man/$cmdname.1" "$cmd"
   sed -i "s/\\\-${BTCVER[1]}\(\\\-dirty\)\?//g" "$TOPDIR/doc/man/$cmdname.1"

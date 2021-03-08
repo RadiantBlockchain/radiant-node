@@ -13,6 +13,7 @@
 #include <config.h>
 #include <fs.h>
 #include <httprpc.h>
+#include <init.h> // LicenseInfo
 #include <interfaces/handler.h>
 #include <interfaces/node.h>
 #include <noui.h>
@@ -30,6 +31,7 @@
 #include <rpc/server.h>
 #include <ui_interface.h>
 #include <uint256.h>
+#include <util/strencodings.h> // FormatParagraph
 #include <util/system.h>
 #include <util/threadnames.h>
 #include <walletinitinterface.h>
@@ -536,6 +538,30 @@ int GuiMain(int argc, char *argv[]) {
     // Do not refer to data directory yet, this can be overridden by
     // Intro::pickDataDirectory
 
+    /// 0. Parse bitcoin-qt command-line options.
+    // Command-line options take precedence:
+    node->setupServerArgs();
+    SetupUIArgs();
+    std::string error;
+    const bool parametersParsed = node->parseParameters(argc, argv, error);
+
+    const bool versionRequested = parametersParsed && gArgs.IsArgSet("-version");
+    const bool versionOrHelpRequested = versionRequested || (parametersParsed && HelpRequested(gArgs));
+
+#if !defined(WIN32)
+    // On non-Windows operating systems, print help text to console.
+    // We intentionally do this before loading Qt, so that this also works on platforms without display.
+    if (versionOrHelpRequested) {
+        fprintf(stdout, "%s\n", HelpMessageDialog::versionText().toStdString().c_str());
+        if (versionRequested) {
+            fprintf(stdout, "%s", FormatParagraph(LicenseInfo()).c_str());
+        } else {
+            fprintf(stdout, "\n%s\n%s", HelpMessageDialog::headerText, gArgs.GetHelpMessage().c_str());
+        }
+        return EXIT_SUCCESS;
+    }
+#endif
+
     /// 1. Basic Qt initialization (not dependent on parameters or
     /// configuration)
     Q_INIT_RESOURCE(bitcoin);
@@ -546,7 +572,12 @@ int GuiMain(int argc, char *argv[]) {
     // See: https://doc.qt.io/qt-5/qt.html#ApplicationAttribute-enum
     QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 #endif
-    BitcoinApplication app(*node, argc, argv);
+    // Command-line arguments were already parsed above, so Qt can no longer extract Qt-internal arguments: these would already be
+    // deemed invalid arguments above. Hence hide the command-line arguments from QtApplication. If one nevertheless needs to use
+    // some Qt-internal arguments, they should be made available by wrapping them in arguments defined in gArgs (which also ensures
+    // syntax consistency and yields visibility in documentation).
+    int argcQt = 1;
+    BitcoinApplication app(*node, argcQt, argv);
 #if QT_VERSION > 0x050100
     // Generate high-dpi pixmaps
     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
@@ -571,13 +602,8 @@ int GuiMain(int argc, char *argv[]) {
     // behind-the-scenes in the 'Queued' connection case.
     qRegisterMetaType<Config *>();
 
-    /// 2. Parse command-line options. We do this after qt in order to show an
-    /// error if there are problems parsing these
-    // Command-line options take precedence:
-    node->setupServerArgs();
-    SetupUIArgs();
-    std::string error;
-    if (!node->parseParameters(argc, argv, error)) {
+    /// 2. Show any error parsing parameters. Now that Qt is initialized, we can show the error.
+    if (!parametersParsed) {
         QMessageBox::critical(
             nullptr, PACKAGE_NAME,
             QObject::tr("Error parsing command line arguments: %1.")
@@ -610,13 +636,16 @@ int GuiMain(int argc, char *argv[]) {
     initTranslations(qtTranslatorBase, qtTranslator, translatorBase,
                      translator);
 
-    // Show help message immediately after parsing command-line options (for
+#if defined(WIN32)
+    // On Windows, show a message box, as there is no stderr/stdout in windowed
+    // applications. Do so immediately after parsing command-line options (for
     // "-lang") and setting locale, but before showing splash screen.
-    if (HelpRequested(gArgs) || gArgs.IsArgSet("-version")) {
-        HelpMessageDialog help(*node, nullptr, gArgs.IsArgSet("-version"));
-        help.showOrPrint();
+    if (versionOrHelpRequested) {
+        HelpMessageDialog help(*node, nullptr, versionRequested);
+        help.exec();
         return EXIT_SUCCESS;
     }
+#endif
 
     /// 5. Now that settings and translations are available, ask user for data
     /// directory. User language is set up: pick a data directory.
