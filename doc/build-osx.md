@@ -10,7 +10,7 @@ Preparation
 Install [Homebrew](https://brew.sh), and install dependencies:
 
 ```
-brew install berkeley-db boost cmake git-lfs libevent librsvg miniupnpc ninja openssl protobuf python qrencode qt zeromq
+brew install berkeley-db boost cmake git-lfs libevent librsvg miniupnpc ninja openssl protobuf python qrencode qt5 zeromq
 ```
 
 You can do without the `git-lfs` package if you don't intend to run the
@@ -20,7 +20,7 @@ You can do without the `zeromq` and `miniupnpc` packages, then you
 just need to pass `-DBUILD_BITCOIN_ZMQ=OFF` or `-DENABLE_UPNP=OFF`
 respectively to the `cmake` command below.
 
-You can do without the `librsvg`, `qrencode` and `qt` packages, if you don't
+You can do without the `librsvg`, `qrencode` and `qt5` packages, if you don't
 intend to build the GUI.
 
 You can do without the `berkeley-db` package, if you don't intend to build
