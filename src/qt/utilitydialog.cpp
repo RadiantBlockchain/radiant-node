@@ -1,4 +1,5 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
+// Copyright (c) 2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -31,12 +32,7 @@
 
 #include <cstdio>
 
-/** "Help message" or "About" dialog box */
-HelpMessageDialog::HelpMessageDialog(interfaces::Node &node, QWidget *parent,
-                                     bool about)
-    : QDialog(parent), ui(new Ui::HelpMessageDialog) {
-    ui->setupUi(this);
-
+QString HelpMessageDialog::versionText() {
     QString version = QString{PACKAGE_NAME} + " " + tr("version") + " " + QString::fromStdString(FormatFullVersion());
     /* On x86 add a bit specifier to the version so that users can distinguish between
      * 32 and 64 bit builds. On other architectures, 32/64 bit may be more ambiguous.
@@ -46,13 +42,20 @@ HelpMessageDialog::HelpMessageDialog(interfaces::Node &node, QWidget *parent,
 #elif defined(__i386__)
     version += " " + tr("(%1-bit)").arg(32);
 #endif
+    return version;
+}
+
+/** "Help message" or "About" dialog box */
+HelpMessageDialog::HelpMessageDialog(interfaces::Node &node, QWidget *parent,
+                                     bool about)
+    : QDialog(parent), ui(new Ui::HelpMessageDialog) {
+    ui->setupUi(this);
 
     if (about) {
         setWindowTitle(tr("About %1").arg(PACKAGE_NAME));
 
         /// HTML-format the license message from the core
-        QString licenseInfo = QString::fromStdString(LicenseInfo());
-        QString licenseInfoHTML = licenseInfo;
+        QString licenseInfoHTML = QString::fromStdString(LicenseInfo());
         // Make URLs clickable
         QRegExp uri("<(.*)>", Qt::CaseSensitive, QRegExp::RegExp2);
         uri.setMinimal(true); // use non-greedy matching
@@ -62,23 +65,16 @@ HelpMessageDialog::HelpMessageDialog(interfaces::Node &node, QWidget *parent,
 
         ui->aboutMessage->setTextFormat(Qt::RichText);
         ui->scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-        text = version + "\n" + licenseInfo;
-        ui->aboutMessage->setText(version + "<br><br>" + licenseInfoHTML);
+        ui->aboutMessage->setText(versionText() + "<br><br>" + licenseInfoHTML);
         ui->aboutMessage->setWordWrap(true);
         ui->helpMessage->setVisible(false);
     } else {
         setWindowTitle(tr("Command-line options"));
-        QString header =
-            "Usage:  bitcoin-qt [command-line options]                     \n";
         QTextCursor cursor(ui->helpMessage->document());
-        cursor.insertText(version);
+        cursor.insertText(versionText());
         cursor.insertBlock();
-        cursor.insertText(header);
+        cursor.insertText(headerText);
         cursor.insertBlock();
-
-        std::string strUsage = gArgs.GetHelpMessage();
-        QString coreOptions = QString::fromStdString(strUsage);
-        text = version + "\n\n" + header + "\n" + coreOptions;
 
         QTextTableFormat tf;
         tf.setBorderStyle(QTextFrameFormat::BorderStyle_None);
@@ -91,7 +87,7 @@ HelpMessageDialog::HelpMessageDialog(interfaces::Node &node, QWidget *parent,
         QTextCharFormat bold;
         bold.setFontWeight(QFont::Bold);
 
-        for (const QString &line : coreOptions.split("\n")) {
+        for (const QString &line : QString::fromStdString(gArgs.GetHelpMessage()).split("\n")) {
             if (line.startsWith("  -")) {
                 cursor.currentTable()->appendRows(1);
                 cursor.movePosition(QTextCursor::PreviousCell);
@@ -119,23 +115,6 @@ HelpMessageDialog::HelpMessageDialog(interfaces::Node &node, QWidget *parent,
 
 HelpMessageDialog::~HelpMessageDialog() {
     delete ui;
-}
-
-void HelpMessageDialog::printToConsole() {
-    // On other operating systems, the expected action is to print the message
-    // to the console.
-    fprintf(stdout, "%s\n", qPrintable(text));
-}
-
-void HelpMessageDialog::showOrPrint() {
-#if defined(WIN32)
-    // On Windows, show a message box, as there is no stderr/stdout in windowed
-    // applications
-    exec();
-#else
-    // On other operating systems, print help text to console
-    printToConsole();
-#endif
 }
 
 void HelpMessageDialog::on_okButton_accepted() {

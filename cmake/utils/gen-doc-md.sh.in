@@ -30,9 +30,9 @@ sed -i s/\]\(COPYING\)/\]\(COPYING.md\)/ md/README.md
 mkdir -p md/doc/cli
 "@CMAKE_SOURCE_DIR@/contrib/devtools/cli-help-to-markdown.py" "$(../src/bitcoind -??)" > md/doc/cli/bitcoind.md
 if [ "@CMAKE_SYSTEM_NAME@" == "Darwin" ]; then
-  "@CMAKE_SOURCE_DIR@/contrib/devtools/cli-help-to-markdown.py" "$("../src/qt/@BITCOIN_QT_OSX_BUNDLE_NAME@.app/Contents/MacOS/@BITCOIN_QT_OSX_BUNDLE_NAME@" -?? -lang=en_US --platform minimal)" > md/doc/cli/bitcoin-qt.md
+  "@CMAKE_SOURCE_DIR@/contrib/devtools/cli-help-to-markdown.py" "$("../src/qt/@BITCOIN_QT_OSX_BUNDLE_NAME@.app/Contents/MacOS/@BITCOIN_QT_OSX_BUNDLE_NAME@" -??)" > md/doc/cli/bitcoin-qt.md
 else
-  "@CMAKE_SOURCE_DIR@/contrib/devtools/cli-help-to-markdown.py" "$(../src/qt/bitcoin-qt -?? -lang=en_US --platform minimal)" > md/doc/cli/bitcoin-qt.md
+  "@CMAKE_SOURCE_DIR@/contrib/devtools/cli-help-to-markdown.py" "$(../src/qt/bitcoin-qt -??)" > md/doc/cli/bitcoin-qt.md
 fi
 "@CMAKE_SOURCE_DIR@/contrib/devtools/cli-help-to-markdown.py" "$(../src/bitcoin-cli -?)" > md/doc/cli/bitcoin-cli.md
 "@CMAKE_SOURCE_DIR@/contrib/devtools/cli-help-to-markdown.py" "$(../src/bitcoin-tx -?)" > md/doc/cli/bitcoin-tx.md
