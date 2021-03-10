@@ -6,6 +6,7 @@
 
 #include <crypto/sha256.h>
 #include <key.h>
+#include <logging.h>
 #include <util/strencodings.h>
 #include <util/system.h>
 
@@ -60,6 +61,11 @@ static void SetupBenchArgs() {
         "-plot-height=<x>",
         strprintf("Plot height in pixel (default: %u)", DEFAULT_PLOT_HEIGHT),
         false, OptionsCategory::OPTIONS);
+
+    gArgs.AddArg("-debug=<category>",
+                 strprintf("Output debugging information (default: %u, supplying <category> is optional)", 0)
+                 + ". If <category> is not supplied or if <category> = 1, output all debugging information. "
+                   "<category> can be: " + ListLogCategories() + ".", false, OptionsCategory::DEBUG_TEST);
 }
 
 int main(int argc, char **argv) {
@@ -96,6 +102,16 @@ int main(int argc, char **argv) {
             gArgs.GetArg("-plot-plotlyurl", DEFAULT_PLOT_PLOTLYURL),
             gArgs.GetArg("-plot-width", DEFAULT_PLOT_WIDTH),
             gArgs.GetArg("-plot-height", DEFAULT_PLOT_HEIGHT)));
+    }
+
+    if (gArgs.IsArgSet("-debug")) {
+        LogInstance().m_print_to_console = true;
+        LogInstance().m_log_time_micros = true;
+        for (const auto &cat : gArgs.GetArgs("-debug")) {
+            if (!LogInstance().EnableCategory(cat)) {
+                fprintf(stderr, "Unsupported logging category -debug=%s.\n", cat.c_str());
+            }
+        }
     }
 
     benchmark::BenchRunner::RunAll(*printer, evaluations, scaling_factor,
