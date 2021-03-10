@@ -122,6 +122,7 @@ add_boost_unit_tests_to_suite(bitcoin test_bitcoin
 		dbwrapper_tests.cpp
 		denialofservice_tests.cpp
 		descriptor_tests.cpp
+		dsproof_dspidptr_tests.cpp
 		dsproof_tests.cpp
 		dstencode_tests.cpp
 		excessiveblock_tests.cpp
