@@ -9,9 +9,11 @@
 #include <config.h>
 #include <consensus/merkle.h>
 #include <consensus/validation.h>
+#include <consensus/tx_check.h>
 #include <miner.h>
 #include <policy/policy.h>
 #include <pow.h>
+#include <random.h>
 #include <script/scriptcache.h>
 #include <txmempool.h>
 #include <validation.h>
@@ -71,4 +73,73 @@ static void DuplicateInputs(benchmark::State &state) {
     }
 }
 
+template<size_t vinSize, size_t batchSize>
+static void CheckRegularTransactionBench(benchmark::State &state) {
+    FastRandomContext rng(true);
+    const CScript scriptPubKey{CScript(OP_TRUE)};
+
+    auto make_txn = [&](bool bad) {
+        CMutableTransaction tx;
+        tx.nVersion = 1;
+        tx.vin.resize(vinSize);
+        tx.vout.resize(1);
+        tx.vout[0].nValue = Amount::zero();
+        tx.vout[0].scriptPubKey = scriptPubKey;
+        for (size_t i=0; i<vinSize; i++) {
+            tx.vin[i].prevout = COutPoint(TxId(rng.rand256()), 0);
+        }
+        if (bad) {
+            assert(vinSize > 1);
+            size_t i = rng.randrange(vinSize);
+            size_t j = rng.randrange(vinSize-1);
+            if (j >= i) j++;
+            tx.vin[j] = tx.vin[i];
+        }
+        assert(!CTransaction(tx).IsCoinBase());
+        return tx;
+    };
+
+    std::list<CTransaction> valid_txns;
+    for (size_t x = 0; x < batchSize; x++) {
+        valid_txns.emplace_back(make_txn(false));
+    }
+
+    std::list<CTransaction> bad_txns;
+    if (vinSize > 1) {
+        for (size_t x = 0; x < batchSize; x++) {
+            bad_txns.emplace_back(make_txn(true));
+        }
+    }
+
+    while (state.KeepRunning()) {
+        for (const auto &tx : valid_txns) {
+            CValidationState state1;
+            assert(CheckRegularTransaction(tx, state1));
+        }
+        for (const auto &tx : bad_txns) {
+            CValidationState state1;
+            assert(!CheckRegularTransaction(tx, state1));
+            assert(state1.GetRejectReason() == "bad-txns-inputs-duplicate");
+        }
+    }
+}
+
 BENCHMARK(DuplicateInputs, 10);
+
+constexpr auto CheckRegularTransaction_1 = CheckRegularTransactionBench<1, 1000>;
+constexpr auto CheckRegularTransaction_2 = CheckRegularTransactionBench<2, 1000>;
+constexpr auto CheckRegularTransaction_3 = CheckRegularTransactionBench<3, 1000>;
+constexpr auto CheckRegularTransaction_4 = CheckRegularTransactionBench<4, 1000>;
+constexpr auto CheckRegularTransaction_E1 = CheckRegularTransactionBench<10, 1000>;
+constexpr auto CheckRegularTransaction_E2 = CheckRegularTransactionBench<100, 100>;
+constexpr auto CheckRegularTransaction_E3 = CheckRegularTransactionBench<1000, 10>;
+constexpr auto CheckRegularTransaction_E4 = CheckRegularTransactionBench<10000, 1>;
+
+BENCHMARK(CheckRegularTransaction_1, 10000);
+BENCHMARK(CheckRegularTransaction_2, 2000);
+BENCHMARK(CheckRegularTransaction_3, 2000);
+BENCHMARK(CheckRegularTransaction_4, 2000);
+BENCHMARK(CheckRegularTransaction_E1, 1000);
+BENCHMARK(CheckRegularTransaction_E2, 200);
+BENCHMARK(CheckRegularTransaction_E3, 100);
+BENCHMARK(CheckRegularTransaction_E4, 50);

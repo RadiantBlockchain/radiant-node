@@ -80,9 +80,9 @@ BOOST_FIXTURE_TEST_CASE(tx_mempool_reject_dup_txin, TestChain100Setup) {
       CValidationState state1;
       BOOST_CHECK(CheckRegularTransaction(CTransaction(tx), state1));
 
-      size_t i = InsecureRandRange(vinSize-1);
-      size_t j = 1 + InsecureRandRange(vinSize-1);
-      if (i == j) j++;
+      size_t i = InsecureRandRange(vinSize);
+      size_t j = InsecureRandRange(vinSize-1);
+      if (j >= i) j++;
       tx.vin[j] = tx.vin[i];
       BOOST_CHECK(!CheckRegularTransaction(CTransaction(tx), state1));
       BOOST_CHECK_EQUAL(state1.GetRejectReason(), "bad-txns-inputs-duplicate");
