@@ -1,6 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
-// Copyright (c) 2020 The Bitcoin developers
+// Copyright (c) 2020-2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -264,7 +264,7 @@ public:
         double f2 = a_size * b_mod_fee;
 
         if (f1 == f2) {
-            return a.GetTime() >= b.GetTime();
+            return a.GetTime() > b.GetTime();
         }
         return f1 < f2;
     }
@@ -333,6 +333,9 @@ public:
         double f2 = a_size * b_mod_fee;
 
         if (f1 == f2) {
+            // If fees are equal, this prefers mining low txids, which makes little sense.
+            // Instead it should probably prefer mining older txs (using GetTime instead of GetId).
+            // However, we won't fix this because we expect to remove this code after the May 2021 network upgrade.
             return a.GetTx().GetId() < b.GetTx().GetId();
         }
         return f1 > f2;
