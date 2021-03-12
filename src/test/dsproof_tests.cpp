@@ -308,8 +308,8 @@ BOOST_FIXTURE_TEST_CASE(dsproof_doublespend_mempool, TestChain100Setup) {
             BOOST_CHECK(optIter);
             if (optIter) {
                 const auto & entry = *(*optIter);
-                BOOST_CHECK(entry.dspId);
-                BOOST_CHECK(entry.dspId == dsproof.GetId());
+                BOOST_CHECK(entry.HasDsp());
+                BOOST_CHECK(entry.GetDspId() == dsproof.GetId());
                 dspIdTxIdMap[dsproof.GetId()] = spend1.GetId(); // save txid
             }
 

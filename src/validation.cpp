@@ -570,7 +570,7 @@ AcceptToMemoryPoolWorker(const Config &config, CTxMemPool &pool,
             if (!test_accept && DoubleSpendProof::IsEnabled()) {
                 const auto txidConflicting = itConflicting->second->GetId();
                 const auto entryIt = pool.mapTx.find(txidConflicting);
-                if (!entryIt->dspId) {
+                if (!entryIt->HasDsp()) {
                     // if no DS proof exists, we make one
                     try {
                         LogPrint(BCLog::DSPROOF, "Double spend found, creating double spend proof (mempool tx: %s; doublespend tx: %s)\n",
