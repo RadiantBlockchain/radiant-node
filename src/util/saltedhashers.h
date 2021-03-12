@@ -10,6 +10,7 @@
 #include <uint256.h>
 
 #include <cstdint>
+#include <functional>
 
 /**
  *  Hashers for common types for use with e.g. std::unordered_map.
@@ -38,6 +39,22 @@ struct SaltedTxIdHasher : protected SaltedUint256Hasher {
 struct SaltedOutpointHasher : SaltedHasherBase {
     size_t operator()(const COutPoint &o) const noexcept {
         return static_cast<size_t>(SipHashUint256Extra(k0(), k1(), o.GetTxId(), o.GetN()));
+    }
+};
+
+/// @class StdHashWrapper
+/// Wraps std::hash<T> with a (superior) salted Sip-2-4 hasher
+template <typename T>
+class StdHashWrapper : public SaltedHasherBase {
+    std::hash<T> wrappedHasher;
+public:
+    size_t operator()(const T &t) const noexcept {
+        const size_t val = wrappedHasher(t);
+        if constexpr (sizeof(val) == sizeof(uint64_t))
+            return static_cast<size_t>(CSipHasher(k0(), k1()).Write(static_cast<uint64_t>(val)).Finalize());
+        else
+            return static_cast<size_t>(CSipHasher(k0(), k1())
+                                       .Write(reinterpret_cast<const uint8_t *>(&val), sizeof(val)).Finalize());
     }
 };
 
