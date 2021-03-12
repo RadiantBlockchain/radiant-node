@@ -8,7 +8,6 @@
 #include <config/bitcoin-config.h>
 #endif
 
-#include <fs.h>
 #include <util/system.h>
 
 #include <chainparamsbase.h>

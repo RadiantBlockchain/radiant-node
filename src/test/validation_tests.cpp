@@ -13,7 +13,6 @@
 #include <primitives/transaction.h>
 #include <streams.h>
 #include <util/system.h>
-#include <validation.h>
 
 #include <test/setup_common.h>
 
