@@ -1168,7 +1168,46 @@ BOOST_AUTO_TEST_CASE(GetModifiedFeeRateTest) {
                                              .FromTx(tx);
     BOOST_CHECK_EQUAL(500 * SATOSHI,
                       entrySizeModified.GetModifiedFeeRate().GetFee(1000));
+}
 
+BOOST_AUTO_TEST_CASE(CompareTxMemPoolEntryByModifiedFeeRateTest) {
+    CTransactionRef a = make_tx(/* output_values */ {1 * COIN});
+    CTransactionRef b = make_tx(/* output_values */ {2 * COIN});
+
+    // For this test, we want a to have lower txid.
+    if (a->GetId() > b->GetId()) {
+        std::swap(a, b);
+    }
+    assert(a->GetId() < b->GetId());
+    TestMemPoolEntryHelper entry;
+    CompareTxMemPoolEntryByModifiedFeeRate compare;
+    auto Before = [&compare](const auto &a, const auto &b){ return compare(a, b) && !compare(b, a); };
+    auto Equal = [&compare](const auto &a, const auto &b) { return !compare(a, b) && !compare(b, a); };
+    auto After = [&compare](const auto &a, const auto &b) { return compare(b, a) && !compare(a, b); };
+
+    // If the fees are the same, higher ID and lowed ID should compare equal
+    BOOST_CHECK(Equal(entry.Fee(100 * SATOSHI).FromTx(a),
+                      entry.Fee(100 * SATOSHI).FromTx(b)));
+    // Earlier time, same fee, should sort before
+    BOOST_CHECK(Before(entry.Fee(100 * SATOSHI).Time(1).FromTx(a),
+                       entry.Fee(100 * SATOSHI).Time(2).FromTx(b)));
+    // Smaller fee, later time should sort after
+    BOOST_CHECK(After(entry.Fee(100 * SATOSHI).Time(2).FromTx(a),
+                      entry.Fee(101 * SATOSHI).Time(1).FromTx(b)));
+
+    // Higher fee should be the correct order
+    BOOST_CHECK(Before(entry.Fee(101 * SATOSHI).Time(2).FromTx(a),
+                       entry.Fee(100 * SATOSHI).Time(1).FromTx(b)));
+
+    // Same with fee delta.
+    CTxMemPoolEntry entryA = entry.Fee(100 * SATOSHI).FromTx(a);
+    CTxMemPoolEntry entryB = entry.Fee(200 * SATOSHI).FromTx(b);
+    // .. A and B have same modified fee, order should be considered "equal"
+    entryA.UpdateFeeDelta(100 * SATOSHI);
+    BOOST_CHECK(Equal(entryA, entryB));
+    // .. B has higher modified fee.
+    entryB.UpdateFeeDelta(1 * SATOSHI);
+    BOOST_CHECK(After(entryA, entryB));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

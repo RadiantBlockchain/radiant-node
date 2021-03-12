@@ -315,6 +315,22 @@ public:
     }
 };
 
+/** \class CompareTxMemPoolEntryByModifiedFeeRate
+ *
+ *  Sort by feerate of entry (modfee/vsize) in descending order.
+ *  This is used by the block assembler (mining).
+ */
+struct CompareTxMemPoolEntryByModifiedFeeRate {
+    bool operator()(const CTxMemPoolEntry &a, const CTxMemPoolEntry &b) const {
+        const CFeeRate frA = a.GetModifiedFeeRate(), frB = b.GetModifiedFeeRate();
+        if (frA == frB) {
+            // ties are broken by whichever was seen first (this helps mining code)
+            return a.GetTime() < b.GetTime();
+        }
+        return frA > frB;
+    }
+};
+
 /** \class CompareTxMemPoolEntryByAncestorScore
  *
  *  Sort an entry by min(score/size of entry's tx, score/size with all
@@ -362,6 +378,7 @@ public:
 struct descendant_score {};
 struct entry_time {};
 struct ancestor_score {};
+struct modified_feerate {};
 
 /**
  * Information about a mempool transaction.
@@ -519,7 +536,12 @@ public:
                              // sorted by txid
                              boost::multi_index::hashed_unique<
                                  mempoolentry_txid, SaltedTxidHasher>,
-                             // sorted by fee rate
+                             // sorted by fee rate (non-CPFP)
+                             boost::multi_index::ordered_non_unique<
+                                 boost::multi_index::tag<modified_feerate>,
+                                 boost::multi_index::identity<CTxMemPoolEntry>,
+                                 CompareTxMemPoolEntryByModifiedFeeRate>,
+                             // sorted by fee rate (with CPFP)
                              boost::multi_index::ordered_non_unique<
                                  boost::multi_index::tag<descendant_score>,
                                  boost::multi_index::identity<CTxMemPoolEntry>,
