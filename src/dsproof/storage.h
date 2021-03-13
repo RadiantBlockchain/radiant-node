@@ -9,6 +9,7 @@
 #include <dsproof/dsproof.h>
 #include <net_nodeid.h>
 #include <sync.h>
+#include <util/saltedhashers.h>
 
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/member.hpp>
@@ -95,17 +96,6 @@ public:
 private:
     mutable RecursiveMutex m_lock;
 
-    //! A salted hasher for use with the uint256 type in the IndexProofs set below.
-    //! It may also operate on the COutPoint type as well.
-    //! This code is inspired by txmempool.h's SaltedTxidHasher
-    class SaltedHasher {
-        const uint64_t k0, k1; //! Salt
-    public:
-        SaltedHasher();
-        size_t operator()(const uint256 &hash) const;
-        size_t operator()(const COutPoint &outPoint) const;
-    };
-
     struct Entry {
         bool orphan = false;
         DoubleSpendProof proof;
@@ -130,10 +120,10 @@ private:
         Entry, boost::multi_index::indexed_by<
                     // indexed by dsproof hash
                     boost::multi_index::hashed_unique<
-                        Entry::Id_Getter, SaltedHasher>,
+                        Entry::Id_Getter, SaltedUint256Hasher>,
                     // also indexd by COutPoint
                     boost::multi_index::hashed_non_unique<
-                        boost::multi_index::tag<tag_COutPoint>, Entry::COutPoint_Getter, SaltedHasher>,
+                        boost::multi_index::tag<tag_COutPoint>, Entry::COutPoint_Getter, SaltedOutpointHasher>,
                     // also sorted by timeStamp
                     boost::multi_index::ordered_non_unique<
                         boost::multi_index::tag<tag_TimeStamp>, boost::multi_index::member<Entry, int64_t, &Entry::timeStamp>>

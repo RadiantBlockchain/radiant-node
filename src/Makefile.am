@@ -226,12 +226,12 @@ BITCOIN_CORE_H = \
   txmempool.h \
   ui_interface.h \
   undo.h \
-  util/system.h \
+  util/bitmanip.h \
   util/moneystr.h \
+  util/saltedhashers.h \
+  util/system.h \
   util/threadnames.h \
   util/time.h \
-  util/bitmanip.h \
-  util/bytevectorhash.h \
   validation.h \
   validationinterface.h \
   versionbits.h \
@@ -469,6 +469,7 @@ libbitcoin_common_a_SOURCES = \
   feerate.cpp \
   core_read.cpp \
   core_write.cpp \
+  hash.cpp \
   key.cpp \
   key_io.cpp \
   keystore.cpp \
@@ -508,12 +509,12 @@ libbitcoin_util_a_SOURCES = \
   threadinterrupt.cpp \
   uint256.cpp \
   uint256.h \
-  util/system.cpp \
   util/moneystr.cpp \
+  util/saltedhashers.cpp \
   util/strencodings.cpp \
+  util/system.cpp \
   util/threadnames.cpp \
   util/time.cpp \
-  util/bytevectorhash.cpp \
   $(BITCOIN_CORE_H)
 
 if GLIBC_BACK_COMPAT

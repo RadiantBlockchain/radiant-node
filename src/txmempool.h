@@ -10,12 +10,12 @@
 #include <amount.h>
 #include <coins.h>
 #include <core_memusage.h>
-#include <crypto/siphash.h>
 #include <dsproof/dspid.h>
 #include <indirectmap.h>
 #include <primitives/transaction.h>
 #include <random.h>
 #include <sync.h>
+#include <util/saltedhashers.h>
 
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/ordered_index.hpp>
@@ -429,19 +429,6 @@ enum class MemPoolRemovalReason {
     REPLACED
 };
 
-class SaltedTxidHasher {
-private:
-    /** Salt */
-    const uint64_t k0, k1;
-
-public:
-    SaltedTxidHasher();
-
-    size_t operator()(const TxId &txid) const {
-        return SipHashUint256(k0, k1, txid);
-    }
-};
-
 /**
  * CTxMemPool stores valid-according-to-the-current-best-chain transactions that
  * may be included in the next block.
@@ -546,7 +533,7 @@ public:
         CTxMemPoolEntry, boost::multi_index::indexed_by<
                              // sorted by txid
                              boost::multi_index::hashed_unique<
-                                 mempoolentry_txid, SaltedTxidHasher>,
+                                 mempoolentry_txid, SaltedTxIdHasher>,
                              // sorted by fee rate (non-CPFP)
                              boost::multi_index::ordered_non_unique<
                                  boost::multi_index::tag<modified_feerate>,
@@ -1027,7 +1014,7 @@ private:
                              // sorted by txid
                              boost::multi_index::hashed_unique<
                                  boost::multi_index::tag<txid_index>,
-                                 mempoolentry_txid, SaltedTxidHasher>,
+                                 mempoolentry_txid, SaltedTxIdHasher>,
                              // sorted by order in the blockchain
                              boost::multi_index::sequenced<
                                  boost::multi_index::tag<insertion_order>>>>

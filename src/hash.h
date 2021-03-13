@@ -9,6 +9,7 @@
 #include <crypto/common.h>
 #include <crypto/ripemd160.h>
 #include <crypto/sha256.h>
+#include <crypto/siphash.h>
 #include <prevector.h>
 #include <serialize.h>
 #include <uint256.h>
@@ -138,7 +139,7 @@ public:
     // invalidates the object
     uint256 GetHash() {
         uint256 result;
-        ctx.Finalize((uint8_t *)&result);
+        ctx.Finalize(&*result.begin());
         return result;
     }
 
@@ -210,5 +211,41 @@ inline uint32_t MurmurHash3(uint32_t nHashSeed,
 
 void BIP32Hash(const ChainCode &chainCode, uint32_t nChild, uint8_t header,
                const uint8_t data[32], uint8_t output[64]);
+
+/// Hash writer for fast SipHash - Used to get a fast hash for any serializable type
+class CSipHashWriter
+{
+    CSipHasher hasher;
+    const int nType, nVersion;
+public:
+    CSipHashWriter(uint64_t k0, uint64_t k1, int nTypeIn, int nVersionIn) noexcept
+        : hasher(k0, k1), nType(nTypeIn), nVersion(nVersionIn)
+    {}
+
+    int GetType() const { return nType; }
+    int GetVersion() const { return nVersion; }
+
+    void write(const char *pch, size_t size) {
+        hasher.Write(reinterpret_cast<const uint8_t *>(pch), size);
+    }
+
+    template <typename T> CSipHashWriter &operator<<(const T &obj) {
+        // Serialize to this stream
+        ::Serialize(*this, obj);
+        return *this;
+    }
+
+    // Invalidates hasher
+    uint64_t GetHash() const { return hasher.Finalize(); }
+};
+
+/** Compute the Sip hash of an object's serialization. */
+template <typename T>
+uint64_t SerializeSipHash(const T &obj, uint64_t k0, uint64_t k1,
+                          int nType = SER_GETHASH, int nVersion = PROTOCOL_VERSION) {
+    CSipHashWriter ss(k0, k1, nType, nVersion);
+    ss << obj;
+    return ss.GetHash();
+}
 
 #endif // BITCOIN_HASH_H

@@ -1491,10 +1491,6 @@ void CTxMemPool::SetIsLoaded(bool loaded) {
     m_is_loaded = loaded;
 }
 
-SaltedTxidHasher::SaltedTxidHasher()
-    : k0(GetRand(std::numeric_limits<uint64_t>::max())),
-      k1(GetRand(std::numeric_limits<uint64_t>::max())) {}
-
 /** Maximum bytes for transactions to store for processing during reorg */
 static const size_t MAX_DISCONNECTED_TX_POOL_SIZE = 20 * DEFAULT_EXCESSIVE_BLOCK_SIZE;
 
@@ -1511,7 +1507,7 @@ void DisconnectedBlockTransactions::addForBlock(
         addTransaction(tx);
 
         // Fill in the set of parents.
-        std::unordered_set<TxId, SaltedTxidHasher> parents;
+        std::unordered_set<TxId, SaltedTxIdHasher> parents;
         for (const CTxIn &in : tx->vin) {
             parents.insert(in.prevout.GetTxId());
         }
@@ -1520,7 +1516,7 @@ void DisconnectedBlockTransactions::addForBlock(
         // if we already know of the parent of the current transaction. If so,
         // we remove them from the set and then add them back.
         while (parents.size() > 0) {
-            std::unordered_set<TxId, SaltedTxidHasher> worklist(
+            std::unordered_set<TxId, SaltedTxIdHasher> worklist(
                 std::move(parents));
             parents.clear();
 

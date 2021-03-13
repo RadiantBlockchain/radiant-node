@@ -1,11 +1,15 @@
 // Copyright (c) 2013-2018 The Bitcoin Core developers
+// Copyright (c) 2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <crypto/siphash.h>
 #include <hash.h>
+#include <util/saltedhashers.h>
 
 #include <clientversion.h>
+#include <primitives/transaction.h>
+#include <random.h>
 #include <streams.h>
 #include <util/strencodings.h>
 
@@ -13,6 +17,10 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <algorithm>
+#include <cstring>
+#include <set>
+#include <unordered_set>
 #include <vector>
 
 BOOST_FIXTURE_TEST_SUITE(hash_tests, BasicTestingSetup)
@@ -201,6 +209,68 @@ BOOST_AUTO_TEST_CASE(hashverifier_tests) {
     CHashWriter h1(SER_DISK, CLIENT_VERSION);
     h1 << dummy;
     BOOST_CHECK(h1.GetHash() != checksum);
+}
+
+BOOST_AUTO_TEST_CASE(SerializeSipHash_tests) {
+    const std::vector<uint8_t> txBytes = ParseHex(
+        "01000000012232249686666ec07808f294e7b139953ecf775e3070c86e3e911b4813ee50e3010000006b483045022100e498300237c45b"
+        "90f76bd5b43c8ee2f34dffc9357554fe034f4baa9a85e048dd02202f770fffc15936e37bed2a6c4927db4080f9c9d94748099775f78e77"
+        "e07e098c412102574c8811c6e5435f0773a588495271c7d74b687cc374b95a3a330d45c9a7d0d7ffffffff02c58b8b1a000000001976a9"
+        "147d9a37c154facc9fd0068a5b8be0b1b1a637dd9b88ac00e1f505000000001976a9140a373caf0ab3c2b46cd05625b8d545c295b93d7a"
+        "88ac00000000");
+    CDataStream ss(txBytes, SER_NETWORK, CLIENT_VERSION);
+    CMutableTransaction mtx;
+    ss >> mtx;
+    CTransaction tx(mtx);
+    BOOST_CHECK_EQUAL(tx.GetHash().ToString(), "79851cf2de423d97740de6db99552c0e8d8a0e43a97be93d2690abd4d2816601");
+
+    // test that the hash writer with various random k0, k1 combinations does something, and that hashes don't collide.
+    for (uint64_t i = 0; i < 100; ++i) {
+        uint64_t k0{}, k1{}, k0_2{}, k1_2{};
+        while (k0 == k0_2 || k1 == k1_2) {
+            k0 = GetRand64();
+            k1 = GetRand64();
+            k0_2 = GetRand64();
+            k1_2 = GetRand64();
+        }
+        BOOST_CHECK_NE(SerializeSipHash(tx, k0, k1), SerializeSipHash(tx, k0_2, k1_2));
+    }
+}
+
+template <typename T>
+void CheckHashWrapper() {
+    constexpr size_t N = 10'000;
+    std::set<T> set;
+    std::unordered_set<T, StdHashWrapper<T>> uset;
+    for (size_t i = 0; i < N; ++i) {
+        const uint64_t val = GetRand64(); // generate random bytes for T
+        T t{};
+        std::memcpy(reinterpret_cast<char *>(&t), reinterpret_cast<const char *>(&val), std::min(sizeof(t), sizeof(val)));
+        set.insert(t);
+        uset.insert(t);
+    }
+    BOOST_CHECK_EQUAL(set.size(), uset.size());
+    // now verify the values exist in both sets (this basically verifies the hash wrapper is sane)
+    for (const auto & t : set)
+        BOOST_CHECK(uset.count(t) == 1);
+    for (const auto & t : uset)
+        BOOST_CHECK(set.count(t) == 1);
+}
+
+BOOST_AUTO_TEST_CASE(StdHashWrapper_test) {
+    CheckHashWrapper<int8_t>();
+    CheckHashWrapper<uint8_t>();
+    CheckHashWrapper<int16_t>();
+    CheckHashWrapper<uint16_t>();
+    CheckHashWrapper<int32_t>();
+    CheckHashWrapper<uint32_t>();
+    CheckHashWrapper<int64_t>();
+    CheckHashWrapper<uint64_t>();
+    CheckHashWrapper<int>();
+    CheckHashWrapper<long>();
+    CheckHashWrapper<const void *>();
+    CheckHashWrapper<void *>();
+    CheckHashWrapper<const COutPoint *>();
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -3,11 +3,9 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <crypto/siphash.h>
 #include <dsproof/storage.h>
 #include <logging.h>
 #include <primitives/transaction.h>
-#include <random.h>
 #include <util/time.h>
 
 #include <cstdint>
@@ -165,22 +163,6 @@ void DoubleSpendProofStorage::clear() {
     m_recentRejects.reset();
     m_numOrphans = 0;
 }
-
-DoubleSpendProofStorage::SaltedHasher::SaltedHasher()
-    : k0(GetRand(std::numeric_limits<uint64_t>::max())),
-      k1(GetRand(std::numeric_limits<uint64_t>::max()))
-{}
-
-size_t DoubleSpendProofStorage::SaltedHasher::operator()(const uint256 &hash) const
-{
-    return SipHashUint256(k0, k1, hash);
-}
-
-size_t DoubleSpendProofStorage::SaltedHasher::operator()(const COutPoint &outPoint) const
-{
-    return SipHashUint256Extra(k0, k1, outPoint.GetTxId(), outPoint.GetN());
-}
-
 
 // --- Orphan upkeep (see also storage_cleanup.cpp)
 

@@ -62,8 +62,8 @@ public:
 // unified view of all bans, and we support this view (for Qt UI code and
 // listbanned RPC) via the `toAggregatedMap()` method.
 struct BanTables {
-    using Addresses = std::unordered_map<CNetAddr, CBanEntry>;
-    using SubNets = std::unordered_map<CSubNet, CBanEntry>;
+    using Addresses = std::unordered_map<CNetAddr, CBanEntry, SaltedNetAddrHasher>;
+    using SubNets = std::unordered_map<CSubNet, CBanEntry, SaltedSubNetHasher>;
     using AggregatedMap = std::map<CSubNet, CBanEntry>;
 
     // Per-IP address level bans; this map can grow potentially large so we

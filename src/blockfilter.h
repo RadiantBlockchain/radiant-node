@@ -10,7 +10,7 @@
 #include <serialize.h>
 #include <uint256.h>
 #include <undo.h>
-#include <util/bytevectorhash.h>
+#include <util/saltedhashers.h>
 
 #include <cstdint>
 #include <string>

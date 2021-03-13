@@ -12,6 +12,7 @@
 #include <compat.h>
 #include <serialize.h>
 #include <span.h>
+#include <util/saltedhashers.h>
 
 #include <cstdint>
 #include <functional>
@@ -212,10 +213,8 @@ public:
     }
 };
 
-// template specializations of std::hash for std::unordered_map support
-namespace std {
-template <> struct hash<CNetAddr> { size_t operator()(const CNetAddr &) const; };
-template <> struct hash<CSubNet>  { size_t operator()(const CSubNet  &) const; };
-} // namespace std
+// std::unordered_map & std::unordered_set support
+struct SaltedNetAddrHasher : SaltedHasherBase { size_t operator()(const CNetAddr &) const; };
+struct SaltedSubNetHasher : SaltedHasherBase { size_t operator()(const CSubNet  &) const; };
 
 #endif // BITCOIN_NETADDRESS_H

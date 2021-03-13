@@ -7,7 +7,6 @@
 #include <config/bitcoin-config.h>
 #endif
 
-#include <crypto/siphash.h>
 #include <hash.h>
 #include <netaddress.h>
 #include <random.h>
@@ -738,44 +737,12 @@ bool operator<(const CSubNet &a, const CSubNet &b) {
 
 // std::unordered_map support --
 
-namespace {
-// returns a hasher that is guaranteed deterministic for any given run of this program, given the same data.
-CSipHasher GetDeterministicHasher()
+size_t SaltedNetAddrHasher::operator()(const CNetAddr &addr) const
 {
-    // As per C/C++ standard -- static locals are guaranteed initialized in a
-    // thread-safe fashion the first time this function is called.
-    using NLim = std::numeric_limits<uint64_t>;
-    static const CSipHasher hasher(GetRand(NLim::max()), GetRand(NLim::max()));
-    return hasher; // return a copy of the static hasher each time
-}
-// Implements a thin wrapper to behave like a Serializer so we can access CNetAddr and CSubNet's data via their
-// serialization methods to produce the cheap CSipHasher hash needed for e.g. std::unordered_map.
-class SipHashWriter
-{
-    CSipHasher hasher = GetDeterministicHasher(); // auto-generated default c'tor will invoke this each time
-public:
-    void write(const char *pch, size_t size) {
-        hasher.Write(reinterpret_cast<const uint8_t *>(pch), size);
-    }
-    template <typename T> SipHashWriter &operator<<(const T &obj) {
-        // Serialize to this stream
-        ::Serialize(*this, obj);
-        return (*this);
-    }
-    uint64_t GetHash() const { return hasher.Finalize(); }
-};
-} // namespace
-
-std::size_t std::hash<CNetAddr>::operator()(const CNetAddr &addr) const
-{
-    SipHashWriter hasher;
-    hasher << addr;
-    return static_cast<std::size_t>(hasher.GetHash());
+    return static_cast<size_t>(SerializeSipHash(addr, k0(), k1()));
 }
 
-std::size_t std::hash<CSubNet>::operator()(const CSubNet &subnet) const
+size_t SaltedSubNetHasher::operator()(const CSubNet &subnet) const
 {
-    SipHashWriter hasher;
-    hasher << subnet;
-    return static_cast<std::size_t>(hasher.GetHash());
+    return static_cast<size_t>(SerializeSipHash(subnet, k0(), k1()));
 }

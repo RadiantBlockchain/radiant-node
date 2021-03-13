@@ -329,12 +329,12 @@ add_library(util
 	sync.cpp
 	threadinterrupt.cpp
 	uint256.cpp
-	util/system.cpp
 	util/moneystr.cpp
-	util/threadnames.cpp
+	util/saltedhashers.cpp
 	util/strencodings.cpp
+	util/system.cpp
+	util/threadnames.cpp
 	util/time.cpp
-	util/bytevectorhash.cpp
 
 	# obj/build.h
 	"${BUILD_HEADER}"
@@ -410,6 +410,7 @@ add_library(common
 	feerate.cpp
 	core_read.cpp
 	core_write.cpp
+	hash.cpp
 	key.cpp
 	key_io.cpp
 	keystore.cpp

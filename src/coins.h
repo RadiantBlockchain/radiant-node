@@ -7,10 +7,10 @@
 #define BITCOIN_COINS_H
 
 #include <compressor.h>
-#include <crypto/siphash.h>
 #include <memusage.h>
 #include <primitives/blockhash.h>
 #include <serialize.h>
+#include <util/saltedhashers.h>
 
 #include <cassert>
 #include <cstdint>
@@ -65,27 +65,6 @@ public:
 
     size_t DynamicMemoryUsage() const {
         return memusage::DynamicUsage(out.scriptPubKey);
-    }
-};
-
-class SaltedOutpointHasher {
-private:
-    /** Salt */
-    const uint64_t k0, k1;
-
-public:
-    SaltedOutpointHasher();
-
-    /**
-     * This *must* return size_t. With Boost 1.46 on 32-bit systems the
-     * unordered_map will behave unpredictably if the custom hasher returns a
-     * uint64_t, resulting in failures when syncing the chain (#4634).
-     * Note: This information above might be outdated as the unordered map
-     * container type has meanwhile been switched to the C++ standard library
-     * implementation.
-     */
-    size_t operator()(const COutPoint &outpoint) const {
-        return SipHashUint256Extra(k0, k1, outpoint.GetTxId(), outpoint.GetN());
     }
 };
 
