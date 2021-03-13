@@ -1,6 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
-// Copyright (c) 2017-2020 The Bitcoin developers
+// Copyright (c) 2017-2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -343,8 +343,9 @@ public:
         // Nov 15, 2020 12:00:00 UTC protocol upgrade
         consensus.axionActivationTime = 1605441600;
 
-        // May 15, 2021 12:00:00 UTC protocol upgrade
-        consensus.tachyonActivationTime = 1621080000;
+        // May 15, 2021 12:00:00 UTC tentative protocol upgrade
+        // (always active on test networks)
+        consensus.tachyonActivationTime = 0;
 
         // May 15, 2022 12:00:00 UTC tentative protocol upgrade
         consensus.upgrade8ActivationTime = 1652616000;
@@ -514,8 +515,9 @@ public:
         // Nov 15, 2020 12:00:00 UTC protocol upgrade
         consensus.axionActivationTime = 1605441600;
 
-        // May 15, 2021 12:00:00 UTC protocol upgrade
-        consensus.tachyonActivationTime = 1621080000;
+        // May 15, 2021 12:00:00 UTC tentative protocol upgrade
+        // (always active on test networks)
+        consensus.tachyonActivationTime = 0;
 
         // May 15, 2022 12:00:00 UTC tentative protocol upgrade
         consensus.upgrade8ActivationTime = 1652616000;
@@ -659,8 +661,9 @@ public:
         // Nov 15, 2020 12:00:00 UTC protocol upgrade
         consensus.axionActivationTime = 1605441600;
 
-        // May 15, 2021 12:00:00 UTC protocol upgrade
-        consensus.tachyonActivationTime = 1621080000;
+        // May 15, 2021 12:00:00 UTC tentative protocol upgrade
+        // (always active on test networks)
+        consensus.tachyonActivationTime = 0;
 
         // May 15, 2022 12:00:00 UTC tentative protocol upgrade
         consensus.upgrade8ActivationTime = 1652616000;
@@ -789,8 +792,9 @@ public:
         // Nov 15, 2020 12:00:00 UTC protocol upgrade
         consensus.axionActivationTime = 1605441600;
 
-        // May 15, 2021 12:00:00 UTC protocol upgrade
-        consensus.tachyonActivationTime = 1621080000;
+        // May 15, 2021 12:00:00 UTC tentative protocol upgrade
+        // (always active on test networks)
+        consensus.tachyonActivationTime = 0;
 
         // May 15, 2022 12:00:00 UTC tentative protocol upgrade
         consensus.upgrade8ActivationTime = 1652616000;

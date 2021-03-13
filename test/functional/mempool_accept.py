@@ -314,11 +314,12 @@ class MempoolAcceptanceTest(BitcoinTestFramework):
             rawtxs=[ToHex(tx)],
         )
         tx = FromHex(CTransaction(), raw_tx_reference)
-        tx.vout[0].scriptPubKey = CScript([OP_RETURN, b'\xff'])
-        tx.vout = [tx.vout[0]] * 2
+        output_datacarrier = CTxOut(nValue=0, scriptPubKey=CScript(
+            [OP_RETURN, b'\x00\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff']))
+        tx.vout = [output_datacarrier] * 13
         self.check_mempool_result(
             result_expected=[
-                {'txid': tx.rehash(), 'allowed': False, 'reject-reason': '64: multi-op-return'}],
+                {'txid': tx.rehash(), 'allowed': False, 'reject-reason': '64: oversize-op-return'}],
             rawtxs=[ToHex(tx)],
         )
 
