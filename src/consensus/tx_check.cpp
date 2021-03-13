@@ -8,8 +8,6 @@
 #include <primitives/transaction.h>
 #include <version.h>
 
-#include <unordered_set>
-
 static bool CheckTransactionCommon(const CTransaction &tx,
                                    CValidationState &state) {
     // Basic checks that don't depend on any context
@@ -78,33 +76,42 @@ bool CheckRegularTransaction(const CTransaction &tx, CValidationState &state) {
         return false;
     }
 
-    // Creating and filling a set is O(n log n), but simply checking inputs is O(n^2). However, the set requires memory
-    // allocations, which are significantly slower for small transactions. The crossover point appears to be a
-    // vin.size() of about 300 on x86-64, although it's around 160 on ARM32
-    if (tx.vin.size() < 300) {
-        for (size_t i=0; i < tx.vin.size(); ++i) {
+    // Check for duplicate inputs.
+    // Simply checking every pair is O(n^2).
+    // Sorting a vector and checking adjacent elements is O(n log n).
+    // However, the vector requires a memory allocation, copying and sorting.
+    // This is significantly slower for small transactions. The crossover point
+    // was measured to be a vin.size() of about 120 on x86-64.
+    if (tx.vin.size() < 120) {
+        for (size_t i = 0; i < tx.vin.size(); ++i) {
             if (tx.vin[i].prevout.IsNull()) {
                 return state.DoS(10, false, REJECT_INVALID,
                                  "bad-txns-prevout-null");
             }
-            for (size_t j=i+1; j < tx.vin.size(); ++j) {
+            for (size_t j = i + 1; j < tx.vin.size(); ++j) {
                 if (tx.vin[i].prevout == tx.vin[j].prevout) {
                     return state.DoS(100, false, REJECT_INVALID, "bad-txns-inputs-duplicate");
                 }
             }
         }
     } else {
-        std::set<COutPoint> vInOutPoints;
-        for (const auto &txin : tx.vin) {
-            if (txin.prevout.IsNull()) {
+        std::vector<const COutPoint*> sortedPrevOuts(tx.vin.size());
+        for (size_t i = 0; i < tx.vin.size(); ++i) {
+            if (tx.vin[i].prevout.IsNull()) {
                 return state.DoS(10, false, REJECT_INVALID,
                                  "bad-txns-prevout-null");
             }
-
-            if (!vInOutPoints.insert(txin.prevout).second) {
-                return state.DoS(100, false, REJECT_INVALID,
-                                 "bad-txns-inputs-duplicate");
-            }
+            sortedPrevOuts[i] = &tx.vin[i].prevout;
+        }
+        std::sort(sortedPrevOuts.begin(), sortedPrevOuts.end(), [](const COutPoint *a, const COutPoint *b) {
+            return *a < *b;
+        });
+        auto it = std::adjacent_find(sortedPrevOuts.begin(), sortedPrevOuts.end(), [](const COutPoint *a, const COutPoint *b) {
+            return *a == *b;
+        });
+        if (it != sortedPrevOuts.end()) {
+            return state.DoS(100, false, REJECT_INVALID,
+                             "bad-txns-inputs-duplicate");
         }
     }
     return true;
