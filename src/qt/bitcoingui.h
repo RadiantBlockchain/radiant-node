@@ -95,6 +95,7 @@ public:
 #endif // ENABLE_WALLET
     bool enableWallet = false;
 
+
     /** Disconnect core signals from GUI client */
     void unsubscribeFromCoreSignals();
 
@@ -150,6 +151,11 @@ private:
     QAction *m_wallet_selector_label_action = nullptr;
     QAction *m_wallet_selector_action = nullptr;
 
+    /** Only set to non-nullptr in constructor on OSX */
+    QAction *m_main_window_action = nullptr;
+
+    QVector<QAction *> m_node_actions;
+
     QLabel *m_wallet_selector_label = nullptr;
     QComboBox *m_wallet_selector = nullptr;
 
@@ -182,7 +188,10 @@ private:
     /** Enable or disable all wallet-related actions */
     void setWalletActionsEnabled(bool enabled);
 
-    /** Connect core signals to GUI client */
+    /** @brief Enable or disable all the main window-related actions */
+    void setWindowActionsEnabled(bool enabled);
+
+     /** Connect core signals to GUI client */
     void subscribeToCoreSignals();
 
     /** Update UI with latest network info from model. */

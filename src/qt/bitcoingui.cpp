@@ -521,9 +521,9 @@ void BitcoinGUI::createMenuBar() {
     if (walletFrame) {
 #ifdef Q_OS_MAC
         window_menu->addSeparator();
-        QAction *main_window_action = window_menu->addAction(tr("Main Window"));
+        m_main_window_action = window_menu->addAction(tr("Main Window"));
         // No setStatusTip+setToolTip here because these don't work on the MacOS menu bar.
-        connect(main_window_action, &QAction::triggered,
+        connect(m_main_window_action, &QAction::triggered, this,
                 [this] { GUIUtil::bringToFront(this); });
 #endif
         window_menu->addSeparator();
@@ -543,10 +543,12 @@ void BitcoinGUI::createMenuBar() {
         tab_action->setStatusTip(tr("Show the %1 tab of the Node Window").arg(title));
         tab_action->setToolTip(tab_action->statusTip());
         tab_action->setShortcut(rpcConsole->tabShortcut(tab_type));
-        connect(tab_action, &QAction::triggered, [this, tab_type] {
+        connect(tab_action, &QAction::triggered, this, [this, tab_type] {
             rpcConsole->setTabFocus(tab_type);
             showDebugWindow();
         });
+
+        m_node_actions.append(tab_action);
     }
 
     QMenu *help = appMenuBar->addMenu(tr("&Help"));
@@ -554,6 +556,8 @@ void BitcoinGUI::createMenuBar() {
     help->addSeparator();
     help->addAction(aboutAction);
     help->addAction(aboutQtAction);
+
+    setWindowActionsEnabled(false);
 }
 
 void BitcoinGUI::createToolBars() {
@@ -1212,6 +1216,8 @@ void BitcoinGUI::showEvent(QShowEvent *event) {
     openRPCConsoleAction->setEnabled(true);
     aboutAction->setEnabled(true);
     optionsAction->setEnabled(true);
+
+    setWindowActionsEnabled(true);
 }
 
 #ifdef ENABLE_WALLET
@@ -1432,6 +1438,16 @@ void BitcoinGUI::showModalOverlay() {
     if (modalOverlay &&
         (progressBar->isVisible() || modalOverlay->isLayerVisible())) {
         modalOverlay->toggleVisibility();
+    }
+}
+
+void BitcoinGUI::setWindowActionsEnabled(bool enabled) {
+    if (m_main_window_action != nullptr) {
+        m_main_window_action->setEnabled(enabled);
+    }
+
+    for (QAction *action : m_node_actions) {
+         action->setEnabled(enabled);
     }
 }
 
