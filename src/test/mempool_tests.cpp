@@ -1,4 +1,5 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
+// Copyright (c) 2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -1181,9 +1182,9 @@ BOOST_AUTO_TEST_CASE(CompareTxMemPoolEntryByModifiedFeeRateTest) {
     assert(a->GetId() < b->GetId());
     TestMemPoolEntryHelper entry;
     CompareTxMemPoolEntryByModifiedFeeRate compare;
-    auto Before = [&compare](const auto &a, const auto &b){ return compare(a, b) && !compare(b, a); };
-    auto Equal = [&compare](const auto &a, const auto &b) { return !compare(a, b) && !compare(b, a); };
-    auto After = [&compare](const auto &a, const auto &b) { return compare(b, a) && !compare(a, b); };
+    auto Before = [&compare](const auto &A, const auto &B){ return compare(A, B) && !compare(B, A); };
+    auto Equal = [&compare](const auto &A, const auto &B) { return !compare(A, B) && !compare(B, A); };
+    auto After = [&compare](const auto &A, const auto &B) { return compare(B, A) && !compare(A, B); };
 
     // If the fees are the same, higher ID and lowed ID should compare equal
     BOOST_CHECK(Equal(entry.Fee(100 * SATOSHI).FromTx(a),
