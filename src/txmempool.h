@@ -912,6 +912,14 @@ public:
     boost::signals2::signal<void(CTransactionRef, MemPoolRemovalReason)>
         NotifyEntryRemoved;
 
+    /**
+     *  Tachyon activation latch. This is latched permanently to true in
+     *  AcceptToMemoryPool the first time a tx arrives and IsTachyonActivated()
+     *  returns true.  This should be removed after tachyon is checkpointed and
+     *  its mempool-accept/relay rules become retroactively permanent.
+     */
+    std::atomic_bool tachyonLatched{false};
+
 private:
     /**
      * UpdateForDescendants is used by UpdateTransactionsFromBlock to update the

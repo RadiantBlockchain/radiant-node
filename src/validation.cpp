@@ -515,6 +515,11 @@ AcceptToMemoryPoolWorker(const Config &config, CTxMemPool &pool,
     const Consensus::Params &consensusParams =
         config.GetChainParams().GetConsensus();
 
+    // Tachyon latch - affects mempool policy; to be removed after tachyon is checkpointed
+    if (!pool.tachyonLatched && IsTachyonEnabled(consensusParams, ::ChainActive().Tip())) {
+        pool.tachyonLatched = true;
+    }
+
     const CTransaction &tx = *ptx;
     const TxId txid = tx.GetId();
 
