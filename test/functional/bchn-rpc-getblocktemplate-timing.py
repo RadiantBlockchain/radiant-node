@@ -34,7 +34,7 @@ class GBTTimingTest(BitcoinTestFramework):
             # node 0 also is used to ensure that maxinitialgbttime is ignored if maxinitial is greater than maxgbttime
             ['-checkmempool=0', '-maxgbttime=1', '-maxinitialgbttime=99999'],
             # node 1 checks that initial works when initial is less than maxgbttime
-            ['-checkmempool=0', '-maxgbttime=5', '-maxinitialgbttime=1'],
+            ['-checkmempool=0', '-maxgbttime=15', '-maxinitialgbttime=5'],
             # node 2 checks that initial is used when initial maxgbttime is 0
             ['-checkmempool=0', '-maxgbttime=0', '-maxinitialgbttime=5'],
             # node 3 checks that initial is ignored if set to 0
@@ -94,12 +94,12 @@ class GBTTimingTest(BitcoinTestFramework):
         t1 = self.time_generation(0)
         assert t1 < 1.5 * 0.001 + rpc_overhead
 
-        # node 1: first call should be fast (1 ms), second call should be slower (10 ms), third should be cached/instant
+        # node 1: first call should be fast (5 ms), second call should be slower (15 ms), third should be cached/instant
         t1 = self.time_generation(1)
         t2 = self.time_generation(1)
         t3 = self.time_generation(1)
-        assert t1 < 1.5 * 0.001 + rpc_overhead
-        assert t2 < 1.5 * 0.005 + rpc_overhead and t2 > 0.5 * 0.005
+        assert t1 < 1.5 * 0.005 + rpc_overhead
+        assert t2 < 1.5 * 0.015 + rpc_overhead and t2 > 0.5 * 0.015
         assert t3 < rpc_overhead
         assert t1 < t2
         assert t3 < t2
@@ -126,39 +126,6 @@ class GBTTimingTest(BitcoinTestFramework):
         t, n = self.time_generation(0, 'generate')
         assert t < 1.5 * 0.001 + generate_overhead
         # End of timing tests
-
-        # Second set of tests are for size, for which we use regular getblocktemplate.
-        # node 0: maxinitialgbttime (1000) is ignored if maxinitial is greater than maxgbttime (1)
-        t1, n1 = self.time_generation(0, 'gbt')
-        t2, n2 = self.time_generation(0, 'gbt')
-        assert n1 < max_gbt_tx_1_ms
-        assert n2 == n1
-
-        # node 1: first call should be small (1 ms), second call should be 10x bigger (10 ms), third should be same
-        t1, n1 = self.time_generation(1, 'gbt')
-        t2, n2 = self.time_generation(1, 'gbt')
-        t3, n3 = self.time_generation(1, 'gbt')
-        assert n1 < max_gbt_tx_1_ms
-        assert n2 < max_gbt_tx_5_ms and n2 > min_gbt_tx_5_ms
-        assert n2 > n1 * 3
-        assert n3 == n2
-
-        # node 2: first call should be medium (10 ms), second call should be slow (unlimited), third call cached
-        t1, n1 = self.time_generation(2, 'gbt')
-        t2, n2 = self.time_generation(2, 'gbt')
-        t3, n3 = self.time_generation(2, 'gbt')
-        assert n1 < max_gbt_tx_5_ms and n1 > min_gbt_tx_5_ms
-        assert n2 > max_gbt_tx_5_ms
-        assert n2 > min(n1 * 3, TX_PER_BLOCK * .9)
-        # Some tx might not propagate due to ancestor limits; allow 10% error margin
-        assert n2 > TX_PER_BLOCK * 0.9
-        assert n3 == n2
-
-        # node 3: First call should be big, second call should be cached
-        t1, n1 = self.time_generation(3, 'gbt')
-        t2, n2 = self.time_generation(3, 'gbt')
-        assert n1 > max_gbt_tx_5_ms
-        assert n2 == n1
 
         # node 0: generate should be fast (1 ms)
         t, n = self.time_generation(0, 'generate')
