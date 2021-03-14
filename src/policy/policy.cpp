@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2020-2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -54,16 +55,12 @@ bool IsStandard(const CScript &scriptPubKey, txnouttype &whichType) {
         if (m < 1 || m > n) {
             return false;
         }
-    } else if (whichType == TX_NULL_DATA) {
-        if (scriptPubKey.size() > nMaxDatacarrierBytes) {
-            return false;
-        }
     }
 
     return true;
 }
 
-bool IsStandardTx(const CTransaction &tx, std::string &reason) {
+bool IsStandardTx(const CTransaction &tx, std::string &reason, bool allowMultipleOpReturn) {
     if (tx.nVersion > CTransaction::MAX_STANDARD_VERSION || tx.nVersion < 1) {
         reason = "version";
         return false;
@@ -91,6 +88,7 @@ bool IsStandardTx(const CTransaction &tx, std::string &reason) {
     }
 
     unsigned int nDataOut = 0;
+    CScript::size_type nDataSize = 0;
     txnouttype whichType;
     for (const CTxOut &txout : tx.vout) {
         if (!::IsStandard(txout.scriptPubKey, whichType)) {
@@ -100,6 +98,7 @@ bool IsStandardTx(const CTransaction &tx, std::string &reason) {
 
         if (whichType == TX_NULL_DATA) {
             nDataOut++;
+            nDataSize += txout.scriptPubKey.size();
         } else if ((whichType == TX_MULTISIG) && (!fIsBareMultisigStd)) {
             reason = "bare-multisig";
             return false;
@@ -110,8 +109,12 @@ bool IsStandardTx(const CTransaction &tx, std::string &reason) {
     }
 
     // only one OP_RETURN txout is permitted
-    if (nDataOut > 1) {
+    if (!allowMultipleOpReturn && nDataOut > 1) {
         reason = "multi-op-return";
+        return false;
+    }
+    if (nDataSize > nMaxDatacarrierBytes) {
+        reason = "oversize-op-return";
         return false;
     }
 

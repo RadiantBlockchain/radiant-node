@@ -1,5 +1,5 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
-// Copyright (c) 2017-2020 The Bitcoin developers
+// Copyright (c) 2017-2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -647,31 +647,37 @@ BOOST_AUTO_TEST_CASE(test_IsStandard) {
     t.vout[0].scriptPubKey = GetScriptForDestination(key.GetPubKey().GetID());
 
     std::string reason;
-    BOOST_CHECK(IsStandardTx(CTransaction(t), reason));
+    BOOST_CHECK(IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ false));
+    BOOST_CHECK(IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ true));
 
     // Check dust with default relay fee:
     Amount nDustThreshold = 3 * 182 * dustRelayFee.GetFeePerK() / 1000;
     BOOST_CHECK_EQUAL(nDustThreshold, 546 * SATOSHI);
     // dust:
     t.vout[0].nValue = nDustThreshold - SATOSHI;
-    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason));
+    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ false));
+    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ true));
     // not dust:
     t.vout[0].nValue = nDustThreshold;
-    BOOST_CHECK(IsStandardTx(CTransaction(t), reason));
+    BOOST_CHECK(IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ false));
+    BOOST_CHECK(IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ true));
 
     // Check dust with odd relay fee to verify rounding:
     // nDustThreshold = 182 * 1234 / 1000 * 3
     dustRelayFee = CFeeRate(1234 * SATOSHI);
     // dust:
     t.vout[0].nValue = (672 - 1) * SATOSHI;
-    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason));
+    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ false));
+    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ true));
     // not dust:
     t.vout[0].nValue = 672 * SATOSHI;
-    BOOST_CHECK(IsStandardTx(CTransaction(t), reason));
+    BOOST_CHECK(IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ false));
+    BOOST_CHECK(IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ true));
     dustRelayFee = CFeeRate(DUST_RELAY_TX_FEE);
 
     t.vout[0].scriptPubKey = CScript() << OP_1;
-    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason));
+    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ false));
+    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ true));
 
     // MAX_OP_RETURN_RELAY-byte TX_NULL_DATA (standard)
     t.vout[0].scriptPubKey =
@@ -687,7 +693,8 @@ BOOST_AUTO_TEST_CASE(test_IsStandard) {
                               "f5d00d4adf73f2dd112ca75cf19754651909becfbe65aed1"
                               "3afb2ab8");
     BOOST_CHECK_EQUAL(MAX_OP_RETURN_RELAY, t.vout[0].scriptPubKey.size());
-    BOOST_CHECK(IsStandardTx(CTransaction(t), reason));
+    BOOST_CHECK(IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ false));
+    BOOST_CHECK(IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ true));
 
     // MAX_OP_RETURN_RELAY+1-byte TX_NULL_DATA (non-standard)
     t.vout[0].scriptPubKey =
@@ -703,7 +710,46 @@ BOOST_AUTO_TEST_CASE(test_IsStandard) {
                               "f5d00d4adf73f2dd112ca75cf19754651909becfbe65aed1"
                               "3afb2ab800");
     BOOST_CHECK_EQUAL(MAX_OP_RETURN_RELAY + 1, t.vout[0].scriptPubKey.size());
-    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason));
+    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ false));
+    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ true));
+
+    // MAX_OP_RETURN_RELAY-byte TX_NULL_DATA in multiple outputs (standard after May 2021 Network Upgrade)
+    t.vout.resize(3);
+    t.vout[1].nValue = Amount::zero();
+    t.vout[2].nValue = Amount::zero();
+    t.vout[0].scriptPubKey =
+        CScript() << OP_RETURN
+                  << ParseHex("646578784062697477617463682e636f2092c558ed52c56d");
+    t.vout[1].scriptPubKey =
+        CScript() << OP_RETURN
+                  << ParseHex("8dd14ca76226bc936a84820d898443873eb03d8854b21fa3");
+    t.vout[2].scriptPubKey =
+        CScript() << OP_RETURN
+                  << ParseHex("952b99a2981873e74509281730d78a21786d34a38bd1ebab"
+                              "822fad42278f7f4420db6ab1fd2b6826148d4f73bb41ec2d"
+                              "40a6d5793d66e17074a0c56a8a7df21062308f483dd6e38d"
+                              "53609d350038df0a1b2a9ac8332016e0b904f66880dd0108"
+                              "81c4e8074cce8e4ad6c77cb3460e01bf0e7e811b5f945f83"
+                              "732ba6677520a893d75d9a966cb8f85dc301656b1635c631"
+                              "f5d00d4adf73f2dd112ca75cf19754651909becfbe65aed1");
+    BOOST_CHECK_EQUAL(MAX_OP_RETURN_RELAY, t.vout[0].scriptPubKey.size() + t.vout[1].scriptPubKey.size() + t.vout[2].scriptPubKey.size());
+    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ false));
+    BOOST_CHECK(IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ true));
+
+    // MAX_OP_RETURN_RELAY+1-byte TX_NULL_DATA in multiple outputs (non-standard)
+    t.vout[2].scriptPubKey =
+        CScript() << OP_RETURN
+                  << ParseHex("952b99a2981873e74509281730d78a21786d34a38bd1ebab"
+                              "822fad42278f7f4420db6ab1fd2b6826148d4f73bb41ec2d"
+                              "40a6d5793d66e17074a0c56a8a7df21062308f483dd6e38d"
+                              "53609d350038df0a1b2a9ac8332016e0b904f66880dd0108"
+                              "81c4e8074cce8e4ad6c77cb3460e01bf0e7e811b5f945f83"
+                              "732ba6677520a893d75d9a966cb8f85dc301656b1635c631"
+                              "f5d00d4adf73f2dd112ca75cf19754651909becfbe65aed1"
+                              "3a");
+    BOOST_CHECK_EQUAL(MAX_OP_RETURN_RELAY + 1, t.vout[0].scriptPubKey.size() + t.vout[1].scriptPubKey.size() + t.vout[2].scriptPubKey.size());
+    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ false));
+    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ true));
 
     /**
      * Check when a custom value is used for -datacarriersize .
@@ -712,14 +758,16 @@ BOOST_AUTO_TEST_CASE(test_IsStandard) {
     nMaxDatacarrierBytes = 90;
 
     // Max user provided payload size is standard
+    t.vout.resize(1);
     t.vout[0].scriptPubKey =
         CScript() << OP_RETURN
                   << ParseHex("04678afdb0fe5548271967f1a67130b7105cd6a828e03909"
                               "a67962e0ea1f61deb649f6bc3f4cef3804678afdb0fe5548"
                               "271967f1a67130b7105cd6a828e03909a67962e0ea1f61de"
                               "b649f6bc3f4cef3877696e64657878");
-    BOOST_CHECK_EQUAL(t.vout[0].scriptPubKey.size(), nMaxDatacarrierBytes);
-    BOOST_CHECK(IsStandardTx(CTransaction(t), reason));
+    BOOST_CHECK_EQUAL(t.vout[0].scriptPubKey.size(), 90);
+    BOOST_CHECK(IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ false));
+    BOOST_CHECK(IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ true));
 
     // Max user provided payload size + 1 is non-standard
     t.vout[0].scriptPubKey =
@@ -728,47 +776,85 @@ BOOST_AUTO_TEST_CASE(test_IsStandard) {
                               "a67962e0ea1f61deb649f6bc3f4cef3804678afdb0fe5548"
                               "271967f1a67130b7105cd6a828e03909a67962e0ea1f61de"
                               "b649f6bc3f4cef3877696e6465787800");
-    BOOST_CHECK_EQUAL(t.vout[0].scriptPubKey.size(), nMaxDatacarrierBytes + 1);
-    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason));
+    BOOST_CHECK_EQUAL(t.vout[0].scriptPubKey.size(), 91);
+    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ false));
+    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ true));
+
+    // Max user provided payload size in multiple outputs is standard
+    // after the May 2021 Network Upgrade.
+    t.vout.resize(2);
+    t.vout[1].nValue = Amount::zero();
+    t.vout[0].scriptPubKey =
+        CScript() << OP_RETURN
+                  << ParseHex("04678afdb0fe5548271967f1a67130b7105cd6a828e03909"
+                              "a67962e0ea1f61deb649f6bc3f4cef3804678afdb0fe5548");
+    t.vout[1].scriptPubKey =
+        CScript() << OP_RETURN
+                  << ParseHex("271967f1a67130b7105cd6a828e03909a67962e0ea1f61de"
+                              "b649f6bc3f4cef3877696e646578");
+    BOOST_CHECK_EQUAL(t.vout[0].scriptPubKey.size() + t.vout[1].scriptPubKey.size(), 90);
+    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ false));
+    BOOST_CHECK(IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ true));
+
+    // Max user provided payload size + 1 in multiple outputs is non-standard
+    // even after the May 2021 Network Upgrade.
+    t.vout[1].scriptPubKey =
+        CScript() << OP_RETURN
+                  << ParseHex("271967f1a67130b7105cd6a828e03909a67962e0ea1f61de"
+                              "b649f6bc3f4cef3877696e64657878");
+    BOOST_CHECK_EQUAL(t.vout[0].scriptPubKey.size() + t.vout[1].scriptPubKey.size(), 91);
+    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ false));
+    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ true));
 
     // Verify -datacarriersize=0 rejects even the smallest possible OP_RETURN payload.
     nMaxDatacarrierBytes = 0;
+    t.vout.resize(1);
     t.vout[0].scriptPubKey = CScript() << OP_RETURN;
-    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason));
+    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ false));
+    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ true));
 
     // Clear custom configuration.
     nMaxDatacarrierBytes = nMaxDatacarrierBytesOrig;
-    BOOST_CHECK(IsStandardTx(CTransaction(t), reason));
+    BOOST_CHECK(IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ false));
+    BOOST_CHECK(IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ true));
 
     // Data payload can be encoded in any way...
     t.vout[0].scriptPubKey = CScript() << OP_RETURN << ParseHex("");
-    BOOST_CHECK(IsStandardTx(CTransaction(t), reason));
+    BOOST_CHECK(IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ false));
+    BOOST_CHECK(IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ true));
     t.vout[0].scriptPubKey = CScript()
                              << OP_RETURN << ParseHex("00") << ParseHex("01");
-    BOOST_CHECK(IsStandardTx(CTransaction(t), reason));
+    BOOST_CHECK(IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ false));
+    BOOST_CHECK(IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ true));
     // OP_RESERVED *is* considered to be a PUSHDATA type opcode by IsPushOnly()!
     t.vout[0].scriptPubKey = CScript() << OP_RETURN << OP_RESERVED << -1 << 0
                                        << ParseHex("01") << 2 << 3 << 4 << 5
                                        << 6 << 7 << 8 << 9 << 10 << 11 << 12
                                        << 13 << 14 << 15 << 16;
-    BOOST_CHECK(IsStandardTx(CTransaction(t), reason));
+    BOOST_CHECK(IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ false));
+    BOOST_CHECK(IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ true));
     t.vout[0].scriptPubKey = CScript()
                              << OP_RETURN << 0 << ParseHex("01") << 2
                              << ParseHex("fffffffffffffffffffffffffffffffffffff"
                                          "fffffffffffffffffffffffffffffffffff");
-    BOOST_CHECK(IsStandardTx(CTransaction(t), reason));
+    BOOST_CHECK(IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ false));
+    BOOST_CHECK(IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ true));
 
     // ...so long as it only contains PUSHDATA's
     t.vout[0].scriptPubKey = CScript() << OP_RETURN << OP_RETURN;
-    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason));
+    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ false));
+    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ true));
 
     // TX_NULL_DATA w/o PUSHDATA
     t.vout.resize(1);
     t.vout[0].scriptPubKey = CScript() << OP_RETURN;
-    BOOST_CHECK(IsStandardTx(CTransaction(t), reason));
+    BOOST_CHECK(IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ false));
+    BOOST_CHECK(IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ true));
 
-    // Only one TX_NULL_DATA permitted in all cases
+    // Only one TX_NULL_DATA permitted in all cases,
+    // until the May 2021 Network Upgrade.
     t.vout.resize(2);
+    t.vout[1].nValue = Amount::zero();
     t.vout[0].scriptPubKey =
         CScript() << OP_RETURN
                   << ParseHex("04678afdb0fe5548271967f1a67130b7105cd6a828e03909"
@@ -777,18 +863,35 @@ BOOST_AUTO_TEST_CASE(test_IsStandard) {
         CScript() << OP_RETURN
                   << ParseHex("04678afdb0fe5548271967f1a67130b7105cd6a828e03909"
                               "a67962e0ea1f61deb649f6bc3f4cef38");
-    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason));
+    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ false));
+    BOOST_CHECK(IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ true));
 
     t.vout[0].scriptPubKey =
         CScript() << OP_RETURN
                   << ParseHex("04678afdb0fe5548271967f1a67130b7105cd6a828e03909"
                               "a67962e0ea1f61deb649f6bc3f4cef38");
     t.vout[1].scriptPubKey = CScript() << OP_RETURN;
-    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason));
+    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ false));
+    BOOST_CHECK(IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ true));
 
     t.vout[0].scriptPubKey = CScript() << OP_RETURN;
     t.vout[1].scriptPubKey = CScript() << OP_RETURN;
-    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason));
+    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ false));
+    BOOST_CHECK(IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ true));
+
+    // Every OP_RETURN output script without data pushes is one byte long,
+    // so the maximum number of outputs will be nMaxDatacarrierBytes.
+    t.vout.resize(nMaxDatacarrierBytes + 1);
+    for (auto& out : t.vout) {
+        out.nValue = Amount::zero();
+        out.scriptPubKey = CScript() << OP_RETURN;
+    }
+    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ false));
+    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ true));
+
+    t.vout.pop_back();
+    BOOST_CHECK(!IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ false));
+    BOOST_CHECK(IsStandardTx(CTransaction(t), reason, /* allowMultipleOpReturn */ true));
 }
 
 BOOST_AUTO_TEST_CASE(txsize_activation_test) {
