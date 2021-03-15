@@ -22,4 +22,5 @@ TESTS
 	lint-tests.sh
 	lint-yaml.sh
 	lint-shell-locale.sh
+	lint-includes.sh
 )
