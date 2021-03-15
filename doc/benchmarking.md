@@ -78,7 +78,7 @@ version https://git-lfs.github.com/spec/v1
 ..
 ```
 
-## Further iprovements
+## Further improvements
 
 More benchmarks are needed for, in no particular order:
 
