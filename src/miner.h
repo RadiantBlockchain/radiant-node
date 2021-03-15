@@ -103,16 +103,15 @@ private:
 
     // Methods for how to add transactions to a block.
     /**
-     * Add transactions based on feerate including unconfirmed ancestors.
-     * Increments nPackagesSelected / nDescendantsUpdated with corresponding
-     * statistics from the package selection (for logging statistics).
+     * Add transactions from the mempool based on individual tx feerate.
      */
-    void addPackageTxs(int64_t nLimitTimePoint)
+    void addTxs(int64_t nLimitTimePoint)
         EXCLUSIVE_LOCKS_REQUIRED(mempool->cs);
 
-    // helper functions for addPackageTxs()
-    /** Test if a new package would "fit" in the block */
-    bool TestPackage(uint64_t packageSize, int64_t packageSigOpCount) const;
+    // helper functions for addTxs()
+    /** Test if a new Tx would "fit" in the block */
+    bool TestTx(uint64_t txSize, int64_t txSigOpCount) const;
+
     /// Check the transaction for finality, etc before adding to block
     bool CheckTx(const CTransaction &tx) const;
 };
