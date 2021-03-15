@@ -70,6 +70,8 @@ private:
 
     const CTxMemPool *mempool;
 
+    const bool fPrintPriority;
+
 public:
     struct Options {
         Options();

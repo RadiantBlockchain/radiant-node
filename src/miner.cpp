@@ -73,7 +73,8 @@ BlockAssembler::Options::Options()
 BlockAssembler::BlockAssembler(const CChainParams &params,
                                const CTxMemPool &_mempool,
                                const Options &options)
-    : chainparams(params), mempool(&_mempool) {
+    : chainparams(params), mempool(&_mempool),
+      fPrintPriority(gArgs.GetBoolArg("-printpriority", DEFAULT_PRINTPRIORITY)) {
     blockMinFeeRate = options.blockMinFeeRate;
     // Limit size to between 1K and options.nExcessiveBlockSize -1K for sanity:
     nMaxGeneratedBlockSize = std::max<uint64_t>(
@@ -275,8 +276,6 @@ void BlockAssembler::AddToBlock(CTxMemPool::txiter iter) {
     nBlockSigOps += iter->GetSigOpCount();
     nFees += iter->GetFee();
 
-    bool fPrintPriority =
-        gArgs.GetBoolArg("-printpriority", DEFAULT_PRINTPRIORITY);
     if (fPrintPriority) {
         LogPrintf(
             "fee %s txid %s\n",
