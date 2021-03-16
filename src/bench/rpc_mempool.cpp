@@ -26,15 +26,18 @@ static void RPCMempoolVerbose(benchmark::State &state) {
     CTxMemPool pool;
     LOCK2(cs_main, pool.cs);
 
-    for (int i = 0; i < 1000; ++i) {
+    constexpr size_t nTx = 1000;
+
+    for (size_t i = 0; i < nTx; ++i) {
+        Amount const value = int64_t(i) * COIN; 
         CMutableTransaction tx = CMutableTransaction();
         tx.vin.resize(1);
         tx.vin[0].scriptSig = CScript() << OP_1;
         tx.vout.resize(1);
         tx.vout[0].scriptPubKey = CScript() << OP_1 << OP_EQUAL;
-        tx.vout[0].nValue = i * COIN;
+        tx.vout[0].nValue = value;
         const CTransactionRef tx_r{MakeTransactionRef(tx)};
-        AddTx(tx_r, /* fee */ i * COIN, pool);
+        AddTx(tx_r, value, pool);
     }
 
     while (state.KeepRunning()) {
@@ -46,7 +49,9 @@ static void RPCMempoolVerbose_10k(benchmark::State &state) {
     CTxMemPool pool;
     LOCK2(cs_main, pool.cs);
 
-    const size_t nTx = 10000, nIns = 10, nOuts = 10;
+    constexpr size_t nTx = 10000;
+    constexpr size_t nIns = 10;
+    constexpr size_t nOuts = 10;
 
     for (size_t i = 0; i < nTx; ++i) {
         CMutableTransaction tx = CMutableTransaction();
