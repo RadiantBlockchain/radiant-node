@@ -243,7 +243,8 @@ BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn, double timeLimitSe
     const int64_t nTime2 = GetTimeMicros();
 
     // Save time taken by addPackageTxs() vs total time taken
-    const int64_t elapsedAddPkgTxs = nTime0 - nTimeStart, elapsedTotal = nTime2 - nTimeStart;
+    const int64_t elapsedAddPkgTxs = nTime0 - nTimeStart;
+    const int64_t elapsedTotal = nTime2 - nTimeStart;
     // Adjust addPackageFrac based on elapsedAddPkgTxs this run, using an EMA with alpha = 25% for non-tiny blocks
     const double alpha = pblock->vtx.size() > 50 ? 0.25 : 0.05;
     const double thisAddPackageFrac = elapsedTotal > 0 ? std::clamp(elapsedAddPkgTxs / double(elapsedTotal), 0., 1.) : 0.;
