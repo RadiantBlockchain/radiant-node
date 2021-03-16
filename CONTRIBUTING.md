@@ -1,5 +1,4 @@
-Contributing to Bitcoin Cash Node
-=================================
+# Contributing to Bitcoin Cash Node
 
 The Bitcoin Cash Node project welcomes contributors!
 
@@ -7,8 +6,7 @@ This guide is intended to help developers and others contribute effectively
 to Bitcoin Cash Node.
 
 
-Communicating with the project
-------------------------------
+## Communicating with the project
 
 To get in contact with the Bitcoin Cash Node project, we monitor a number
 of resources.
@@ -50,25 +48,23 @@ It is not for:
 * Market discussion
 * Non-constructive criticism
 
-Bitcoin Cash Node Development Philosophy
-----------------------------------------
+## Bitcoin Cash Node Development Philosophy
 
 Bitcoin Cash Node aims for fast iteration and continuous integration.
 
 This means that there should be quick turnaround for patches to be proposed,
 reviewed, and committed. Changes should not sit in a queue for long.
 
+### Expectations of contributors
+
 Here are some tips to help keep the development working as intended. These
 are guidelines for the normal and expected development process. Developers
 can use their judgement to deviate from these guidelines when they have a
 good reason to do so.
 
-- Keep each change small and self-contained.
-- Reach out for a 1-on-1 review so things move quickly.
-- Merge accepted changes quickly after they are accepted.
+- Keep each change minimal and self-contained.
 - Don't amend a Merge Request after it has been accepted for merging unless
   with coordination with the maintainer(s)
-- Review merge requests from other developers as quickly as possible.
 - Large changes should be broken into logical chunks that are easy to review,
 and keep the code in a functional state.
 - Do not mix moving stuff around with changing stuff. Do changes with renames
@@ -81,11 +77,45 @@ you keep both implementations in the codebase for a while, as described
 branch, and should always improve it (no regressions).
 - As soon as you see a bug, you fix it. Do not continue on. Fixing the bug
   becomes the top priority, more important than completing other tasks.
-- Do not break the build, it is important to keep master green as much as possible.
-If a merge has been done and breaks the build, fix it quickly. If it cannot be fixed
-quickly, it should be reverted, and re-applied later when it no longer breaks
-the build.
+
+Note: Code review is a burdensome but important part of the development process,
+and as such, certain types of merge requests are rejected. In general, if the
+improvements do not warrant the review effort required, the MR has a high
+chance of being rejected. Before working on a large or complex code change,
+it is recommended to consult with project maintainers about the desirability
+of the change, so you can be sure they are willing to spend the time required
+to review your work.
+
+#### Critical code paths
+
+Some code paths are more critical than others. This applies to code such as
+consensus, block template creation, mempool, relay policies and more. *Changes
+to critical code paths really should inspire confidence*. The following things
+can help inspire confidence:
+
+- Minimal, easily reviewable merge requests.
+- Extensive unit and/or functional tests.
+- Patience for reviewers
+- Appreciation for reviews.
+
+### Expectations of maintainers
+
+These are guidelines for the normal and expected process for handling merge
+requests. Maintainers can use their judgement to deviate from these guidelines
+when they have a good reason to do so.
+
+- Try to guide contributors towards the goal of having their contributions
+  merged.
+- Identify whether the intent of an MR is desirable, independent of its
+  technical quality.
+- Merge accepted changes quickly after they are accepted.
+- If a merge has been done and breaks the build of master, fix it quickly. If
+  it cannot be fixed quickly, revert it. It can be re-applied later when it no
+  longer breaks the build.
 - Automate as much as possible, and spend time on things only humans can do.
+- Speak up or raise an issue if you anticipate a problem with a change.
+- Don't be afraid to say "NO", or "MAYBE, but...", if a change seems
+  undesirable or if you otherwise have reservations/caveats/etc.
 
 Here are some handy links for development practices aligned with Bitcoin Cash Node:
 
