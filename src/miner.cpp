@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2020-2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -25,12 +26,15 @@
 #include <timedata.h>
 #include <txmempool.h>
 #include <util/moneystr.h>
+#include <util/saltedhashers.h>
 #include <util/system.h>
 #include <validation.h>
 #include <validationinterface.h>
 
 #include <algorithm>
 #include <queue>
+#include <unordered_map>
+#include <unordered_set>
 #include <utility>
 
 // Unconfirmed transactions in the memory pool often depend on other
@@ -57,11 +61,6 @@ int64_t UpdateTime(CBlockHeader *pblock, const Consensus::Params &params,
     }
 
     return nNewTime - nOldTime;
-}
-
-uint64_t CTxMemPoolModifiedEntry::GetVirtualSizeWithAncestors() const {
-    return GetVirtualTransactionSize(nSizeWithAncestors,
-                                     nSigOpCountWithAncestors);
 }
 
 /// Note: This constructor is used in tests. The production code path ends up
@@ -110,8 +109,6 @@ BlockAssembler::BlockAssembler(const Config &config, const CTxMemPool &_mempool)
                      DefaultOptions(config)) {}
 
 void BlockAssembler::resetBlock() {
-    inBlock.clear();
-
     // Reserve space for coinbase tx.
     nBlockSize = 1000;
     nBlockSigOps = 100;
@@ -172,9 +169,7 @@ BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn, double timeLimitSe
         nAddPackageLimitTime = nTimeStart + static_cast<int64_t>(addPackageFrac * timeLimitSecs * 1e6);
     }
 
-    int nPackagesSelected = 0;
-    int nDescendantsUpdated = 0;
-    addPackageTxs(nPackagesSelected, nDescendantsUpdated, nAddPackageLimitTime);
+    addPackageTxs(nAddPackageLimitTime);
 
     const int64_t nTime0 = GetTimeMicros();
 
@@ -251,25 +246,13 @@ BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn, double timeLimitSe
     addPackageFrac = addPackageFrac * (1. - alpha) + thisAddPackageFrac * alpha;
 
     LogPrint(BCLog::BENCH,
-             "CreateNewBlock() packages: %.2fms (%d packages, %d updated descendants), "
+             "CreateNewBlock() packages: %.2fms, "
              "CTOR: %.2fms, validity: %.2fms (total %.2fms), addPackageFrac: %1.2f, timeLimitSecs: %1.3f\n",
-             0.001 * elapsedAddPkgTxs, nPackagesSelected,
-             nDescendantsUpdated, 0.001 * (nTime1 - nTime0), 0.001 * (nTime2 - nTime1),
+             0.001 * elapsedAddPkgTxs,
+             0.001 * (nTime1 - nTime0), 0.001 * (nTime2 - nTime1),
              0.001 * elapsedTotal, addPackageFrac, timeLimitSecs);
 
     return std::move(pblocktemplate);
-}
-
-void BlockAssembler::onlyUnconfirmed(CTxMemPool::setEntries &testSet) {
-    for (CTxMemPool::setEntries::iterator iit = testSet.begin();
-         iit != testSet.end();) {
-        // Only test txs not already in the block.
-        if (inBlock.count(*iit)) {
-            testSet.erase(iit++);
-        } else {
-            iit++;
-        }
-    }
 }
 
 bool BlockAssembler::TestPackage(uint64_t packageSize,
@@ -286,33 +269,6 @@ bool BlockAssembler::TestPackage(uint64_t packageSize,
     return true;
 }
 
-/**
- * Perform transaction-level checks before adding to block:
- * - Transaction finality (locktime)
- * - Serialized size (in case -blockmaxsize is in use)
- */
-bool BlockAssembler::TestPackageTransactions(
-    const CTxMemPool::setEntries &package) {
-    uint64_t nPotentialBlockSize = nBlockSize;
-    for (CTxMemPool::txiter it : package) {
-        CValidationState state;
-        if (!ContextualCheckTransaction(chainparams.GetConsensus(), it->GetTx(),
-                                        state, nHeight, nLockTimeCutoff,
-                                        nMedianTimePast)) {
-            return false;
-        }
-
-        uint64_t nTxSize = ::GetSerializeSize(it->GetTx(), PROTOCOL_VERSION);
-        if (nPotentialBlockSize + nTxSize >= nMaxGeneratedBlockSize) {
-            return false;
-        }
-
-        nPotentialBlockSize += nTxSize;
-    }
-
-    return true;
-}
-
 void BlockAssembler::AddToBlock(CTxMemPool::txiter iter) {
     pblocktemplate->entries.emplace_back(iter->GetSharedTx(), iter->GetFee(),
                                          iter->GetSigOpCount());
@@ -320,7 +276,6 @@ void BlockAssembler::AddToBlock(CTxMemPool::txiter iter) {
     ++nBlockTx;
     nBlockSigOps += iter->GetSigOpCount();
     nFees += iter->GetFee();
-    inBlock.insert(iter);
 
     bool fPrintPriority =
         gArgs.GetBoolArg("-printpriority", DEFAULT_PRINTPRIORITY);
@@ -332,69 +287,16 @@ void BlockAssembler::AddToBlock(CTxMemPool::txiter iter) {
     }
 }
 
-int BlockAssembler::UpdatePackagesForAdded(
-    const CTxMemPool::setEntries &alreadyAdded,
-    indexed_modified_transaction_set &mapModifiedTx) {
-    int nDescendantsUpdated = 0;
-    for (CTxMemPool::txiter it : alreadyAdded) {
-        CTxMemPool::setEntries descendants;
-        mempool->CalculateDescendants(it, descendants);
-        // Insert all descendants (not yet in block) into the modified set.
-        for (CTxMemPool::txiter desc : descendants) {
-            if (alreadyAdded.count(desc)) {
-                continue;
-            }
-
-            ++nDescendantsUpdated;
-            modtxiter mit = mapModifiedTx.find(desc);
-            if (mit == mapModifiedTx.end()) {
-                CTxMemPoolModifiedEntry modEntry(desc);
-                modEntry.nSizeWithAncestors -= it->GetTxSize();
-                modEntry.nModFeesWithAncestors -= it->GetModifiedFee();
-                modEntry.nSigOpCountWithAncestors -= it->GetSigOpCount();
-                mapModifiedTx.insert(modEntry);
-            } else {
-                mapModifiedTx.modify(mit, update_for_parent_inclusion(it));
-            }
-        }
-    }
-
-    return nDescendantsUpdated;
-}
-
-// Skip entries in mapTx that are already in a block or are present in
-// mapModifiedTx (which implies that the mapTx ancestor state is stale due to
-// ancestor inclusion in the block). Also skip transactions that we've already
-// failed to add. This can happen if we consider a transaction in mapModifiedTx
-// and it fails: we can then potentially consider it again while walking mapTx.
-// It's currently guaranteed to fail again, but as a belt-and-suspenders check
-// we put it in failedTx and avoid re-evaluation, since the re-evaluation would
-// be using cached size/sigops/fee values that are not actually correct.
-bool BlockAssembler::SkipMapTxEntry(
-    CTxMemPool::txiter it, indexed_modified_transaction_set &mapModifiedTx,
-    CTxMemPool::setEntries &failedTx) {
-    assert(it != mempool->mapTx.end());
-    return mapModifiedTx.count(it) || inBlock.count(it) || failedTx.count(it);
-}
-
-void BlockAssembler::SortForBlock(
-    const CTxMemPool::setEntries &package,
-    std::vector<CTxMemPool::txiter> &sortedEntries) {
-    // Sort package by ancestor count. If a transaction A depends on transaction
-    // B, then A's ancestor count must be greater than B's. So this is
-    // sufficient to validly order the transactions for block inclusion.
-    sortedEntries.clear();
-    sortedEntries.insert(sortedEntries.begin(), package.begin(), package.end());
-    std::sort(sortedEntries.begin(), sortedEntries.end(),
-              CompareTxIterByAncestorCount());
+bool BlockAssembler::CheckTx(const CTransaction &tx) const {
+    CValidationState state;
+    return ContextualCheckTransaction(chainparams.GetConsensus(),
+                                      tx, state, nHeight, nLockTimeCutoff, nMedianTimePast);
 }
 
 /**
  * addPackageTx includes transactions paying a fee by ensuring that
  * the partial ordering of transactions is maintained.  That is to say
  * children come after parents, despite having a potentially larger fee.
- * @param[out] nPackagesSelected    How many packages were selected
- * @param[out] nDescendantsUpdated  Number of descendant transactions updated
  * @param nLimitTimePoint  A time point in the future (obtained via
  *                         GetTimeMicros() + delta). If this argument is > 0,
  *                         then stop looping after this time point elapses.
@@ -402,33 +304,42 @@ void BlockAssembler::SortForBlock(
  *                         is filled to -blockmaxsize capacity (or until all
  *                         tx's in mempool are added, whichever is smaller).
  */
-void BlockAssembler::addPackageTxs(int &nPackagesSelected,
-                                   int &nDescendantsUpdated,
-                                   int64_t nLimitTimePoint) {
-    // selection algorithm orders the mempool based on feerate of a
-    // transaction including all unconfirmed ancestors. Since we don't remove
-    // transactions from the mempool as we select them for block inclusion, we
-    // need an alternate method of updating the feerate of a transaction with
-    // its not-yet-selected ancestors as we go. This is accomplished by
-    // walking the in-mempool descendants of selected transactions and storing
-    // a temporary modified state in mapModifiedTxs. Each time through the
-    // loop, we compare the best transaction in mapModifiedTxs with the next
-    // transaction in the mempool to decide what transaction package to work
-    // on next.
+void BlockAssembler::addPackageTxs(int64_t nLimitTimePoint) {
+    using EntryPtrHasher = StdHashWrapper<const CTxMemPoolEntry *>;
+    using ParentCountMap = std::unordered_map<const CTxMemPoolEntry *, size_t, EntryPtrHasher>;
+    using ChildSet = std::unordered_set<const CTxMemPoolEntry *, EntryPtrHasher>;
 
-    // mapModifiedTx will store sorted packages after they are modified because
-    // some of their txs are already in the block.
-    indexed_modified_transaction_set mapModifiedTx;
-    // Keep track of entries that failed inclusion, to avoid duplicate work.
-    CTxMemPool::setEntries failedTx;
+    // mapped_value is the number of mempool parents that are still needed for the entry.
+    // We decrement this count each time we add a parent of the entry to the block.
+    ParentCountMap missingParentCount;
+    ChildSet skippedChildren;
+    missingParentCount.reserve(mempool->size() / 2);
+    skippedChildren.reserve(mempool->size() / 2);
 
-    // Start by adding all descendants of previously added txs to mapModifiedTx
-    // and modifying them for their already included ancestors.
-    UpdatePackagesForAdded(inBlock, mapModifiedTx);
+    auto TrackSkippedChild = [&skippedChildren](const auto &it) { skippedChildren.insert(&*it); };
+    auto IsSkippedChild = [&skippedChildren](const auto &it) { return bool(skippedChildren.count(&*it)); };
 
-    CTxMemPool::indexed_transaction_set::index<ancestor_score>::type::iterator
-        mi = mempool->mapTx.get<ancestor_score>().begin();
-    CTxMemPool::txiter iter;
+    auto MissingParents = [this, &missingParentCount](const auto &iter) EXCLUSIVE_LOCKS_REQUIRED(mempool->cs) {
+        // If we've added any of this tx's parents already, then missingParentCount will have the current count
+        if (auto pcIt = missingParentCount.find(&*iter); pcIt != missingParentCount.end())
+            return pcIt->second != 0; // when pcIt->second reaches 0, we have added all of this tx's parents
+        return !mempool->GetMemPoolParents(iter).empty();
+    };
+
+    auto TrackParentAdded = [this, &missingParentCount](const auto & child) EXCLUSIVE_LOCKS_REQUIRED(mempool->cs) {
+        const auto& [parentCount, inserted] = missingParentCount.try_emplace(&*child, 0 /* dummy */);
+        if (inserted) {
+            // We haven't processed any of this child tx's parents before,
+            // so we're adding the first of its in-mempool parents
+            parentCount->second = mempool->GetMemPoolParents(child).size();
+        }
+        assert(parentCount->second > 0);
+        return --parentCount->second == 0;
+    };
+
+    auto TimedOut = [nLimitTimePoint] {
+        return nLimitTimePoint > 0 && GetTimeMicros() >= nLimitTimePoint;
+    };
 
     // Limit the number of attempts to add transactions to the block when it is
     // close to full; this is just a simple heuristic to finish quickly if the
@@ -436,129 +347,77 @@ void BlockAssembler::addPackageTxs(int &nPackagesSelected,
     const int64_t MAX_CONSECUTIVE_FAILURES = 1000;
     int64_t nConsecutiveFailed = 0;
 
-    while ((nLimitTimePoint <= 0 || GetTimeMicros() < nLimitTimePoint) &&
-           (mi != mempool->mapTx.get<ancestor_score>().end() ||
-            !mapModifiedTx.empty())) {
-        // First try to find a new transaction in mapTx to evaluate.
-        if (mi != mempool->mapTx.get<ancestor_score>().end() &&
-            SkipMapTxEntry(mempool->mapTx.project<0>(mi), mapModifiedTx,
-                           failedTx)) {
-            ++mi;
-            continue;
-        }
+    // Transactions that may or may not have been skipped due to parent not
+    // being present in the block, but where a parent has now been added.
+    std::queue<CTxMemPool::txiter> backlog;
 
-        // Now that mi is not stale, determine which transaction to evaluate:
-        // the next entry from mapTx, or the best from mapModifiedTx?
-        bool fUsingModified = false;
+    CTxMemPool::txiter iter;
+    auto mi = mempool->mapTx.get<modified_feerate>().begin();
+    while (!TimedOut() && (!backlog.empty() || mi != mempool->mapTx.get<modified_feerate>().end())) {
 
-        modtxscoreiter modit = mapModifiedTx.get<ancestor_score>().begin();
-        if (mi == mempool->mapTx.get<ancestor_score>().end()) {
-            // We're out of entries in mapTx; use the entry from mapModifiedTx
-            iter = modit->iter;
-            fUsingModified = true;
+        // Get a new or old transaction in mapTx to evaluate.
+        bool isFromBacklog = false;
+        if (!backlog.empty()) {
+            iter = backlog.front();
+            backlog.pop();
+            isFromBacklog = true;
         } else {
-            // Try to compare the mapTx entry to the mapModifiedTx entry.
-            iter = mempool->mapTx.project<0>(mi);
-            if (modit != mapModifiedTx.get<ancestor_score>().end() &&
-                CompareTxMemPoolEntryByAncestorFee()(
-                    *modit, CTxMemPoolModifiedEntry(iter))) {
-                // The best entry in mapModifiedTx has higher score than the one
-                // from mapTx. Switch which transaction (package) to consider
-                iter = modit->iter;
-                fUsingModified = true;
-            } else {
-                // Either no entry in mapModifiedTx, or it's worse than mapTx.
-                // Increment mi for the next loop iteration.
-                ++mi;
-            }
+            iter = mempool->mapTx.project<0>(mi++);
         }
 
-        // We skip mapTx entries that are inBlock, and mapModifiedTx shouldn't
-        // contain anything that is inBlock.
-        assert(!inBlock.count(iter));
-
-        uint64_t packageSize = iter->GetSizeWithAncestors();
-        Amount packageFees = iter->GetModFeesWithAncestors();
-        int64_t packageSigOps = iter->GetSigOpCountWithAncestors();
-        if (fUsingModified) {
-            packageSize = modit->nSizeWithAncestors;
-            packageFees = modit->nModFeesWithAncestors;
-            packageSigOps = modit->nSigOpCountWithAncestors;
+        if (iter->GetModifiedFeeRate() < blockMinFeeRate) {
+            break;
         }
 
-        if (packageFees < blockMinFeeRate.GetFee(packageSize)) {
-            // Don't include this package, but don't stop yet because something
-            // else we might consider may have a sufficient fee rate (since txes
-            // are ordered by virtualsize feerate, not actual feerate).
-            if (fUsingModified) {
-                // Since we always look at the best entry in mapModifiedTx, we
-                // must erase failed entries so that we can consider the next
-                // best entry on the next loop iteration
-                mapModifiedTx.get<ancestor_score>().erase(modit);
-                failedTx.insert(iter);
-            }
+        // Check whether all of this tx's parents are already in the block. If
+        // not, pass on it until later.
+        //
+        // If it's from the backlog, then we know all parents are already in
+        // the block.
+        if (!isFromBacklog && MissingParents(iter)) {
+            TrackSkippedChild(iter);
             continue;
         }
 
-        // The following must not use virtual size since TestPackage relies on
-        // having an accurate call to
-        // GetMaxBlockSigOpsCount(blockSizeWithPackage).
-        if (!TestPackage(packageSize, packageSigOps)) {
-            if (fUsingModified) {
-                // Since we always look at the best entry in mapModifiedTx, we
-                // must erase failed entries so that we can consider the next
-                // best entry on the next loop iteration
-                mapModifiedTx.get<ancestor_score>().erase(modit);
-                failedTx.insert(iter);
-            }
-
+        // Check whether the tx will exceed the block limits.
+        if (!TestPackage(iter->GetTxSize(), iter->GetSigOpCount())) {
             ++nConsecutiveFailed;
-
-            if (nConsecutiveFailed > MAX_CONSECUTIVE_FAILURES &&
-                nBlockSize > nMaxGeneratedBlockSize - 1000) {
-                // Give up if we're close to full and haven't succeeded in a
-                // while.
+            if (nConsecutiveFailed > MAX_CONSECUTIVE_FAILURES && nBlockSize > nMaxGeneratedBlockSize - 1000) {
+                // Give up if we're close to full and haven't succeeded in a while.
                 break;
             }
-
             continue;
         }
 
-        CTxMemPool::setEntries ancestors;
-        uint64_t nNoLimit = std::numeric_limits<uint64_t>::max();
-        std::string dummy;
-        mempool->CalculateMemPoolAncestors(*iter, ancestors, nNoLimit, nNoLimit,
-                                           nNoLimit, nNoLimit, dummy, false);
-
-        onlyUnconfirmed(ancestors);
-        ancestors.insert(iter);
-
-        // Test if all tx's are Final.
-        if (!TestPackageTransactions(ancestors)) {
-            if (fUsingModified) {
-                mapModifiedTx.get<ancestor_score>().erase(modit);
-                failedTx.insert(iter);
-            }
+        // Test transaction finality (locktime)
+        if (!CheckTx(iter->GetTx())) {
             continue;
         }
 
         // This transaction will make it in; reset the failed counter.
         nConsecutiveFailed = 0;
 
-        // Package can be added. Sort the entries in a valid order.
-        std::vector<CTxMemPool::txiter> sortedEntries;
-        SortForBlock(ancestors, sortedEntries);
+        // Package can be added.
+        AddToBlock(iter);
 
-        for (auto &entry : sortedEntries) {
-            AddToBlock(entry);
-            // Erase from the modified set, if present
-            mapModifiedTx.erase(entry);
+        // This tx's children may now be candidates for addition if they have
+        // higher scores than the tx at the cursor. We can only process a
+        // child once all of that tx's parents have been added, though. To
+        // avoid O(n^2) checking of dependencies, we store and decrement the
+        // number of mempool parents for each child. Although this code
+        // ends up taking O(n) time to process a single tx with n children,
+        // that's okay because the amount of time taken is proportional to the
+        // tx's byte size and fee paid.
+        const auto& children = mempool->GetMemPoolChildren(iter);
+        for (const auto& child : children) {
+            const bool allParentsAdded = TrackParentAdded(child);
+            // If all parents have been added to the block, and if this child
+            // has been previously skipped due to missing parents, enqueue it
+            // (if it hasn't been skipped it will come up in a later iteration)
+            if (allParentsAdded && IsSkippedChild(child)) {
+                backlog.push(child);
+            }
         }
-
-        ++nPackagesSelected;
-
-        // Update transactions that depend on each of these
-        nDescendantsUpdated += UpdatePackagesForAdded(ancestors, mapModifiedTx);
     }
 }
 
