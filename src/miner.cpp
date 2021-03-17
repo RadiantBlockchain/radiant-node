@@ -73,7 +73,8 @@ BlockAssembler::Options::Options()
 BlockAssembler::BlockAssembler(const CChainParams &params,
                                const CTxMemPool &_mempool,
                                const Options &options)
-    : chainparams(params), mempool(&_mempool) {
+    : chainparams(params), mempool(&_mempool),
+      fPrintPriority(gArgs.GetBoolArg("-printpriority", DEFAULT_PRINTPRIORITY)) {
     blockMinFeeRate = options.blockMinFeeRate;
     // Limit size to between 1K and options.nExcessiveBlockSize -1K for sanity:
     nMaxGeneratedBlockSize = std::max<uint64_t>(
@@ -153,23 +154,23 @@ BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn, double timeLimitSe
             ? nMedianTimePast
             : pblock->GetBlockTime();
 
-    // CreateNewBlock's CPU time is divided between two parts: addPackageTxs(), and TestBlockValidity(). Our goal is to
+    // CreateNewBlock's CPU time is divided between two parts: addTxs(), and TestBlockValidity(). Our goal is to
     // finish TestBlockValidity by timeLimitSecs, but to do that we have to know when to stop adding transactions in
-    // addPackageTxs(). addPackageFrac stores an exponential moving average of what fraction of previous CreateNewBlock
-    // run times addPackageTxs() was responsible for. This fraction can change depending on the transaction mix (e.g.
+    // addTxs(). addTxsFrac stores an exponential moving average of what fraction of previous CreateNewBlock
+    // run times addTxs() was responsible for. This fraction can change depending on the transaction mix (e.g.
     // tx size, tx chain length).
-    static double addPackageFrac GUARDED_BY(cs_main) = 0.5; // initial value: 50%
+    static double addTxsFrac GUARDED_BY(cs_main) = 0.5; // initial value: 50%
     // Clamp to sane range: [10% - 100%]
-    addPackageFrac = std::clamp(addPackageFrac, 0.1, 1.);
-    int64_t nAddPackageLimitTime = 0; // a time point in the future to stop adding; 0 indicates no limit
+    addTxsFrac = std::clamp(addTxsFrac, 0.1, 1.);
+    int64_t nAddTxsTimeLimit = 0; // a time point in the future to stop adding; 0 indicates no limit
     if (timeLimitSecs > 0.) {
-        // If we are using the time limit feature, then estimate the amount of time we need to spend in addPackageTxs()
-        // based on the addPackageFrac statistic, and convert that time into a timepoint (in micros) after nTimeStart.
+        // If we are using the time limit feature, then estimate the amount of time we need to spend in addTxs()
+        // based on the addTxsFrac statistic, and convert that time into a timepoint (in micros) after nTimeStart.
         timeLimitSecs = std::min(timeLimitSecs, 1e3); // limit to 1e3 secs, to prevent int64 overflow below
-        nAddPackageLimitTime = nTimeStart + static_cast<int64_t>(addPackageFrac * timeLimitSecs * 1e6);
+        nAddTxsTimeLimit = nTimeStart + static_cast<int64_t>(addTxsFrac * timeLimitSecs * 1e6);
     }
 
-    addPackageTxs(nAddPackageLimitTime);
+    addTxs(nAddTxsTimeLimit);
 
     const int64_t nTime0 = GetTimeMicros();
 
@@ -237,32 +238,30 @@ BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn, double timeLimitSe
     }
     const int64_t nTime2 = GetTimeMicros();
 
-    // Save time taken by addPackageTxs() vs total time taken
-    const int64_t elapsedAddPkgTxs = nTime0 - nTimeStart;
+    // Save time taken by addTxs() vs total time taken
+    const int64_t elapsedAddTxs = nTime0 - nTimeStart;
     const int64_t elapsedTotal = nTime2 - nTimeStart;
-    // Adjust addPackageFrac based on elapsedAddPkgTxs this run, using an EMA with alpha = 25% for non-tiny blocks
+    // Adjust addTxsFrac based on elapsedAddTxs this run, using an EMA with alpha = 25% for non-tiny blocks
     const double alpha = pblock->vtx.size() > 50 ? 0.25 : 0.05;
-    const double thisAddPackageFrac = elapsedTotal > 0 ? std::clamp(elapsedAddPkgTxs / double(elapsedTotal), 0., 1.) : 0.;
-    addPackageFrac = addPackageFrac * (1. - alpha) + thisAddPackageFrac * alpha;
+    const double thisAddTxsFrac = elapsedTotal > 0 ? std::clamp(elapsedAddTxs / double(elapsedTotal), 0., 1.) : 0.;
+    addTxsFrac = addTxsFrac * (1. - alpha) + thisAddTxsFrac * alpha;
 
     LogPrint(BCLog::BENCH,
-             "CreateNewBlock() packages: %.2fms, "
-             "CTOR: %.2fms, validity: %.2fms (total %.2fms), addPackageFrac: %1.2f, timeLimitSecs: %1.3f\n",
-             0.001 * elapsedAddPkgTxs,
+             "CreateNewBlock() addTxs: %.2fms, "
+             "CTOR: %.2fms, validity: %.2fms (total %.2fms), addTxsFrac: %1.2f, timeLimitSecs: %1.3f\n",
+             0.001 * elapsedAddTxs,
              0.001 * (nTime1 - nTime0), 0.001 * (nTime2 - nTime1),
-             0.001 * elapsedTotal, addPackageFrac, timeLimitSecs);
+             0.001 * elapsedTotal, addTxsFrac, timeLimitSecs);
 
     return std::move(pblocktemplate);
 }
 
-bool BlockAssembler::TestPackage(uint64_t packageSize,
-                                 int64_t packageSigOps) const {
-    auto blockSizeWithPackage = nBlockSize + packageSize;
-    if (blockSizeWithPackage >= nMaxGeneratedBlockSize) {
+bool BlockAssembler::TestTx(uint64_t txSize, int64_t txSigOpCount) const {
+    if (nBlockSize + txSize >= nMaxGeneratedBlockSize) {
         return false;
     }
 
-    if (nBlockSigOps + packageSigOps >= nMaxGeneratedBlockSigChecks) {
+    if (nBlockSigOps + txSigOpCount >= nMaxGeneratedBlockSigChecks) {
         return false;
     }
 
@@ -277,8 +276,6 @@ void BlockAssembler::AddToBlock(CTxMemPool::txiter iter) {
     nBlockSigOps += iter->GetSigOpCount();
     nFees += iter->GetFee();
 
-    bool fPrintPriority =
-        gArgs.GetBoolArg("-printpriority", DEFAULT_PRINTPRIORITY);
     if (fPrintPriority) {
         LogPrintf(
             "fee %s txid %s\n",
@@ -294,7 +291,7 @@ bool BlockAssembler::CheckTx(const CTransaction &tx) const {
 }
 
 /**
- * addPackageTx includes transactions paying a fee by ensuring that
+ * addTxs includes transactions paying a fee by ensuring that
  * the partial ordering of transactions is maintained.  That is to say
  * children come after parents, despite having a potentially larger fee.
  * @param nLimitTimePoint  A time point in the future (obtained via
@@ -304,7 +301,7 @@ bool BlockAssembler::CheckTx(const CTransaction &tx) const {
  *                         is filled to -blockmaxsize capacity (or until all
  *                         tx's in mempool are added, whichever is smaller).
  */
-void BlockAssembler::addPackageTxs(int64_t nLimitTimePoint) {
+void BlockAssembler::addTxs(int64_t nLimitTimePoint) {
     using EntryPtrHasher = StdHashWrapper<const CTxMemPoolEntry *>;
     using ParentCountMap = std::unordered_map<const CTxMemPoolEntry *, size_t, EntryPtrHasher>;
     using ChildSet = std::unordered_set<const CTxMemPoolEntry *, EntryPtrHasher>;
@@ -312,6 +309,7 @@ void BlockAssembler::addPackageTxs(int64_t nLimitTimePoint) {
     // mapped_value is the number of mempool parents that are still needed for the entry.
     // We decrement this count each time we add a parent of the entry to the block.
     ParentCountMap missingParentCount;
+    // set of children we skipped because we have not yet added their parents
     ChildSet skippedChildren;
     missingParentCount.reserve(mempool->size() / 2);
     skippedChildren.reserve(mempool->size() / 2);
@@ -380,7 +378,7 @@ void BlockAssembler::addPackageTxs(int64_t nLimitTimePoint) {
         }
 
         // Check whether the tx will exceed the block limits.
-        if (!TestPackage(iter->GetTxSize(), iter->GetSigOpCount())) {
+        if (!TestTx(iter->GetTxSize(), iter->GetSigOpCount())) {
             ++nConsecutiveFailed;
             if (nConsecutiveFailed > MAX_CONSECUTIVE_FAILURES && nBlockSize > nMaxGeneratedBlockSize - 1000) {
                 // Give up if we're close to full and haven't succeeded in a while.
@@ -397,7 +395,7 @@ void BlockAssembler::addPackageTxs(int64_t nLimitTimePoint) {
         // This transaction will make it in; reset the failed counter.
         nConsecutiveFailed = 0;
 
-        // Package can be added.
+        // Tx can be added.
         AddToBlock(iter);
 
         // This tx's children may now be candidates for addition if they have
@@ -408,8 +406,7 @@ void BlockAssembler::addPackageTxs(int64_t nLimitTimePoint) {
         // ends up taking O(n) time to process a single tx with n children,
         // that's okay because the amount of time taken is proportional to the
         // tx's byte size and fee paid.
-        const auto& children = mempool->GetMemPoolChildren(iter);
-        for (const auto& child : children) {
+        for (const auto& child : mempool->GetMemPoolChildren(iter)) {
             const bool allParentsAdded = TrackParentAdded(child);
             // If all parents have been added to the block, and if this child
             // has been previously skipped due to missing parents, enqueue it
