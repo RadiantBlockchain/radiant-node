@@ -959,6 +959,9 @@ void SetupServerArgs() {
 
     gArgs.AddArg("-uacomment=<cmt>", "Append comment to the user agent string",
                  false, OptionsCategory::DEBUG_TEST);
+    gArgs.AddArg("-rejectsubversion=<substring>",
+                 "Reject peers having a user agent string containing <substring> (case-sensitive)",
+                 true, OptionsCategory::DEBUG_TEST);
 
     SetupChainParamsBaseOptions();
 
@@ -2241,6 +2244,15 @@ bool AppInitMain(Config &config, RPCServer &rpcServer,
             _("Total length of network version string (%i) exceeds maximum "
               "length (%i). Reduce the number or size of uacomments."),
             strSubVersion.size(), MAX_SUBVERSION_LENGTH));
+    }
+
+    if (gArgs.IsArgSet("-rejectsubversion")) {
+        std::set<std::string> rejectSubVers;
+        for (const auto &reject : gArgs.GetArgs("-rejectsubversion")) {
+            if (reject.empty()) continue;
+            rejectSubVers.insert(reject);
+        }
+        config.SetRejectSubVersions(rejectSubVers);
     }
 
     if (gArgs.IsArgSet("-onlynet")) {

@@ -2204,6 +2204,28 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
             std::string strSubVer;
             vRecv >> LIMITED_STRING(strSubVer, MAX_SUBVERSION_LENGTH);
             cleanSubVer = SanitizeString(strSubVer);
+
+            if (!config.GetRejectSubVersions().empty()) {
+                // check that peer subversion is not in -rejectsubversion set (exact substring match)
+                const auto beforeOpenParen = cleanSubVer.substr(0, cleanSubVer.find('('));
+                for (const auto &reject : config.GetRejectSubVersions()) {
+                    if (!reject.empty() && beforeOpenParen.find(reject) != beforeOpenParen.npos) {
+                        if (pfrom->m_manual_connection) {
+                            LogPrintf("not rejecting manually-added peer=%d with subversion containing \"%s\""
+                                      " (-rejectsubversion)\n", pfrom->GetId(), reject);
+                        } else if (pfrom->HasPermission(PF_NOBAN)) {
+                            LogPrintf("not rejecting whitelisted peer=%d with subversion containing \"%s\""
+                                      " (-rejectsubversion)\n", pfrom->GetId(), reject);
+                        } else {
+                            // reject peer
+                            LogPrintf("rejecting peer=%d because its subversion contains \"%s\" (-rejectsubversion)\n",
+                                      pfrom->GetId(), reject);
+                            pfrom->fDisconnect = true;
+                            return false;
+                        }
+                    }
+                }
+            }
         }
         if (!vRecv.empty()) {
             vRecv >> nStartingHeight;
