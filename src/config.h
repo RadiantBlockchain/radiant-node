@@ -14,6 +14,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <set>
 #include <string>
 
 /** Default for -usecashaddr */
@@ -43,6 +44,9 @@ public:
 
     virtual void SetExcessUTXOCharge(Amount amt) = 0;
     virtual Amount GetExcessUTXOCharge() const = 0;
+
+    virtual void SetRejectSubVersions(const std::set<std::string> &reject) = 0;
+    virtual const std::set<std::string> & GetRejectSubVersions() const = 0;
 };
 
 class GlobalConfig final : public Config {
@@ -65,6 +69,9 @@ public:
     void SetExcessUTXOCharge(Amount) override;
     Amount GetExcessUTXOCharge() const override;
 
+    void SetRejectSubVersions(const std::set<std::string> &reject) override { rejectSubVersions = reject; }
+    const std::set<std::string> & GetRejectSubVersions() const override { return rejectSubVersions; }
+
 private:
     bool useCashAddr;
     Amount excessUTXOCharge;
@@ -79,6 +86,8 @@ private:
 
     /** The maximum amount of RAM to be used in the mempool before TrimToSize is called. */
     uint64_t nMaxMemPoolSize;
+
+    std::set<std::string> rejectSubVersions;
 };
 
 // Dummy for subclassing in unittests
@@ -106,6 +115,12 @@ public:
 
     void SetExcessUTXOCharge(Amount) override {}
     Amount GetExcessUTXOCharge() const override { return Amount::zero(); }
+
+    void SetRejectSubVersions(const std::set<std::string> &) override {}
+    const std::set<std::string> & GetRejectSubVersions() const override {
+        static const std::set<std::string> dummy;
+        return dummy;
+    }
 
 private:
     std::unique_ptr<CChainParams> chainParams;
