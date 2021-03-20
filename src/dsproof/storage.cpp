@@ -62,13 +62,13 @@ void DoubleSpendProofStorage::addOrphan(const DoubleSpendProof &proof, NodeId no
     auto it = m_proofs.find(hash);
     assert(it != m_proofs.end()); // cannot happen since above add() call guarantees it now exists
 
-    m_proofs.modify(it, [nodeId, this, &hash](Entry &e) EXCLUSIVE_LOCKS_REQUIRED(m_lock) {
+    incrementOrphans(!it->orphan, hash); // actually increments only if orphan false -- may reap older orphans as a side-effect
+    m_proofs.modify(it, [nodeId](Entry &e) {
         if (e.nodeId < 0 && nodeId > -1)
             e.nodeId = nodeId;
         if (e.timeStamp < 0)
             e.timeStamp = GetTime();
-        incrementOrphans(!e.orphan, hash); // actually increments only if orphan false -- may reap older orphans as a side-effect
-        e.orphan = true; // called after to ensure this one makes it in as an orphan even if above reaper reaped
+        e.orphan = true;
     }, ModFastFail());
 }
 
