@@ -4,6 +4,7 @@
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """ Test for the DoubleSpend Proof RPCs """
 
+import time
 from copy import deepcopy
 from decimal import Decimal
 from io import BytesIO
@@ -120,11 +121,15 @@ class DoubleSpendProofRPCTest(BitcoinTestFramework):
                 # dsproof serialized data cannot be smaller than 216 bytes
                 assert_greater_than(len(data), 216)
 
-        # If any of the competing transactions is mined, the DPSs are cleared
+        # If any of the competing transactions is mined, the DPSs are put in the orphan list
         self.nodes[0].generate(1)
         self.sync_all()
-        assert_equal(len(self.nodes[0].getdsprooflist()), 0)
-        assert self.nodes[0].getdsproof(dsplist[0]) is None
+        assert_equal(len(self.nodes[0].getdsprooflist()), 0)  # no non-orphan results
+        dsps_all_orphans = self.nodes[0].getdsprooflist(0, True)
+        assert_equal(dsps_all_orphans, dsplist)  # all of the previous proofs are orphans
+        for dspid in dsps_all_orphans:
+            # make sure they are all orphans by checking they have no 'txid' key
+            assert self.nodes[0].getdsproof(dspid).get('txid') is None
 
     def paths_check(self):
         """Check that:
@@ -229,8 +234,8 @@ class DoubleSpendProofRPCTest(BitcoinTestFramework):
         # assumption is previous test left some proofs around
         len_noorphans = len(self.nodes[0].getdsprooflist(False, False))
         assert_greater_than(len_noorphans, 0)
-        # also make sure previous test did NOT leave any orphans around
-        assert_equal(len(self.nodes[0].getdsprooflist(False, True)), len_noorphans)
+        # previous test may or may not have left some orphans around, account for them
+        len_orphans = len(self.nodes[0].getdsprooflist(False, True)) - len_noorphans
 
         orphans_ids = [
             "978c2b3d829dbc934c170ff797c539a86d35fcfc0ec806a5753c00794cd5caad",
@@ -279,16 +284,17 @@ class DoubleSpendProofRPCTest(BitcoinTestFramework):
 
         # wait for node0 to have acknowledged the orphans
         wait_until(
-            lambda: len(self.nodes[0].getdsprooflist(False, True)) == len_noorphans + 2
+            lambda: len(self.nodes[0].getdsprooflist(False, True)) == len_noorphans + len_orphans + 2
         )
 
-        def check(len_noorphans):
+        def check(len_noorphans, len_orphans):
             # verify that node0 has a view of the orphans that we expect
             dsplist_all = self.nodes[0].getdsprooflist(False, True)
             non_orph_ct = 0
             orph_ct = 0
             orphs_seen = set()
             outpoints_seen = set()
+            matches = 0
             for dspid in dsplist_all:
                 dsp = self.nodes[0].getdsproof(dspid, True)
                 if dsp["txid"] is not None:
@@ -299,22 +305,54 @@ class DoubleSpendProofRPCTest(BitcoinTestFramework):
                 op = dsp["outpoint"]
                 outpoints_seen.add((op["txid"], op["vout"]))
                 hexdata = self.nodes[0].getdsproof(dspid, False)["hex"]
-                # ensure hexdata we got for this dspid matches our data
-                ix = orphans_data.index(bytes.fromhex(hexdata))
-                assert_equal(ix, orphans_ids.index(dspid))
+                try:
+                    # ensure hexdata we got for this dspid matches our data
+                    orphans_data.index(bytes.fromhex(hexdata))
+                    orphans_ids.index(dspid)
+                    matches += 1
+                except ValueError:
+                    pass  # this is ok, stale oprhan (ignore)
+            assert_equal(matches, len(orphans_data))
             assert_equal(non_orph_ct, len_noorphans)
-            assert_equal(orph_ct, 2)
-            assert_equal(orphs_seen, set(orphans_ids))
-            assert_equal(outpoints_seen, orphans_outpoints)
+            assert_equal(orph_ct, len_orphans)
+            assert_equal(orphs_seen & set(orphans_ids), set(orphans_ids))
+            assert_equal(outpoints_seen & orphans_outpoints, orphans_outpoints)
 
-        check(len_noorphans=len_noorphans)
+        check(len_noorphans=len_noorphans, len_orphans=len_orphans + len(orphans_ids))
 
-        # Mining a block should reap every dsproof but it should keep the same orphans around
-        self.nodes[0].generate(1)
+        # Mining a block should take every dsproof and send them to the orphan list
+        # it should also keep the same orphans from before around
+        block_hash = self.nodes[0].generate(1)[0]
         self.sync_all()
+        # No non-orphans
         assert_equal(len(self.nodes[0].getdsprooflist()), 0)
-        assert_equal(len(self.nodes[0].getdsprooflist(False, True)), 2)
-        check(len_noorphans=0)
+        # All previous dsproofs are now orphans (because their associated tx was mined
+        assert_equal(len(self.nodes[0].getdsprooflist(False, True)), len_orphans + len_noorphans + len(orphans_ids))
+
+        # Test reorg behavior. On reorg, all tx's that go back to mempool should continue to have their previous
+        # proofs. We invalidate the block and make sure that all the orphaned dsp's got claimed again by their
+        # respective tx's which were put back into the mempool
+        self.nodes[0].invalidateblock(block_hash)
+        wait_until(
+            lambda: len(self.nodes[0].getdsprooflist()) == len_noorphans,
+            timeout=10
+        )
+        check(len_noorphans=len_noorphans, len_orphans=len_orphans + len(orphans_ids))
+        # Now put the block back
+        self.nodes[0].reconsiderblock(block_hash)
+        self.sync_all()
+        # There should again be no non-orphans
+        assert_equal(len(self.nodes[0].getdsprooflist()), 0)
+        # All previous dsproofs are now orphans again
+        assert_equal(len(self.nodes[0].getdsprooflist(False, True)), len_orphans + len_noorphans + len(orphans_ids))
+
+        # Wait for all orphans to get auto-cleaned (this may take up to 60 seconds)
+        self.nodes[0].setmocktime(int(time.time() + 100))
+        wait_until(
+            lambda: len(self.nodes[0].getdsprooflist(False, True)) == 0,
+            timeout=90
+        )
+
 
     def run_test(self):
         self.basic_check()

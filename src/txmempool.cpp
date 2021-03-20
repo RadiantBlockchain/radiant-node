@@ -477,8 +477,11 @@ void CTxMemPool::addUnchecked(const CTxMemPoolEntry &entry,
 
 void CTxMemPool::removeUnchecked(txiter it, MemPoolRemovalReason reason) {
     NotifyEntryRemoved(it->GetSharedTx(), reason);
-    if (it->HasDsp())
-        m_dspStorage->remove(it->GetDspId());
+    if (it->HasDsp()) {
+        // we put known dsproofs back into the orphan pool just in case there is
+        // a reorg in the future and this deleted tx comes back.
+        m_dspStorage->orphanExisting(it->GetDspId());
+    }
     for (const CTxIn &txin : it->GetTx().vin) {
         mapNextTx.erase(txin.prevout);
     }
@@ -648,7 +651,7 @@ void CTxMemPool::removeForBlock(const std::vector<CTransactionRef> &vtx,
     blockSinceLastRollingFeeBump = true;
 }
 
-void CTxMemPool::_clear() {
+void CTxMemPool::_clear(bool clearDspOrphans /*= true*/) {
     mapLinks.clear();
     mapTx.clear();
     mapNextTx.clear();
@@ -658,13 +661,13 @@ void CTxMemPool::_clear() {
     lastRollingFeeUpdate = GetTime();
     blockSinceLastRollingFeeBump = false;
     rollingMinimumFeeRate = 0;
-    m_dspStorage->clear();
+    m_dspStorage->clear(clearDspOrphans);
     ++nTransactionsUpdated;
 }
 
-void CTxMemPool::clear() {
+void CTxMemPool::clear(bool clearDspOrphans /*= true*/) {
     LOCK(cs);
-    _clear();
+    _clear(clearDspOrphans);
 }
 
 static void CheckInputsAndUpdateCoins(const CTransaction &tx,
@@ -1567,7 +1570,8 @@ void DisconnectedBlockTransactions::importMempool(CTxMemPool &pool) {
         for (const CTxMemPoolEntry &e : pool.mapTx.get<entry_time>()) {
             vtx.push_back(e.GetSharedTx());
         }
-        pool.clear();
+        pool.doubleSpendProofStorage()->orphanAll();
+        pool.clear(/* clearDspOrphans = */ false);
     }
 
     // Use addForBlocks to sort the transactions and then splice them in front
