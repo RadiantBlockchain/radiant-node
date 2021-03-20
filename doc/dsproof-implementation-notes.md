@@ -62,10 +62,11 @@ some additional notes on the BCHN implementation of this feature.
    It can be enabled by by adding `dsproof` to the debug flags.
 
 6. Orphans:
-   - DS proofs are stored as either orphans or non-orphans
-   - Orphans are proofs we have received for which the conflicting
-     transaction (or UTXO) has not yet been seen, therefore the proof
-     cannot be validated yet when it is seen.
+   - DS proofs are stored as either orphans or non-orphans.
+   - Under normal circumstances, orphans are proofs we have received for
+     which the conflicting transaction (or UTXO) has not yet been seen,
+     therefore the proof cannot be validated yet when it is seen.
+   - Orphan proofs are never relayed (only non-orphans are).
    - There is a maximum number of orphans (default 65535) but in
      practice an extra 25% is allowed for performance reasons.
      The high water mark is 1.25 * max = 81918, if exceeded, the oldest
@@ -76,7 +77,15 @@ some additional notes on the BCHN implementation of this feature.
      orphans.
    - Orphans can become non-orphans when the necessary information to
      validate them, is received.
-   - Non-orphan proofs are not subject to automatic expiry.
+   - Non-orphans can also become orphans for up to 90 seconds (after which
+     they are deleted) in the case where their associated transaction
+     disappears from the mempool (due to e.g. being confirmed in a block).
+     This allows us to keep proofs around for a time so that they may be
+     re-applied in the unlikely event of a reorg, where a transaction may
+     end up in the mempool again (in such a situation it is advantageous
+     for the dsproof to not be lost).
+   - Non-orphan proofs are not subject to automatic expiry -- they live
+     as long as their associated transaction lives in the mempool.
    - Misbehaving peers that supplied orphan proofs which turn out to be fake
      (after a valid proof is received that shows the orphan was fake)
      will get punished (misbehaviour score increased by 10 points).

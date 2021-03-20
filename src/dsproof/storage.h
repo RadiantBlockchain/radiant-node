@@ -77,6 +77,14 @@ public:
     /// not subject to automatic expiry.
     void claimOrphan(const DspId &hash);
 
+    /// Make an existing non-orphan proof into an orphan, putting it back
+    /// into the orphan pool. It will expire sometime in the future after
+    /// secondsToKeepOrphans() elapses.  It may also be claimed again
+    /// in the future using `claimOrphan()`.
+    ///
+    /// If `hash` does not exist or is already an orphan, this is a no-op.
+    void orphanExisting(const DspId &hash);
+
     /// Lookup a double-spend proof by id.
     /// The returned value will be .isEmpty() if the id was not found.
     DoubleSpendProof lookup(const DspId &hash) const;
@@ -90,8 +98,12 @@ public:
     void markProofRejected(const DspId &hash);
     void newBlockFound();
 
-    ///! Completely empties this data structure, clearing all oprhans and known proofs
-    void clear();
+    /// Completely empties this data structure, clearing all orphans and known proofs
+    /// @param clearOrphans if false, orphans will be kept, but everything else will be cleared
+    void clear(bool clearOrphans = true);
+
+    ///! Takes all extant proofs and marks them as orphans.
+    void orphanAll();
 
 private:
     mutable RecursiveMutex m_lock;

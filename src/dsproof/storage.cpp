@@ -4,6 +4,8 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <dsproof/storage.h>
+
+#include <algorithm/algorithm.h>
 #include <logging.h>
 #include <primitives/transaction.h>
 #include <util/time.h>
@@ -106,6 +108,19 @@ void DoubleSpendProofStorage::claimOrphan(const DspId &hash)
     }
 }
 
+void DoubleSpendProofStorage::orphanExisting(const DspId &hash)
+{
+    LOCK(m_lock);
+    auto it = m_proofs.find(hash);
+    if (it != m_proofs.end() && !it->orphan) {
+        incrementOrphans(1, hash);
+        m_proofs.modify(it, [](Entry &e){
+            e.orphan = true;
+            e.timeStamp = GetTime();
+        }, ModFastFail());
+    }
+}
+
 bool DoubleSpendProofStorage::remove(const DspId &hash)
 {
     LOCK(m_lock);
@@ -157,11 +172,32 @@ size_t DoubleSpendProofStorage::size() const {
     return m_proofs.size();
 }
 
-void DoubleSpendProofStorage::clear() {
+void DoubleSpendProofStorage::clear(bool clearOrphans /*= true*/) {
     LOCK(m_lock);
-    m_proofs.clear();
     m_recentRejects.reset();
-    m_numOrphans = 0;
+    if (clearOrphans) {
+        m_proofs.clear();
+        m_numOrphans = 0;
+    } else {
+        // erase everything but orphans
+        algo::erase_if(m_proofs, [](const auto &e){ return !e.orphan; });
+    }
+}
+
+///! Takes all extant proofs and marks them as orphans.
+void DoubleSpendProofStorage::orphanAll() {
+    LOCK(m_lock);
+    size_t incrementCtr = 0;
+    for (auto it = m_proofs.begin(); it != m_proofs.end() && m_numOrphans + incrementCtr < m_proofs.size(); ++it) {
+        if (!it->orphan) {
+            m_proofs.modify(it, [](Entry &e) {
+                e.orphan = true;
+                e.timeStamp = GetTime();
+            }, ModFastFail{});
+            ++incrementCtr;
+        }
+    }
+    incrementOrphans(incrementCtr, {});
 }
 
 // --- Orphan upkeep (see also storage_cleanup.cpp)

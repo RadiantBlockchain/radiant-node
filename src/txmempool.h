@@ -654,9 +654,9 @@ public:
     void removeForBlock(const std::vector<CTransactionRef> &vtx,
                         unsigned int nBlockHeight);
 
-    void clear();
+    void clear(bool clearDspOrphans = true);
     // lock free
-    void _clear() EXCLUSIVE_LOCKS_REQUIRED(cs);
+    void _clear(bool clearDspOrphans = true) EXCLUSIVE_LOCKS_REQUIRED(cs);
     bool CompareDepthAndScore(const TxId &txida, const TxId &txidb);
     void queryHashes(std::vector<uint256> &vtxid) const;
     bool isSpent(const COutPoint &outpoint) const;

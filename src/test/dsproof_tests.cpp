@@ -175,8 +175,39 @@ BOOST_AUTO_TEST_CASE(dsproof_orphans_limit) {
     BOOST_CHECK(list.size() == storage.numOrphans());
 }
 
+// Test correct functionality of the clear(false) versus clear(true) (DoubleSpendProofStorage)
+BOOST_AUTO_TEST_CASE(dsproof_storage_clear) {
+    DoubleSpendProofStorage storage;
+
+    constexpr unsigned NUM = 200;
+
+    auto proofs = makeUniqueProofs(NUM);
+
+    for (const auto &proof : proofs) {
+        storage.addOrphan(proof, 1);
+    }
+
+    // add 1 "non orphan"
+    BOOST_CHECK(storage.add(makeUniqueProofs(1)[0]));
+    BOOST_CHECK_EQUAL(storage.numOrphans(), NUM);
+    BOOST_CHECK_EQUAL(storage.size(), NUM + 1);
+    // clear only non-orphans
+    storage.clear(/*clearOrphans =*/ false);
+    BOOST_CHECK_EQUAL(storage.numOrphans(), NUM);
+    BOOST_CHECK_EQUAL(storage.size(), NUM);
+    // add 1 "non orphan" again
+    BOOST_CHECK(storage.add(makeUniqueProofs(1)[0]));
+    BOOST_CHECK_EQUAL(storage.numOrphans(), NUM);
+    BOOST_CHECK_EQUAL(storage.size(), NUM + 1);
+    // clear everything
+    storage.clear(/*clearOrphans =*/ true);
+    // everything should be gone now
+    BOOST_CHECK_EQUAL(storage.numOrphans(), 0);
+    BOOST_CHECK_EQUAL(storage.size(), 0);
+}
+
 // Test that the periodic cleanup function works as expected, and reaps old orphans
-BOOST_AUTO_TEST_CASE(dsproof_orphan_autoclener) {
+BOOST_AUTO_TEST_CASE(dsproof_orphan_autocleaner) {
     DoubleSpendProofStorage storage;
 
     constexpr unsigned NUM = 200, SECS = 50, MAX_ORPHANS = NUM * 5;
