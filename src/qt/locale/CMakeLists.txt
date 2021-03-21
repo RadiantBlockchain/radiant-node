@@ -1,4 +1,4 @@
-# Copyright (c) 2018 The Bitcoin developers
+# Copyright (c) 2018-2021 The Bitcoin developers
 
 project(bitcoin-qt-locale)
 
@@ -54,7 +54,6 @@ qt5_add_translation(BITCOIN_QM_FILES
 	bitcoin_hr.ts
 	bitcoin_hu.ts
 	bitcoin_id_ID.ts
-	bitcoin_it_IT.ts
 	bitcoin_it.ts
 	bitcoin_ja.ts
 	bitcoin_ka.ts
@@ -85,6 +84,7 @@ qt5_add_translation(BITCOIN_QM_FILES
 	bitcoin_sr@latin.ts
 	bitcoin_sr.ts
 	bitcoin_sv.ts
+	bitcoin_sw.ts
 	bitcoin_ta.ts
 	bitcoin_th_TH.ts
 	bitcoin_tr_TR.ts
@@ -94,7 +94,6 @@ qt5_add_translation(BITCOIN_QM_FILES
 	bitcoin_uz@Cyrl.ts
 	bitcoin_vi.ts
 	bitcoin_vi_VN.ts
-	bitcoin_zh_CN.ts
 	bitcoin_zh_HK.ts
 	bitcoin_zh.ts
 	bitcoin_zh_TW.ts
