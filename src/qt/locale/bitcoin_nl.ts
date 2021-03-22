@@ -1832,12 +1832,12 @@
     <message>
       <location line="-1"/>
       <source>Node/Service</source>
-      <translation type="unfinished"/>
+      <translation>Node/Dienst</translation>
     </message>
     <message>
       <location line="+0"/>
       <source>NodeId</source>
-      <translation type="unfinished"/>
+      <translation>Node-ID</translation>
     </message>
     <message>
       <location line="+0"/>
@@ -1847,12 +1847,12 @@
     <message>
       <location line="+0"/>
       <source>Sent</source>
-      <translation type="unfinished"/>
+      <translation>Verzonden</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Received</source>
-      <translation type="unfinished"/>
+      <translation>Ontvangen</translation>
     </message>
   </context>
   <context>
@@ -2174,13 +2174,13 @@
       <location line="+80"/>
       <location line="+558"/>
       <source>Received</source>
-      <translation type="unfinished"/>
+      <translation>Ontvangen</translation>
     </message>
     <message>
       <location line="-478"/>
       <location line="+455"/>
       <source>Sent</source>
-      <translation type="unfinished"/>
+      <translation>Verzonden</translation>
     </message>
     <message>
       <location line="-414"/>
@@ -3924,7 +3924,7 @@ Opmerking: Aangezien de kosten worden berekend op basis van bytes, levert een ta
     <message>
       <location filename="../walletframe.cpp" line="+26"/>
       <source>No wallet has been loaded.</source>
-      <translation type="unfinished"/>
+      <translation>Er is geen portemonnee geladen.</translation>
     </message>
   </context>
   <context>
@@ -4213,7 +4213,7 @@ Opmerking: Aangezien de kosten worden berekend op basis van bytes, levert een ta
     <message>
       <location line="+2"/>
       <source>The source code is available from %s.</source>
-      <translation type="unfinished"/>
+      <translation>De broncode is beschikbaar vanaf %s.</translation>
     </message>
     <message>
       <location line="+14"/>
