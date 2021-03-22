@@ -1,4 +1,5 @@
 # Copyright (c) 2013-2016 The Bitcoin Core developers
+# Copyright (c) 2021 The Bitcoin developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -49,7 +50,6 @@ QT_TS = \
   qt/locale/bitcoin_hr.ts \
   qt/locale/bitcoin_hu.ts \
   qt/locale/bitcoin_id_ID.ts \
-  qt/locale/bitcoin_it_IT.ts \
   qt/locale/bitcoin_it.ts \
   qt/locale/bitcoin_ja.ts \
   qt/locale/bitcoin_ka.ts \
@@ -80,6 +80,7 @@ QT_TS = \
   qt/locale/bitcoin_sr@latin.ts \
   qt/locale/bitcoin_sr.ts \
   qt/locale/bitcoin_sv.ts \
+  qt/locale/bitcoin_sw.ts \
   qt/locale/bitcoin_ta.ts \
   qt/locale/bitcoin_th_TH.ts \
   qt/locale/bitcoin_tr_TR.ts \
@@ -89,7 +90,6 @@ QT_TS = \
   qt/locale/bitcoin_uz@Cyrl.ts \
   qt/locale/bitcoin_vi.ts \
   qt/locale/bitcoin_vi_VN.ts \
-  qt/locale/bitcoin_zh_CN.ts \
   qt/locale/bitcoin_zh_HK.ts \
   qt/locale/bitcoin_zh.ts \
   qt/locale/bitcoin_zh_TW.ts

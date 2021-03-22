@@ -1,87 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="en-GB" sourcelanguage="en">
+<TS version="2.1" language="sw" sourcelanguage="en">
   <context>
     <name>AddressBookPage</name>
     <message>
       <location filename="../forms/addressbookpage.ui" line="+37"/>
       <source>Right-click to edit address or label</source>
-      <translation type="unfinished"/>
+      <translation>Bonyeza-kulia kuhariri anwani au lebo</translation>
     </message>
     <message>
       <location line="+27"/>
       <source>Create a new address</source>
-      <translation type="unfinished"/>
+      <translation>Tengeneza anwani mpya</translation>
     </message>
     <message>
       <location line="+3"/>
       <source>&amp;New</source>
-      <translation type="unfinished"/>
+      <translation>&amp;Mpya</translation>
     </message>
     <message>
       <location line="+14"/>
       <source>Copy the currently selected address to the system clipboard</source>
-      <translation type="unfinished"/>
+      <translation>Nakili anwani iliyochaguliwa sasa kwenye ubao wa kunakili</translation>
     </message>
     <message>
       <location line="+3"/>
       <source>&amp;Copy</source>
-      <translation type="unfinished"/>
+      <translation>&amp;Nakili</translation>
     </message>
     <message>
       <location line="+67"/>
       <source>C&amp;lose</source>
-      <translation type="unfinished"/>
+      <translation>&amp;Funga</translation>
     </message>
     <message>
       <location line="-53"/>
       <source>Delete the currently selected address from the list</source>
-      <translation type="unfinished"/>
+      <translation>Futa anwani iliyochaguliwa sasa kutoka kwenye orodha</translation>
     </message>
     <message>
       <location line="-71"/>
       <source>Enter address or label to search</source>
-      <translation type="unfinished"/>
+      <translation>Ingiza anwani au lebo ili utafute</translation>
     </message>
     <message>
       <location line="+101"/>
       <source>Export the data in the current tab to a file</source>
-      <translation type="unfinished"/>
+      <translation>Hamisha data kwenye kichupo cha sasa kwenye faili</translation>
     </message>
     <message>
       <location line="+3"/>
       <source>&amp;Export</source>
-      <translation type="unfinished"/>
+      <translation>&amp;Kutoa Nakala</translation>
     </message>
     <message>
       <location line="-30"/>
       <source>&amp;Delete</source>
-      <translation type="unfinished"/>
+      <translation>&amp;Futa</translation>
     </message>
     <message>
       <location filename="../addressbookpage.cpp" line="+82"/>
       <source>Choose the address to send coins to</source>
-      <translation type="unfinished"/>
+      <translation>Chagua anwani ya kutuma sarafu</translation>
     </message>
     <message>
       <location line="+4"/>
       <source>Choose the address to receive coins with</source>
-      <translation type="unfinished"/>
+      <translation>Chagua anwani ya kupokea sarafu</translation>
     </message>
     <message>
       <location line="+7"/>
       <source>C&amp;hoose</source>
-      <translation type="unfinished"/>
+      <translation>&amp;Chagua</translation>
     </message>
     <message>
       <location line="+6"/>
       <source>Sending Addresses</source>
-      <translation type="unfinished"/>
+      <translation>Anwani za Kutuma</translation>
     </message>
     <message>
       <location line="+3"/>
       <source>Receiving Addresses</source>
-      <translation type="unfinished"/>
+      <translation>Anwani za Kupokea</translation>
     </message>
     <message>
       <location line="+8"/>
@@ -96,27 +96,27 @@
     <message>
       <location line="+9"/>
       <source>&amp;Copy Address</source>
-      <translation type="unfinished"/>
+      <translation>&amp;Nakili Anwani</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Copy &amp;Label</source>
-      <translation type="unfinished"/>
+      <translation>Nakili &amp;Lebo</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>&amp;Edit</source>
-      <translation type="unfinished"/>
+      <translation>&amp;Hariri</translation>
     </message>
     <message>
       <location line="+181"/>
       <source>Export Address List</source>
-      <translation type="unfinished"/>
+      <translation>Hamisha Orodha ya Anwani</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Comma separated file (*.csv)</source>
-      <translation type="unfinished"/>
+      <translation>Faili iliyotenganishwa kwa koma (*.csv)</translation>
     </message>
     <message>
       <location line="+14"/>
@@ -126,7 +126,7 @@
     <message>
       <location line="+1"/>
       <source>There was an error trying to save the address list to %1. Please try again.</source>
-      <translation type="unfinished"/>
+      <translation>Kulikuwa na hitilafu wakati wa kujaribu kuhifadhi orodha ya anwani kwa %1. Tafadhali jaribu tena.</translation>
     </message>
   </context>
   <context>
@@ -134,17 +134,17 @@
     <message>
       <location filename="../addresstablemodel.cpp" line="+162"/>
       <source>Label</source>
-      <translation type="unfinished"/>
+      <translation>Lebo</translation>
     </message>
     <message>
       <location line="+0"/>
       <source>Address</source>
-      <translation type="unfinished"/>
+      <translation>Anwani</translation>
     </message>
     <message>
       <location line="+31"/>
       <source>(no label)</source>
-      <translation type="unfinished"/>
+      <translation>(Hamna lebo)</translation>
     </message>
   </context>
   <context>
@@ -157,67 +157,67 @@
     <message>
       <location line="+30"/>
       <source>Enter passphrase</source>
-      <translation type="unfinished"/>
+      <translation>Weka manenosiri</translation>
     </message>
     <message>
       <location line="+14"/>
       <source>New passphrase</source>
-      <translation type="unfinished"/>
+      <translation>Manenosiri Mapya</translation>
     </message>
     <message>
       <location line="+14"/>
       <source>Repeat new passphrase</source>
-      <translation type="unfinished"/>
+      <translation>Rudia manenosiri mapya</translation>
     </message>
     <message>
       <location line="+14"/>
       <source>Show password</source>
-      <translation type="unfinished"/>
+      <translation>Onyesha nywila</translation>
     </message>
     <message>
       <location filename="../askpassphrasedialog.cpp" line="+41"/>
       <source>Enter the new passphrase to the wallet.&lt;br/&gt;Please use a passphrase of &lt;b&gt;ten or more random characters&lt;/b&gt;, or &lt;b&gt;eight or more words&lt;/b&gt;.</source>
-      <translation type="unfinished"/>
+      <translation>Ingiza manenosiri mapya kwa kipochi.&lt;br/&gt;Tafadhali tumia manenosiri ya &lt;b&gt;herufi kumi au zaidi ya nasibu &lt;/b&gt; au &lt;b&gt;maneno manane au zaidi&lt;/b&gt;.</translation>
     </message>
     <message>
       <location line="+5"/>
       <source>Encrypt wallet</source>
-      <translation type="unfinished"/>
+      <translation>Wezesha Usimbuaji fiche kwa kipochi</translation>
     </message>
     <message>
       <location line="+3"/>
       <source>This operation needs your wallet passphrase to unlock the wallet.</source>
-      <translation type="unfinished"/>
+      <translation>Operesheni hii inahitaji manenosiri yako ya kufungua kipochi.</translation>
     </message>
     <message>
       <location line="+6"/>
       <source>Unlock wallet</source>
-      <translation type="unfinished"/>
+      <translation>Wezesha Kipochi</translation>
     </message>
     <message>
       <location line="+3"/>
       <source>This operation needs your wallet passphrase to decrypt the wallet.</source>
-      <translation type="unfinished"/>
+      <translation>Operesheni hii inahitaji manenosiri yako ya kufungua kipochi.</translation>
     </message>
     <message>
       <location line="+6"/>
       <source>Decrypt wallet</source>
-      <translation type="unfinished"/>
+      <translation>Toa Usimbuaji fiche kwa kipochi</translation>
     </message>
     <message>
       <location line="+3"/>
       <source>Change passphrase</source>
-      <translation type="unfinished"/>
+      <translation>Badilisha manenosiri</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Enter the old passphrase and new passphrase to the wallet.</source>
-      <translation type="unfinished"/>
+      <translation>Ingiza manenosiri ya zamani na mpya kwenye kipochi.</translation>
     </message>
     <message>
       <location line="+48"/>
       <source>Confirm wallet encryption</source>
-      <translation type="unfinished"/>
+      <translation>Thibitisha Usimbuaji fiche kwa kipochi</translation>
     </message>
     <message>
       <location line="+1"/>
@@ -227,18 +227,18 @@
     <message>
       <location line="+3"/>
       <source>Are you sure you wish to encrypt your wallet?</source>
-      <translation type="unfinished"/>
+      <translation>Je! Una uhakika unataka kusimba kipochi chako?</translation>
     </message>
     <message>
       <location line="+6"/>
       <location line="+55"/>
       <source>Wallet encrypted</source>
-      <translation type="unfinished"/>
+      <translation>Kipochi kilicho na Usimbuaji fiche</translation>
     </message>
     <message>
       <location line="-53"/>
       <source>Your wallet is now encrypted. Remember that encrypting your wallet cannot fully protect your bitcoins from being stolen by malware infecting your computer.</source>
-      <translation type="unfinished"/>
+      <translation>Pochi yako sasa imesimbwa kwa njia fiche. Kumbuka kwamba kusimba mkoba wako hauwezi kulinda bitcoins zako kuibiwa na zisizo kwenye kompyuta yako.</translation>
     </message>
     <message>
       <location line="+6"/>
@@ -311,7 +311,7 @@
     <message>
       <location filename="../bitcoingui.cpp" line="+1019"/>
       <source>Synchronizing with network...</source>
-      <translation>Synchronising with network...</translation>
+      <translation type="unfinished"/>
     </message>
     <message>
       <location line="-774"/>
@@ -346,12 +346,12 @@
     <message>
       <location line="+37"/>
       <source>E&amp;xit</source>
-      <translation type="unfinished"/>
+      <translation>&amp;Kutoka</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Quit application</source>
-      <translation type="unfinished"/>
+      <translation>Toka Programu</translation>
     </message>
     <message>
       <location line="+4"/>
@@ -366,17 +366,17 @@
     <message>
       <location line="+5"/>
       <source>About &amp;Qt</source>
-      <translation type="unfinished"/>
+      <translation>Kuhusu Qt</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Show information about Qt</source>
-      <translation type="unfinished"/>
+      <translation>Onyesha habari kuhusu Qt</translation>
     </message>
     <message>
       <location line="+3"/>
       <source>&amp;Options...</source>
-      <translation type="unfinished"/>
+      <translation>&amp;Chaguzi...</translation>
     </message>
     <message>
       <location line="+2"/>
@@ -386,12 +386,12 @@
     <message>
       <location line="+10"/>
       <source>&amp;Encrypt Wallet...</source>
-      <translation type="unfinished"/>
+      <translation>&amp;Wezesha Usimbuaji fiche kwa kipochi...</translation>
     </message>
     <message>
       <location line="+6"/>
       <source>&amp;Backup Wallet...</source>
-      <translation type="unfinished"/>
+      <translation>&amp;Nakii Kipochi...</translation>
     </message>
     <message>
       <location line="+4"/>
@@ -426,7 +426,7 @@
     <message>
       <location line="+82"/>
       <source>Minimize the Main Window</source>
-      <translation>Minimise the Main Window</translation>
+      <translation type="unfinished"/>
     </message>
     <message>
       <location line="+53"/>
@@ -436,12 +436,12 @@
     <message>
       <location line="+41"/>
       <source>Wallet:</source>
-      <translation type="unfinished"/>
+      <translation>Kipochi:</translation>
     </message>
     <message>
       <location line="+363"/>
       <source>Click to disable network activity.</source>
-      <translation type="unfinished"/>
+      <translation>Bonyeza ili kutoa shughuli za mtandao.</translation>
     </message>
     <message>
       <location line="+2"/>
@@ -466,90 +466,87 @@
     <message>
       <location line="+325"/>
       <source>Proxy is &lt;b&gt;enabled&lt;/b&gt;: %1</source>
-      <translation type="unfinished"/>
+      <translation>Proxy &lt;b&gt;Imewezeshwa&lt;/b&gt;:%1</translation>
     </message>
     <message>
       <location line="-996"/>
       <source>Backup wallet to another location</source>
-      <translation type="unfinished"/>
+      <translation>Hifadhi kipochi mahali pengine</translation>
     </message>
     <message>
       <location line="+5"/>
       <source>Change the passphrase used for wallet encryption</source>
-      <translation type="unfinished"/>
+      <translation>Badilisha manenosiri yanayotumika kwa usimbaji fiche wa mkoba</translation>
     </message>
     <message>
       <location line="+744"/>
       <source>Bitcoin</source>
-      <translation type="unfinished"/>
+      <translation>Bitcoin</translation>
     </message>
     <message>
       <location line="-855"/>
       <source>&amp;Send</source>
-      <translation type="unfinished"/>
+      <translation>&amp;Tuma</translation>
     </message>
     <message>
       <location line="+15"/>
       <source>&amp;Receive</source>
-      <translation type="unfinished"/>
+      <translation>&amp;Pokea</translation>
     </message>
     <message>
       <location line="+79"/>
       <source>&amp;Show / Hide</source>
-      <translation type="unfinished"/>
+      <translation>&amp;Onyesha/Ficha</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Show or hide the main Window</source>
-      <translation type="unfinished"/>
+      <translation>Onyesha au ficha Dirisha kuu</translation>
     </message>
     <message>
       <location line="+6"/>
       <source>Encrypt the private keys that belong to your wallet</source>
-      <translation type="unfinished"/>
+      <translation>Ficha funguo za nenosiri ambazo ni za kipochi chako</translation>
     </message>
     <message>
       <location line="+115"/>
       <source>&amp;File</source>
-      <translation type="unfinished"/>
+      <translation>&amp;Faili</translation>
     </message>
     <message>
       <location line="+10"/>
       <source>&amp;Settings</source>
-      <translation type="unfinished"/>
+      <translation>&amp;Mipangilio</translation>
     </message>
     <message>
       <location line="+73"/>
       <source>&amp;Help</source>
-      <translation type="unfinished"/>
+      <translation>&amp;Msaada</translation>
     </message>
     <message>
       <location line="+9"/>
       <source>Tabs toolbar</source>
-      <translation type="unfinished"/>
+      <translation>Tabs za toolbar</translation>
     </message>
     <message>
       <location line="-172"/>
       <source>Show the list of used sending addresses and labels</source>
-      <translation type="unfinished"/>
+      <translation>Onyesha orodha ya anwani na lebo zilizotumiwa</translation>
     </message>
     <message>
       <location line="+5"/>
       <source>Show the list of used receiving addresses and labels</source>
-      <translation type="unfinished"/>
+      <translation>Onyesha orodha ya anwani na lebo zilizopokea kutumika</translation>
     </message>
     <message>
       <location line="+11"/>
       <source>&amp;Command-line options</source>
-      <translation type="unfinished"/>
+      <translation>chaguo la &amp;mstari- wa- amri</translation>
     </message>
     <message numerus="yes">
       <location line="+541"/>
       <source>%n active connection(s) to Bitcoin network</source>
-      <translation>
-        <numerusform>%n active connection to Bitcoin network</numerusform>
-        <numerusform>%n active connections to Bitcoin network</numerusform>
-      </translation>
+      <translation type="unfinished"/>
     </message>
     <message>
       <location line="+78"/>
@@ -564,10 +561,7 @@
     <message numerus="yes">
       <location line="+19"/>
       <source>Processed %n block(s) of transaction history.</source>
-      <translation>
-        <numerusform>Processed %n block of transaction history.</numerusform>
-        <numerusform>Processed %n blocks of transaction history.</numerusform>
-      </translation>
+      <translation type="unfinished"/>
     </message>
     <message>
       <location line="+22"/>
@@ -587,37 +581,37 @@
     <message>
       <location line="+27"/>
       <source>Error</source>
-      <translation type="unfinished"/>
+      <translation>Kosa</translation>
     </message>
     <message>
       <location line="+3"/>
       <source>Warning</source>
-      <translation type="unfinished"/>
+      <translation>Onyo</translation>
     </message>
     <message>
       <location line="+3"/>
       <source>Information</source>
-      <translation type="unfinished"/>
+      <translation>Habari</translation>
     </message>
     <message>
       <location line="-78"/>
       <source>Up to date</source>
-      <translation type="unfinished"/>
+      <translation>Hadi tarehe</translation>
     </message>
     <message>
       <location line="-682"/>
       <source>Sign &amp;Message...</source>
-      <translation type="unfinished"/>
+      <translation>&amp;Ujumbe unatiwa saini...</translation>
     </message>
     <message>
       <location line="+5"/>
       <source>&amp;Verify Message...</source>
-      <translation type="unfinished"/>
+      <translation>Thibitisha &amp;ujumbe...</translation>
     </message>
     <message>
       <location line="+6"/>
       <source>No&amp;de Window</source>
-      <translation type="unfinished"/>
+      <translation>Dirisha ya &amp;Nodi</translation>
     </message>
     <message>
       <location line="+2"/>
@@ -627,12 +621,12 @@
     <message>
       <location line="+7"/>
       <source>&amp;Sending Addresses</source>
-      <translation type="unfinished"/>
+      <translation>&amp;Anwani za Kutuma</translation>
     </message>
     <message>
       <location line="+5"/>
       <source>&amp;Receiving Addresses</source>
-      <translation type="unfinished"/>
+      <translation>&amp;Anwani za Kupokea</translation>
     </message>
     <message>
       <location line="+95"/>
@@ -642,17 +636,17 @@
     <message>
       <location line="+2"/>
       <source>Minimize</source>
-      <translation>Minimise</translation>
+      <translation>Punguza</translation>
     </message>
     <message>
       <location line="+15"/>
       <source>Zoom</source>
-      <translation type="unfinished"/>
+      <translation>Zoom</translation>
     </message>
     <message>
       <location line="+20"/>
       <source>Main Window</source>
-      <translation type="unfinished"/>
+      <translation>Dirisha Kuu</translation>
     </message>
     <message>
       <location line="+251"/>
@@ -918,7 +912,7 @@
       <location line="+64"/>
       <location line="+59"/>
       <source>(no label)</source>
-      <translation type="unfinished"/>
+      <translation>(Hamna lebo)</translation>
     </message>
     <message>
       <location line="-8"/>
@@ -1096,7 +1090,7 @@
     <message>
       <location filename="../intro.cpp" line="+17"/>
       <source>Bitcoin</source>
-      <translation type="unfinished"/>
+      <translation>Bitcoin</translation>
     </message>
     <message>
       <location line="+7"/>
@@ -1126,7 +1120,7 @@
     <message>
       <location line="+31"/>
       <source>Error</source>
-      <translation type="unfinished"/>
+      <translation>Kosa</translation>
     </message>
     <message numerus="yes">
       <location line="+9"/>
@@ -1301,7 +1295,7 @@
     <message>
       <location line="+17"/>
       <source>Minimize instead of exit the application when the window is closed. When this option is enabled, the application will be closed only after selecting Exit in the menu.</source>
-      <translation>Minimise instead of exit the application when the window is closed. When this option is enabled, the application will be closed only after selecting Exit in the menu.</translation>
+      <translation type="unfinished"/>
     </message>
     <message>
       <location line="+80"/>
@@ -1460,17 +1454,17 @@
     <message>
       <location line="+16"/>
       <source>Show only a tray icon after minimizing the window.</source>
-      <translation>Show on a tray icon after minimising the window.</translation>
+      <translation type="unfinished"/>
     </message>
     <message>
       <location line="+3"/>
       <source>&amp;Minimize to the tray instead of the taskbar</source>
-      <translation>&amp;Minimise to the tray instead of the taskbar</translation>
+      <translation type="unfinished"/>
     </message>
     <message>
       <location line="+10"/>
       <source>M&amp;inimize on close</source>
-      <translation>M&amp;inimise on close</translation>
+      <translation type="unfinished"/>
     </message>
     <message>
       <location line="+21"/>
@@ -1566,7 +1560,7 @@
     <message>
       <location line="+7"/>
       <source>Error</source>
-      <translation type="unfinished"/>
+      <translation>Kosa</translation>
     </message>
     <message>
       <location line="+1"/>
@@ -1595,7 +1589,7 @@
       <location line="+62"/>
       <location line="+386"/>
       <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Bitcoin network after a connection is established, but this process has not completed yet.</source>
-      <translation>The displayed information may be out of date. Your wallet automatically synchronises with the Bitcoin Network after a connection is established, but this process has not completed yet.</translation>
+      <translation type="unfinished"/>
     </message>
     <message>
       <location line="-139"/>
@@ -1756,7 +1750,7 @@
     <message>
       <location line="+7"/>
       <source>Payment request is not initialized.</source>
-      <translation>Payment request is not initialised.</translation>
+      <translation type="unfinished"/>
     </message>
     <message>
       <location line="+26"/>
@@ -2571,7 +2565,7 @@
     <message>
       <location line="+2"/>
       <source>Address</source>
-      <translation type="unfinished"/>
+      <translation>Anwani</translation>
     </message>
     <message>
       <location line="+3"/>
@@ -2581,7 +2575,7 @@
     <message>
       <location line="+6"/>
       <source>Label</source>
-      <translation type="unfinished"/>
+      <translation>Lebo</translation>
     </message>
     <message>
       <location line="+4"/>
@@ -2614,7 +2608,7 @@
     <message>
       <location line="+0"/>
       <source>Label</source>
-      <translation type="unfinished"/>
+      <translation>Lebo</translation>
     </message>
     <message>
       <location line="+0"/>
@@ -2624,7 +2618,7 @@
     <message>
       <location line="+35"/>
       <source>(no label)</source>
-      <translation type="unfinished"/>
+      <translation>(Hamna lebo)</translation>
     </message>
     <message>
       <location line="+7"/>
@@ -2766,7 +2760,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of &quot;100 satos
     <message>
       <location line="+52"/>
       <source>(Smart fee not initialized yet. This usually takes a few blocks...)</source>
-      <translation>(Smart fee not initialised yet. This usually takes a few blocks...)</translation>
+      <translation type="unfinished"/>
     </message>
     <message>
       <location line="+114"/>
@@ -2969,7 +2963,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of &quot;100 satos
     <message>
       <location line="+25"/>
       <source>(no label)</source>
-      <translation type="unfinished"/>
+      <translation>(Hamna lebo)</translation>
     </message>
   </context>
   <context>
@@ -3553,7 +3547,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of &quot;100 satos
     <message>
       <location line="+0"/>
       <source>Label</source>
-      <translation type="unfinished"/>
+      <translation>Lebo</translation>
     </message>
     <message numerus="yes">
       <location line="+57"/>
@@ -3638,7 +3632,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of &quot;100 satos
     <message>
       <location line="+218"/>
       <source>(no label)</source>
-      <translation type="unfinished"/>
+      <translation>(Hamna lebo)</translation>
     </message>
     <message>
       <location line="+35"/>
@@ -3797,7 +3791,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of &quot;100 satos
     <message>
       <location line="+1"/>
       <source>Comma separated file (*.csv)</source>
-      <translation type="unfinished"/>
+      <translation>Faili iliyotenganishwa kwa koma (*.csv)</translation>
     </message>
     <message>
       <location line="+10"/>
@@ -3822,12 +3816,12 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of &quot;100 satos
     <message>
       <location line="+1"/>
       <source>Label</source>
-      <translation type="unfinished"/>
+      <translation>Lebo</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Address</source>
-      <translation type="unfinished"/>
+      <translation>Anwani</translation>
     </message>
     <message>
       <location line="+4"/>
@@ -3904,12 +3898,12 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of &quot;100 satos
     <message>
       <location filename="../walletview.cpp" line="+44"/>
       <source>&amp;Export</source>
-      <translation type="unfinished"/>
+      <translation>&amp;Kutoa Nakala</translation>
     </message>
     <message>
       <location line="+2"/>
       <source>Export the data in the current tab to a file</source>
-      <translation type="unfinished"/>
+      <translation>Hamisha data kwenye kichupo cha sasa kwenye faili</translation>
     </message>
     <message>
       <location line="+242"/>
@@ -3952,7 +3946,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of &quot;100 satos
     <message>
       <location filename="../bitcoinstrings.cpp" line="+28"/>
       <source>Distributed under the MIT software license, see the accompanying file %s or %s</source>
-      <translation>Distributed under the MIT software licence, see the accompanying file %s or %s</translation>
+      <translation type="unfinished"/>
     </message>
     <message>
       <location line="+20"/>
@@ -4077,12 +4071,12 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of &quot;100 satos
     <message>
       <location line="+2"/>
       <source>Error initializing block database</source>
-      <translation>Error initialising block database</translation>
+      <translation type="unfinished"/>
     </message>
     <message>
       <location line="+1"/>
       <source>Error initializing wallet database environment %s!</source>
-      <translation>Error initialising wallet database environment %s!</translation>
+      <translation type="unfinished"/>
     </message>
     <message>
       <location line="+1"/>
@@ -4132,7 +4126,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of &quot;100 satos
     <message>
       <location line="+2"/>
       <source>Initialization sanity check failed. %s is shutting down.</source>
-      <translation>Initialisation sanity check failed. %s is shutting down.</translation>
+      <translation type="unfinished"/>
     </message>
     <message>
       <location line="+5"/>
@@ -4242,7 +4236,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of &quot;100 satos
     <message>
       <location line="+11"/>
       <source>Information</source>
-      <translation type="unfinished"/>
+      <translation>Habari</translation>
     </message>
     <message>
       <location line="+8"/>
@@ -4333,7 +4327,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of &quot;100 satos
     <message>
       <location line="+17"/>
       <source>Warning</source>
-      <translation type="unfinished"/>
+      <translation>Onyo</translation>
     </message>
     <message>
       <location line="+1"/>
@@ -4558,7 +4552,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of &quot;100 satos
     <message>
       <location line="+2"/>
       <source>Section [%s] is not recognized.</source>
-      <translation>Section [%s] is not recognised.</translation>
+      <translation type="unfinished"/>
     </message>
     <message>
       <location line="+29"/>
@@ -4603,7 +4597,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of &quot;100 satos
     <message>
       <location line="+12"/>
       <source>Error</source>
-      <translation type="unfinished"/>
+      <translation>Kosa</translation>
     </message>
   </context>
 </TS>
