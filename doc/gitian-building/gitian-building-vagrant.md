@@ -1,10 +1,3 @@
-Table of Contents
------------------
-
-- [Preparing the Gitian builder host](#preparing-the-gitian-builder-host)
-- [Setting up the Gitian image](#setting-up-the-gitian-image)
-
-
 Preparing the Gitian builder host
 ---------------------------------
 
