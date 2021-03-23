@@ -70,6 +70,17 @@ must follow up status
 and trigger the minimum review period in Guideline 4 before merging (unless it is
 a noted emergency)
 
+**Maintainer Rule 7**: A non-trivial change to critical code must be approved by at
+least two maintainers. Critical code is code where a bug could have severe
+consequences for users if it is not spotted during review, including but not
+limited to consensus rules (risk of acceptance or creation of invalid blocks)
+and cryptographic functions (risk of loss of funds).
+Maintainers may decide as a group whether a set of non-consensus changes meets the
+criticality bar, with the lead maintainer breaking a possible tie. Such
+decisions shall be reflected on the merge request in GitLab, most preferably
+via explicit comments but definitely via raising the Approval threshold of the
+merge request in its configuration to 2.
+
 
 ## Guidelines
 
