@@ -32,12 +32,11 @@ To obtain it, register for a developer account, then download the [Xcode 7.3.1 d
 This file is several gigabytes in size, but only a single directory inside is
 needed:
 ```
-Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk
+Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.*.sdk
 ```
 
-This directory has been extracted and packaged into a tarball whose contents
-are identical with [this one on Github](https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.11.sdk.tar.xz)
-whose sha256sum is ff5f65e4637ef68cd8412a5f451cafe1dd03068bb57d41ca3fc971fb58a67de3.
+This directory has been extracted and packaged into a separate tarball.
+[See here for download instructions.](gitian-building.md#macos-code-signing)
 
 The gitian build process has been adapted to use this `.tar.xz` file.
 Previously, it used a `.tar.gz` version of the same content, which was
