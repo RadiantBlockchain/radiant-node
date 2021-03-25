@@ -219,7 +219,7 @@ build-debian:
     extends: .cache-debian
     needs: []
     script:
-        - (cd build; cmake -GNinja .. -DDOC_ONLINE=ON)
+        - (cd build; cmake -GNinja .. -DENABLE_MAN=OFF -DDOC_ONLINE=ON)
         - (cd build; ninja)
 
     artifacts:
@@ -338,7 +338,7 @@ build-debian-nowallet:
     extends: .cache-debian
     needs: []
     script:
-        - (cd build; cmake -GNinja .. -DBUILD_BITCOIN_WALLET=OFF)
+        - (cd build; cmake -GNinja .. -DENABLE_MAN=OFF -DBUILD_BITCOIN_WALLET=OFF)
         - (cd build; ninja)
 
     artifacts:
@@ -419,7 +419,7 @@ build-debian-clang:
     extends: .debian-clang-env
     needs: []
     script:
-        - (cd build; cmake -GNinja ..)
+        - (cd build; cmake -GNinja .. -DENABLE_MAN=OFF)
         - (cd build; ninja)
 
     artifacts:
@@ -432,7 +432,7 @@ build-debian-makefiles:
     extends: .cache-debian-makefiles
     needs: []
     script:
-        - (cd build; cmake -G"Unix Makefiles" ..)
+        - (cd build; cmake -G"Unix Makefiles" .. -DENABLE_MAN=OFF)
         - (cd build; make -j`nproc`)
 
 build-debian-tests-clang:
@@ -503,7 +503,7 @@ build-debian-debug:
     extends: .cache-debian-debug
     needs: []
     script:
-        - (cd build; cmake -GNinja .. -DCMAKE_BUILD_TYPE=Debug)
+        - (cd build; cmake -GNinja .. -DENABLE_MAN=OFF -DCMAKE_BUILD_TYPE=Debug)
         - (cd build; ninja)
 
     artifacts:
@@ -556,7 +556,7 @@ build-debian-debug-clang:
     extends: .debian-debug-clang-env
     needs: []
     script:
-        - (cd build; cmake -GNinja .. -DCMAKE_BUILD_TYPE=Debug)
+        - (cd build; cmake -GNinja .. -DENABLE_MAN=OFF -DCMAKE_BUILD_TYPE=Debug)
         - (cd build; ninja)
 
     artifacts:
@@ -609,7 +609,8 @@ build-win-64:
     needs: ["build-win-64-depends"]
     script:
         - cd build
-        - cmake -GNinja .. -DBUILD_BITCOIN_QT=OFF
+        - cmake -GNinja .. -DENABLE_MAN=OFF
+                           -DBUILD_BITCOIN_QT=OFF
                            -DBUILD_BITCOIN_SEEDER=OFF
                            -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/Win64.cmake
         - ninja
@@ -635,7 +636,8 @@ build-arm:
     needs: ["build-arm-depends"]
     script:
         - cd build
-        - cmake -GNinja .. -DBUILD_BITCOIN_QT=OFF
+        - cmake -GNinja .. -DENABLE_MAN=OFF
+                           -DBUILD_BITCOIN_QT=OFF
                            -DBUILD_BITCOIN_SEEDER=OFF
                            -DENABLE_GLIBC_BACK_COMPAT=ON
                            -DENABLE_STATIC_LIBSTDCXX=ON
@@ -664,7 +666,8 @@ build-aarch64:
         - cd build
         # The following tests are excluded:
         # - bchn-rpc-getblocktemplate-sigops - OOM issues for aarch64 (see #211)
-        - cmake -GNinja .. -DBUILD_BITCOIN_ZMQ=OFF
+        - cmake -GNinja .. -DENABLE_MAN=OFF
+                           -DBUILD_BITCOIN_ZMQ=OFF
                            -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/LinuxAArch64.cmake
                            -DCMAKE_CROSSCOMPILING_EMULATOR=$(command -v qemu-aarch64-static)
                            -DEXCLUDE_FUNCTIONAL_TESTS=bchn-rpc-getblocktemplate-sigops
@@ -734,7 +737,7 @@ fuzz-libfuzzer:
         - git clone --branch master --single-branch --depth=1 https://gitlab.com/bitcoin-cash-node/bchn-sw/qa-assets
         - mkdir buildFuzzer
         - cd buildFuzzer
-        - cmake -GNinja .. -DCCACHE=OFF -DENABLE_SANITIZERS="fuzzer;address"
+        - cmake -GNinja .. -DENABLE_MAN=OFF -DCCACHE=OFF -DENABLE_SANITIZERS="fuzzer;address"
         - ninja bitcoin-fuzzers link-fuzz-test_runner.py
         - ./test/fuzz/test_runner.py -l DEBUG ../qa-assets/fuzz_seed_corpus/
 

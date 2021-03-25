@@ -68,6 +68,15 @@ pkg install qt5-qmake qt5-buildtools qt5-linguisttools qt5-widgets protobuf qt5-
 You can do without the `libqrencode-4.0.0` package, just pass `-DENABLE_QRCODE=OFF`
 on the `cmake` command line.
 
+To enable manpages:
+
+```bash
+pkg install help2man
+```
+
+If not installed, manpage generation should be disabled by passing `-DENABLE_MAN=OFF`
+to `cmake`.
+
 ## Building Bitcoin Cash Node
 
 Download the source code:

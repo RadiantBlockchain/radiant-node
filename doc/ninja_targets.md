@@ -339,5 +339,7 @@ All these options are passed via `-D` (defines) to the `cmake` command.
 - -DEXCLUDE_FUNCTIONAL_TESTS # Skip specified functional tests for
   `check-functional` targets.
 
+- -DENABLE_MAN=OFF # Disable manpage generation/installation
+
 - -DDOC_ONLINE=ON # Adapt Markdown and HTML documentation for publication on docs.bitcoincashnode.org
 

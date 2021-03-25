@@ -143,6 +143,7 @@ script: |
     -DBUILD_BITCOIN_QT=OFF \
     -DBUILD_LIBBITCOINCONSENSUS=OFF \
     -DENABLE_CLANG_TIDY=OFF \
+    -DENABLE_MAN=OFF \
     -DENABLE_QRCODE=OFF \
     -DENABLE_UPNP=OFF
 
@@ -166,19 +167,19 @@ script: |
   CMAKE_EXTRA_OPTIONS[x86_64-w64-mingw32]="-DCPACK_PACKAGE_FILE_NAME=${DISTNAME}-win64-setup-unsigned"
 
   ORIGPATH="$PATH"
-  # Extract the release tarball into a dir for each host and build
+  # Create a build dir for each host and build
   for i in ${HOSTS}; do
     export PATH=${BASEPREFIX}/${i}/native/bin:${WRAP_DIR}:${ORIGPATH}
     mkdir -p distsrc-${i}
     cd distsrc-${i}
     INSTALLPATH=`pwd`/installed/${DISTNAME}
     mkdir -p ${INSTALLPATH}
-    tar --strip-components=1 -xf ../$SOURCEDIST
 
     cmake -GNinja .. \
       -DCMAKE_TOOLCHAIN_FILE=${SOURCEDIR}/cmake/platforms/${CMAKE_TOOLCHAIN_FILE[${i}]} \
       -DCLIENT_VERSION_IS_RELEASE=ON \
       -DENABLE_CLANG_TIDY=OFF \
+      -DENABLE_MAN=OFF \
       -DENABLE_REDUCE_EXPORTS=ON \
       -DBUILD_BITCOIN_SEEDER=OFF \
       -DCPACK_STRIP_FILES=ON \
