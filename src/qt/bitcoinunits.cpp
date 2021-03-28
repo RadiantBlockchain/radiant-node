@@ -107,7 +107,7 @@ bool BitcoinUnits::decimalSeparatorIsComma() {
     // * decimal separators other than dot and comma are rare, especially on computers;
     // this function suggests the dot as decimal separator for displaying amounts,
     // with comma as the fallback if a reader could mistake the dot for a group separator.
-    return QLocale().groupSeparator() == ".";
+    return QString(QLocale().groupSeparator()) == ".";
 }
 
 QString BitcoinUnits::format(int unit, const Amount nIn, bool fPlus,
