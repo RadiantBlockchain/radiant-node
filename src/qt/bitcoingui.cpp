@@ -614,8 +614,8 @@ void BitcoinGUI::setClientModel(ClientModel *_clientModel) {
 
         modalOverlay->setKnownBestHeight(
             _clientModel->getHeaderTipHeight(),
-            QDateTime::fromSecsSinceEpoch(_clientModel->getHeaderTipTime()));
-        setNumBlocks(m_node.getNumBlocks(), QDateTime::fromSecsSinceEpoch(m_node.getLastBlockTime()),
+            GUIUtil::dateTimeFromTime(_clientModel->getHeaderTipTime()));
+        setNumBlocks(m_node.getNumBlocks(), GUIUtil::dateTimeFromTime(m_node.getLastBlockTime()),
                      QString::fromStdString(m_node.getLastBlockHash().ToString()), m_node.getVerificationProgress(), false);
         connect(_clientModel, &ClientModel::numBlocksChanged, this,
                 &BitcoinGUI::setNumBlocks);

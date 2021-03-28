@@ -4,6 +4,7 @@
 
 #include <qt/transactionfilterproxy.h>
 
+#include <qt/guiutil.h>
 #include <qt/transactionrecord.h>
 #include <qt/transactiontablemodel.h>
 
@@ -12,10 +13,9 @@
 #include <cstdlib>
 
 // Earliest date that can be represented (far in the past)
-const QDateTime TransactionFilterProxy::MIN_DATE = QDateTime::fromSecsSinceEpoch(0);
+const QDateTime TransactionFilterProxy::MIN_DATE = GUIUtil::dateTimeFromTime(0);
 // Last date that can be represented (far in the future)
-const QDateTime TransactionFilterProxy::MAX_DATE =
-    QDateTime::fromSecsSinceEpoch(0xFFFFFFFF);
+const QDateTime TransactionFilterProxy::MAX_DATE = GUIUtil::dateTimeFromTime(0xFF'FF'FF'FF);
 
 TransactionFilterProxy::TransactionFilterProxy(QObject *parent)
     : QSortFilterProxyModel(parent), dateFrom(MIN_DATE), dateTo(MAX_DATE),

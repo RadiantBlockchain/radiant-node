@@ -227,7 +227,7 @@ static void BlockTipChanged(ClientModel *clientmodel, bool initialSync,
         QMetaObject::invokeMethod(
             clientmodel, "numBlocksChanged", Qt::QueuedConnection,
             Q_ARG(int, height),
-            Q_ARG(QDateTime, QDateTime::fromSecsSinceEpoch(blockTime)),
+            Q_ARG(QDateTime, GUIUtil::dateTimeFromTime(blockTime)),
             Q_ARG(QString, QString::fromStdString(blockHash.ToString())),
             Q_ARG(double, verificationProgress), Q_ARG(bool, fHeader));
         nLastUpdateNotification = now;

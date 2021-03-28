@@ -642,7 +642,7 @@ void RPCConsole::setClientModel(ClientModel *model) {
                 &RPCConsole::setNumConnections);
 
         interfaces::Node &node = clientModel->node();
-        setNumBlocks(node.getNumBlocks(), QDateTime::fromSecsSinceEpoch(node.getLastBlockTime()),
+        setNumBlocks(node.getNumBlocks(), GUIUtil::dateTimeFromTime(node.getLastBlockTime()),
                      QString::fromStdString(node.getLastBlockHash().ToString()), node.getVerificationProgress(), false);
         connect(model, &ClientModel::numBlocksChanged, this, &RPCConsole::setNumBlocks);
 

@@ -78,7 +78,7 @@ QString dateTimeStr(const QDateTime &date) {
 }
 
 QString dateTimeStr(qint64 nTime) {
-    return dateTimeStr(QDateTime::fromSecsSinceEpoch(nTime));
+    return dateTimeStr(dateTimeFromTime(nTime));
 }
 
 QString dateTimeStrLong(const QDateTime &dateTime) {
@@ -91,7 +91,11 @@ QString dateTimeStrLong(const QDateTime &dateTime) {
 }
 
 QString dateTimeStrLong(qint64 nTime) {
-    return dateTimeStrLong(QDateTime::fromSecsSinceEpoch(nTime));
+    return dateTimeStrLong(dateTimeFromTime(nTime));
+}
+
+QDateTime dateTimeFromTime(qint64 nTime) {
+    return QDateTime::fromMSecsSinceEpoch(nTime * 1000);
 }
 
 QFont fixedPitchFont() {

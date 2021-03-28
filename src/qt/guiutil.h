@@ -51,6 +51,9 @@ QString dateTimeStrLong(const QDateTime &dateTime);
 // Like the above but takes a time value as a time_t equivalent (seconds since epoch)
 QString dateTimeStrLong(qint64 nTime);
 
+// Returns a QDateTime object given a time_t equivalent (seconds sinch epoch)
+QDateTime dateTimeFromTime(qint64 nTime);
+
 // Return a monospace font
 QFont fixedPitchFont();
 
