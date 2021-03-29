@@ -47,8 +47,9 @@ information details on the DSProof implementation in BCHN.
 
 ## Removed functionality
 
-...
-
+Manpages are no longer available in the autotools build system. You must switch
+to the CMake build system to continue using manpages. Note the autotools build
+system has been deprecated since v22.0.0.
 
 ## New RPC methods
 
