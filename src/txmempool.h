@@ -285,11 +285,9 @@ struct CompareTxMemPoolEntryByModifiedFeeRate {
     bool operator()(const CTxMemPoolEntry &a, const CTxMemPoolEntry &b) const {
         const CFeeRate frA = a.GetModifiedFeeRate(), frB = b.GetModifiedFeeRate();
         if (frA == frB) {
-            // Ties are broken by whichever was seen first (this helps mining code).
-            // Note that it's still possible for two entries to compare equal here
-            // if they have the same time and fee -- which is fine; it actually
-            // makes inserts to the mempool faster to allow for this.
-            return a.GetTime() < b.GetTime();
+            // Ties are broken by whichever is topologically earlier
+            // (this helps mining code avoid some backtracking).
+            return a.GetEntryId() < b.GetEntryId();
         }
         return frA > frB;
     }
