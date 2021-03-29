@@ -5,6 +5,7 @@
 #ifndef BITCOIN_QT_RECENTREQUESTSTABLEMODEL_H
 #define BITCOIN_QT_RECENTREQUESTSTABLEMODEL_H
 
+#include <qt/guiutil.h>
 #include <qt/walletmodel.h>
 
 #include <QAbstractTableModel>
@@ -33,7 +34,7 @@ public:
         READWRITE(nDate);
         READWRITE(recipient);
 
-        if (ser_action.ForRead()) date = QDateTime::fromSecsSinceEpoch(nDate);
+        if (ser_action.ForRead()) date = GUIUtil::dateTimeFromTime(nDate);
     }
 };
 
