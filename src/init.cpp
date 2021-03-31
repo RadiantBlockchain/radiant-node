@@ -985,7 +985,7 @@ void SetupServerArgs() {
                            DEFAULT_BYTES_PER_SIGOP),
                  true, OptionsCategory::NODE_RELAY);
     gArgs.AddArg("-datacarriersize=<n>",
-                 strprintf("Maximum size of data script in OP_RETURN transactions "
+                 strprintf("Maximum total size of OP_RETURN output scripts in a single transaction "
                            "we relay and mine (in bytes, 0 to reject all OP_RETURN transactions, default: %u)",
                            MAX_OP_RETURN_RELAY),
                  true, OptionsCategory::NODE_RELAY);

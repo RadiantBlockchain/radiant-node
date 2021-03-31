@@ -88,7 +88,8 @@ BOOST_AUTO_TEST_CASE(sign) {
         txFrom.vout[i + 4].scriptPubKey = standardScripts[i];
         txFrom.vout[i + 4].nValue = COIN;
     }
-    BOOST_CHECK(IsStandardTx(CTransaction(txFrom), reason));
+    BOOST_CHECK(IsStandardTx(CTransaction(txFrom), reason, /* allowMultipleOpReturn */ false));
+    BOOST_CHECK(IsStandardTx(CTransaction(txFrom), reason, /* allowMultipleOpReturn */ true));
 
     // Spending transactions
     CMutableTransaction txTo[8];
@@ -196,7 +197,8 @@ BOOST_AUTO_TEST_CASE(set) {
         txFrom.vout[i].scriptPubKey = outer[i];
         txFrom.vout[i].nValue = CENT;
     }
-    BOOST_CHECK(IsStandardTx(CTransaction(txFrom), reason));
+    BOOST_CHECK(IsStandardTx(CTransaction(txFrom), reason, /* allowMultipleOpReturn */ false));
+    BOOST_CHECK(IsStandardTx(CTransaction(txFrom), reason, /* allowMultipleOpReturn */ true));
 
     // Spending transactions
     CMutableTransaction txTo[4];
@@ -214,8 +216,8 @@ BOOST_AUTO_TEST_CASE(set) {
                                           txTo[i], 0,
                                           SigHashType().withForkId()),
                             strprintf("SignSignature %d", i));
-        BOOST_CHECK_MESSAGE(IsStandardTx(CTransaction(txTo[i]), reason),
-                            strprintf("txTo[%d].IsStandard", i));
+        BOOST_CHECK_MESSAGE(IsStandardTx(CTransaction(txTo[i]), reason, /* allowMultipleOpReturn */ false), strprintf("txTo[%d].IsStandard", i));
+        BOOST_CHECK_MESSAGE(IsStandardTx(CTransaction(txTo[i]), reason, /* allowMultipleOpReturn */ true), strprintf("txTo[%d].IsStandard", i));
     }
 }
 

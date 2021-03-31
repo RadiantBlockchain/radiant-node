@@ -538,7 +538,7 @@ AcceptToMemoryPoolWorker(const Config &config, CTxMemPool &pool,
 
     // Rather not work on nonstandard transactions (unless -testnet)
     std::string reason;
-    if (fRequireStandard && !IsStandardTx(tx, reason)) {
+    if (fRequireStandard && !IsStandardTx(tx, reason, /* allowMultipleOpReturn */ IsTachyonEnabled(consensusParams, ::ChainActive().Tip()))) {
         return state.DoS(0, false, REJECT_NONSTANDARD, reason);
     }
 
