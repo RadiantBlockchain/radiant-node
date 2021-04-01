@@ -510,6 +510,7 @@ static std::string IPv6ToString(Span<const uint8_t> a) {
 std::string CNetAddr::ToStringIP() const {
     switch (m_net) {
         case NET_IPV4:
+            return IPv4ToString(m_addr);
         case NET_IPV6: {
             CService serv(*this, 0);
             if (const auto optPair = serv.GetSockAddr()) {
@@ -519,9 +520,6 @@ std::string CNetAddr::ToStringIP() const {
                                  NI_NUMERICHOST)) {
                     return std::string(name);
                 }
-            }
-            if (m_net == NET_IPV4) {
-                IPv4ToString(m_addr);
             }
             return IPv6ToString(m_addr);
         }
