@@ -4,37 +4,17 @@ Double Spend Proofs - BCHN Implementation Notes
 This document serves a two-fold purpose:
 
 1. To give information to users of the BCHN software about expected behavior
-   of the DSProof feature which is not fully addressed in the current draft
-   specification maintained upstream
+   of the DSProof feature which is not fully addressed in the current
+   specification.
 
-2. To provide additional notes about interpretation of the upstream
+2. To provide additional notes about interpretation of the
    specification in instances where more clarity is deemed useful -
-   for anyone trying to understand or implement the upstream specification.
-
-Note about upstream DSProof specification
------------------------------------------
-
-A copy of the most recent upstream specification should be found at
-
-<https://gitlab.com/-/snippets/1883331>
-
-It is currently in Draft, and some review discussion can be found below it.
-
-This draft specification has been merged into the common BCH specification
-repository maintained by Software Verde, and has since started to appear
-on the downstream sites such as
-
-<https://documentation.cash/protocol/network/messages/dsproof-beta>
-
-We cannot currently include this specification in the documentation set
-here because its license is CC-BY-SA and it would need to be dual-licensed
-under MIT license to be included with the BCHN client.
-
+   for anyone trying to understand or implement the specification.
 
 DSProof implementation behavior in BCHN
 ---------------------------------------
 
-As the DSProof specification is still in Draft, we are providing here
+We are providing here
 some additional notes on the BCHN implementation of this feature.
 
 1. The DSProof functionality is enabled by default, this means
@@ -91,18 +71,15 @@ some additional notes on the BCHN implementation of this feature.
      will get punished (misbehaviour score increased by 10 points).
 
 
-Notes on the upstream specification(s)
---------------------------------------
+Notes on the DSProof specification
+----------------------------------
 
-1. The sizes of the `FirstSpender` and `DoubleSpender` fields are variable.
+1. A copy of the specification can be found at
+   <https://upgradespecs.bitcoincashnode.org/dsproof/>.
 
-2. The value of the  first `list-size` field in the spender record
+2. The sizes of the `FirstSpender` and `DoubleSpender` fields are variable.
+
+3. The value of the  first `list-size` field in the spender record
    (the `Number-of-pushdata's`) is currently fixed to 1, and thus its
    encoding only occupies a single byte.
 
-3. The specification license (CC-BY-SA) is stricter than MIT, preventing
-   its direct inclusion together with the BCHN documentation.
-
-4. The document linked in the References can also be found within BCHN
-   upgrade documents at
-   <https://upgradespecs.bitcoincashnode.org/replay-protected-sighash/>
