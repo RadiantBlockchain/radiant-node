@@ -76,11 +76,11 @@ cp bitcoin-cash-node/contrib/gitian-build.py .
 You only need to do this once:
 
 ```bash
-./gitian-build.py --setup satoshi 0.21.0
+./gitian-build.py --setup satoshi 22.2.0
 ```
 
-Where `satoshi` is your GitLab name and `0.21.0` is the most recent tag
-(without `v`).
+Where `satoshi` is your GitLab name and `22.2.0` represents the most recent tag
+(without `v`) - use the latest released version available.
 
 ## Build binaries
 
@@ -90,7 +90,7 @@ a few developers have gitian signed the non-codesigned binaries.
 To build the most recent tag:
 
 ```bash
-./gitian-build.py --detach-sign --no-commit -b satoshi 0.21.0
+./gitian-build.py --detach-sign --no-commit -b satoshi 22.2.0
 ```
 
 To speed up the build, use `-j 5 -m 5000` as the first arguments, where `5` is
@@ -105,7 +105,7 @@ sign them:
 
 ```bash
 export NAME=satoshi
-gpg --output $VERSION-linux/$NAME/bitcoin-cash-node-linux-0.21.0-build.assert.sig --detach-sign 0.21.0-linux/$NAME/bitcoin-cash-node-linux-0.21.0-build.assert
-gpg --output $VERSION-osx-unsigned/$NAME/bitcoin-cash-node-osx-0.21.0-build.assert.sig --detach-sign 0.21.0-osx-unsigned/$NAME/bitcoin-cash-node-osx-0.21.0-build.assert
-gpg --output $VERSION-win-unsigned/$NAME/bitcoin-cash-node-win-0.21.0-build.assert.sig --detach-sign 0.21.0-win-unsigned/$NAME/bitcoin-cash-node-win-0.21.0-build.assert
+gpg --output $VERSION-linux/$NAME/bitcoin-cash-node-linux-22.2.0-build.assert.sig --detach-sign 22.2.0-linux/$NAME/bitcoin-cash-node-linux-22.2.0-build.assert
+gpg --output $VERSION-osx-unsigned/$NAME/bitcoin-cash-node-osx-22.2.0-build.assert.sig --detach-sign 22.2.0-osx-unsigned/$NAME/bitcoin-cash-node-osx-22.2.0-build.assert
+gpg --output $VERSION-win-unsigned/$NAME/bitcoin-cash-node-win-22.2.0-build.assert.sig --detach-sign 22.2.0-win-unsigned/$NAME/bitcoin-cash-node-win-22.2.0-build.assert
 ```

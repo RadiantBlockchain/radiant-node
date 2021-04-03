@@ -110,3 +110,8 @@ Execute the following as user `gitianuser`:
 cd gitian-builder
 make -C ../bitcoin-cash-node/depends download SOURCES_PATH=`pwd`/cache/common
 ```
+
+## Resuming the setup
+
+Return to the main Gitian building document and continue at the (optional)
+steps for [installing the MacOS SDK](../gitian-building.md#macos-code-signing).
