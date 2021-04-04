@@ -524,8 +524,8 @@ void SetupServerArgs() {
         "-expire",
         strprintf(
             "Limit functionality of this node after the tentative upgrade "
-            "date of May 15, 2021 (date can be set with "
-            "-tachyonactivationtime=<n>). To avoid inadvertently using the "
+            "date of May 15, 2022 (date can be set with "
+            "-upgrade8activationtime=<n>). To avoid inadvertently using the "
             "wrong chain, the RPC interface will be disabled at that time. "
             "(default: %d)", software_outdated::DEFAULT_EXPIRE),
         false, OptionsCategory::OPTIONS);
@@ -2165,10 +2165,9 @@ bool AppInitMain(Config &config, RPCServer &rpcServer,
      * Set up the "software outdated" mechanism.
      */
     if (gArgs.GetBoolArg("-expire", software_outdated::DEFAULT_EXPIRE)) {
-        // The software outdated warning will start to happen 30 days before
-        // tachyon activates which by default is 30 days before May 15th, 2021.
-        software_outdated::nTime = gArgs.GetArg("-tachyonactivationtime",
-                                                chainparams.GetConsensus().tachyonActivationTime);
+        // The software outdated warning will start to happen 30 days before May 15th, 2022.
+        software_outdated::nTime = gArgs.GetArg("-upgrade8activationtime",
+                                                chainparams.GetConsensus().upgrade8ActivationTime);
         if (software_outdated::nTime > 0) {
             software_outdated::fDisableRPCOnExpiry =
                     gArgs.GetBoolArg("-expirerpc", software_outdated::DEFAULT_EXPIRE_RPC);

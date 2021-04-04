@@ -36,12 +36,12 @@ class WarnOnOutdatedTest(BitcoinTestFramework):
         afterUpgradeTime = DUMMY_ACTIVATION_TIME + 3600 * 24 * 2
 
         common = [
-            "-tachyonactivationtime={}".format(DUMMY_ACTIVATION_TIME),
+            "-upgrade8activationtime={}".format(DUMMY_ACTIVATION_TIME),
             "-noexpirerpc"
         ]
 
         self.extra_args = [
-            ["-tachyonactivationtime={}".format(time.time() + OUTDATED_WARN_START + FUZZ_TIME), "-noexpirerpc"],
+            ["-upgrade8activationtime={}".format(time.time() + OUTDATED_WARN_START + FUZZ_TIME), "-noexpirerpc"],
             common + ["-mocktime={}".format(warningTime), ],
             common + ["-mocktime={}".format(warningTime), "-noexpire"],
             common + ["-mocktime={}".format(afterUpgradeTime), ],
