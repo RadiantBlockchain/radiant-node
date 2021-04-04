@@ -1,6 +1,6 @@
-# Release Notes for Bitcoin Cash Node version 22.3.0
+# Release Notes for Bitcoin Cash Node version 23.0.0
 
-Bitcoin Cash Node version 22.3.0 is now available from:
+Bitcoin Cash Node version 23.0.0 is now available from:
 
   <https://bitcoincashnode.org>
 
@@ -74,7 +74,7 @@ non-pruned blocks.
 
 ## Regressions
 
-Bitcoin Cash Node 22.3.0 does not introduce any known regressions compared
+Bitcoin Cash Node 23.0.0 does not introduce any known regressions compared
 to 22.2.0.
 
 
