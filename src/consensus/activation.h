@@ -39,8 +39,11 @@ bool IsPhononEnabled(const Consensus::Params &params,
 bool IsAxionEnabled(const Consensus::Params &params,
                     const CBlockIndex *pindexPrev);
 
-/** Check if tentative May 15th, 2021 protocol upgrade has activated. */
+/** Check if May 15th, 2021 protocol upgrade has activated. */
 bool IsTachyonEnabled(const Consensus::Params &params,
                       const CBlockIndex *pindexPrev);
+
+/** Check if tentative May 15th, 2022 protocol upgrade has activated. */
+bool IsUpgrade8Enabled(const Consensus::Params &params, const CBlockIndex *pindexPrev);
 
 #endif // BITCOIN_CONSENSUS_ACTIVATION_H
