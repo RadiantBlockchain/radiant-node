@@ -429,32 +429,12 @@ static std::string EntryDescriptionString() {
            "entered pool in seconds since 1 Jan 1970 GMT\n"
            "    \"height\" : n,           (numeric) block height when "
            "transaction entered pool\n"
-           "    \"descendantcount\" : n,  (numeric) number of in-mempool "
-           "descendant transactions (including this one)\n"
-           "    \"descendantsize\" : n,   (numeric) transaction size "
-           "of in-mempool descendants (including this one)\n"
-           "    \"descendantfees\" : n,   (numeric) modified fees (see above) "
-           "of in-mempool descendants (including this one) (DEPRECATED)\n"
-           "    \"ancestorcount\" : n,    (numeric) number of in-mempool "
-           "ancestor transactions (including this one)\n"
-           "    \"ancestorsize\" : n,     (numeric) transaction size "
-           "of in-mempool ancestors (including this one)\n"
-           "    \"ancestorfees\" : n,     (numeric) modified fees (see above) "
-           "of in-mempool ancestors (including this one) (DEPRECATED)\n"
            "    \"fees\" : {\n"
            "        \"base\" : n,         (numeric) transaction fee in " +
            CURRENCY_UNIT +
            "\n"
            "        \"modified\" : n,     (numeric) transaction fee with fee "
            "deltas used for mining priority in " +
-           CURRENCY_UNIT +
-           "\n"
-           "        \"ancestor\" : n,     (numeric) modified fees (see above) "
-           "of in-mempool ancestors (including this one) in " +
-           CURRENCY_UNIT +
-           "\n"
-           "        \"descendant\" : n,   (numeric) modified fees (see above) "
-           "of in-mempool descendants (including this one) in " +
            CURRENCY_UNIT +
            "\n"
            "    }\n"
@@ -473,27 +453,19 @@ static UniValue::Object entryToJSON(const CTxMemPool &pool, const CTxMemPoolEntr
     AssertLockHeld(pool.cs);
 
     UniValue::Object info;
-    info.reserve(14);
+    info.reserve(8);
 
     UniValue::Object fees;
-    fees.reserve(4);
+    fees.reserve(2);
     fees.emplace_back("base", ValueFromAmount(e.GetFee()));
     fees.emplace_back("modified", ValueFromAmount(e.GetModifiedFee()));
-    fees.emplace_back("ancestor", ValueFromAmount(e.GetModFeesWithAncestors()));
-    fees.emplace_back("descendant", ValueFromAmount(e.GetModFeesWithDescendants()));
-    info.emplace_back("fees", std::move(fees));
 
+    info.emplace_back("fees", std::move(fees));
     info.emplace_back("size", e.GetTxSize());
     info.emplace_back("fee", ValueFromAmount(e.GetFee()));
     info.emplace_back("modifiedfee", ValueFromAmount(e.GetModifiedFee()));
     info.emplace_back("time", e.GetTime());
     info.emplace_back("height", e.GetHeight());
-    info.emplace_back("descendantcount", e.GetCountWithDescendants());
-    info.emplace_back("descendantsize", e.GetSizeWithDescendants());
-    info.emplace_back("descendantfees", e.GetModFeesWithDescendants() / SATOSHI);
-    info.emplace_back("ancestorcount", e.GetCountWithAncestors());
-    info.emplace_back("ancestorsize", e.GetSizeWithAncestors());
-    info.emplace_back("ancestorfees", e.GetModFeesWithAncestors() / SATOSHI);
 
     const CTransaction &tx = e.GetTx();
 
