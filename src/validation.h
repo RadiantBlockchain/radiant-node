@@ -458,6 +458,17 @@ bool AcceptToMemoryPool(const Config &config, CTxMemPool &pool,
                         const Amount nAbsurdFee, bool test_accept = false)
     EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
+/**
+ * (try to) add transaction to memory pool with a specified acceptance time.
+ */
+bool
+AcceptToMemoryPoolWithTime(const Config &config, CTxMemPool &pool,
+                           CValidationState &state, const CTransactionRef &tx,
+                           bool *pfMissingInputs, int64_t nAcceptTime,
+                           bool bypass_limits, const Amount nAbsurdFee,
+                           bool test_accept = false)
+    EXCLUSIVE_LOCKS_REQUIRED(cs_main);
+
 /** Convert CValidationState to a human-readable message for logging */
 std::string FormatStateMessage(const CValidationState &state);
 
