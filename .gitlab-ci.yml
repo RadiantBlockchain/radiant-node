@@ -715,7 +715,10 @@ test-aarch64-functional:
         QEMU_LD_PREFIX: /usr/aarch64-linux-gnu
     script:
         - (cd build; ninja -t restat)
-        - (cd build; ninja check-functional)
+        - export NON_TESTS="example_test|test_runner|combine_logs|create_cache"
+        - export LONG_TESTS="abc-p2p-compactblocks|abc-p2p-fullblocktest|feature_block|feature_dbcrash|feature_pruning|mining_getblocktemplate_longpoll|p2p_timeouts|wallet_backup"
+        - export EXCLUDED_TESTS="getblocktemplate_errors|getblocktemplate-timing"
+        - (cd build; test/functional/test_runner.py `ls -1 ../test/functional/*.py | xargs -n 1 basename | egrep -v "($NON_TESTS|$LONG_TESTS|$EXCLUDED_TESTS)"`)
     dependencies:
         - build-aarch64
     artifacts:
