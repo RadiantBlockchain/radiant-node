@@ -140,10 +140,10 @@ void WalletInit::AddWalletOptions() const {
                            DEFAULT_WALLET_PRIVDB),
                  true, OptionsCategory::WALLET_DEBUG_TEST);
     gArgs.AddArg("-walletrejectlongchains",
-                 strprintf("Wallet will not create transactions that violate "
-                           "mempool chain limits (default: %d)",
+                 strprintf("Prior to the May 2021 Bitcoin Cash Network Upgrade, wallet will not create transactions that violate "
+                           "mempool chain limits (deprecated, default: %d)",
                            DEFAULT_WALLET_REJECT_LONG_CHAINS),
-                 true, OptionsCategory::WALLET_DEBUG_TEST);
+                 true, OptionsCategory::WALLET_DEBUG_TEST); // Remove after Tachyon
 }
 
 bool WalletInit::ParameterInteraction() const {

@@ -854,28 +854,28 @@ void SetupServerArgs() {
                            DEFAULT_STOPATHEIGHT),
                  true, OptionsCategory::DEBUG_TEST);
     gArgs.AddArg("-limitancestorcount=<n>",
-                 strprintf("Do not accept transactions if number of in-mempool "
-                           "ancestors is <n> or more (default: %u)",
+                 strprintf("Prior to the May 2021 Bitcoin Cash Network Upgrade, do not accept transactions if number of in-mempool "
+                           "ancestors is <n> or more (deprecated, default: %u)",
                            DEFAULT_ANCESTOR_LIMIT),
-                 true, OptionsCategory::DEBUG_TEST);
+                 true, OptionsCategory::DEBUG_TEST); // Remove after Tachyon
     gArgs.AddArg(
         "-limitancestorsize=<n>",
-        strprintf("Do not accept transactions whose size with all in-mempool "
-                  "ancestors exceeds <n> kilobytes (default: %u)",
+        strprintf("Prior to the May 2021 Bitcoin Cash Network Upgrade, do not accept transactions whose size with all in-mempool "
+                  "ancestors exceeds <n> kilobytes (deprecated, default: %u)",
                   DEFAULT_ANCESTOR_SIZE_LIMIT),
-        true, OptionsCategory::DEBUG_TEST);
+        true, OptionsCategory::DEBUG_TEST); // Remove after Tachyon
     gArgs.AddArg(
         "-limitdescendantcount=<n>",
-        strprintf("Do not accept transactions if any ancestor would have <n> "
-                  "or more in-mempool descendants (default: %u)",
+        strprintf("Prior to the May 2021 Bitcoin Cash Network Upgrade, do not accept transactions if any ancestor would have <n> "
+                  "or more in-mempool descendants (deprecated, default: %u)",
                   DEFAULT_DESCENDANT_LIMIT),
-        true, OptionsCategory::DEBUG_TEST);
+        true, OptionsCategory::DEBUG_TEST); // Remove after Tachyon
     gArgs.AddArg(
         "-limitdescendantsize=<n>",
-        strprintf("Do not accept transactions if any ancestor would have more "
-                  "than <n> kilobytes of in-mempool descendants (default: %u).",
+        strprintf("Prior to the May 2021 Bitcoin Cash Network Upgrade, do not accept transactions if any ancestor would have more "
+                  "than <n> kilobytes of in-mempool descendants (deprecated, default: %u).",
                   DEFAULT_DESCENDANT_SIZE_LIMIT),
-        true, OptionsCategory::DEBUG_TEST);
+        true, OptionsCategory::DEBUG_TEST); // Remove after Tachyon
     gArgs.AddArg("-addrmantest", "Allows to test address relay on localhost",
                  true, OptionsCategory::DEBUG_TEST);
 
