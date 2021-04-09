@@ -1424,7 +1424,7 @@ void DisconnectedBlockTransactions::updateMempoolForReorg(const Config &config,
             // restore saved PrioritiseTransaction state and nAcceptTime
             const auto ptxInfo = getTxInfo(tx);
             bool hasFeeDelta = false;
-            if (ptxInfo && ptxInfo->feeDelta > Amount::zero()) {
+            if (ptxInfo && ptxInfo->feeDelta != Amount::zero()) {
                 // manipulate mapDeltas directly (faster than calling PrioritiseTransaction)
                 LOCK(g_mempool.cs);
                 g_mempool.mapDeltas[tx->GetId()] = ptxInfo->feeDelta;
