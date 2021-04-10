@@ -57,6 +57,9 @@ Network upgrades
 * **[November 15th 2020](https://upgradespecs.bitcoincashnode.org/2020-11-15-upgrade/)** (*Axion*) upgrade implementation completed in [v22.0.0](release-notes/release-notes-22.0.0.md):
     * [ASERT Difficulty Adjustment Algorithm](https://upgradespecs.bitcoincashnode.org/2020-11-15-asert/) takes effect as of [v22.0.0](release-notes/release-notes-22.0.0.md) ([MR!692](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/merge_requests/692)).
     * Automatic Replay Protection has been unscheduled in [v22.0.0](release-notes/release-notes-22.0.0.md) ([MR!709](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/merge_requests/709), [MR!715](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/merge_requests/715)).
+* **[May 15th 2021](https://upgradespecs.bitcoincashnode.org/2021-05-15-upgrade/)** (*Tachyon*) upgrade implementation completed in v23.0.0:
+    * [Unconfirmed transaction chain limit](https://upgradespecs.bitcoincashnode.org/unconfirmed-transaction-chain-limit/) is removed in v23.0.0 ([MR!1130](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/merge_requests/1130)).
+    * [Multiple OP_RETURN outputs](https://upgradespecs.bitcoincashnode.org/CHIP-2021-03-12_Multiple_OP_RETURN_for_Bitcoin_Cash/) are allowed in v23.0.0 ([MR!1115](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/merge_requests/1115)).
 
 Other
 -----
