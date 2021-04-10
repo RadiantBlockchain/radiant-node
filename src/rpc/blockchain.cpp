@@ -420,11 +420,6 @@ static UniValue getdifficulty(const Config& config,
 
 static std::string EntryDescriptionString() {
     return "    \"size\" : n,             (numeric) transaction size.\n"
-           "    \"fee\" : n,              (numeric) transaction fee in " +
-           CURRENCY_UNIT + "(DEPRECATED)" +
-           "\n"
-           "    \"modifiedfee\" : n,      (numeric) transaction fee with fee "
-           "deltas used for mining priority (DEPRECATED)\n"
            "    \"time\" : n,             (numeric) local time transaction "
            "entered pool in seconds since 1 Jan 1970 GMT\n"
            "    \"height\" : n,           (numeric) block height when "
@@ -453,7 +448,7 @@ static UniValue::Object entryToJSON(const CTxMemPool &pool, const CTxMemPoolEntr
     AssertLockHeld(pool.cs);
 
     UniValue::Object info;
-    info.reserve(8);
+    info.reserve(6);
 
     UniValue::Object fees;
     fees.reserve(2);
@@ -462,8 +457,6 @@ static UniValue::Object entryToJSON(const CTxMemPool &pool, const CTxMemPoolEntr
 
     info.emplace_back("fees", std::move(fees));
     info.emplace_back("size", e.GetTxSize());
-    info.emplace_back("fee", ValueFromAmount(e.GetFee()));
-    info.emplace_back("modifiedfee", ValueFromAmount(e.GetModifiedFee()));
     info.emplace_back("time", e.GetTime());
     info.emplace_back("height", e.GetHeight());
 
