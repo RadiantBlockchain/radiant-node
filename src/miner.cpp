@@ -418,11 +418,10 @@ void BlockAssembler::addTxs(int64_t nLimitTimePoint) {
     }
 }
 
-static const std::vector<uint8_t>
-getExcessiveBlockSizeSig(uint64_t nExcessiveBlockSize) {
+static
+std::vector<uint8_t> getExcessiveBlockSizeSig(uint64_t nExcessiveBlockSize) {
     std::string cbmsg = "/EB" + getSubVersionEB(nExcessiveBlockSize) + "/";
-    std::vector<uint8_t> vec(cbmsg.begin(), cbmsg.end());
-    return vec;
+    return std::vector<uint8_t>(cbmsg.begin(), cbmsg.end());
 }
 
 void IncrementExtraNonce(CBlock *pblock, const CBlockIndex *pindexPrev,
