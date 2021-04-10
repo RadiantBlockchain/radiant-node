@@ -73,6 +73,12 @@ The `getblockstats` RPC is faster for fee calculation by using BlockUndo data.
 Also, `-txindex` is no longer required and `getblockstats` works for all
 non-pruned blocks.
 
+In the `getmempoolentry` RPC call, the verbose modes of the
+`getrawmempool`/`getmempoolancestors`/`getmempooldescendants` RPC calls, and the
+JSON mode of the mempool REST call, the fields `fee` and `modifiedfee` are
+removed. These fields were deprecated since v0.20.4. Please use the `fees`
+subobject instead.
+
 ...
 
 

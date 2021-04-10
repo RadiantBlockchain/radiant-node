@@ -78,7 +78,7 @@ class MempoolPackagesTest(BitcoinTestFramework):
         # Check that some of the keys we expect exist
         for txdict in mempool.values():
             assert 'size' in txdict
-            assert 'fee' in txdict
+            assert 'fees' in txdict
 
         descendants = []
         ancestors = list(chain)
@@ -88,10 +88,7 @@ class MempoolPackagesTest(BitcoinTestFramework):
             assert_equal(entry, mempool[x])
 
             # Check that the descendant calculations are correct
-            assert_equal(mempool[x]['modifiedfee'], mempool[x]['fee'])
-            assert_equal(mempool[x]['fees']['base'], mempool[x]['fee'])
-            assert_equal(mempool[x]['fees']['modified'],
-                         mempool[x]['modifiedfee'])
+            assert_equal(mempool[x]['fees']['modified'], mempool[x]['fees']['base'])
 
             # Check that parent/child list is correct
             assert_equal(mempool[x]['spentby'], descendants[-1:])
@@ -154,10 +151,8 @@ class MempoolPackagesTest(BitcoinTestFramework):
         mempool = self.nodes[0].getrawmempool(True)
 
         x = chain[-1]
-        assert_equal(mempool[x]['modifiedfee'],
-                     mempool[x]['fee'] + satoshi_round(0.00002))
         assert_equal(mempool[x]['fees']['modified'],
-                     mempool[x]['fee'] + satoshi_round(0.00002))
+                     mempool[x]['fees']['base'] + satoshi_round(0.00002))
 
         # TODO: check that node1's mempool is as expected
 
