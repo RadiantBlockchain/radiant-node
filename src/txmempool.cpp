@@ -1294,8 +1294,8 @@ void DisconnectedBlockTransactions::importMempool(CTxMemPool &pool) {
         txInfo.reserve(pool.mapTx.size());
         for (const CTxMemPoolEntry &e : pool.mapTx.get<entry_id>()) {
             vtx.push_back(e.GetSharedTx());
-            // save entry time and feeDelta for use in updateMempoolForReorg()
-            txInfo.try_emplace(e.GetTx().GetId(), TxInfo{e.GetTime(), e.GetModifiedFee() - e.GetFee()});
+            // save entry time, feeDelta, and height for use in updateMempoolForReorg()
+            txInfo.try_emplace(e.GetTx().GetId(), TxInfo{e.GetTime(), e.GetModifiedFee() - e.GetFee(), e.GetHeight()});
             // notify all observers of this (possibly temporary) removal
             pool.NotifyEntryRemoved(e.GetSharedTx(), MemPoolRemovalReason::REORG);
         }
@@ -1355,7 +1355,9 @@ void DisconnectedBlockTransactions::updateMempoolForReorg(const Config &config,
                                                  nullptr /* pfMissingInputs */,
                                                  ptxInfo ? ptxInfo->time : GetTime() /* nAcceptTime */,
                                                  true /* bypass_limits */,
-                                                 Amount::zero() /* nAbsurdFee */);
+                                                 Amount::zero() /* nAbsurdFee */,
+                                                 false /* test_accept */,
+                                                 ptxInfo ? ptxInfo->height : 0 /* heightOverride */);
             if (!ok && hasFeeDelta) {
                 // tx not accepted: undo mapDelta insertion from above
                 LOCK(g_mempool.cs);

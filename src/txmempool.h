@@ -846,6 +846,7 @@ private:
     struct TxInfo {
         const int64_t time;
         const Amount feeDelta;
+        const unsigned height;
     };
 
     using TxInfoMap = std::unordered_map<TxId, TxInfo, SaltedTxIdHasher>;

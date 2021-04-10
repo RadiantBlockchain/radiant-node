@@ -167,9 +167,8 @@ all of them on our GitLab repository.
 - In the `getmempoolentry` RPC call, the verbose modes of the
   `getrawmempool`/`getmempoolancestors`/`getmempooldescendants` RPC calls, and
   the JSON mode of the mempool REST call, the `height` field shows an incorrect
-  block height after a chain reorg (regression from Merge Request !1128) as well
-  as after a node restart. Note the field is deprecated and will be removed in
-  a subsequent release.
+  block height after a node restart. Note the field is deprecated and will be
+  removed in a subsequent release.
 
 ---
 
