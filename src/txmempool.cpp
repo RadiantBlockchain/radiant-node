@@ -5,6 +5,7 @@
 
 #include <txmempool.h>
 
+#include <algorithm/contains.h>
 #include <chain.h>
 #include <chainparams.h> // for GetConsensus.
 #include <clientversion.h>
@@ -38,12 +39,12 @@ inline constexpr uint64_t nNoLimit = std::numeric_limits<uint64_t>::max();
 
 CTxMemPoolEntry::CTxMemPoolEntry(const CTransactionRef &_tx, const Amount _nFee,
                                  int64_t _nTime, unsigned int _entryHeight,
-                                 bool _spendsCoinbase, int64_t _sigOpsCount,
+                                 bool _spendsCoinbase, int64_t _sigOpCount,
                                  LockPoints lp)
     : tx(_tx), nFee(_nFee), nTxSize(tx->GetTotalSize()),
       nUsageSize(RecursiveDynamicUsage(tx)), nTime(_nTime),
       entryHeight(_entryHeight), spendsCoinbase(_spendsCoinbase),
-      sigOpCount(_sigOpsCount), lockPoints(lp) {
+      sigOpCount(_sigOpCount), lockPoints(lp) {
     nCountWithDescendants = 1;
     nSizeWithDescendants = GetTxSize();
     nSigOpCountWithDescendants = sigOpCount;
@@ -246,7 +247,7 @@ CTxMemPool::~CTxMemPool() {}
 
 bool CTxMemPool::isSpent(const COutPoint &outpoint) const {
     LOCK(cs);
-    return mapNextTx.count(outpoint);
+    return algo::contains(mapNextTx, outpoint);
 }
 
 unsigned int CTxMemPool::GetTransactionsUpdated() const {
@@ -364,7 +365,7 @@ void CTxMemPool::CalculateDescendants(txiter entryit,
 
         const setEntries &setChildren = GetMemPoolChildren(it);
         for (txiter childiter : setChildren) {
-            if (!setDescendants.count(childiter)) {
+            if (!algo::contains(setDescendants, childiter)) {
                 stage.insert(childiter);
             }
         }
@@ -487,7 +488,7 @@ void CTxMemPool::check(const CCoinsViewCache *pcoins) const {
         checkTotal += it->GetTxSize();
         innerUsage += it->DynamicMemoryUsage();
         const CTransaction &tx = it->GetTx();
-        txlinksMap::const_iterator linksiter = mapLinks.find(it);
+        auto linksiter = mapLinks.find(it);
         assert(linksiter != mapLinks.end());
         const TxLinks &links = linksiter->second;
         innerUsage += memusage::DynamicUsage(links.parents) +
@@ -688,11 +689,9 @@ void CTxMemPool::PrioritiseTransaction(const TxId &txid,
 
 void CTxMemPool::ApplyDelta(const TxId &txid, Amount &nFeeDelta) const {
     LOCK(cs);
-    std::map<TxId, Amount>::const_iterator pos = mapDeltas.find(txid);
-    if (pos == mapDeltas.end()) {
+    auto pos = mapDeltas.find(txid);
+    if (pos == mapDeltas.end())
         return;
-    }
-
     nFeeDelta += pos->second;
 }
 
@@ -843,7 +842,7 @@ void CTxMemPool::UpdateParent(txiter entry, txiter parent, bool add) {
 const CTxMemPool::setEntries &
 CTxMemPool::GetMemPoolParents(txiter entry) const {
     assert(entry != mapTx.end());
-    txlinksMap::const_iterator it = mapLinks.find(entry);
+    auto it = mapLinks.find(entry);
     assert(it != mapLinks.end());
     return it->second.parents;
 }
@@ -851,7 +850,7 @@ CTxMemPool::GetMemPoolParents(txiter entry) const {
 const CTxMemPool::setEntries &
 CTxMemPool::GetMemPoolChildren(txiter entry) const {
     assert(entry != mapTx.end());
-    txlinksMap::const_iterator it = mapLinks.find(entry);
+    auto it = mapLinks.find(entry);
     assert(it != mapLinks.end());
     return it->second.children;
 }
