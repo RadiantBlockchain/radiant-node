@@ -131,7 +131,7 @@ class CTxMemPoolEntry {
 public:
     CTxMemPoolEntry(const CTransactionRef &_tx, const Amount _nFee,
                     int64_t _nTime, unsigned int _entryHeight,
-                    bool spendsCoinbase, int64_t _nSigOpCount, LockPoints lp);
+                    bool spendsCoinbase, int64_t _sigOpCount, LockPoints lp);
 
     uint64_t GetEntryId() const { return entryId; }
     //! This should only be set by addUnchecked() before entry insertion into mempool
