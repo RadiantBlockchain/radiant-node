@@ -459,14 +459,16 @@ bool AcceptToMemoryPool(const Config &config, CTxMemPool &pool,
     EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
 /**
- * (try to) add transaction to memory pool with a specified acceptance time.
+ * (try to) add transaction to memory pool with a specified acceptance time,
+ * and an optional height override.
  */
 bool
 AcceptToMemoryPoolWithTime(const Config &config, CTxMemPool &pool,
                            CValidationState &state, const CTransactionRef &tx,
                            bool *pfMissingInputs, int64_t nAcceptTime,
                            bool bypass_limits, const Amount nAbsurdFee,
-                           bool test_accept = false)
+                           bool test_accept = false,
+                           unsigned heightOverride = 0 /* used only on reorg */)
     EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
 /** Convert CValidationState to a human-readable message for logging */
