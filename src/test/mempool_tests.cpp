@@ -20,167 +20,108 @@
 
 BOOST_FIXTURE_TEST_SUITE(mempool_tests, TestingSetup)
 
-BOOST_AUTO_TEST_CASE(TestPackageAccounting) {
-    CTxMemPool testPool;
-    LOCK2(cs_main, testPool.cs);
-    TestMemPoolEntryHelper entry;
-    CMutableTransaction parentOfAll;
 
-    std::vector<CTxIn> outpoints;
-    const size_t maxOutputs = 3;
+// this test should be removed after tachyon is checkpointed
+BOOST_AUTO_TEST_CASE(TestPreAndPostTachyonAccounting) {
+    for (const bool tachyon : {false, true}) {
+        CTxMemPool testPool;
+        testPool.tachyonLatched = tachyon; // test pre-tachyon versus post-tachyon behavior
+        LOCK2(cs_main, testPool.cs);
+        TestMemPoolEntryHelper entry;
+        CMutableTransaction parentOfAll;
 
-    // Construct a parent for the rest of the chain
-    parentOfAll.vin.resize(1);
-    parentOfAll.vin[0].scriptSig = CScript();
-    // Give us a couple outpoints so we can spend them
-    for (size_t i = 0; i < maxOutputs; i++) {
-        parentOfAll.vout.emplace_back(10 * SATOSHI, CScript() << OP_TRUE);
-    }
-    TxId parentOfAllId = parentOfAll.GetId();
-    testPool.addUnchecked(entry.SigOpCount(0).FromTx(parentOfAll));
+        // Vector to track unspent outputs that are used to construct txs
+        std::vector<CTxIn> outpoints;
+        const size_t maxOutputs = 3;
 
-    // Add some outpoints to the tracking vector
-    for (size_t i = 0; i < maxOutputs; i++) {
-        outpoints.emplace_back(COutPoint(parentOfAllId, i));
-    }
+        // Construct a parent for the rest of the chain
+        parentOfAll.vin.resize(1);
+        parentOfAll.vin[0].scriptSig = CScript();
+        // Give us a couple outpoints so we can spend them
+        for (size_t i = 0; i < maxOutputs; i++) {
+            parentOfAll.vout.emplace_back(10 * SATOSHI, CScript() << OP_TRUE);
+        }
+        TxId parentOfAllId = parentOfAll.GetId();
+        testPool.addUnchecked(entry.SigOpCount(0).FromTx(parentOfAll));
 
-    Amount totalFee = Amount::zero();
-    size_t totalSize = CTransaction(parentOfAll).GetTotalSize();
-    size_t totalVirtualSize = totalSize;
-    int64_t totalSigOpCount = 0;
-
-    // Generate 100 transactions
-    for (size_t totalTransactions = 0; totalTransactions < 100;
-         totalTransactions++) {
-        CMutableTransaction tx;
-
-        uint64_t minAncestors = std::numeric_limits<size_t>::max();
-        uint64_t maxAncestors = 0;
-        Amount minFees = MAX_MONEY;
-        Amount maxFees = Amount::zero();
-        uint64_t minSize = std::numeric_limits<size_t>::max();
-        uint64_t maxSize = 0;
-        uint64_t minVirtualSize = std::numeric_limits<size_t>::max();
-        uint64_t maxVirtualSize = 0;
-        int64_t minSigOpCount = std::numeric_limits<int64_t>::max();
-        int64_t maxSigOpCount = 0;
-        // Consume random inputs, but make sure we don't consume more than
-        // available
-        for (size_t input = std::min(InsecureRandRange(maxOutputs) + 1,
-                                     uint64_t(outpoints.size()));
-             input > 0; input--) {
-            std::swap(outpoints[InsecureRandRange(outpoints.size())],
-                      outpoints.back());
-            tx.vin.emplace_back(outpoints.back());
-            outpoints.pop_back();
-
-            // We don't know exactly how many ancestors this transaction has
-            // due to possible duplicates.  Calculate a valid range based on
-            // parents.
-
-            CTxMemPoolEntry parent =
-                *testPool.mapTx.find(tx.vin.back().prevout.GetTxId());
-
-            minAncestors =
-                std::min(minAncestors, parent.GetCountWithAncestors());
-            maxAncestors += parent.GetCountWithAncestors();
-            minFees = std::min(minFees, parent.GetModFeesWithAncestors());
-            maxFees += parent.GetModFeesWithAncestors();
-            minSize = std::min(minSize, parent.GetSizeWithAncestors());
-            maxSize += parent.GetSizeWithAncestors();
-            minVirtualSize =
-                std::min(minSize, parent.GetVirtualSizeWithAncestors());
-            maxVirtualSize += parent.GetVirtualSizeWithAncestors();
-            minSigOpCount =
-                std::min(minSigOpCount, parent.GetSigOpCountWithAncestors());
-            maxSigOpCount += parent.GetSigOpCountWithAncestors();
+        // Add some outpoints to the tracking vector
+        for (size_t i = 0; i < maxOutputs; i++) {
+            outpoints.emplace_back(COutPoint(parentOfAllId, i));
         }
 
-        // Produce random number of outputs
-        for (size_t output = InsecureRandRange(maxOutputs) + 1; output > 0;
-             output--) {
-            tx.vout.emplace_back(10 * SATOSHI, CScript() << OP_TRUE);
+        Amount totalFee = Amount::zero();
+        size_t totalSize = CTransaction(parentOfAll).GetTotalSize();
+        size_t totalVirtualSize = totalSize;
+        int64_t totalSigOpCount = 0;
+
+        // Generate 100 transactions
+        for (size_t totalTransactions = 0; totalTransactions < 100;
+             totalTransactions++) {
+            CMutableTransaction tx;
+
+            // Consume random inputs, but make sure we don't consume more than
+            // available
+            for (size_t input = std::min(InsecureRandRange(maxOutputs) + 1,
+                                         uint64_t(outpoints.size()));
+                 input > 0; input--) {
+                std::swap(outpoints[InsecureRandRange(outpoints.size())],
+                          outpoints.back());
+                tx.vin.emplace_back(outpoints.back());
+                outpoints.pop_back();
+            }
+
+            // Produce random number of outputs
+            for (size_t output = InsecureRandRange(maxOutputs) + 1; output > 0;
+                 output--) {
+                tx.vout.emplace_back(10 * SATOSHI, CScript() << OP_TRUE);
+            }
+
+            TxId curId = tx.GetId();
+
+            // Record the outputs
+            for (size_t output = tx.vout.size(); output > 0; output--) {
+                outpoints.emplace_back(COutPoint(curId, output));
+            }
+
+            const Amount randFee = int64_t(InsecureRandRange(300)) * SATOSHI;
+            const int randSigOpCount = InsecureRandRange(5);
+
+            testPool.addUnchecked(
+                entry.Fee(randFee).SigOpCount(randSigOpCount).FromTx(tx));
+
+            // Calculate overall values
+            totalFee += randFee;
+            const auto txSize = CTransaction(tx).GetTotalSize();
+            totalSize += txSize;
+            const auto txVSize = GetVirtualTransactionSize(CTransaction(tx).GetTotalSize(), randSigOpCount);
+            totalVirtualSize += txVSize;
+            totalSigOpCount += randSigOpCount;
+            const CTxMemPoolEntry &parentEntry = *testPool.mapTx.find(parentOfAllId);
+
+            uint64_t totalVirtualSize_strict =
+                GetVirtualTransactionSize(totalSize, totalSigOpCount);
+
+            if (!tachyon) {
+                BOOST_CHECK_EQUAL(parentEntry.GetCountWithDescendants(),
+                                  testPool.mapTx.size());
+                BOOST_CHECK_EQUAL(parentEntry.GetSizeWithDescendants(), totalSize);
+                BOOST_CHECK_EQUAL(parentEntry.GetVirtualSizeWithDescendants(),
+                                  totalVirtualSize_strict);
+                BOOST_CHECK_EQUAL(parentEntry.GetModFeesWithDescendants(), totalFee);
+                BOOST_CHECK_EQUAL(parentEntry.GetSigOpCountWithDescendants(),
+                                  totalSigOpCount);
+            } else {
+                // with tachyon latched, we stop tracking these -- they stay at their defaults
+                BOOST_CHECK_EQUAL(parentEntry.GetCountWithDescendants(), 1);
+                BOOST_CHECK_EQUAL(parentEntry.GetSizeWithDescendants(), parentEntry.GetTxSize());
+                BOOST_CHECK_EQUAL(parentEntry.GetVirtualSizeWithDescendants(), parentEntry.GetTxVirtualSize());
+                BOOST_CHECK_EQUAL(parentEntry.GetModFeesWithDescendants(), parentEntry.GetModifiedFee());
+                BOOST_CHECK_EQUAL(parentEntry.GetSigOpCount(), 0);
+                BOOST_CHECK_EQUAL(parentEntry.GetSigOpCountWithDescendants(), 0);
+            }
+            // Verify that Tachyon activation status didn't accidentally change during the test.
+            BOOST_CHECK_EQUAL(testPool.tachyonLatched, tachyon);
         }
-
-        TxId curId = tx.GetId();
-
-        // Record the outputs
-        for (size_t output = tx.vout.size(); output > 0; output--) {
-            outpoints.emplace_back(COutPoint(curId, output));
-        }
-
-        Amount randFee = int64_t(InsecureRandRange(300)) * SATOSHI;
-        int randSigOpCount = InsecureRandRange(5);
-
-        testPool.addUnchecked(
-            entry.Fee(randFee).SigOpCount(randSigOpCount).FromTx(tx));
-
-        // Add this transaction to the totals.
-        minAncestors += 1;
-        maxAncestors += 1;
-        minFees += randFee;
-        maxFees += randFee;
-        minSize += CTransaction(tx).GetTotalSize();
-        maxSize += CTransaction(tx).GetTotalSize();
-        // virtualsize is a nonlinear function of its arguments, so we can't
-        // make as strong guarantees about its range; but assuming virtualsize
-        // is monotonically increasing in each argument, we can say the
-        // following:
-        minVirtualSize += 0;
-        maxVirtualSize += GetVirtualTransactionSize(
-            CTransaction(tx).GetTotalSize(), randSigOpCount);
-        minSigOpCount += randSigOpCount;
-        maxSigOpCount += randSigOpCount;
-
-        // Calculate overall values
-        totalFee += randFee;
-        totalSize += CTransaction(tx).GetTotalSize();
-        totalVirtualSize += GetVirtualTransactionSize(
-            CTransaction(tx).GetTotalSize(), randSigOpCount);
-        totalSigOpCount += randSigOpCount;
-        CTxMemPoolEntry parentEntry = *testPool.mapTx.find(parentOfAllId);
-        CTxMemPoolEntry latestEntry = *testPool.mapTx.find(curId);
-
-        // Based on size/sigops ranges we can compute more strict bounds for the
-        // virtual size ranges/totals, assuming virtualsize is monotonic in each
-        // argument.
-        uint64_t minVirtualSize_strict =
-            GetVirtualTransactionSize(minSize, minSigOpCount);
-        uint64_t maxVirtualSize_strict =
-            GetVirtualTransactionSize(maxSize, maxSigOpCount);
-        uint64_t totalVirtualSize_strict =
-            GetVirtualTransactionSize(totalSize, totalSigOpCount);
-        // these are as-good or better than the earlier estimations.
-        BOOST_CHECK(minVirtualSize_strict >= minVirtualSize);
-        BOOST_CHECK(maxVirtualSize_strict <= maxVirtualSize);
-        BOOST_CHECK(totalVirtualSize_strict <= totalVirtualSize);
-
-        // Ensure values are within the expected ranges
-        BOOST_CHECK(latestEntry.GetCountWithAncestors() >= minAncestors);
-        BOOST_CHECK(latestEntry.GetCountWithAncestors() <= maxAncestors);
-
-        BOOST_CHECK(latestEntry.GetSizeWithAncestors() >= minSize);
-        BOOST_CHECK(latestEntry.GetSizeWithAncestors() <= maxSize);
-
-        BOOST_CHECK(latestEntry.GetVirtualSizeWithAncestors() >=
-                    minVirtualSize_strict);
-        BOOST_CHECK(latestEntry.GetVirtualSizeWithAncestors() <=
-                    maxVirtualSize_strict);
-
-        BOOST_CHECK(latestEntry.GetSigOpCountWithAncestors() >= minSigOpCount);
-        BOOST_CHECK(latestEntry.GetSigOpCountWithAncestors() <= maxSigOpCount);
-
-        BOOST_CHECK(latestEntry.GetModFeesWithAncestors() >= minFees);
-        BOOST_CHECK(latestEntry.GetModFeesWithAncestors() <= maxFees);
-
-        BOOST_CHECK_EQUAL(parentEntry.GetCountWithDescendants(),
-                          testPool.mapTx.size());
-        BOOST_CHECK_EQUAL(parentEntry.GetSizeWithDescendants(), totalSize);
-        BOOST_CHECK_EQUAL(parentEntry.GetVirtualSizeWithDescendants(),
-                          totalVirtualSize_strict);
-        BOOST_CHECK_EQUAL(parentEntry.GetModFeesWithDescendants(), totalFee);
-        BOOST_CHECK_EQUAL(parentEntry.GetSigOpCountWithDescendants(),
-                          totalSigOpCount);
     }
 }
 
@@ -684,7 +625,7 @@ BOOST_AUTO_TEST_CASE(MempoolAncestryTests) {
     pool.addUnchecked(entry.Fee(10000 * SATOSHI).FromTx(tx1));
 
     // Ancestors / descendants should be 1 / 1 (itself / itself)
-    pool.GetTransactionAncestry(tx1->GetId(), ancestors, descendants);
+    pool.GetTransactionAncestry_deprecated_slow(tx1->GetId(), ancestors, descendants);
     BOOST_CHECK_EQUAL(ancestors, 1ULL);
     BOOST_CHECK_EQUAL(descendants, 1ULL);
 
@@ -701,10 +642,10 @@ BOOST_AUTO_TEST_CASE(MempoolAncestryTests) {
     // ============ =========== ===========
     // tx1          1 (tx1)     2 (tx1,2)
     // tx2          2 (tx1,2)   2 (tx1,2)
-    pool.GetTransactionAncestry(tx1->GetId(), ancestors, descendants);
+    pool.GetTransactionAncestry_deprecated_slow(tx1->GetId(), ancestors, descendants);
     BOOST_CHECK_EQUAL(ancestors, 1ULL);
     BOOST_CHECK_EQUAL(descendants, 2ULL);
-    pool.GetTransactionAncestry(tx2->GetId(), ancestors, descendants);
+    pool.GetTransactionAncestry_deprecated_slow(tx2->GetId(), ancestors, descendants);
     BOOST_CHECK_EQUAL(ancestors, 2ULL);
     BOOST_CHECK_EQUAL(descendants, 2ULL);
 
@@ -722,13 +663,13 @@ BOOST_AUTO_TEST_CASE(MempoolAncestryTests) {
     // tx1          1 (tx1)     3 (tx1,2,3)
     // tx2          2 (tx1,2)   3 (tx1,2,3)
     // tx3          3 (tx1,2,3) 3 (tx1,2,3)
-    pool.GetTransactionAncestry(tx1->GetId(), ancestors, descendants);
+    pool.GetTransactionAncestry_deprecated_slow(tx1->GetId(), ancestors, descendants);
     BOOST_CHECK_EQUAL(ancestors, 1ULL);
     BOOST_CHECK_EQUAL(descendants, 3ULL);
-    pool.GetTransactionAncestry(tx2->GetId(), ancestors, descendants);
+    pool.GetTransactionAncestry_deprecated_slow(tx2->GetId(), ancestors, descendants);
     BOOST_CHECK_EQUAL(ancestors, 2ULL);
     BOOST_CHECK_EQUAL(descendants, 3ULL);
-    pool.GetTransactionAncestry(tx3->GetId(), ancestors, descendants);
+    pool.GetTransactionAncestry_deprecated_slow(tx3->GetId(), ancestors, descendants);
     BOOST_CHECK_EQUAL(ancestors, 3ULL);
     BOOST_CHECK_EQUAL(descendants, 3ULL);
 
@@ -749,16 +690,16 @@ BOOST_AUTO_TEST_CASE(MempoolAncestryTests) {
     // tx2          2 (tx1,2)   4 (tx1,2,3,4)
     // tx3          3 (tx1,2,3) 4 (tx1,2,3,4)
     // tx4          3 (tx1,2,4) 4 (tx1,2,3,4)
-    pool.GetTransactionAncestry(tx1->GetId(), ancestors, descendants);
+    pool.GetTransactionAncestry_deprecated_slow(tx1->GetId(), ancestors, descendants);
     BOOST_CHECK_EQUAL(ancestors, 1ULL);
     BOOST_CHECK_EQUAL(descendants, 4ULL);
-    pool.GetTransactionAncestry(tx2->GetId(), ancestors, descendants);
+    pool.GetTransactionAncestry_deprecated_slow(tx2->GetId(), ancestors, descendants);
     BOOST_CHECK_EQUAL(ancestors, 2ULL);
     BOOST_CHECK_EQUAL(descendants, 4ULL);
-    pool.GetTransactionAncestry(tx3->GetId(), ancestors, descendants);
+    pool.GetTransactionAncestry_deprecated_slow(tx3->GetId(), ancestors, descendants);
     BOOST_CHECK_EQUAL(ancestors, 3ULL);
     BOOST_CHECK_EQUAL(descendants, 4ULL);
-    pool.GetTransactionAncestry(tx4->GetId(), ancestors, descendants);
+    pool.GetTransactionAncestry_deprecated_slow(tx4->GetId(), ancestors, descendants);
     BOOST_CHECK_EQUAL(ancestors, 3ULL);
     BOOST_CHECK_EQUAL(descendants, 4ULL);
 
@@ -781,7 +722,7 @@ BOOST_AUTO_TEST_CASE(MempoolAncestryTests) {
                           : std::vector<CTransactionRef>{});
         v -= 50 * CENT;
         pool.addUnchecked(entry.Fee(10000 * SATOSHI).FromTx(tyi));
-        pool.GetTransactionAncestry(tyi->GetId(), ancestors, descendants);
+        pool.GetTransactionAncestry_deprecated_slow(tyi->GetId(), ancestors, descendants);
         BOOST_CHECK_EQUAL(ancestors, i + 1);
         BOOST_CHECK_EQUAL(descendants, i + 1);
     }
@@ -802,34 +743,34 @@ BOOST_AUTO_TEST_CASE(MempoolAncestryTests) {
     // ty4          4 (y1234)           6 (ty1,2,3,4,5,6)
     // ty5          5 (y12345)          6 (ty1,2,3,4,5,6)
     // ty6          9 (tx123, ty123456) 6 (ty1,2,3,4,5,6)
-    pool.GetTransactionAncestry(tx1->GetId(), ancestors, descendants);
+    pool.GetTransactionAncestry_deprecated_slow(tx1->GetId(), ancestors, descendants);
     BOOST_CHECK_EQUAL(ancestors, 1ULL);
     BOOST_CHECK_EQUAL(descendants, 5ULL);
-    pool.GetTransactionAncestry(tx2->GetId(), ancestors, descendants);
+    pool.GetTransactionAncestry_deprecated_slow(tx2->GetId(), ancestors, descendants);
     BOOST_CHECK_EQUAL(ancestors, 2ULL);
     BOOST_CHECK_EQUAL(descendants, 5ULL);
-    pool.GetTransactionAncestry(tx3->GetId(), ancestors, descendants);
+    pool.GetTransactionAncestry_deprecated_slow(tx3->GetId(), ancestors, descendants);
     BOOST_CHECK_EQUAL(ancestors, 3ULL);
     BOOST_CHECK_EQUAL(descendants, 5ULL);
-    pool.GetTransactionAncestry(tx4->GetId(), ancestors, descendants);
+    pool.GetTransactionAncestry_deprecated_slow(tx4->GetId(), ancestors, descendants);
     BOOST_CHECK_EQUAL(ancestors, 3ULL);
     BOOST_CHECK_EQUAL(descendants, 5ULL);
-    pool.GetTransactionAncestry(ty1->GetId(), ancestors, descendants);
+    pool.GetTransactionAncestry_deprecated_slow(ty1->GetId(), ancestors, descendants);
     BOOST_CHECK_EQUAL(ancestors, 1ULL);
     BOOST_CHECK_EQUAL(descendants, 6ULL);
-    pool.GetTransactionAncestry(ty2->GetId(), ancestors, descendants);
+    pool.GetTransactionAncestry_deprecated_slow(ty2->GetId(), ancestors, descendants);
     BOOST_CHECK_EQUAL(ancestors, 2ULL);
     BOOST_CHECK_EQUAL(descendants, 6ULL);
-    pool.GetTransactionAncestry(ty3->GetId(), ancestors, descendants);
+    pool.GetTransactionAncestry_deprecated_slow(ty3->GetId(), ancestors, descendants);
     BOOST_CHECK_EQUAL(ancestors, 3ULL);
     BOOST_CHECK_EQUAL(descendants, 6ULL);
-    pool.GetTransactionAncestry(ty4->GetId(), ancestors, descendants);
+    pool.GetTransactionAncestry_deprecated_slow(ty4->GetId(), ancestors, descendants);
     BOOST_CHECK_EQUAL(ancestors, 4ULL);
     BOOST_CHECK_EQUAL(descendants, 6ULL);
-    pool.GetTransactionAncestry(ty5->GetId(), ancestors, descendants);
+    pool.GetTransactionAncestry_deprecated_slow(ty5->GetId(), ancestors, descendants);
     BOOST_CHECK_EQUAL(ancestors, 5ULL);
     BOOST_CHECK_EQUAL(descendants, 6ULL);
-    pool.GetTransactionAncestry(ty6->GetId(), ancestors, descendants);
+    pool.GetTransactionAncestry_deprecated_slow(ty6->GetId(), ancestors, descendants);
     BOOST_CHECK_EQUAL(ancestors, 9ULL);
     BOOST_CHECK_EQUAL(descendants, 6ULL);
 
@@ -859,16 +800,17 @@ BOOST_AUTO_TEST_CASE(MempoolAncestryTests) {
     // tb           2 (ta,tb)           4 (ta,tb,tc,td)
     // tc           3 (ta,tb,tc)        4 (ta,tb,tc,td)
     // td           4 (ta,tb,tc,td)     4 (ta,tb,tc,td)
-    pool.GetTransactionAncestry(ta->GetId(), ancestors, descendants);
+
+    pool.GetTransactionAncestry_deprecated_slow(ta->GetId(), ancestors, descendants);
     BOOST_CHECK_EQUAL(ancestors, 1ULL);
     BOOST_CHECK_EQUAL(descendants, 4ULL);
-    pool.GetTransactionAncestry(tb->GetId(), ancestors, descendants);
+    pool.GetTransactionAncestry_deprecated_slow(tb->GetId(), ancestors, descendants);
     BOOST_CHECK_EQUAL(ancestors, 2ULL);
     BOOST_CHECK_EQUAL(descendants, 4ULL);
-    pool.GetTransactionAncestry(tc->GetId(), ancestors, descendants);
+    pool.GetTransactionAncestry_deprecated_slow(tc->GetId(), ancestors, descendants);
     BOOST_CHECK_EQUAL(ancestors, 3ULL);
     BOOST_CHECK_EQUAL(descendants, 4ULL);
-    pool.GetTransactionAncestry(td->GetId(), ancestors, descendants);
+    pool.GetTransactionAncestry_deprecated_slow(td->GetId(), ancestors, descendants);
     BOOST_CHECK_EQUAL(ancestors, 4ULL);
     BOOST_CHECK_EQUAL(descendants, 4ULL);
 }

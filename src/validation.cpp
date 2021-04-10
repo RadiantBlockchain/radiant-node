@@ -515,17 +515,18 @@ AcceptToMemoryPoolWorker(const Config &config, CTxMemPool &pool,
     const Consensus::Params &consensusParams =
         config.GetChainParams().GetConsensus();
 
-    // Tachyon latch - affects mempool policy; to be removed after tachyon is checkpointed
-    if (!pool.tachyonLatched && IsTachyonEnabled(consensusParams, ::ChainActive().Tip())) {
-        pool.tachyonLatched = true;
-    }
-
     const CTransaction &tx = *ptx;
     const TxId txid = tx.GetId();
 
     // mempool "read lock" (held through
     // GetMainSignals().TransactionAddedToMempool())
     LOCK(pool.cs);
+
+    // Tachyon latch - affects mempool policy; to be removed after tachyon is checkpointed
+    if (!pool.tachyonLatched && IsTachyonEnabled(consensusParams, ::ChainActive().Tip())) {
+        pool.tachyonLatched = true;
+    }
+
     if (pfMissingInputs) {
         *pfMissingInputs = false;
     }
@@ -745,25 +746,28 @@ AcceptToMemoryPoolWorker(const Config &config, CTxMemPool &pool,
                 false, strprintf("%d < %d", nModifiedFees, mempoolRejectFee));
         }
 
-        // Calculate in-mempool ancestors, up to a limit.
+        // Remove after Tachyon
         CTxMemPool::setEntries setAncestors;
-        size_t nLimitAncestors =
-            gArgs.GetArg("-limitancestorcount", DEFAULT_ANCESTOR_LIMIT);
-        size_t nLimitAncestorSize =
-            gArgs.GetArg("-limitancestorsize", DEFAULT_ANCESTOR_SIZE_LIMIT) *
-            1000;
-        size_t nLimitDescendants =
-            gArgs.GetArg("-limitdescendantcount", DEFAULT_DESCENDANT_LIMIT);
-        size_t nLimitDescendantSize =
-            gArgs.GetArg("-limitdescendantsize",
-                         DEFAULT_DESCENDANT_SIZE_LIMIT) *
-            1000;
-        std::string errString;
-        if (!pool.CalculateMemPoolAncestors(
-                entry, setAncestors, nLimitAncestors, nLimitAncestorSize,
-                nLimitDescendants, nLimitDescendantSize, errString)) {
-            return state.DoS(0, false, REJECT_NONSTANDARD,
-                             "too-long-mempool-chain", false, errString);
+        if (!pool.tachyonLatched) {
+            // Calculate in-mempool ancestors, up to a limit.
+            size_t nLimitAncestors =
+                gArgs.GetArg("-limitancestorcount", DEFAULT_ANCESTOR_LIMIT);
+            size_t nLimitAncestorSize =
+                gArgs.GetArg("-limitancestorsize", DEFAULT_ANCESTOR_SIZE_LIMIT) *
+                1000;
+            size_t nLimitDescendants =
+                gArgs.GetArg("-limitdescendantcount", DEFAULT_DESCENDANT_LIMIT);
+            size_t nLimitDescendantSize =
+                gArgs.GetArg("-limitdescendantsize",
+                             DEFAULT_DESCENDANT_SIZE_LIMIT) *
+                1000;
+            std::string errString;
+            if (!pool.CalculateMemPoolAncestors(
+                    entry, setAncestors, nLimitAncestors, nLimitAncestorSize,
+                    nLimitDescendants, nLimitDescendantSize, errString)) {
+                return state.DoS(0, false, REJECT_NONSTANDARD,
+                                 "too-long-mempool-chain", false, errString);
+            }
         }
 
         // Check again against the next block's script verification flags

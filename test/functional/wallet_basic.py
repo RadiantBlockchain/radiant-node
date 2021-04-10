@@ -21,10 +21,16 @@ from test_framework.util import (
 
 
 class WalletTest(BitcoinTestFramework):
+
+    # This test tests mempool ancestor chain limits, which
+    # no longer are enforced after tachyon, so we need to
+    # force tachyon to activate in the distant future
+    TACHYON_FAR_FUTURE = f"-tachyonactivationtime={int(9e9)}"
+
     def set_test_params(self):
         self.num_nodes = 4
         self.extra_args = [
-            ["-acceptnonstdtxn=1"],
+            ["-acceptnonstdtxn=1", self.TACHYON_FAR_FUTURE],
         ] * self.num_nodes
         self.setup_clean_chain = True
 

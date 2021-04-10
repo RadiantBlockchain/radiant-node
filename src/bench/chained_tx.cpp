@@ -135,6 +135,8 @@ static void benchATMP(const Config& config,
                      benchmark::State& state,
                      const std::vector<CTransactionRef> chainedTxs)
 {
+    const bool tachyonBefore = g_mempool.tachyonLatched.exchange(true); // test with tachyon latched (faster)
+
     const Amount absurdFee(Amount::zero());
 
     gArgs.ForceSetArg("-limitdescendantcount", std::to_string(chainedTxs.size()));
@@ -156,6 +158,8 @@ static void benchATMP(const Config& config,
         }
         g_mempool.clear();
     }
+
+    g_mempool.tachyonLatched = tachyonBefore; // restore state
 }
 
 
@@ -170,6 +174,7 @@ static void benchReorg(const Config& config,
                        size_t chainSizePerBlock,
                        bool includeMempoolTxRemoval)
 {
+    const bool tachyonBefore = g_mempool.tachyonLatched.exchange(true); // test with tachyon latched (faster)
     auto utxos = createUTXOs(config, reorgDepth);
     std::vector<std::vector<CTransactionRef>> chains;
     for (const auto &utxo : utxos) {
@@ -252,7 +257,10 @@ static void benchReorg(const Config& config,
         ActivateBestChain(config, vstate);
         assert(vstate.IsValid());
         assert(::ChainActive().Tip() == mostWorkTip);
+        assert(g_mempool.size() == 0);
     }
+
+    g_mempool.tachyonLatched = tachyonBefore; // restore state
 }
 
 static void benchGenerateNewBlock(const Config& config,
@@ -263,6 +271,7 @@ static void benchGenerateNewBlock(const Config& config,
     entry.nFee = 1337 * SATOSHI;
 
     CTxMemPool mempool;
+    const bool tachyonBefore = g_mempool.tachyonLatched.exchange(true); // test with tachyon latched (faster)
 
     // Fill mempool
     size_t txCount = 0;
@@ -286,6 +295,8 @@ static void benchGenerateNewBlock(const Config& config,
         // +1 for coinbase
         assert(blocktemplate->block.vtx.size() == txCount + 1);
     }
+
+    g_mempool.tachyonLatched = tachyonBefore; // restore state
 }
 
 static void benchEviction(const Config&,
@@ -300,6 +311,7 @@ static void benchEviction(const Config&,
     for (uint64_t i = 0; i < state.m_num_iters * state.m_num_evals + 1; ++i) {
         pools.emplace_back();
         CTxMemPool &pool = pools.back();
+        pool.tachyonLatched = true; // test with tachyon latched (faster)
         TestMemPoolEntryHelper entry;
         // Fill mempool
         size_t txCount = 0;
