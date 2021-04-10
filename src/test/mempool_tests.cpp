@@ -855,29 +855,29 @@ BOOST_AUTO_TEST_CASE(CompareTxMemPoolEntryByModifiedFeeRateTest) {
         std::swap(a, b);
     }
     assert(a->GetId() < b->GetId());
-    TestMemPoolEntryHelper entry;
+    auto MkEntry = []{ return TestMemPoolEntryHelper{}; };
     CompareTxMemPoolEntryByModifiedFeeRate compare;
     auto Before = [&compare](const auto &A, const auto &B){ return compare(A, B) && !compare(B, A); };
     auto Equal = [&compare](const auto &A, const auto &B) { return !compare(A, B) && !compare(B, A); };
     auto After = [&compare](const auto &A, const auto &B) { return compare(B, A) && !compare(A, B); };
 
-    // If the fees are the same, higher ID and lowed ID should compare equal
-    BOOST_CHECK(Equal(entry.Fee(100 * SATOSHI).FromTx(a),
-                      entry.Fee(100 * SATOSHI).FromTx(b)));
-    // Earlier time, same fee, should sort before
-    BOOST_CHECK(Before(entry.Fee(100 * SATOSHI).Time(1).FromTx(a),
-                       entry.Fee(100 * SATOSHI).Time(2).FromTx(b)));
-    // Smaller fee, later time should sort after
-    BOOST_CHECK(After(entry.Fee(100 * SATOSHI).Time(2).FromTx(a),
-                      entry.Fee(101 * SATOSHI).Time(1).FromTx(b)));
+    // If the fees are the same, higher TxId and lowed TxId should compare equal
+    BOOST_CHECK(Equal(MkEntry().Fee(100 * SATOSHI).FromTx(a),
+                      MkEntry().Fee(100 * SATOSHI).FromTx(b)));
+    // Earlier topological id, same fee, should sort before
+    BOOST_CHECK(Before(MkEntry().Fee(100 * SATOSHI).EntryId(1).FromTx(a),
+                       MkEntry().Fee(100 * SATOSHI).EntryId(2).FromTx(b)));
+    // Smaller fee, later topoligical id sorts after
+    BOOST_CHECK(After(MkEntry().Fee(100 * SATOSHI).EntryId(2).FromTx(a),
+                      MkEntry().Fee(101 * SATOSHI).EntryId(1).FromTx(b)));
 
-    // Higher fee should be the correct order
-    BOOST_CHECK(Before(entry.Fee(101 * SATOSHI).Time(2).FromTx(a),
-                       entry.Fee(100 * SATOSHI).Time(1).FromTx(b)));
+    // Higher fee should be the correct order, even if topological id is after
+    BOOST_CHECK(Before(MkEntry().Fee(101 * SATOSHI).EntryId(2).FromTx(a),
+                       MkEntry().Fee(100 * SATOSHI).EntryId(1).FromTx(b)));
 
     // Same with fee delta.
-    CTxMemPoolEntry entryA = entry.Fee(100 * SATOSHI).FromTx(a);
-    CTxMemPoolEntry entryB = entry.Fee(200 * SATOSHI).FromTx(b);
+    CTxMemPoolEntry entryA = MkEntry().Fee(100 * SATOSHI).FromTx(a);
+    CTxMemPoolEntry entryB = MkEntry().Fee(200 * SATOSHI).FromTx(b);
     // .. A and B have same modified fee, order should be considered "equal"
     entryA.UpdateFeeDelta(100 * SATOSHI);
     BOOST_CHECK(Equal(entryA, entryB));
