@@ -428,7 +428,7 @@ static std::string EntryDescriptionString() {
            "    \"time\" : n,             (numeric) local time transaction "
            "entered pool in seconds since 1 Jan 1970 GMT\n"
            "    \"height\" : n,           (numeric) block height when "
-           "transaction entered pool\n"
+           "transaction entered pool (DEPRECATED)\n"
            "    \"fees\" : {\n"
            "        \"base\" : n,         (numeric) transaction fee in " +
            CURRENCY_UNIT +
