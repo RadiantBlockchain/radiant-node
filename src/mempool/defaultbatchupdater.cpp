@@ -9,7 +9,7 @@
 namespace mempool {
 
 void DefaultBatchUpdater::removeForBlock(const std::vector<CTransactionRef> &vtx,
-                                         uint64_t nBlockHeight)
+                                         uint64_t nBlockHeight [[maybe_unused]])
 {
     AssertLockHeld(mempool.cs);
     DisconnectedBlockTransactions disconnectpool;
@@ -21,7 +21,7 @@ void DefaultBatchUpdater::removeForBlock(const std::vector<CTransactionRef> &vtx
         if (it != mempool.mapTx.end()) {
             CTxMemPool::setEntries stage;
             stage.insert(it);
-            mempool.RemoveStaged(stage, true, MemPoolRemovalReason::BLOCK);
+            mempool.RemoveStaged(stage, MemPoolRemovalReason::BLOCK);
         }
         mempool.removeConflicts(*tx);
         mempool.ClearPrioritisation(tx->GetId());

@@ -106,6 +106,10 @@ class CTxMemPoolEntry {
     //! Track the height and time at which tx was final
     LockPoints lockPoints;
 
+    // NOTE:
+    // The below 4 members will stop being updated after Tachyon activation,
+    // and should be removed in the release after Tachyon is checkpointed.
+    //
     // Information about descendants of this transaction that are in the
     // mempool; if we remove this transaction we must remove all of these
     // descendants as well.
@@ -117,12 +121,6 @@ class CTxMemPoolEntry {
     Amount nModFeesWithDescendants;
     //! ... and sigop count
     int64_t nSigOpCountWithDescendants;
-
-    // Analogous statistics for ancestor transactions
-    uint64_t nCountWithAncestors;
-    uint64_t nSizeWithAncestors;
-    Amount nModFeesWithAncestors;
-    int64_t nSigOpCountWithAncestors;
 
     //! If not nullptr, this entry has an associated DoubleSpendProof.
     //! We use a DspIdPtr here to use less memory than a direct DspId would
@@ -153,12 +151,10 @@ public:
     size_t DynamicMemoryUsage() const { return nUsageSize; }
     const LockPoints &GetLockPoints() const { return lockPoints; }
 
-    // Adjusts the descendant state.
+    // Adjusts the descendant state. -- To be removed after tachyon
     void UpdateDescendantState(int64_t modifySize, Amount modifyFee,
                                int64_t modifyCount, int64_t modifySigOpCount);
-    // Adjusts the ancestor state
-    void UpdateAncestorState(int64_t modifySize, Amount modifyFee,
-                             int64_t modifyCount, int64_t modifySigOps);
+
     // Updates the fee delta used for mining priority score, and the
     // modified fees with descendants.
     void UpdateFeeDelta(Amount feeDelta);
@@ -175,14 +171,6 @@ public:
 
     bool GetSpendsCoinbase() const { return spendsCoinbase; }
 
-    uint64_t GetCountWithAncestors() const { return nCountWithAncestors; }
-    uint64_t GetSizeWithAncestors() const { return nSizeWithAncestors; }
-    uint64_t GetVirtualSizeWithAncestors() const;
-    Amount GetModFeesWithAncestors() const { return nModFeesWithAncestors; }
-    int64_t GetSigOpCountWithAncestors() const {
-        return nSigOpCountWithAncestors;
-    }
-
     bool HasDsp() const { return dspIdPtr && !dspIdPtr->IsNull(); }
     //! @returns the dspId if this entry has a dsp or an IsNull() DspId if it does not
     const DspId & GetDspId() const {
@@ -195,7 +183,9 @@ public:
     mutable size_t vTxHashesIdx = 0;
 };
 
-// Helpers for modifying CTxMemPool::mapTx, which is a boost multi_index.
+// --- Helpers for modifying CTxMemPool::mapTx, which is a boost multi_index.
+
+// Remove after tachyon
 struct update_descendant_state {
     update_descendant_state(int64_t _modifySize, Amount _modifyFee,
                             int64_t _modifyCount, int64_t _modifySigOpCount)
@@ -205,24 +195,6 @@ struct update_descendant_state {
     void operator()(CTxMemPoolEntry &e) {
         e.UpdateDescendantState(modifySize, modifyFee, modifyCount,
                                 modifySigOpCount);
-    }
-
-private:
-    int64_t modifySize;
-    Amount modifyFee;
-    int64_t modifyCount;
-    int64_t modifySigOpCount;
-};
-
-struct update_ancestor_state {
-    update_ancestor_state(int64_t _modifySize, Amount _modifyFee,
-                          int64_t _modifyCount, int64_t _modifySigOpCount)
-        : modifySize(_modifySize), modifyFee(_modifyFee),
-          modifyCount(_modifyCount), modifySigOpCount(_modifySigOpCount) {}
-
-    void operator()(CTxMemPoolEntry &e) {
-        e.UpdateAncestorState(modifySize, modifyFee, modifyCount,
-                              modifySigOpCount);
     }
 
 private:
@@ -365,11 +337,9 @@ enum class MemPoolRemovalReason {
  * (because any such children would be an orphan). So in addUnchecked(), we:
  * - update a new entry's setMemPoolParents to include all in-mempool parents
  * - update the new entry's direct parents to include the new tx as a child
- * - update all ancestors of the transaction to include the new tx's size/fee
  *
  * When a transaction is removed from the mempool, we must:
  * - update all in-mempool parents to not track the tx in setMemPoolChildren
- * - update all ancestors to not include the tx's size/fees in descendant state
  * - update all in-mempool children to not include it as a parent
  *
  * These happen in UpdateForRemoveFromMempool(). (Note that when removing a
@@ -386,10 +356,9 @@ enum class MemPoolRemovalReason {
  *
  * Computational limits:
  *
- * Updating all in-mempool ancestors of a newly added transaction can be slow,
- * if no bound exists on how many in-mempool ancestors there may be.
- * CalculateMemPoolAncestors() takes configurable limits that are designed to
- * prevent these calculations from being too CPU intensive.
+ * Updating all in-mempool ancestors of a newly added transaction before tachyon
+ * activates can be slow. After tachyon, no bound exists on how many in-mempool
+ * ancestors there may be.
  */
 class CTxMemPool {
 private:
@@ -498,6 +467,7 @@ public:
         EXCLUSIVE_LOCKS_REQUIRED(cs);
     const setEntries &GetMemPoolChildren(txiter entry) const
         EXCLUSIVE_LOCKS_REQUIRED(cs);
+    /// Remove after tachyon; after tachyon activates this will be inaccurate
     uint64_t CalculateDescendantMaximum(txiter entry) const
         EXCLUSIVE_LOCKS_REQUIRED(cs);
 
@@ -616,16 +586,14 @@ public:
         nCheckFrequency = static_cast<uint32_t>(dFrequency * 4294967295.0);
     }
 
-    // addUnchecked must updated state for all ancestors of a given transaction,
-    // to track size/count of descendant transactions. First version of
-    // addUnchecked can be used to have it call CalculateMemPoolAncestors(), and
-    // then invoke the second version.
-    // Note that addUnchecked is ONLY called from ATMP outside of tests
-    // and any other callers may break wallet's in-mempool tracking (due to
-    // lack of CValidationInterface::TransactionAddedToMempool callbacks).
+    // addUnchecked must update state for all parents of a given transaction,
+    // updating child links as necessary.
+    // Pre-tachyon: automatically calculates setAncestors, calls addUnchecked(entry, setAncestors)
+    // Post-tachyon: identical to just calling addUnchecked(entry, {})
+    // These 2 overloads should be collapsed down into 1 post-tachyon (just a single-argument version).
     void addUnchecked(const CTxMemPoolEntry &entry)
         EXCLUSIVE_LOCKS_REQUIRED(cs, cs_main);
-    void addUnchecked(const CTxMemPoolEntry &entry, setEntries &setAncestors)
+    void addUnchecked(const CTxMemPoolEntry &entry, const setEntries &setAncestors /* only used pre-tachyon */)
         EXCLUSIVE_LOCKS_REQUIRED(cs, cs_main);
 
     void removeRecursive(
@@ -673,13 +641,10 @@ public:
     /**
      * Remove a set of transactions from the mempool. If a transaction is in
      * this set, then all in-mempool descendants must also be in the set, unless
-     * this transaction is being removed for being in a block. Set
-     * updateDescendants to true when removing a tx that was in a block, so that
-     * any in-mempool descendants have their ancestor state updated.
+     * this transaction is being removed for being in a block.
      */
     void
-    RemoveStaged(setEntries &stage, bool updateDescendants,
-                 MemPoolRemovalReason reason = MemPoolRemovalReason::UNKNOWN)
+    RemoveStaged(const setEntries &stage, MemPoolRemovalReason reason = MemPoolRemovalReason::UNKNOWN)
         EXCLUSIVE_LOCKS_REQUIRED(cs);
 
     /**
@@ -741,9 +706,13 @@ public:
     /**
      * Calculate the ancestor and descendant count for the given transaction.
      * The counts include the transaction itself.
+     *
+     * NOTE: Since we are removing the unconf. ancestor limits after tachyon,
+     *       this function's existence is a potential DoS. It should not be
+     *       called after tachyon since it relies on calculating quadratic
+     *       stats.
      */
-    void GetTransactionAncestry(const TxId &txid, size_t &ancestors,
-                                size_t &descendants) const;
+    void GetTransactionAncestry_deprecated_slow(const TxId &txid, size_t &ancestors, size_t &descendants) const;
 
     /** @returns true if the mempool is fully loaded */
     bool IsLoaded() const;
@@ -788,20 +757,15 @@ public:
 
 private:
     /**
-     * Update ancestors of hash to add/remove it as a descendant transaction.
+     * Update parents of `it` to add/remove it as a child transaction (updates mapLinks).
      */
-    void UpdateAncestorsOf(bool add, txiter hash, setEntries &setAncestors)
-        EXCLUSIVE_LOCKS_REQUIRED(cs);
-    /** Set ancestor state for an entry */
-    void UpdateEntryForAncestors(txiter it, const setEntries &setAncestors)
+    void UpdateParentsOf(bool add, txiter it, const setEntries *setAncestors = nullptr /* only used pre-tachyon */)
         EXCLUSIVE_LOCKS_REQUIRED(cs);
     /**
-     * For each transaction being removed, update ancestors and any direct
-     * children. If updateDescendants is true, then also update in-mempool
-     * descendants' ancestor state.
+     * For each transaction being removed, sever links between parents
+     * and children in mapLinks
      */
-    void UpdateForRemoveFromMempool(const setEntries &entriesToRemove,
-                                    bool updateDescendants)
+    void UpdateForRemoveFromMempool(const setEntries &entriesToRemove)
         EXCLUSIVE_LOCKS_REQUIRED(cs);
     /** Sever link between specified transaction and direct children. */
     void UpdateChildrenForRemoval(txiter entry) EXCLUSIVE_LOCKS_REQUIRED(cs);

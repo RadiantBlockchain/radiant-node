@@ -2807,6 +2807,8 @@ bool CWallet::SelectCoins(const std::vector<COutput> &vAvailableCoins,
     std::vector<OutputGroup> groups =
         GroupOutputs(vCoins, !coin_control.m_avoid_partial_spends);
 
+    // Note: after tachyon the ancestor stats will always be 0, since this
+    // limitation becomes irrelevant.
     size_t max_ancestors = std::max<size_t>(
         1, gArgs.GetArg("-limitancestorcount", DEFAULT_ANCESTOR_LIMIT));
     size_t max_descendants = std::max<size_t>(
@@ -3404,8 +3406,9 @@ CreateTransactionResult CWallet::CreateTransaction(
         }
     }
 
-    if (gArgs.GetBoolArg("-walletrejectlongchains",
-                         DEFAULT_WALLET_REJECT_LONG_CHAINS)) {
+    // After tachyon this option and this limitation will no longer exist
+    if (!::g_mempool.tachyonLatched
+            && gArgs.GetBoolArg("-walletrejectlongchains", DEFAULT_WALLET_REJECT_LONG_CHAINS)) {
         // Lastly, ensure this tx will pass the mempool's chain limits.
         LockPoints lp;
         CTxMemPoolEntry entry(tx, Amount::zero(), 0, 0, false, 0, lp);
@@ -4921,9 +4924,14 @@ CWallet::GroupOutputs(const std::vector<COutput> &outputs,
         if (output.fSpendable) {
             CInputCoin input_coin = output.GetInputCoin();
 
-            size_t ancestors, descendants;
-            g_mempool.GetTransactionAncestry(output.tx->GetId(), ancestors,
-                                             descendants);
+            // deprecated -- after activation these 2 stats should always just be 0 since these stat becomes irrelevant
+            // at that point.
+            size_t ancestors{}, descendants{};
+            if (!g_mempool.tachyonLatched) {
+                // do not call this after activation -- it is slow for unlimited ancestors
+                g_mempool.GetTransactionAncestry_deprecated_slow(output.tx->GetId(), ancestors, descendants);
+            }
+
             if (!single_coin &&
                 ExtractDestination(output.tx->tx->vout[output.i].scriptPubKey,
                                    dst)) {

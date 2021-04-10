@@ -21,9 +21,15 @@ MAX_DESCENDANTS = 50
 
 
 class MempoolPackagesTest(BitcoinTestFramework):
+
+    # This test tests mempool ancestor chain limits, which
+    # no longer are enforced after tachyon, so we need to
+    # force tachyon to activate in the distant future
+    TACHYON_FAR_FUTURE = f"-tachyonactivationtime={int(9e9)}"
+
     def set_test_params(self):
         self.num_nodes = 2
-        common_params = ["-maxorphantx=1000"]
+        common_params = ["-maxorphantx=1000", self.TACHYON_FAR_FUTURE]
         self.extra_args = [common_params,
                            common_params + ["-limitancestorcount=5"]]
 
