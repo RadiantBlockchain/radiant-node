@@ -42,6 +42,12 @@ information details on the DSProof implementation in BCHN.
 
 ## Deprecated functionality
 
+In the `getmempoolentry` RPC call, the verbose modes of the
+`getrawmempool`/`getmempoolancestors`/`getmempooldescendants` RPC calls, and the
+JSON mode of the mempool REST call, the `height` field is deprecated and will be
+removed in a subsequent release. This field indicates the block height upon
+mempool acceptance.
+
 ...
 
 
@@ -66,8 +72,6 @@ generation with BCHN's consensus rules.
 The `getblockstats` RPC is faster for fee calculation by using BlockUndo data.
 Also, `-txindex` is no longer required and `getblockstats` works for all
 non-pruned blocks.
-
-## Low-level RPC changes
 
 ...
 
@@ -159,6 +163,13 @@ all of them on our GitLab repository.
   script in `test/benchmark/` likewise contains code that is flagged by
   the current linting configuration. There are also RPC parameter type
   inconsistencies that flag linting checks (see #182).
+  
+- In the `getmempoolentry` RPC call, the verbose modes of the
+  `getrawmempool`/`getmempoolancestors`/`getmempooldescendants` RPC calls, and
+  the JSON mode of the mempool REST call, the `height` field shows an incorrect
+  block height after a chain reorg (regression from Merge Request !1128) as well
+  as after a node restart. Note the field is deprecated and will be removed in
+  a subsequent release.
 
 ---
 
