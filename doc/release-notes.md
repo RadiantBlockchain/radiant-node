@@ -88,6 +88,9 @@ configuration now accept only valid HTTP or HTTPS URLs.
 Existing URLs that do not conform to these schemes are not displayed in
 the context menu.
 
+Qt GUI settings are no longer automatically copied from Bitcoin ABC on first use
+of Bitcoin Cash Node.
+
 ## Regressions
 
 Bitcoin Cash Node 23.0.0 does not introduce any known regressions compared
