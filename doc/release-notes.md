@@ -81,6 +81,12 @@ subobject instead.
 
 ...
 
+## User interface changes
+
+The transaction viewer (configurable via the Settings -> Display dialog)
+configuration now accept only valid HTTP or HTTPS URLs.
+Existing URLs that do not conform to these schemes are not displayed in
+the context menu.
 
 ## Regressions
 

@@ -8,6 +8,7 @@
 #include <config.h>
 #include <key_io.h>
 #include <qt/guiutil.h>
+#include <qt/optionsmodel.h>
 
 namespace {
 
@@ -25,6 +26,7 @@ private:
 } // namespace
 
 void GUIUtilTests::dummyAddressTest() {
+
     GUIUtilTestConfig config;
     const CChainParams &params = config.GetChainParams();
 
@@ -88,4 +90,22 @@ void GUIUtilTests::formatBytesTest() {
     QVERIFY(GUIUtil::formatBytes(1'100'000'000) == "1,10 GB");
     QVERIFY(GUIUtil::formatBytes(1'999'999'999) == "1,99 GB");
     QVERIFY(GUIUtil::formatBytes(2'000'000'000) == "2,00 GB");
+}
+
+
+void GUIUtilTests::txViewerURLValidationTest() {
+    QLocale::setDefault(QLocale("en_US"));
+    QVERIFY(OptionsModel::isValidThirdPartyTxUrlString(""));  // special case of empty URL is allowed
+    QVERIFY(!OptionsModel::isValidThirdPartyTxUrlString("foo"));
+    QVERIFY(!OptionsModel::isValidThirdPartyTxUrlString("123.123.123.123"));
+    QVERIFY(OptionsModel::isValidThirdPartyTxUrlString("http://foo.com"));
+    QVERIFY(OptionsModel::isValidThirdPartyTxUrlString("http:/foo.com"));  // ?
+    QVERIFY(OptionsModel::isValidThirdPartyTxUrlString("http://foo.com/%s"));
+    QVERIFY(OptionsModel::isValidThirdPartyTxUrlString("https://foo.com"));
+    QVERIFY(OptionsModel::isValidThirdPartyTxUrlString("https://foo.com/%s"));
+    QVERIFY(OptionsModel::isValidThirdPartyTxUrlString("https:/foo.com"));  // ?
+    QVERIFY(!OptionsModel::isValidThirdPartyTxUrlString("ftp://foo.com/path"));
+    QVERIFY(!OptionsModel::isValidThirdPartyTxUrlString("ssh://foo.com/path"));
+    QVERIFY(OptionsModel::isValidThirdPartyTxUrlString("HTTP://foo.com/path"));
+    QVERIFY(OptionsModel::isValidThirdPartyTxUrlString("HTTPS://foo.com/path"));
 }

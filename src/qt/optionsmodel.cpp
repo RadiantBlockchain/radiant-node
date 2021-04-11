@@ -363,6 +363,25 @@ QVariant OptionsModel::data(const QModelIndex &index, int role) const {
     return QVariant();
 }
 
+bool OptionsModel::isValidThirdPartyTxUrlString(QString value)
+{
+    // Check that the URLs are valid, and https or https.
+    // Requiring http(s) ensures that certain schemes that auto-execute
+    // cannot be used.  Although the user would need to explicitly
+    // configure such to happen, preventing this configuration protects
+    // the average user.
+    QStringList listUrls = GUIUtil::splitSkipEmptyParts(value, "|");
+    for (auto &urlStr : listUrls) {
+        // Remove whitespace and replace our tx placeholder with some
+        // valid URL data for validity checking.
+        const QUrl url(urlStr.replace("%s", "tx").trimmed(), QUrl::StrictMode);
+        if (!url.isValid() || (url.scheme().toLower() != "https" && url.scheme().toLower() != "http")) {
+            return false;
+        }
+    }
+    return true;
+}
+
 // write QSettings values
 bool OptionsModel::setData(const QModelIndex &index, const QVariant &value,
                            int role) {
@@ -454,10 +473,11 @@ bool OptionsModel::setData(const QModelIndex &index, const QVariant &value,
                 break;
             case ThirdPartyTxUrls:
                 if (strThirdPartyTxUrls != value.toString()) {
-                    strThirdPartyTxUrls = value.toString();
-                    settings.setValue("strThirdPartyTxUrls",
-                                      strThirdPartyTxUrls);
-                    setRestartRequired(true);
+                    if (isValidThirdPartyTxUrlString(value.toString())) {
+                        strThirdPartyTxUrls = value.toString();
+                        settings.setValue("strThirdPartyTxUrls", strThirdPartyTxUrls);
+                        setRestartRequired(true);
+                    }
                 }
                 break;
             case Language:

@@ -86,6 +86,9 @@ public:
     void setRestartRequired(bool fRequired);
     bool isRestartRequired() const;
 
+    // Returns false if this URL is invalid (malformed or not HTTP/HTTPS)
+    static bool isValidThirdPartyTxUrlString(QString value);
+
     interfaces::Node &node() const { return m_node; }
 
 private:
