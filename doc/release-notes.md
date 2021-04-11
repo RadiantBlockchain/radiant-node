@@ -79,6 +79,13 @@ JSON mode of the mempool REST call, the fields `fee` and `modifiedfee` are
 removed. These fields were deprecated since v0.20.4. Please use the `fees`
 subobject instead.
 
+The (non-default) option in the `getnetworkhashps` RPC call to calculate average
+hashrate using "blocks since last difficulty change" has been removed. The
+option relied on an incorrect assumption of when the last difficulty change
+happened. On Bitcoin Cash, difficulty changes every block, rendering the option
+meaningless. The removal of this option was announced in the release notes of
+v22.2.0.
+
 ...
 
 ## User interface changes
@@ -161,11 +168,6 @@ all of them on our GitLab repository.
   or retrofit the necessary toolchains and perform the same build steps for
   Xenial as registered in our packaging repository, or build in a VM using
   the gitian build instructions, or run our reproducible binary release builds.
-
-- The `getnetworkhashps` RPC call is not adapted to per-block DAA (see #193).
-  It has an option to calculate average hashrate "since last difficulty change"
-  and wrongly assumes difficulty changes every 2016 blocks. This irrelevant
-  option will likely be removed in the next release.
 
 - A problem was observed on scalenet where nodes would sometimes hang for
   around 10 minutes, accepting RPC connections but not responding to them

@@ -1,6 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2018 The Bitcoin Core developers
-// Copyright (c) 2020 The Bitcoin developers
+// Copyright (c) 2020-2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -59,9 +59,10 @@ static double GetNetworkHashPS(int lookup, int height) {
 
     // If lookup is -1, then use blocks since last difficulty change.
     if (lookup <= 0) {
-        lookup = pb->nHeight %
-                     Params().GetConsensus().DifficultyAdjustmentInterval() +
-                 1;
+        throw JSONRPCError(RPC_INVALID_PARAMETER,
+                           "Number of blocks must be positive "
+                           "(using blocks since last difficulty change is no longer possible, "
+                           "because difficulty changes every block)");
     }
 
     // If lookup is larger than chain, then set it to chain length.
@@ -96,14 +97,12 @@ static UniValue getnetworkhashps(const Config &config,
     if (request.fHelp || request.params.size() > 2) {
         throw std::runtime_error(RPCHelpMan{
             "getnetworkhashps",
-            "\nReturns the estimated network hashes per second based on the last n blocks.\n"
-            "Pass in [blocks] to override # of blocks, -1 specifies since last difficulty change.\n"
-            "Pass in [height] to estimate the network speed at the time when a certain block was found.\n",
+            "\nReturns the estimated network hashes per second based on the last n blocks.\n",
             {
                 {"nblocks", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "120",
-                 "The number of blocks, or -1 for blocks since last difficulty change."},
+                 "The number of blocks to use for the network hashrate estimation."},
                 {"height", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "-1",
-                 "To estimate at the time of the given height."},
+                 "Estimate the network hashrate at the time of this block height (-1 for current block height)."},
             },
             RPCResult{
                 "x             (numeric) Hashes per second estimated\n"},

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # Copyright (c) 2014-2019 The Bitcoin Core developers
+# Copyright (c) 2021 The Bitcoin developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -335,6 +336,13 @@ class BlockchainTest(BitcoinTestFramework):
         hashes_per_second = self.nodes[0].getnetworkhashps()
         # This should be 2 hashes every 10 minutes or 1/300
         assert abs(hashes_per_second * 300 - 1) < 0.0001
+        assert_equal(hashes_per_second, self.nodes[0].getnetworkhashps(None, self.nodes[0].getblockcount()))
+        for not_positive in (-1, 0):
+            assert_raises_rpc_error(
+                -8,
+                "Number of blocks must be positive (using blocks since last difficulty change is no longer possible, because difficulty changes every block)",
+                self.nodes[0].getnetworkhashps,
+                not_positive)
 
     def _test_stopatheight(self):
         assert_equal(self.nodes[0].getblockcount(), 200)
