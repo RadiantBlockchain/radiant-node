@@ -15,6 +15,7 @@ private Q_SLOTS:
     void dummyAddressTest();
     void toCurrentEncodingTest();
     void formatBytesTest();
+    void txViewerURLValidationTest();
 };
 
 #endif // BITCOIN_QT_TEST_GUIUTILTESTS_H

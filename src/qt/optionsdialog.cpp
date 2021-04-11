@@ -213,7 +213,7 @@ void OptionsDialog::setModel(OptionsModel *_model) {
         static_cast<void (QValueComboBox::*)()>(&QValueComboBox::valueChanged),
         [this] { showRestartWarning(); });
     connect(ui->thirdPartyTxUrls, &QLineEdit::textChanged,
-            [this] { showRestartWarning(); });
+            [this] { thirdPartyTxWarning(); });
 }
 
 void OptionsDialog::setCurrentTab(OptionsDialog::Tab tab) {
@@ -346,6 +346,18 @@ void OptionsDialog::showRestartWarning(bool fPersistent) {
         // TODO: should perhaps be a class attribute, if we extend the use of
         // statusLabel
         QTimer::singleShot(10000, this, &OptionsDialog::clearStatusLabel);
+    }
+}
+
+void OptionsDialog::thirdPartyTxWarning(bool fPersistent)
+{
+    QString str = ui->thirdPartyTxUrls->displayText();
+
+    if (!OptionsModel::isValidThirdPartyTxUrlString(str)) {
+        ui->statusLabel->setStyleSheet("QLabel { color: red; }");
+        ui->statusLabel->setText(tr("Not a valid HTTP or HTTPS URL."));
+    } else { // It is a valid URL
+        showRestartWarning(fPersistent);
     }
 }
 

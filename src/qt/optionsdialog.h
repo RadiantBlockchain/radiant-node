@@ -58,6 +58,7 @@ private Q_SLOTS:
 
     void togglePruneWarning(bool enabled);
     void showRestartWarning(bool fPersistent = false);
+    void thirdPartyTxWarning(bool fPersistent = false);
     void clearStatusLabel();
     void updateProxyValidationState();
     /* query the networks, for which the default proxy is used */

@@ -271,7 +271,7 @@ void TransactionView::setModel(WalletModel *_model) {
             for (int i = 0; i < listUrls.size(); ++i) {
                 const auto url = listUrls[i].trimmed();
                 const auto host = QUrl(url, QUrl::StrictMode).host();
-                if (!host.isEmpty()) {
+                if (!host.isEmpty() && OptionsModel::isValidThirdPartyTxUrlString(url)) {
                     // use host as menu item label
                     QAction *thirdPartyTxUrlAction = new QAction(host, this);
                     if (i == 0) {
