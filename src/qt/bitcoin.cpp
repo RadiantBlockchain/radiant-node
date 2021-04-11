@@ -482,41 +482,6 @@ static void SetupUIArgs() {
 
 #ifndef BITCOIN_QT_TEST
 
-static void MigrateSettings() {
-    assert(!QApplication::applicationName().isEmpty());
-
-    static const QString abcAppName("BitcoinABC-Qt"),
-#ifdef Q_OS_DARWIN
-        // Macs and/or iOS et al use a domain-style name for Settings
-        // files. All other platforms use a simple orgname. This
-        // difference is documented in the QSettings class documentation.
-        abcOrg("bitcoinabc.org");
-#else
-        abcOrg("BitcoinABC");
-#endif
-    QSettings
-        // below picks up settings file location based on orgname,appname
-        abc(abcOrg, abcAppName),
-        // default c'tor below picks up settings file location based on
-        // QApplication::applicationName(), et al -- which was already set
-        // in main()
-        bchn;
-#ifdef Q_OS_DARWIN
-    // Disable bogus OSX keys from MacOS system-wide prefs that may cloud our
-    // judgement ;) (this behavior is also documented in QSettings docs)
-    abc.setFallbacksEnabled(false);
-    bchn.setFallbacksEnabled(false);
-#endif
-    // We only migrate settings if we have ABC settings but no BCHN
-    // settings (first run).
-    if (bchn.allKeys().isEmpty()) {
-        for (const QString &key : abc.allKeys()) {
-            // now, copy settings over
-            bchn.setValue(key, abc.value(key));
-        }
-    }
-}
-
 int GuiMain(int argc, char *argv[]) {
 #ifdef WIN32
     util::WinCmdLineArgs winArgs;
@@ -618,17 +583,9 @@ int GuiMain(int argc, char *argv[]) {
     /// 3. Application identification
     // must be set before OptionsModel is initialized or translations are
     // loaded, as it is used to locate QSettings.
-    // Note: If you move these calls somewhere else, be sure to bring
-    // MigrateSettings() below along for the ride.
     QApplication::setOrganizationName(QAPP_ORG_NAME);
     QApplication::setOrganizationDomain(QAPP_ORG_DOMAIN);
     QApplication::setApplicationName(QAPP_APP_NAME_DEFAULT);
-    // Migrate GUI settings from Bitcoin ABC to our Bitcoin Cash Node
-    // only if ABC's exists but ours doesn't.
-    // NOTE -- this function needs to be called *after* the above 3 lines
-    // that set the app orgname and app name! If you move the above 3 lines
-    // to elsewhere, take this call with you!
-    MigrateSettings();
 
     /// 4. Initialization of translations, so that intro dialog is in user's
     /// language. Now that QSettings are accessible, initialize translations.
