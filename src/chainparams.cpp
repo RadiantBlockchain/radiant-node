@@ -267,6 +267,8 @@ public:
                 // Axion activation.
                 {661648, BlockHash::fromHex("0000000000000000029e471c41818d24b8"
                                             "b74c911071c4ef0b4a0509f9b5a8ce")},
+                {682900, BlockHash::fromHex("0000000000000000018b0a60a00ca53b69"
+                                            "b213a8515e5eedbf8a207f0355fe42")},
             }};
 
         // Data as of block
@@ -437,6 +439,8 @@ public:
                 // Axion activation.
                 {1421482, BlockHash::fromHex(
                               "0000000023e0680a8a062b3cc289a4a341124ce7fcb6340ede207e194d73b60a")},
+                {1442860, BlockHash::fromHex(
+                              "000000000004f42ffcf218d285cbd8d8d93e1c5a4262bdd1fdfd1991cfdb5027")},
             }};
 
         // Data as of block
@@ -583,6 +587,7 @@ public:
                 {5000, BlockHash::fromHex("000000009f092d074574a216faec682040a853c4f079c33dfd2c3ef1fd8108c4")},
                 // Axion activation.
                 {16845, BlockHash::fromHex("00000000fb325b8f34fe80c96a5f708a08699a68bbab82dba4474d86bd743077")},
+                {38000, BlockHash::fromHex("000000000015197537e59f339e3b1bbf81a66f691bd3d7aa08560fc7bf5113fb")},
             }};
 
         // Data as of block
