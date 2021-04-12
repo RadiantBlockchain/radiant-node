@@ -59,7 +59,7 @@ class GetBlockTemplateSigopsTest(BitcoinTestFramework):
 
         # When below default size
         target_size = int(DEFAULT_EXCESSIVE_BLOCK_SIZE*0.67)
-        self.reinit_node(1, ["-excessiveblocksize=" + str(target_size)])
+        self.reinit_node(1, ["-blockmaxsize=2000000", "-excessiveblocksize=" + str(target_size)])
         self.assert_case("when below DEFAULT_EXCESSIVE_BLOCK_SIZE", 1, target_size)
 
         # When at lower boundary (1MB+1), but that requires blockmaxsize to be set to 1 MB as we're going below

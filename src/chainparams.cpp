@@ -144,7 +144,7 @@ public:
         consensus.nDefaultExcessiveBlockSize = DEFAULT_EXCESSIVE_BLOCK_SIZE;
 
         // Chain-specific default for mining block size (in bytes) (configurable with -blockmaxsize)
-        consensus.nDefaultGeneratedBlockSize = 2 * ONE_MEGABYTE;
+        consensus.nDefaultGeneratedBlockSize = 8 * ONE_MEGABYTE;
 
         assert(consensus.nDefaultGeneratedBlockSize <= consensus.nDefaultExcessiveBlockSize);
 
@@ -354,7 +354,7 @@ public:
         consensus.nDefaultExcessiveBlockSize = DEFAULT_EXCESSIVE_BLOCK_SIZE;
 
         // Chain-specific default for mining block size (in bytes) (configurable with -blockmaxsize)
-        consensus.nDefaultGeneratedBlockSize = 2 * ONE_MEGABYTE;
+        consensus.nDefaultGeneratedBlockSize = 8 * ONE_MEGABYTE;
 
         assert(consensus.nDefaultGeneratedBlockSize <= consensus.nDefaultExcessiveBlockSize);
 
@@ -672,7 +672,7 @@ public:
         consensus.nDefaultExcessiveBlockSize = 256 * ONE_MEGABYTE;
 
         // Chain-specific default for mining block size (in bytes) (configurable with -blockmaxsize)
-        consensus.nDefaultGeneratedBlockSize = 2 * ONE_MEGABYTE;
+        consensus.nDefaultGeneratedBlockSize = 8 * ONE_MEGABYTE;
 
         assert(consensus.nDefaultGeneratedBlockSize <= consensus.nDefaultExcessiveBlockSize);
 
@@ -803,7 +803,7 @@ public:
         consensus.nDefaultExcessiveBlockSize = DEFAULT_EXCESSIVE_BLOCK_SIZE;
 
         // Chain-specific default for mining block size (in bytes) (configurable with -blockmaxsize)
-        consensus.nDefaultGeneratedBlockSize = 2 * ONE_MEGABYTE;
+        consensus.nDefaultGeneratedBlockSize = 8 * ONE_MEGABYTE;
 
         assert(consensus.nDefaultGeneratedBlockSize <= consensus.nDefaultExcessiveBlockSize);
 

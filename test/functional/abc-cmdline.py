@@ -11,7 +11,9 @@ Currently:
 
 import re
 
-from test_framework.cdefs import LEGACY_MAX_BLOCK_SIZE
+from test_framework.cdefs import (LEGACY_MAX_BLOCK_SIZE,
+                                  DEFAULT_MAX_GENERATED_BLOCK_SIZE,
+                                  ONE_MEGABYTE)
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import assert_equal
 
@@ -41,14 +43,16 @@ class ABC_CmdLine_Test (BitcoinTestFramework):
     def excessiveblocksize_test(self):
         self.log.info("Testing -excessiveblocksize")
 
-        self.log.info("  Set to twice the default, i.e. {} bytes".format(
-            2 * LEGACY_MAX_BLOCK_SIZE))
+        self.log.info("  Set to default max generated block size, i.e. {} bytes".format(
+            DEFAULT_MAX_GENERATED_BLOCK_SIZE))
         self.stop_node(0)
         self.start_node(0, ["-excessiveblocksize={}".format(
-            2 * LEGACY_MAX_BLOCK_SIZE)])
-        self.check_excessive(2 * LEGACY_MAX_BLOCK_SIZE)
+            DEFAULT_MAX_GENERATED_BLOCK_SIZE)])
+        self.check_excessive(DEFAULT_MAX_GENERATED_BLOCK_SIZE)
         # Check for EB correctness in the subver string
-        self.check_subversion(r"/Bitcoin Cash Node:.*\(EB2\.0; .*\)/")
+        self.check_subversion(r"/Bitcoin Cash Node:.*\(EB"
+                              + str(DEFAULT_MAX_GENERATED_BLOCK_SIZE // ONE_MEGABYTE)
+                              + r"\.0; .*\)/" )
 
         self.log.info("  Attempt to set below legacy limit of 1MB - try {} bytes".format(
             LEGACY_MAX_BLOCK_SIZE))
