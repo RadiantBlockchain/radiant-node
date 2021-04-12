@@ -4,8 +4,8 @@
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """
 Imports some application default values from source files outside the test
-framework, and defines equivalents of consensus parameters for the test
-framework.
+framework, and defines equivalents of consensus/policy parameters for the
+test framework.
 """
 
 import os
@@ -46,10 +46,14 @@ def get_srcdir():
     return None
 
 
-# Slurp in consensus.h contents
+# Slurp in consensus.h and policy.h contents
 _consensus_h_fh = open(os.path.join(get_srcdir(), 'src', 'consensus', 'consensus.h'), 'rt', encoding='utf-8')
 _consensus_h_contents = _consensus_h_fh.read()
 _consensus_h_fh.close()
+
+_policy_h_fh = open(os.path.join(get_srcdir(), 'src', 'policy', 'policy.h'), 'rt', encoding='utf-8')
+_policy_h_contents = _policy_h_fh.read()
+_policy_h_fh.close()
 
 # This constant is currently needed to evaluate some that are formulas
 ONE_MEGABYTE = 1000000
@@ -102,9 +106,24 @@ MIN_TX_SIZE = 100
 # Maximum bytes in a TxOut pubkey script
 MAX_TXOUT_PUBKEY_SCRIPT = 10000
 
+# The following are some node policy values, but also useful in tests.
+
+# Default setting for maximum generated size of block (soft limit)
+# This is a per-chain limit and is specified in src/chainparams.cpp
+# Please ensure this value matches the setting for CRegTestParams.
+DEFAULT_MAX_GENERATED_BLOCK_SIZE = 8 * ONE_MEGABYTE
+
+# Ensure sanity of these constants
+if DEFAULT_MAX_GENERATED_BLOCK_SIZE > DEFAULT_EXCESSIVE_BLOCK_SIZE:
+    import sys
+    sys.exit(f"DEFAULT_MAX_GENERATED_BLOCK_SIZE ({DEFAULT_MAX_GENERATED_BLOCK_SIZE}) may not be larger than "
+             f"DEFAULT_EXCESSIVE_BLOCK_SIZE ({DEFAULT_EXCESSIVE_BLOCK_SIZE})")
+
+
 if __name__ == "__main__":
     # Output values if run standalone to verify
     print("DEFAULT_EXCESSIVE_BLOCK_SIZE = {} (bytes)".format(DEFAULT_EXCESSIVE_BLOCK_SIZE))
     print("MAX_BLOCK_SIGOPS_PER_MB = {} (sigops)".format(MAX_BLOCK_SIGOPS_PER_MB))
     print("MAX_TX_SIGOPS_COUNT = {} (sigops)".format(MAX_TX_SIGOPS_COUNT))
     print("COINBASE_MATURITY = {} (blocks)".format(COINBASE_MATURITY))
+    print("DEFAULT_MAX_GENERATED_BLOCK_SIZE = {} (bytes)".format(DEFAULT_MAX_GENERATED_BLOCK_SIZE))

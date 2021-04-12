@@ -22,6 +22,7 @@ class PrioritiseTransactionTest(BitcoinTestFramework):
         self.setup_clean_chain = True
         self.num_nodes = 2
         self.extra_args = [[
+            "-blockmaxsize=2000000",
             "-printpriority=1",
             "-acceptnonstdtxn=1",
         ]] * self.num_nodes

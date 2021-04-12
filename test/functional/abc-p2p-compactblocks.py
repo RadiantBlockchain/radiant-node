@@ -100,6 +100,8 @@ class FullBlockTest(BitcoinTestFramework):
                             '-limitdescendantcount=999999',
                             '-limitdescendantsize=999999',
                             '-maxmempool=99999',
+                            '-blockmaxsize={}'.format(
+                                self.excessive_block_size),
                             '-excessiveblocksize={}'.format(
                                 self.excessive_block_size),
                             '-acceptnonstdtxn=1']]
