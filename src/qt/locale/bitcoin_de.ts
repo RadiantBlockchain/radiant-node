@@ -309,12 +309,12 @@
   <context>
     <name>BitcoinGUI</name>
     <message>
-      <location filename="../bitcoingui.cpp" line="+1019"/>
+      <location filename="../bitcoingui.cpp" line="+1023"/>
       <source>Synchronizing with network...</source>
       <translation>Synchronisiere mit Netzwerk...</translation>
     </message>
     <message>
-      <location line="-774"/>
+      <location line="-778"/>
       <source>&amp;Overview</source>
       <translation>&amp;Übersicht</translation>
     </message>
@@ -434,7 +434,7 @@
       <translation>Zeige den %1 -Tab des Knotenfensters</translation>
     </message>
     <message>
-      <location line="+41"/>
+      <location line="+45"/>
       <source>Wallet:</source>
       <translation>Wallet:</translation>
     </message>
@@ -464,12 +464,12 @@
       <translation>Reindiziere Blöcke auf Datenträger...</translation>
     </message>
     <message>
-      <location line="+325"/>
+      <location line="+327"/>
       <source>Proxy is &lt;b&gt;enabled&lt;/b&gt;: %1</source>
       <translation>Proxy ist &lt;b&gt;aktiviert&lt;/b&gt;: %1</translation>
     </message>
     <message>
-      <location line="-996"/>
+      <location line="-1002"/>
       <source>Backup wallet to another location</source>
       <translation>Eine Wallet-Sicherungskopie erstellen und abspeichern</translation>
     </message>
@@ -479,12 +479,12 @@
       <translation>Ändert die Passphrase, die für die Wallet-Verschlüsselung benutzt wird</translation>
     </message>
     <message>
-      <location line="+744"/>
+      <location line="+748"/>
       <source>Bitcoin</source>
       <translation>Bitcoin</translation>
     </message>
     <message>
-      <location line="-855"/>
+      <location line="-859"/>
       <source>&amp;Send</source>
       <translation>&amp;Überweisen</translation>
     </message>
@@ -519,17 +519,17 @@
       <translation>&amp;Einstellungen</translation>
     </message>
     <message>
-      <location line="+73"/>
+      <location line="+75"/>
       <source>&amp;Help</source>
       <translation>&amp;Hilfe</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+11"/>
       <source>Tabs toolbar</source>
       <translation>Registerkartenleiste</translation>
     </message>
     <message>
-      <location line="-172"/>
+      <location line="-176"/>
       <source>Show the list of used sending addresses and labels</source>
       <translation>Liste verwendeter Zahlungsadressen und Bezeichnungen anzeigen</translation>
     </message>
@@ -544,7 +544,7 @@
       <translation>&amp;Kommandozeilenoptionen</translation>
     </message>
     <message numerus="yes">
-      <location line="+541"/>
+      <location line="+545"/>
       <source>%n active connection(s) to Bitcoin network</source>
       <translation>
         <numerusform>%n aktive Verbindung zum Bitcoin-Netzwerk</numerusform>
@@ -605,7 +605,7 @@
       <translation>Auf aktuellem Stand</translation>
     </message>
     <message>
-      <location line="-682"/>
+      <location line="-686"/>
       <source>Sign &amp;Message...</source>
       <translation>Nachricht s&amp;ignieren...</translation>
     </message>
@@ -655,7 +655,7 @@
       <translation>Hauptfenster</translation>
     </message>
     <message>
-      <location line="+251"/>
+      <location line="+255"/>
       <source>%1 client</source>
       <translation>%1 Client</translation>
     </message>
@@ -670,7 +670,7 @@
       <translation>Hole auf...</translation>
     </message>
     <message>
-      <location line="+152"/>
+      <location line="+154"/>
       <source>Date: %1
 </source>
       <translation>Datum: %1
@@ -742,7 +742,7 @@
       <translation>Wallet ist &lt;b&gt;verschlüsselt&lt;/b&gt; und aktuell &lt;b&gt;gesperrt&lt;/b&gt;</translation>
     </message>
     <message>
-      <location filename="../bitcoin.cpp" line="+435"/>
+      <location filename="../bitcoin.cpp" line="+437"/>
       <source>A fatal error occurred. Bitcoin can no longer continue safely and will quit.</source>
       <translation>Ein schwerer Fehler ist aufgetreten. Bitcoin kann nicht stabil weiter ausgeführt werden und wird beendet.</translation>
     </message>
@@ -1036,23 +1036,22 @@
   <context>
     <name>HelpMessageDialog</name>
     <message>
-      <location filename="../utilitydialog.cpp" line="+40"/>
+      <location filename="../utilitydialog.cpp" line="+36"/>
       <source>version</source>
       <translation>Version</translation>
     </message>
     <message>
-      <location line="+5"/>
       <location line="+2"/>
       <source>(%1-bit)</source>
       <translation>(%1-Bit)</translation>
     </message>
     <message>
-      <location line="+4"/>
+      <location line="+10"/>
       <source>About %1</source>
       <translation>Über %1</translation>
     </message>
     <message>
-      <location line="+19"/>
+      <location line="+17"/>
       <source>Command-line options</source>
       <translation>Kommandozeilenoptionen</translation>
     </message>
@@ -1591,7 +1590,12 @@
       <translation>Diese Änderung würde einen Client-Neustart erfordern.</translation>
     </message>
     <message>
-      <location line="+29"/>
+      <location line="+14"/>
+      <source>Not a valid HTTP or HTTPS URL.</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+27"/>
       <source>The supplied proxy address is invalid.</source>
       <translation>Die eingegebene Proxyadresse ist ungültig.</translation>
     </message>
@@ -1883,7 +1887,7 @@
       <translation>Betrag</translation>
     </message>
     <message>
-      <location filename="../guiutil.cpp" line="+860"/>
+      <location filename="../guiutil.cpp" line="+864"/>
       <source>%1 d</source>
       <translation>%1 T</translation>
     </message>
@@ -1972,12 +1976,12 @@
       </translation>
     </message>
     <message>
-      <location filename="../bitcoin.cpp" line="+148"/>
+      <location filename="../bitcoin.cpp" line="+137"/>
       <source>Error parsing command line arguments: %1.</source>
       <translation>Fehler beim Parsen der Kommandozeilenargumente: %1.</translation>
     </message>
     <message>
-      <location line="+50"/>
+      <location line="+45"/>
       <source>Error: Specified data directory &quot;%1&quot; does not exist.</source>
       <translation>Fehler: Angegebenes Datenverzeichnis &quot;%1&quot; existiert nicht.</translation>
     </message>
@@ -2195,7 +2199,7 @@
     <message>
       <location line="+60"/>
       <location filename="../rpcconsole.cpp" line="+552"/>
-      <location line="+864"/>
+      <location line="+865"/>
       <source>Select a peer to view detailed information.</source>
       <translation>Gegenstelle auswählen, um detaillierte Informationen zu erhalten.</translation>
     </message>
@@ -2320,7 +2324,7 @@
       <translation>Summe</translation>
     </message>
     <message>
-      <location filename="../rpcconsole.cpp" line="-459"/>
+      <location filename="../rpcconsole.cpp" line="-460"/>
       <source>In:</source>
       <translation>eingehend:</translation>
     </message>
@@ -3130,7 +3134,7 @@ Hinweis: Da die Gebühr auf einer pro Byte Basis berechnet wird, würde eine Geb
   <context>
     <name>ShutdownWindow</name>
     <message>
-      <location filename="../utilitydialog.cpp" line="+79"/>
+      <location filename="../utilitydialog.cpp" line="+56"/>
       <source>%1 is shutting down...</source>
       <translation>%1 wird beendet...</translation>
     </message>
@@ -3677,7 +3681,7 @@ Hinweis: Da die Gebühr auf einer pro Byte Basis berechnet wird, würde eine Geb
       <translation>(k.A.)</translation>
     </message>
     <message>
-      <location line="+218"/>
+      <location line="+217"/>
       <source>(no label)</source>
       <translation>(keine Bezeichnung)</translation>
     </message>
@@ -3909,7 +3913,7 @@ Hinweis: Da die Gebühr auf einer pro Byte Basis berechnet wird, würde eine Geb
   <context>
     <name>UnitDisplayStatusBarControl</name>
     <message>
-      <location filename="../bitcoingui.cpp" line="+156"/>
+      <location filename="../bitcoingui.cpp" line="+166"/>
       <source>Unit to show amounts in. Click to select another unit.</source>
       <translation>Die Einheit in der Beträge angezeigt werden. Klicken, um eine andere Einheit auszuwählen.</translation>
     </message>

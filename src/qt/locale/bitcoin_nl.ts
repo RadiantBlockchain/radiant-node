@@ -86,12 +86,12 @@
     <message>
       <location line="+8"/>
       <source>These are your Bitcoin Cash addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
-      <translation type="unfinished"/>
+      <translation>Dit zijn uw Bitcoin Cash-adressen om betalingen mee te versturen. Controleer altijd het bedrag en het ontvangstadres voordat u munten verstuurt.</translation>
     </message>
     <message>
       <location line="+8"/>
       <source>These are your Bitcoin Cash addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
-      <translation type="unfinished"/>
+      <translation>Dit zijn uw Bitcoin Cash-adressen om betalingen op te ontvangen. Het wordt aanbevolen om voor elke transactie een nieuw ontvangstadres te gebruiken.</translation>
     </message>
     <message>
       <location line="+9"/>
@@ -309,12 +309,12 @@
   <context>
     <name>BitcoinGUI</name>
     <message>
-      <location filename="../bitcoingui.cpp" line="+1019"/>
+      <location filename="../bitcoingui.cpp" line="+1023"/>
       <source>Synchronizing with network...</source>
       <translation>Synchroniseren met netwerk...</translation>
     </message>
     <message>
-      <location line="-774"/>
+      <location line="-778"/>
       <source>&amp;Overview</source>
       <translation>&amp;Overzicht</translation>
     </message>
@@ -326,7 +326,7 @@
     <message>
       <location line="+8"/>
       <source>Send coins to a Bitcoin Cash address</source>
-      <translation type="unfinished"/>
+      <translation>Verstuur munten naar een Bitcoin Cash-adres</translation>
     </message>
     <message>
       <location line="+16"/>
@@ -401,12 +401,12 @@
     <message>
       <location line="+7"/>
       <source>Sign messages with your Bitcoin Cash addresses to prove you own them</source>
-      <translation type="unfinished"/>
+      <translation>Onderteken berichten met uw Bitcoin Cash-adressen om te bewijzen dat u ze bezit</translation>
     </message>
     <message>
       <location line="+5"/>
       <source>Verify messages to ensure they were signed with specified Bitcoin Cash addresses</source>
-      <translation type="unfinished"/>
+      <translation>Verifieer berichten om zeker te zijn dat ze werden ondertekend met gespecificeerde Bitcoin Cash-adressen</translation>
     </message>
     <message>
       <location line="+23"/>
@@ -421,7 +421,7 @@
     <message>
       <location line="+9"/>
       <source>Show the %1 help message to get a list with possible command-line options</source>
-      <translation type="unfinished"/>
+      <translation>Toon het %1-hulpbericht om een lijst te krijgen met mogelijke opdrachtregelopties</translation>
     </message>
     <message>
       <location line="+82"/>
@@ -434,7 +434,7 @@
       <translation>Toon het tabblad %1 van het Nodevenster</translation>
     </message>
     <message>
-      <location line="+41"/>
+      <location line="+45"/>
       <source>Wallet:</source>
       <translation>Portemonnee:</translation>
     </message>
@@ -464,12 +464,12 @@
       <translation>Blokken op schijf herindexeren...</translation>
     </message>
     <message>
-      <location line="+325"/>
+      <location line="+327"/>
       <source>Proxy is &lt;b&gt;enabled&lt;/b&gt;: %1</source>
       <translation>Proxy is &lt;b&gt;ingeschakeld&lt;/b&gt;: %1</translation>
     </message>
     <message>
-      <location line="-996"/>
+      <location line="-1002"/>
       <source>Backup wallet to another location</source>
       <translation>Back-up portemonnee naar een andere locatie</translation>
     </message>
@@ -479,12 +479,12 @@
       <translation>Wijzig de voor portemonneeversleuteling gebruikte wachtzin</translation>
     </message>
     <message>
-      <location line="+744"/>
+      <location line="+748"/>
       <source>Bitcoin</source>
       <translation>Bitcoin</translation>
     </message>
     <message>
-      <location line="-855"/>
+      <location line="-859"/>
       <source>&amp;Send</source>
       <translation>&amp;Versturen</translation>
     </message>
@@ -519,17 +519,17 @@
       <translation>&amp;Instellingen</translation>
     </message>
     <message>
-      <location line="+73"/>
+      <location line="+75"/>
       <source>&amp;Help</source>
       <translation>&amp;Help</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+11"/>
       <source>Tabs toolbar</source>
       <translation>Tabwerkbalk</translation>
     </message>
     <message>
-      <location line="-172"/>
+      <location line="-176"/>
       <source>Show the list of used sending addresses and labels</source>
       <translation>Toon de lijst met gebruikte verzendadressen en -labels</translation>
     </message>
@@ -544,7 +544,7 @@
       <translation>&amp;Opdrachtregelopties</translation>
     </message>
     <message numerus="yes">
-      <location line="+541"/>
+      <location line="+545"/>
       <source>%n active connection(s) to Bitcoin network</source>
       <translation>
         <numerusform>%n actieve verbinding met Bitcoinnetwerk</numerusform>
@@ -605,7 +605,7 @@
       <translation>Bijgewerkt</translation>
     </message>
     <message>
-      <location line="-682"/>
+      <location line="-686"/>
       <source>Sign &amp;Message...</source>
       <translation>&amp;Bericht ondertekenen...</translation>
     </message>
@@ -655,7 +655,7 @@
       <translation>Hoofdvenster</translation>
     </message>
     <message>
-      <location line="+251"/>
+      <location line="+255"/>
       <source>%1 client</source>
       <translation>%1-client</translation>
     </message>
@@ -670,7 +670,7 @@
       <translation>Inlopen...</translation>
     </message>
     <message>
-      <location line="+152"/>
+      <location line="+154"/>
       <source>Date: %1
 </source>
       <translation>Datum: %1
@@ -742,7 +742,7 @@
       <translation>Portemonnee is &lt;b&gt;versleuteld&lt;/b&gt; en momenteel &lt;b&gt;vergrendeld&lt;/b&gt;</translation>
     </message>
     <message>
-      <location filename="../bitcoin.cpp" line="+435"/>
+      <location filename="../bitcoin.cpp" line="+437"/>
       <source>A fatal error occurred. Bitcoin can no longer continue safely and will quit.</source>
       <translation>Er is een fatale fout opgetreden. %1 kan niet langer veilig doorgaan en zal afsluiten.</translation>
     </message>
@@ -997,7 +997,7 @@
     <message>
       <location line="-11"/>
       <source>The entered address &quot;%1&quot; is not a valid Bitcoin Cash address.</source>
-      <translation type="unfinished"/>
+      <translation>Het ingevoerde adres &quot;%1&quot; is geen geldig Bitcoin Cash-adres.</translation>
     </message>
     <message>
       <location line="+16"/>
@@ -1036,23 +1036,22 @@
   <context>
     <name>HelpMessageDialog</name>
     <message>
-      <location filename="../utilitydialog.cpp" line="+40"/>
+      <location filename="../utilitydialog.cpp" line="+36"/>
       <source>version</source>
       <translation>versie</translation>
     </message>
     <message>
-      <location line="+5"/>
       <location line="+2"/>
       <source>(%1-bit)</source>
       <translation>(%1-bit)</translation>
     </message>
     <message>
-      <location line="+4"/>
+      <location line="+10"/>
       <source>About %1</source>
       <translation>Over %1</translation>
     </message>
     <message>
-      <location line="+19"/>
+      <location line="+17"/>
       <source>Command-line options</source>
       <translation>Opdrachtregelopties</translation>
     </message>
@@ -1591,7 +1590,12 @@
       <translation>Deze wijziging zou een herstart van de client vereisen.</translation>
     </message>
     <message>
-      <location line="+29"/>
+      <location line="+14"/>
+      <source>Not a valid HTTP or HTTPS URL.</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+27"/>
       <source>The supplied proxy address is invalid.</source>
       <translation>Het opgegeven proxyadres is ongeldig.</translation>
     </message>
@@ -1733,7 +1737,7 @@
     <message>
       <location line="+8"/>
       <source>URI cannot be parsed! This can be caused by an invalid Bitcoin Cash address or malformed URI parameters.</source>
-      <translation type="unfinished"/>
+      <translation>URI kan niet geparst worden! Dit kan zijn veroorzaakt door een ongeldig Bitcoin Cash-adres of misvormde URI-parameters.</translation>
     </message>
     <message>
       <location line="+25"/>
@@ -1883,7 +1887,7 @@
       <translation>Bedrag</translation>
     </message>
     <message>
-      <location filename="../guiutil.cpp" line="+860"/>
+      <location filename="../guiutil.cpp" line="+864"/>
       <source>%1 d</source>
       <translation>%1 d</translation>
     </message>
@@ -1972,12 +1976,12 @@
       </translation>
     </message>
     <message>
-      <location filename="../bitcoin.cpp" line="+148"/>
+      <location filename="../bitcoin.cpp" line="+137"/>
       <source>Error parsing command line arguments: %1.</source>
       <translation>Fout bij parsen opdrachtregelargumenten: %1.</translation>
     </message>
     <message>
-      <location line="+50"/>
+      <location line="+45"/>
       <source>Error: Specified data directory &quot;%1&quot; does not exist.</source>
       <translation>Fout: Opgegeven datamap &quot;%1&quot; bestaat niet.</translation>
     </message>
@@ -2195,7 +2199,7 @@
     <message>
       <location line="+60"/>
       <location filename="../rpcconsole.cpp" line="+552"/>
-      <location line="+864"/>
+      <location line="+865"/>
       <source>Select a peer to view detailed information.</source>
       <translation>Selecteer een peer om gedetailleerde informatie te bekijken.</translation>
     </message>
@@ -2320,7 +2324,7 @@
       <translation>Totalen</translation>
     </message>
     <message>
-      <location filename="../rpcconsole.cpp" line="-459"/>
+      <location filename="../rpcconsole.cpp" line="-460"/>
       <source>In:</source>
       <translation>In:</translation>
     </message>
@@ -3021,7 +3025,7 @@ Opmerking: Aangezien de kosten worden berekend op basis van bytes, levert een ta
     <message>
       <location line="+18"/>
       <source>The Bitcoin Cash address to send the payment to</source>
-      <translation type="unfinished"/>
+      <translation>Het Bitcoin Cash-adres om de betaling naar te sturen</translation>
     </message>
     <message>
       <location line="+75"/>
@@ -3130,7 +3134,7 @@ Opmerking: Aangezien de kosten worden berekend op basis van bytes, levert een ta
   <context>
     <name>ShutdownWindow</name>
     <message>
-      <location filename="../utilitydialog.cpp" line="+79"/>
+      <location filename="../utilitydialog.cpp" line="+56"/>
       <source>%1 is shutting down...</source>
       <translation>%1 wordt afgesloten...</translation>
     </message>
@@ -3160,7 +3164,7 @@ Opmerking: Aangezien de kosten worden berekend op basis van bytes, levert een ta
     <message>
       <location line="+18"/>
       <source>The Bitcoin Cash address to sign the message with</source>
-      <translation type="unfinished"/>
+      <translation>Het Bitcoin Cash-adres om het bericht mee te ondertekenen</translation>
     </message>
     <message>
       <location line="+7"/>
@@ -3202,17 +3206,17 @@ Opmerking: Aangezien de kosten worden berekend op basis van bytes, levert een ta
     <message>
       <location line="+21"/>
       <source>Sign the message to prove you own this Bitcoin Cash address</source>
-      <translation type="unfinished"/>
+      <translation>Onderteken het bericht om te bewijzen dat u dit Bitcoin Cash-adres bezit</translation>
     </message>
     <message>
       <location line="+106"/>
       <source>The Bitcoin Cash address the message was signed with</source>
-      <translation type="unfinished"/>
+      <translation>Het Bitcoin Cash-adres waarmee het bericht werd ondertekend</translation>
     </message>
     <message>
       <location line="+37"/>
       <source>Verify the message to ensure it was signed with the specified Bitcoin Cash address</source>
-      <translation type="unfinished"/>
+      <translation>Verifieer een bericht om er zeker van te zijn dat het werd ondertekend met het gespecificeerde Bitcoin Cash-adres</translation>
     </message>
     <message>
       <location line="-140"/>
@@ -3677,7 +3681,7 @@ Opmerking: Aangezien de kosten worden berekend op basis van bytes, levert een ta
       <translation>(n.v.t.)</translation>
     </message>
     <message>
-      <location line="+218"/>
+      <location line="+217"/>
       <source>(no label)</source>
       <translation>(geen label)</translation>
     </message>
@@ -3909,7 +3913,7 @@ Opmerking: Aangezien de kosten worden berekend op basis van bytes, levert een ta
   <context>
     <name>UnitDisplayStatusBarControl</name>
     <message>
-      <location filename="../bitcoingui.cpp" line="+156"/>
+      <location filename="../bitcoingui.cpp" line="+166"/>
       <source>Unit to show amounts in. Click to select another unit.</source>
       <translation>Eenheid om bedragen in uit te drukken. Klik om een andere eenheid te selecteren.</translation>
     </message>
@@ -4013,7 +4017,7 @@ Opmerking: Aangezien de kosten worden berekend op basis van bytes, levert een ta
     <message>
       <location line="+78"/>
       <source>Error: A fatal internal error occurred, see debug.log for details</source>
-      <translation type="unfinished"/>
+      <translation>Fout: Een interne fout trad op, zie debug.log voor details</translation>
     </message>
     <message>
       <location line="+28"/>
@@ -4023,7 +4027,7 @@ Opmerking: Aangezien de kosten worden berekend op basis van bytes, levert een ta
     <message>
       <location line="+31"/>
       <source>Unable to start HTTP server. See debug log for details.</source>
-      <translation type="unfinished"/>
+      <translation>Niet in staat HTTP-server te starten. Zie debuglog voor details.</translation>
     </message>
     <message>
       <location line="-178"/>
@@ -4048,7 +4052,7 @@ Opmerking: Aangezien de kosten worden berekend op basis van bytes, levert een ta
     <message>
       <location line="+11"/>
       <source>Please check that your computer&apos;s date and time are correct! If your clock is wrong, %s will not work properly.</source>
-      <translation type="unfinished"/>
+      <translation>Check alstublieft dat de datum en tijd van uw computer juist zijn! Als uw klok verkeerd staat, zal %s niet naar behoren functioneren.</translation>
     </message>
     <message>
       <location line="+3"/>
@@ -4058,22 +4062,22 @@ Opmerking: Aangezien de kosten worden berekend op basis van bytes, levert een ta
     <message>
       <location line="+11"/>
       <source>The block database contains a block which appears to be from the future. This may be due to your computer&apos;s date and time being set incorrectly. Only rebuild the block database if you are sure that your computer&apos;s date and time are correct</source>
-      <translation type="unfinished"/>
+      <translation>De blokdatabase bevat een blok dat uit de toekomst lijkt te komen. Dit kan komen doordat de datum en tijd van uw computer verkeerd zijn ingesteld. Herbouw de blokdatabase alleen als u zeker weet dat de datum en tijd van uw computer juist zijn</translation>
     </message>
     <message>
       <location line="+7"/>
       <source>This is a pre-release test build - use at your own risk - do not use for mining or merchant applications</source>
-      <translation type="unfinished"/>
+      <translation>Dit is een vooruitgave-testbuild - gebruik op eigen risico - niet gebruiken voor delf- of handelstoepassingen</translation>
     </message>
     <message>
       <location line="+21"/>
       <source>Warning: The network does not appear to fully agree! Some miners appear to be experiencing issues.</source>
-      <translation type="unfinished"/>
+      <translation>Waarschuwing: Het netwerk lijkt het niet helemaal eens te zijn! Sommige delvers lijken problemen te ondervinden.</translation>
     </message>
     <message>
       <location line="+16"/>
       <source>Warning: We do not appear to fully agree with our peers! You may need to upgrade, or other nodes may need to upgrade.</source>
-      <translation type="unfinished"/>
+      <translation>Waarschuwing: We lijken het niet helemaal eens te zijn met onze peers! U moet wellicht upgraden, of andere nodes moeten wellicht upgraden.</translation>
     </message>
     <message>
       <location line="+6"/>
@@ -4083,7 +4087,7 @@ Opmerking: Aangezien de kosten worden berekend op basis van bytes, levert een ta
     <message>
       <location line="+2"/>
       <source>(press q to shutdown and continue later)</source>
-      <translation type="unfinished"/>
+      <translation>(druk op q om af te sluiten en later verder te gaan)</translation>
     </message>
     <message>
       <location line="+1"/>
@@ -4173,7 +4177,7 @@ Opmerking: Aangezien de kosten worden berekend op basis van bytes, levert een ta
     <message>
       <location line="+2"/>
       <source>Initialization sanity check failed. %s is shutting down.</source>
-      <translation type="unfinished"/>
+      <translation>Gezondheidscheck initialisatie mislukt. %s is aan het afsluiten.</translation>
     </message>
     <message>
       <location line="+5"/>
@@ -4193,7 +4197,7 @@ Opmerking: Aangezien de kosten worden berekend op basis van bytes, levert een ta
     <message>
       <location line="+4"/>
       <source>Not enough file descriptors available.</source>
-      <translation type="unfinished"/>
+      <translation>Niet genoeg bestandsdescriptors beschikbaar.</translation>
     </message>
     <message>
       <location line="+1"/>
@@ -4218,7 +4222,7 @@ Opmerking: Aangezien de kosten worden berekend op basis van bytes, levert een ta
     <message>
       <location line="+14"/>
       <source>Unable to bind to %s on this computer. %s is probably already running.</source>
-      <translation type="unfinished"/>
+      <translation>Niet in staat om %s te binden op deze computer. %s draait waarschijnlijk al.</translation>
     </message>
     <message>
       <location line="+9"/>
@@ -4258,7 +4262,7 @@ Opmerking: Aangezien de kosten worden berekend op basis van bytes, levert een ta
     <message>
       <location line="-170"/>
       <source>Error: Listening for incoming connections failed (listen returned error %s)</source>
-      <translation type="unfinished"/>
+      <translation>Fout: Luisteren naar inkomende verbindingen mislukt (luisteren gaf fout %s)</translation>
     </message>
     <message>
       <location line="+2"/>
@@ -4268,7 +4272,7 @@ Opmerking: Aangezien de kosten worden berekend op basis van bytes, levert een ta
     <message>
       <location line="+25"/>
       <source>The transaction amount is too small to send after the fee has been deducted</source>
-      <translation type="unfinished"/>
+      <translation>Het transactiebedrag is te klein om te versturen nadat de kosten in mindering zijn gebracht</translation>
     </message>
     <message>
       <location line="+42"/>
@@ -4313,33 +4317,34 @@ Opmerking: Aangezien de kosten worden berekend op basis van bytes, levert een ta
     <message>
       <location line="+1"/>
       <source>Specified -walletdir &quot;%s&quot; does not exist</source>
-      <translation type="unfinished"/>
+      <translation>Opgegeven -walletdir &quot;%s&quot; bestaat niet</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Specified -walletdir &quot;%s&quot; is a relative path</source>
-      <translation type="unfinished"/>
+      <translation>Opgegeven -walletdir &quot;%s&quot; is een relatief pad</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Specified -walletdir &quot;%s&quot; is not a directory</source>
-      <translation type="unfinished"/>
+      <translation>Opgegeven -walletdir &quot;%s&quot; is geen map</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Specified blocks directory &quot;%s&quot; does not exist.</source>
-      <translation type="unfinished"/>
+      <translation>Opgegeven blokkenmap &quot;%s&quot; bestaat niet.</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Specified index directory &quot;%s&quot; does not exist.</source>
-      <translation type="unfinished"/>
+      <translation>Opgegeven indexmap &quot;%s&quot; bestaat niet.</translation>
     </message>
     <message>
       <location line="+4"/>
       <source>The specified config file %s does not exist
 </source>
-      <translation type="unfinished"/>
+      <translation>Het opgegeven configuratiebestand %s bestaat niet
+</translation>
     </message>
     <message>
       <location line="+1"/>
@@ -4369,7 +4374,7 @@ Opmerking: Aangezien de kosten worden berekend op basis van bytes, levert een ta
     <message>
       <location line="+1"/>
       <source>Unable to bind to %s on this computer (bind returned error %s)</source>
-      <translation type="unfinished"/>
+      <translation>Niet in staat om aan %s te binden op deze computer (binden gaf fout %s)</translation>
     </message>
     <message>
       <location line="+17"/>
@@ -4384,7 +4389,7 @@ Opmerking: Aangezien de kosten worden berekend op basis van bytes, levert een ta
     <message>
       <location line="-190"/>
       <source>-maxtxfee is set very high! Fees this large could be paid on a single transaction.</source>
-      <translation type="unfinished"/>
+      <translation>-maxtxfee staat zeer hoog! Kosten van deze grootte kunnen worden voor een enkele transactie worden betaald.</translation>
     </message>
     <message>
       <location line="+53"/>
@@ -4394,22 +4399,22 @@ Opmerking: Aangezien de kosten worden berekend op basis van bytes, levert een ta
     <message>
       <location line="+2"/>
       <source>This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit %s and cryptographic software written by Eric Young and UPnP software written by Thomas Bernard.</source>
-      <translation type="unfinished"/>
+      <translation>Dit product bevat software ontwikkeld door het OpenSSL Project voor gebruik in de OpenSSL Toolkit %s en cryptografische software geschreven door Eric Young en UPnP-software geschreven door Thomas Bernard.</translation>
     </message>
     <message>
       <location line="+4"/>
       <source>Total length of network version string (%i) exceeds maximum length (%i). Reduce the number or size of uacomments.</source>
-      <translation type="unfinished"/>
+      <translation>Totale lengte van netwerkversietekenreeks (%i) overschrijdt maximumlengte (%i). Verminder het aantal of de grootte van uacomments.</translation>
     </message>
     <message>
       <location line="+24"/>
       <source>Warning: Wallet file corrupt, data salvaged! Original %s saved as %s in %s; if your balance or transactions are incorrect you should restore from a backup.</source>
-      <translation type="unfinished"/>
+      <translation>Waarschuwing: portomoneebestand corrupt, data veiliggesteld! Origineel %s opgeslagen als %s in %s; als uw balans of transacties onjuist zijn zou u moeten herstellen vanaf een back-up.</translation>
     </message>
     <message>
       <location line="+11"/>
       <source>%s is set very high!</source>
-      <translation type="unfinished"/>
+      <translation>%s is zeer hoog ingesteld!</translation>
     </message>
     <message>
       <location line="+43"/>
@@ -4439,7 +4444,7 @@ Opmerking: Aangezien de kosten worden berekend op basis van bytes, levert een ta
     <message>
       <location line="+2"/>
       <source>Transaction amounts must not be negative</source>
-      <translation type="unfinished"/>
+      <translation>Transactiebedragen moeten niet negatief zijn</translation>
     </message>
     <message>
       <location line="+2"/>
@@ -4449,7 +4454,7 @@ Opmerking: Aangezien de kosten worden berekend op basis van bytes, levert een ta
     <message>
       <location line="+1"/>
       <source>Transaction must have at least one recipient</source>
-      <translation type="unfinished"/>
+      <translation>Transactie moet ten minste één ontvanger hebben</translation>
     </message>
     <message>
       <location line="+5"/>
@@ -4544,7 +4549,7 @@ Opmerking: Aangezien de kosten worden berekend op basis van bytes, levert een ta
     <message>
       <location line="+3"/>
       <source>Error upgrading chainstate database</source>
-      <translation type="unfinished"/>
+      <translation>Fout bij upgraden ketenstaatdatabase</translation>
     </message>
     <message>
       <location line="+3"/>
@@ -4554,12 +4559,12 @@ Opmerking: Aangezien de kosten worden berekend op basis van bytes, levert een ta
     <message>
       <location line="+2"/>
       <source>Excessive block size must be &gt; 1,000,000 bytes (1MB)</source>
-      <translation type="unfinished"/>
+      <translation>Excessieve blokgrootte moet &gt; 1.000.000 bytes (1MB) zijn</translation>
     </message>
     <message>
       <location line="+2"/>
       <source>Failed to rescan the wallet during initialization</source>
-      <translation type="unfinished"/>
+      <translation>Portemonnee herscannen tijdens initialisatie mislukt</translation>
     </message>
     <message>
       <location line="+6"/>
@@ -4579,7 +4584,7 @@ Opmerking: Aangezien de kosten worden berekend op basis van bytes, levert een ta
     <message>
       <location line="+4"/>
       <source>Invalid coin selection hint</source>
-      <translation type="unfinished"/>
+      <translation>Ongeldige muntselectiehint</translation>
     </message>
     <message>
       <location line="+3"/>
@@ -4599,12 +4604,12 @@ Opmerking: Aangezien de kosten worden berekend op basis van bytes, levert een ta
     <message>
       <location line="+2"/>
       <source>Section [%s] is not recognized.</source>
-      <translation type="unfinished"/>
+      <translation>Sectie [%s] wordt niet herkend.</translation>
     </message>
     <message>
       <location line="+29"/>
       <source>Unsupported logging category %s=%s.</source>
-      <translation type="unfinished"/>
+      <translation>Niet-ondersteunde logcategorie %s=%s.</translation>
     </message>
     <message>
       <location line="+1"/>
@@ -4619,7 +4624,7 @@ Opmerking: Aangezien de kosten worden berekend op basis van bytes, levert een ta
     <message>
       <location line="+6"/>
       <source>Wallet %s resides outside wallet directory %s</source>
-      <translation type="unfinished"/>
+      <translation>Portemonnee %s bevindt zich buiten portemonneemap %s</translation>
     </message>
     <message>
       <location line="-46"/>

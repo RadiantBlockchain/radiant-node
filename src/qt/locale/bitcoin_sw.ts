@@ -309,12 +309,12 @@
   <context>
     <name>BitcoinGUI</name>
     <message>
-      <location filename="../bitcoingui.cpp" line="+1019"/>
+      <location filename="../bitcoingui.cpp" line="+1023"/>
       <source>Synchronizing with network...</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="-774"/>
+      <location line="-778"/>
       <source>&amp;Overview</source>
       <translation type="unfinished"/>
     </message>
@@ -434,7 +434,7 @@
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+41"/>
+      <location line="+45"/>
       <source>Wallet:</source>
       <translation>Kipochi:</translation>
     </message>
@@ -464,12 +464,12 @@
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+325"/>
+      <location line="+327"/>
       <source>Proxy is &lt;b&gt;enabled&lt;/b&gt;: %1</source>
       <translation>Proxy &lt;b&gt;Imewezeshwa&lt;/b&gt;:%1</translation>
     </message>
     <message>
-      <location line="-996"/>
+      <location line="-1002"/>
       <source>Backup wallet to another location</source>
       <translation>Hifadhi kipochi mahali pengine</translation>
     </message>
@@ -479,12 +479,12 @@
       <translation>Badilisha manenosiri yanayotumika kwa usimbaji fiche wa mkoba</translation>
     </message>
     <message>
-      <location line="+744"/>
+      <location line="+748"/>
       <source>Bitcoin</source>
       <translation>Bitcoin</translation>
     </message>
     <message>
-      <location line="-855"/>
+      <location line="-859"/>
       <source>&amp;Send</source>
       <translation>&amp;Tuma</translation>
     </message>
@@ -519,17 +519,17 @@
       <translation>&amp;Mipangilio</translation>
     </message>
     <message>
-      <location line="+73"/>
+      <location line="+75"/>
       <source>&amp;Help</source>
       <translation>&amp;Msaada</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+11"/>
       <source>Tabs toolbar</source>
       <translation>Tabs za toolbar</translation>
     </message>
     <message>
-      <location line="-172"/>
+      <location line="-176"/>
       <source>Show the list of used sending addresses and labels</source>
       <translation>Onyesha orodha ya anwani na lebo zilizotumiwa</translation>
     </message>
@@ -544,7 +544,7 @@
       <translation>chaguo la &amp;mstari- wa- amri</translation>
     </message>
     <message numerus="yes">
-      <location line="+541"/>
+      <location line="+545"/>
       <source>%n active connection(s) to Bitcoin network</source>
       <translation type="unfinished"/>
     </message>
@@ -599,7 +599,7 @@
       <translation>Hadi tarehe</translation>
     </message>
     <message>
-      <location line="-682"/>
+      <location line="-686"/>
       <source>Sign &amp;Message...</source>
       <translation>&amp;Ujumbe unatiwa saini...</translation>
     </message>
@@ -649,7 +649,7 @@
       <translation>Dirisha Kuu</translation>
     </message>
     <message>
-      <location line="+251"/>
+      <location line="+255"/>
       <source>%1 client</source>
       <translation type="unfinished"/>
     </message>
@@ -664,7 +664,7 @@
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+152"/>
+      <location line="+154"/>
       <source>Date: %1
 </source>
       <translation type="unfinished"/>
@@ -730,7 +730,7 @@
       <translation type="unfinished"/>
     </message>
     <message>
-      <location filename="../bitcoin.cpp" line="+435"/>
+      <location filename="../bitcoin.cpp" line="+437"/>
       <source>A fatal error occurred. Bitcoin can no longer continue safely and will quit.</source>
       <translation type="unfinished"/>
     </message>
@@ -1024,23 +1024,22 @@
   <context>
     <name>HelpMessageDialog</name>
     <message>
-      <location filename="../utilitydialog.cpp" line="+40"/>
+      <location filename="../utilitydialog.cpp" line="+36"/>
       <source>version</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+5"/>
       <location line="+2"/>
       <source>(%1-bit)</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+4"/>
+      <location line="+10"/>
       <source>About %1</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+19"/>
+      <location line="+17"/>
       <source>Command-line options</source>
       <translation type="unfinished"/>
     </message>
@@ -1573,7 +1572,12 @@
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+29"/>
+      <location line="+14"/>
+      <source>Not a valid HTTP or HTTPS URL.</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+27"/>
       <source>The supplied proxy address is invalid.</source>
       <translation type="unfinished"/>
     </message>
@@ -1865,7 +1869,7 @@
       <translation type="unfinished"/>
     </message>
     <message>
-      <location filename="../guiutil.cpp" line="+860"/>
+      <location filename="../guiutil.cpp" line="+864"/>
       <source>%1 d</source>
       <translation type="unfinished"/>
     </message>
@@ -1936,12 +1940,12 @@
       <translation type="unfinished"/>
     </message>
     <message>
-      <location filename="../bitcoin.cpp" line="+148"/>
+      <location filename="../bitcoin.cpp" line="+137"/>
       <source>Error parsing command line arguments: %1.</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+50"/>
+      <location line="+45"/>
       <source>Error: Specified data directory &quot;%1&quot; does not exist.</source>
       <translation type="unfinished"/>
     </message>
@@ -2159,7 +2163,7 @@
     <message>
       <location line="+60"/>
       <location filename="../rpcconsole.cpp" line="+552"/>
-      <location line="+864"/>
+      <location line="+865"/>
       <source>Select a peer to view detailed information.</source>
       <translation type="unfinished"/>
     </message>
@@ -2284,7 +2288,7 @@
       <translation type="unfinished"/>
     </message>
     <message>
-      <location filename="../rpcconsole.cpp" line="-459"/>
+      <location filename="../rpcconsole.cpp" line="-460"/>
       <source>In:</source>
       <translation type="unfinished"/>
     </message>
@@ -3092,7 +3096,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of &quot;100 satos
   <context>
     <name>ShutdownWindow</name>
     <message>
-      <location filename="../utilitydialog.cpp" line="+79"/>
+      <location filename="../utilitydialog.cpp" line="+56"/>
       <source>%1 is shutting down...</source>
       <translation type="unfinished"/>
     </message>
@@ -3630,7 +3634,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of &quot;100 satos
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+218"/>
+      <location line="+217"/>
       <source>(no label)</source>
       <translation>(Hamna lebo)</translation>
     </message>
@@ -3862,7 +3866,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of &quot;100 satos
   <context>
     <name>UnitDisplayStatusBarControl</name>
     <message>
-      <location filename="../bitcoingui.cpp" line="+156"/>
+      <location filename="../bitcoingui.cpp" line="+166"/>
       <source>Unit to show amounts in. Click to select another unit.</source>
       <translation type="unfinished"/>
     </message>
