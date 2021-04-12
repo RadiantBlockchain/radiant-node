@@ -9,14 +9,16 @@ Both the default expiry timeout defined by DEFAULT_MEMPOOL_EXPIRY and a user
 definable expiry timeout via the '-mempoolexpiry=<n>' command line argument
 (<n> is the timeout in hours) are tested.
 """
-
+import time
 from datetime import timedelta
 
+from test_framework.authproxy import JSONRPCException
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import (
     assert_equal,
     assert_raises_rpc_error,
     find_vout_for_address,
+    wait_until,
 )
 
 # DEFAULT_MEMPOOL_EXPIRY defined in src/validation.h
@@ -27,6 +29,10 @@ CUSTOM_MEMPOOL_EXPIRY = 10  # hours
 class MempoolExpiryTest(BitcoinTestFramework):
     def set_test_params(self):
         self.num_nodes = 1
+        self.extra_args = [[
+            # Force the mempool expiry task to run once per second
+            "-mempoolexpirytaskperiod=0",
+        ]]
 
     def skip_test_if_missing_module(self):
         self.skip_if_no_wallet()
@@ -63,9 +69,12 @@ class MempoolExpiryTest(BitcoinTestFramework):
         # in the mempool.
         nearly_expiry_time = entry_time + 60 * 60 * timeout - 5
         node.setmocktime(nearly_expiry_time)
-        # Expiry of mempool transactions is only checked when a new transaction
+        # Expiry of mempool transactions checked (imperfectly) when a new transaction
         # is added to the to the mempool.
         node.sendtoaddress(node.getnewaddress(), 1.0)
+        # Expiry of mempool is *perfectly* checked if the expiry task runs;
+        # allow enough time to elapse for the expiry task to run at least once
+        time.sleep(2.0)
         self.log.info('Test parent tx not expired after {} hours.'.format(
             timedelta(seconds=(nearly_expiry_time - entry_time))))
         assert_equal(entry_time, node.getmempoolentry(parent_txid)['time'])
@@ -73,14 +82,19 @@ class MempoolExpiryTest(BitcoinTestFramework):
         # Transaction should be evicted from the mempool after the expiry time
         # has passed.
         expiry_time = entry_time + 60 * 60 * timeout + 5
-        node.setmocktime(expiry_time)
-        # Expiry of mempool transactions is only checked when a new transaction
-        # is added to the to the mempool.
-        node.sendtoaddress(node.getnewaddress(), 1.0)
         self.log.info('Test parent tx expiry after {} hours.'.format(
             timedelta(seconds=(expiry_time - entry_time))))
-        assert_raises_rpc_error(-5, 'Transaction not in mempool',
-                                node.getmempoolentry, parent_txid)
+        node.setmocktime(expiry_time)
+
+        def check_tx_not_in_mempool(node, txid):
+            try:
+                node.getmempoolentry(txid)
+            except JSONRPCException as e:
+                if e.error["code"] == -5 and e.error['message'] == 'Transaction not in mempool':
+                    return True
+            return False
+
+        wait_until(lambda: check_tx_not_in_mempool(node, parent_txid))
 
         # The child transaction should be removed from the mempool as well.
         self.log.info('Test child tx is evicted as well.')
@@ -92,7 +106,7 @@ class MempoolExpiryTest(BitcoinTestFramework):
         self.test_transaction_expiry(DEFAULT_MEMPOOL_EXPIRY)
 
         self.log.info('Test custom mempool expiry timeout of {} hours.'.format(CUSTOM_MEMPOOL_EXPIRY))
-        self.restart_node(0, ['-mempoolexpiry={}'.format(CUSTOM_MEMPOOL_EXPIRY)])
+        self.restart_node(0, self.extra_args[0] + ['-mempoolexpiry={}'.format(CUSTOM_MEMPOOL_EXPIRY)])
         self.test_transaction_expiry(CUSTOM_MEMPOOL_EXPIRY)
 
 

@@ -234,13 +234,6 @@ struct mempoolentry_txid {
     }
 };
 
-// used by the entry_time index
-struct CompareTxMemPoolEntryByEntryTime {
-    bool operator()(const CTxMemPoolEntry &a, const CTxMemPoolEntry &b) const {
-        return a.GetTime() < b.GetTime();
-    }
-};
-
 // used by the entry_id index
 struct CompareTxMemPoolEntryByEntryId {
     bool operator()(const CTxMemPoolEntry &a, const CTxMemPoolEntry &b) const {
@@ -266,7 +259,6 @@ struct CompareTxMemPoolEntryByModifiedFeeRate {
 };
 
 // Multi_index tag names
-struct entry_time {};
 struct modified_feerate {};
 struct entry_id {};
 
@@ -389,7 +381,7 @@ public:
     // public only for testing
     static const int ROLLING_FEE_HALFLIFE = 60 * 60 * 12;
 
-    typedef boost::multi_index_container<
+    using indexed_transaction_set = boost::multi_index_container<
         CTxMemPoolEntry, boost::multi_index::indexed_by<
                              // sorted by txid
                              boost::multi_index::hashed_unique<
@@ -399,17 +391,11 @@ public:
                                  boost::multi_index::tag<modified_feerate>,
                                  boost::multi_index::identity<CTxMemPoolEntry>,
                                  CompareTxMemPoolEntryByModifiedFeeRate>,
-                             // sorted by entry time
-                             boost::multi_index::ordered_non_unique<
-                                 boost::multi_index::tag<entry_time>,
-                                 boost::multi_index::identity<CTxMemPoolEntry>,
-                                 CompareTxMemPoolEntryByEntryTime>,
                             // sorted topologically (insertion order)
                             boost::multi_index::ordered_unique<
                                 boost::multi_index::tag<entry_id>,
                                 boost::multi_index::identity<CTxMemPoolEntry>,
-                                CompareTxMemPoolEntryByEntryId>>>
-        indexed_transaction_set;
+                                CompareTxMemPoolEntryByEntryId>>>;
 
     /**
      * This mutex needs to be locked when accessing `mapTx` or other members
@@ -693,8 +679,10 @@ public:
     /**
      * Expire all transaction (and their dependencies) in the mempool older than
      * time. Return the number of removed transactions.
+     * If fast == true, then the algorithm will stop processing transactions when
+     * the first one that is not older than time is found.
      */
-    int Expire(int64_t time);
+    size_t Expire(int64_t time, bool fast = true);
 
     /**
      * Reduce the size of the mempool by expiring and then trimming the mempool.

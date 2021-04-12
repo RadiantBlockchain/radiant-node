@@ -759,10 +759,10 @@ bool CCoinsViewMemPool::GetCoin(const COutPoint &outpoint, Coin &coin) const {
 
 size_t CTxMemPool::DynamicMemoryUsage() const {
     LOCK(cs);
-    // Estimate the overhead of mapTx to be 12 pointers + an allocation, as no
+    // Estimate the overhead of mapTx to be 9 pointers + an allocation, as no
     // exact formula for boost::multi_index_contained is implemented.
     return memusage::MallocUsage(sizeof(CTxMemPoolEntry) +
-                                 12 * sizeof(void *)) *
+                                 9 * sizeof(void *)) *
                mapTx.size() +
            memusage::DynamicUsage(mapNextTx) +
            memusage::DynamicUsage(mapDeltas) +
@@ -778,19 +778,17 @@ void CTxMemPool::RemoveStaged(const setEntries &stage, MemPoolRemovalReason reas
     }
 }
 
-int CTxMemPool::Expire(int64_t time) {
+size_t CTxMemPool::Expire(int64_t time, bool fast /* = true */) {
     LOCK(cs);
-    indexed_transaction_set::index<entry_time>::type::iterator it =
-        mapTx.get<entry_time>().begin();
-    setEntries toremove;
-    while (it != mapTx.get<entry_time>().end() && it->GetTime() < time) {
-        toremove.insert(mapTx.project<0>(it));
-        it++;
-    }
 
     setEntries stage;
-    for (txiter removeit : toremove) {
-        CalculateDescendants(removeit, stage);
+    auto const& index = mapTx.get<entry_id>();
+    for (auto it = index.begin(); it != index.end(); ++it) {
+        if (it->GetTime() < time) {
+            CalculateDescendants(mapTx.project<0>(it), stage);
+        } else if (fast) {
+            break;
+        }
     }
 
     RemoveStaged(stage, MemPoolRemovalReason::EXPIRY);
@@ -798,10 +796,9 @@ int CTxMemPool::Expire(int64_t time) {
 }
 
 void CTxMemPool::LimitSize(size_t limit, unsigned long age) {
-    int expired = Expire(GetTime() - age);
+    auto expired = Expire(GetTime() - age, /* fast */ true);
     if (expired != 0) {
-        LogPrint(BCLog::MEMPOOL,
-                 "Expired %i transactions from the memory pool\n", expired);
+        LogPrint(BCLog::MEMPOOL, "Expired %i transactions from the memory pool\n", expired);
     }
 
     std::vector<COutPoint> vNoSpendsRemaining;
