@@ -512,6 +512,11 @@ void SetupServerArgs() {
                            "than <n> hours (default: %u)",
                            DEFAULT_MEMPOOL_EXPIRY),
                  false, OptionsCategory::OPTIONS);
+    gArgs.AddArg("-mempoolexpirytaskperiod=<n>",
+                 strprintf("Execute the mempool expiry task this often in "
+                           "hours (default: %u)",
+                           DEFAULT_MEMPOOL_EXPIRY_TASK_PERIOD),
+                 false, OptionsCategory::OPTIONS);
     gArgs.AddArg(
         "-minimumchainwork=<hex>",
         strprintf(
@@ -2205,6 +2210,36 @@ bool AppInitMain(Config &config, RPCServer &rpcServer,
         assert(dspStorage != nullptr);
         scheduler.scheduleEvery(std::bind(&DoubleSpendProofStorage::periodicCleanup, dspStorage), 60 * 1000);
     }
+
+    /// Install the mempool expiry task which runs every -mempoolexpirytaskperiod (once a day by default).
+    if (int64_t const expiryTimeHours = gArgs.GetArg("-mempoolexpiry", DEFAULT_MEMPOOL_EXPIRY);
+        expiryTimeHours > 0 && expiryTimeHours < 1'000'000) {
+        int64_t const expiryTimeSecs = expiryTimeHours * 60 * 60;
+        // Clamp the task period such that it can never be larger than half the -mempoolexpiry time
+        // (or smaller than once per second).
+        int64_t const taskIntervalMsec =
+            std::clamp(gArgs.GetArg("-mempoolexpirytaskperiod", DEFAULT_MEMPOOL_EXPIRY_TASK_PERIOD) * 60 * 60 * 1000,
+                       int64_t{1000},
+                       (expiryTimeSecs * 1000) / 2);
+        scheduler.scheduleEvery([expiryTimeSecs]{
+            int64_t const timePoint = GetTime() - expiryTimeSecs;
+            g_mempool.Expire(timePoint, false);
+            return true;
+        }, taskIntervalMsec);
+        LogPrint(BCLog::MEMPOOL, "Mempool expiry task installed with a task period of %i msec\n", taskIntervalMsec);
+        if (taskIntervalMsec < 10'000) {
+            // warn if the mempool expiry task was set to run more often than every 10 seconds, since this may mean
+            // the user misunderstood the scaling or meaning of the arg (in most cases nobody wants the task to run this
+            // frequently).
+            LogPrintf("WARNING: The mempool expiry task was configured to run every ~%i milliseconds, "
+                      "which is extremely frequently. Please verify that this is what was intended.\n",
+                      taskIntervalMsec);
+        }
+    } else {
+        // Prevent overflow and UB: constrain -mempoolexpiry to a sane, positive value within the next ~114 years.
+        return InitError("Invalid -mempoolexpiry argument. Please specify a value >0 and <1,000,000.");
+    }
+
 
     // Step 5: verify wallet database integrity
     for (const auto &client : node.chain_clients) {

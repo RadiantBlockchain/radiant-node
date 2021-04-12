@@ -50,6 +50,18 @@ mempool acceptance.
 
 ...
 
+## Modified functionality
+
+Mempool expiry works slightly differently now. Previously, the expiry of an old
+mempool tx would be checked thoroughly every time a new tx was accepted to the
+mempool, but this consumed a bit of extra memory to accomplish precisely and
+efficiently.  Instead, we save on memory by doing a fast (imprecise) check each
+time a new tx is added to the mempool.  This check may miss some txs that
+should be expired.  In order to catch those txs, we
+now also run a perfect (slower) expiry check of the mempool periodically. A new
+CLI arg, `-mempoolexpirytaskperiod=` was added to control the frequency of this
+thorough check (in hours). The new  argument's default value is "24" (once per
+day).
 
 ## Removed functionality
 

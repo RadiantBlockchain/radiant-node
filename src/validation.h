@@ -84,6 +84,11 @@ static constexpr Amount HIGH_MAX_TX_FEE(100 * HIGH_TX_FEE_PER_KB);
  * hours.
  */
 static constexpr unsigned int DEFAULT_MEMPOOL_EXPIRY = 336;
+/**
+ *  Default for -mempoolexpiryperiod, execute the mempool transaction expiration
+ *  this often (in hours).
+ */
+static constexpr int64_t DEFAULT_MEMPOOL_EXPIRY_TASK_PERIOD = 24;
 /** The maximum size of a blk?????.dat file (since 0.8) */
 static constexpr unsigned int MAX_BLOCKFILE_SIZE = 0x8000000; // 128 MiB
 /** The pre-allocation chunk size for blk?????.dat files (since 0.8) */
