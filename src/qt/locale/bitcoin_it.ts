@@ -309,12 +309,12 @@
   <context>
     <name>BitcoinGUI</name>
     <message>
-      <location filename="../bitcoingui.cpp" line="+1019"/>
+      <location filename="../bitcoingui.cpp" line="+1023"/>
       <source>Synchronizing with network...</source>
       <translation>Sincronizzazione con la rete...</translation>
     </message>
     <message>
-      <location line="-774"/>
+      <location line="-778"/>
       <source>&amp;Overview</source>
       <translation>&amp;Panoramica</translation>
     </message>
@@ -434,7 +434,7 @@
       <translation>Mostra la scheda %1 della Finestra Nodo</translation>
     </message>
     <message>
-      <location line="+41"/>
+      <location line="+45"/>
       <source>Wallet:</source>
       <translation>Portafoglio:</translation>
     </message>
@@ -464,12 +464,12 @@
       <translation>Re-indicizzazione dei blocchi su disco...</translation>
     </message>
     <message>
-      <location line="+325"/>
+      <location line="+327"/>
       <source>Proxy is &lt;b&gt;enabled&lt;/b&gt;: %1</source>
       <translation>Proxy &lt;b&gt;abilitato&lt;/b&gt;: %1</translation>
     </message>
     <message>
-      <location line="-996"/>
+      <location line="-1002"/>
       <source>Backup wallet to another location</source>
       <translation>Effettua il backup del portafoglio in un'altra posizione</translation>
     </message>
@@ -479,12 +479,12 @@
       <translation>Cambia la passphrase utilizzata per la cifratura del portafoglio</translation>
     </message>
     <message>
-      <location line="+744"/>
+      <location line="+748"/>
       <source>Bitcoin</source>
       <translation>Bitcoin</translation>
     </message>
     <message>
-      <location line="-855"/>
+      <location line="-859"/>
       <source>&amp;Send</source>
       <translation>&amp;Invia</translation>
     </message>
@@ -519,17 +519,17 @@
       <translation>&amp;Impostazioni</translation>
     </message>
     <message>
-      <location line="+73"/>
+      <location line="+75"/>
       <source>&amp;Help</source>
       <translation>&amp;Aiuto</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+11"/>
       <source>Tabs toolbar</source>
       <translation>Barra degli strumenti</translation>
     </message>
     <message>
-      <location line="-172"/>
+      <location line="-176"/>
       <source>Show the list of used sending addresses and labels</source>
       <translation>Mostra la lista degli indirizzi di invio e delle etichette utilizzati</translation>
     </message>
@@ -544,7 +544,7 @@
       <translation>Opzioni della riga di &amp;comando</translation>
     </message>
     <message numerus="yes">
-      <location line="+541"/>
+      <location line="+545"/>
       <source>%n active connection(s) to Bitcoin network</source>
       <translation>
         <numerusform>%n connessione attiva alla rete Bitcoin</numerusform>
@@ -605,7 +605,7 @@
       <translation>Aggiornato</translation>
     </message>
     <message>
-      <location line="-682"/>
+      <location line="-686"/>
       <source>Sign &amp;Message...</source>
       <translation>Firma &amp;Messaggio...</translation>
     </message>
@@ -655,7 +655,7 @@
       <translation>Finestra Principale</translation>
     </message>
     <message>
-      <location line="+251"/>
+      <location line="+255"/>
       <source>%1 client</source>
       <translation>%1 client</translation>
     </message>
@@ -670,7 +670,7 @@
       <translation>In aggiornamento...</translation>
     </message>
     <message>
-      <location line="+152"/>
+      <location line="+154"/>
       <source>Date: %1
 </source>
       <translation>Data: %1
@@ -742,7 +742,7 @@
       <translation>Il portafoglio è &lt;b&gt;cifrato&lt;/b&gt; e attualmente &lt;b&gt;bloccato&lt;/b&gt;</translation>
     </message>
     <message>
-      <location filename="../bitcoin.cpp" line="+435"/>
+      <location filename="../bitcoin.cpp" line="+437"/>
       <source>A fatal error occurred. Bitcoin can no longer continue safely and will quit.</source>
       <translation>Si è verificato un errore critico. Bitcoin non può continuare in sicurezza e verrà chiuso.</translation>
     </message>
@@ -1036,23 +1036,22 @@
   <context>
     <name>HelpMessageDialog</name>
     <message>
-      <location filename="../utilitydialog.cpp" line="+40"/>
+      <location filename="../utilitydialog.cpp" line="+36"/>
       <source>version</source>
       <translation>versione</translation>
     </message>
     <message>
-      <location line="+5"/>
       <location line="+2"/>
       <source>(%1-bit)</source>
       <translation>(%1-bit)</translation>
     </message>
     <message>
-      <location line="+4"/>
+      <location line="+10"/>
       <source>About %1</source>
       <translation>Informazioni su %1</translation>
     </message>
     <message>
-      <location line="+19"/>
+      <location line="+17"/>
       <source>Command-line options</source>
       <translation>Opzioni della riga di comando</translation>
     </message>
@@ -1592,7 +1591,12 @@ Per specificare più URL separarli con una barra verticale "|".</translation>
       <translation>Questa modifica richiede il riavvio del client.</translation>
     </message>
     <message>
-      <location line="+29"/>
+      <location line="+14"/>
+      <source>Not a valid HTTP or HTTPS URL.</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+27"/>
       <source>The supplied proxy address is invalid.</source>
       <translation>L'indirizzo proxy che hai fornito non è valido.</translation>
     </message>
@@ -1884,7 +1888,7 @@ Per specificare più URL separarli con una barra verticale "|".</translation>
       <translation>Importo</translation>
     </message>
     <message>
-      <location filename="../guiutil.cpp" line="+860"/>
+      <location filename="../guiutil.cpp" line="+864"/>
       <source>%1 d</source>
       <translation>%1 d</translation>
     </message>
@@ -1973,12 +1977,12 @@ Per specificare più URL separarli con una barra verticale "|".</translation>
       </translation>
     </message>
     <message>
-      <location filename="../bitcoin.cpp" line="+148"/>
+      <location filename="../bitcoin.cpp" line="+137"/>
       <source>Error parsing command line arguments: %1.</source>
       <translation>Errore nell'analizzare gli argomenti della riga di comando: %1.</translation>
     </message>
     <message>
-      <location line="+50"/>
+      <location line="+45"/>
       <source>Error: Specified data directory &quot;%1&quot; does not exist.</source>
       <translation>Errore: La cartella dati specificata &quot;%1&quot; non esiste.</translation>
     </message>
@@ -2196,7 +2200,7 @@ Per specificare più URL separarli con una barra verticale "|".</translation>
     <message>
       <location line="+60"/>
       <location filename="../rpcconsole.cpp" line="+552"/>
-      <location line="+864"/>
+      <location line="+865"/>
       <source>Select a peer to view detailed information.</source>
       <translation>Seleziona un peer per visualizzare informazioni più dettagliate.</translation>
     </message>
@@ -2321,7 +2325,7 @@ Per specificare più URL separarli con una barra verticale "|".</translation>
       <translation>Totali</translation>
     </message>
     <message>
-      <location filename="../rpcconsole.cpp" line="-459"/>
+      <location filename="../rpcconsole.cpp" line="-460"/>
       <source>In:</source>
       <translation>Entrata:</translation>
     </message>
@@ -3131,7 +3135,7 @@ Nota:  Siccome la commissione è calcolata in base ai byte, una commissione di &
   <context>
     <name>ShutdownWindow</name>
     <message>
-      <location filename="../utilitydialog.cpp" line="+79"/>
+      <location filename="../utilitydialog.cpp" line="+56"/>
       <source>%1 is shutting down...</source>
       <translation>Arresto di %1 in corso...</translation>
     </message>
@@ -3678,7 +3682,7 @@ Nota:  Siccome la commissione è calcolata in base ai byte, una commissione di &
       <translation>(n/a)</translation>
     </message>
     <message>
-      <location line="+218"/>
+      <location line="+217"/>
       <source>(no label)</source>
       <translation>(nessuna etichetta)</translation>
     </message>
@@ -3910,7 +3914,7 @@ Nota:  Siccome la commissione è calcolata in base ai byte, una commissione di &
   <context>
     <name>UnitDisplayStatusBarControl</name>
     <message>
-      <location filename="../bitcoingui.cpp" line="+156"/>
+      <location filename="../bitcoingui.cpp" line="+166"/>
       <source>Unit to show amounts in. Click to select another unit.</source>
       <translation>Unità con cui visualizzare gli importi. Premi per selezionare un'altra unità.</translation>
     </message>

@@ -86,12 +86,12 @@
     <message>
       <location line="+8"/>
       <source>These are your Bitcoin Cash addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
-      <translation type="unfinished"/>
+      <translation>To są Twoje adresy Bitcoin Cash do wysyłania płatności. Zawsze sprawdzaj sumę oraz adres odbioru przed wysłaniem monet.</translation>
     </message>
     <message>
       <location line="+8"/>
       <source>These are your Bitcoin Cash addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
-      <translation type="unfinished"/>
+      <translation>To są twoje adresy Bitcoin Cash do otrzymywania płatności. Zaleca się używanie nowego adresu odbiorczego dla każdej transakcji.</translation>
     </message>
     <message>
       <location line="+9"/>
@@ -309,12 +309,12 @@
   <context>
     <name>BitcoinGUI</name>
     <message>
-      <location filename="../bitcoingui.cpp" line="+1019"/>
+      <location filename="../bitcoingui.cpp" line="+1023"/>
       <source>Synchronizing with network...</source>
       <translation>Synchronizacja z siecią...</translation>
     </message>
     <message>
-      <location line="-774"/>
+      <location line="-778"/>
       <source>&amp;Overview</source>
       <translation>P&amp;odsumowanie</translation>
     </message>
@@ -326,7 +326,7 @@
     <message>
       <location line="+8"/>
       <source>Send coins to a Bitcoin Cash address</source>
-      <translation type="unfinished"/>
+      <translation>Wyślij monety na adres Bitcoin Cash</translation>
     </message>
     <message>
       <location line="+16"/>
@@ -401,12 +401,12 @@
     <message>
       <location line="+7"/>
       <source>Sign messages with your Bitcoin Cash addresses to prove you own them</source>
-      <translation type="unfinished"/>
+      <translation>Podpisz wiadomości swoimi adresami Bitcoin Cash, aby udowodnić, że jesteś ich właścicielem</translation>
     </message>
     <message>
       <location line="+5"/>
       <source>Verify messages to ensure they were signed with specified Bitcoin Cash addresses</source>
-      <translation type="unfinished"/>
+      <translation>Zweryfikuj wiadomości, aby upewnić się, że zostały podpisane określonymi adresami Bitcoin Cash</translation>
     </message>
     <message>
       <location line="+23"/>
@@ -421,20 +421,20 @@
     <message>
       <location line="+9"/>
       <source>Show the %1 help message to get a list with possible command-line options</source>
-      <translation type="unfinished"/>
+      <translation>Pokaż wiadomość pomocy %1 aby uzyskać listę z możliwymi opcjami wiersza poleceń</translation>
     </message>
     <message>
       <location line="+82"/>
       <source>Minimize the Main Window</source>
-      <translation type="unfinished"/>
+      <translation>Zminimalizuj główne okno</translation>
     </message>
     <message>
       <location line="+53"/>
       <source>Show the %1 tab of the Node Window</source>
-      <translation type="unfinished"/>
+      <translation>Pokaż zakładkę %1 okna węzła</translation>
     </message>
     <message>
-      <location line="+41"/>
+      <location line="+45"/>
       <source>Wallet:</source>
       <translation>Portfel:</translation>
     </message>
@@ -464,12 +464,12 @@
       <translation>Ponowne indeksowanie bloków na dysku...</translation>
     </message>
     <message>
-      <location line="+325"/>
+      <location line="+327"/>
       <source>Proxy is &lt;b&gt;enabled&lt;/b&gt;: %1</source>
       <translation>Serwer proxy &lt;b&gt;włączony&lt;/b&gt;: %1</translation>
     </message>
     <message>
-      <location line="-996"/>
+      <location line="-1002"/>
       <source>Backup wallet to another location</source>
       <translation>Wykonaj kopię zapasową portfela do innej lokalizacji</translation>
     </message>
@@ -479,12 +479,12 @@
       <translation>Zmień hasło użyte do szyfrowania portfela</translation>
     </message>
     <message>
-      <location line="+744"/>
+      <location line="+748"/>
       <source>Bitcoin</source>
       <translation>Bitcoin</translation>
     </message>
     <message>
-      <location line="-855"/>
+      <location line="-859"/>
       <source>&amp;Send</source>
       <translation>Wyślij</translation>
     </message>
@@ -519,17 +519,17 @@
       <translation>U&amp;stawienia</translation>
     </message>
     <message>
-      <location line="+73"/>
+      <location line="+75"/>
       <source>&amp;Help</source>
       <translation>Pomo&amp;c</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+11"/>
       <source>Tabs toolbar</source>
       <translation>Pasek zakładek</translation>
     </message>
     <message>
-      <location line="-172"/>
+      <location line="-176"/>
       <source>Show the list of used sending addresses and labels</source>
       <translation>Pokaż listę wykorzystanych adresów wysyłki i ich etykiet</translation>
     </message>
@@ -544,7 +544,7 @@
       <translation>Op&amp;cje konsoli</translation>
     </message>
     <message numerus="yes">
-      <location line="+541"/>
+      <location line="+545"/>
       <source>%n active connection(s) to Bitcoin network</source>
       <translation>
         <numerusform>%n aktywne połączenie do sieci Bitcoin</numerusform>
@@ -609,7 +609,7 @@
       <translation>Aktualny</translation>
     </message>
     <message>
-      <location line="-682"/>
+      <location line="-686"/>
       <source>Sign &amp;Message...</source>
       <translation>Podpisz wiado&amp;mość...</translation>
     </message>
@@ -636,7 +636,7 @@
     <message>
       <location line="+5"/>
       <source>&amp;Receiving Addresses</source>
-      <translation>Ad&amp;resy odbiorcze</translation>
+      <translation>Ad&amp;resy odbioru</translation>
     </message>
     <message>
       <location line="+95"/>
@@ -659,7 +659,7 @@
       <translation>Główne okno</translation>
     </message>
     <message>
-      <location line="+251"/>
+      <location line="+255"/>
       <source>%1 client</source>
       <translation>%1 klient</translation>
     </message>
@@ -674,7 +674,7 @@
       <translation>Trwa synchronizacja…</translation>
     </message>
     <message>
-      <location line="+152"/>
+      <location line="+154"/>
       <source>Date: %1
 </source>
       <translation>Data: %1
@@ -746,7 +746,7 @@
       <translation>Portfel jest &lt;b&gt;zaszyfrowany&lt;/b&gt; i obecnie &lt;b&gt;zablokowany&lt;/b&gt;</translation>
     </message>
     <message>
-      <location filename="../bitcoin.cpp" line="+435"/>
+      <location filename="../bitcoin.cpp" line="+437"/>
       <source>A fatal error occurred. Bitcoin can no longer continue safely and will quit.</source>
       <translation>Wystąpił krytyczny błąd. Funkcjonowanie aplikacji Bitcoin nie może być dłużej bezpiecznie kontynuowane i zostanie zakończone.</translation>
     </message>
@@ -1001,7 +1001,7 @@
     <message>
       <location line="-11"/>
       <source>The entered address &quot;%1&quot; is not a valid Bitcoin Cash address.</source>
-      <translation type="unfinished"/>
+      <translation>Wprowadzony adres &quot;%1&quot; nie jest prawidłowym adresem Bitcoin Cash.</translation>
     </message>
     <message>
       <location line="+16"/>
@@ -1040,23 +1040,22 @@
   <context>
     <name>HelpMessageDialog</name>
     <message>
-      <location filename="../utilitydialog.cpp" line="+40"/>
+      <location filename="../utilitydialog.cpp" line="+36"/>
       <source>version</source>
       <translation>wersja</translation>
     </message>
     <message>
-      <location line="+5"/>
       <location line="+2"/>
       <source>(%1-bit)</source>
       <translation>(%1-bit)</translation>
     </message>
     <message>
-      <location line="+4"/>
+      <location line="+10"/>
       <source>About %1</source>
       <translation>Informacje o %1</translation>
     </message>
     <message>
-      <location line="+19"/>
+      <location line="+17"/>
       <source>Command-line options</source>
       <translation>Opcje konsoli</translation>
     </message>
@@ -1599,7 +1598,12 @@
       <translation>Ta zmiana może wymagać ponownego uruchomienia klienta.</translation>
     </message>
     <message>
-      <location line="+29"/>
+      <location line="+14"/>
+      <source>Not a valid HTTP or HTTPS URL.</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+27"/>
       <source>The supplied proxy address is invalid.</source>
       <translation>Adres podanego proxy jest nieprawidłowy</translation>
     </message>
@@ -1741,7 +1745,7 @@
     <message>
       <location line="+8"/>
       <source>URI cannot be parsed! This can be caused by an invalid Bitcoin Cash address or malformed URI parameters.</source>
-      <translation type="unfinished"/>
+      <translation>Adres URI nie może być przetworzony! Może to być spowodowane nieprawidłowym adresem Bitcoin Cash lub nieprawidłowo sformułowanymi parametrami URI.</translation>
     </message>
     <message>
       <location line="+25"/>
@@ -1868,22 +1872,22 @@
     <message>
       <location filename="../bitcoinunits.cpp" line="+56"/>
       <source>bitcoins</source>
-      <translation type="unfinished"/>
+      <translation>bitcoiny</translation>
     </message>
     <message>
       <location line="+2"/>
       <source>millibitcoins</source>
-      <translation type="unfinished"/>
+      <translation>milibitcoiny</translation>
     </message>
     <message>
       <location line="+2"/>
       <source>microbitcoins/bits</source>
-      <translation type="unfinished"/>
+      <translation>mikrobitcoiny/bity</translation>
     </message>
     <message>
       <location line="+2"/>
       <source>satoshis</source>
-      <translation type="unfinished"/>
+      <translation>satoshi</translation>
     </message>
     <message>
       <location line="+158"/>
@@ -1891,7 +1895,7 @@
       <translation>Kwota</translation>
     </message>
     <message>
-      <location filename="../guiutil.cpp" line="+860"/>
+      <location filename="../guiutil.cpp" line="+864"/>
       <source>%1 d</source>
       <translation>%1 d</translation>
     </message>
@@ -1923,7 +1927,7 @@
     <message>
       <location line="-773"/>
       <source>Enter a Bitcoin Cash address (e.g. %1)</source>
-      <translation type="unfinished"/>
+      <translation>Wprowadź adres Bitcoin Cash (np. %1)</translation>
     </message>
     <message numerus="yes">
       <location line="+790"/>
@@ -1992,12 +1996,12 @@
       </translation>
     </message>
     <message>
-      <location filename="../bitcoin.cpp" line="+148"/>
+      <location filename="../bitcoin.cpp" line="+137"/>
       <source>Error parsing command line arguments: %1.</source>
       <translation>Błąd przetwarzania argumentów konsoli: %1.</translation>
     </message>
     <message>
-      <location line="+50"/>
+      <location line="+45"/>
       <source>Error: Specified data directory &quot;%1&quot; does not exist.</source>
       <translation>Błąd: Wskazany katalog danych &quot;%1&quot; nie istnieje.</translation>
     </message>
@@ -2113,67 +2117,67 @@
     <message>
       <location line="-267"/>
       <source>Data directory:</source>
-      <translation type="unfinished"/>
+      <translation>Katalog danych:</translation>
     </message>
     <message>
       <location line="+32"/>
       <source>&amp;Open Log File</source>
-      <translation type="unfinished"/>
+      <translation>&amp;Otwórz plik dziennika</translation>
     </message>
     <message>
       <location line="+10"/>
       <source>Blocks directory:</source>
-      <translation type="unfinished"/>
+      <translation>Katalog bloków:</translation>
     </message>
     <message>
       <location line="+29"/>
       <source>Startup time:</source>
-      <translation type="unfinished"/>
+      <translation>Czas uruchomienia:</translation>
     </message>
     <message>
       <location line="+36"/>
       <source>Name:</source>
-      <translation type="unfinished"/>
+      <translation>Nazwa:</translation>
     </message>
     <message>
       <location line="+23"/>
       <source>User agent:</source>
-      <translation type="unfinished"/>
+      <translation>Ciąg identyfikacyjny użytkownika:</translation>
     </message>
     <message>
       <location line="+23"/>
       <source>Number of connections:</source>
-      <translation type="unfinished"/>
+      <translation>Liczba połączeń:</translation>
     </message>
     <message>
       <location line="+29"/>
       <source>Block Chain</source>
-      <translation type="unfinished"/>
+      <translation>Łańcuch bloków</translation>
     </message>
     <message>
       <location line="+7"/>
       <source>Number of blocks:</source>
-      <translation type="unfinished"/>
+      <translation>Liczba bloków:</translation>
     </message>
     <message>
       <location line="+23"/>
       <source>Last block time:</source>
-      <translation type="unfinished"/>
+      <translation>Czas ostatniego bloku:</translation>
     </message>
     <message>
       <location line="+23"/>
       <source>Last block hash:</source>
-      <translation type="unfinished"/>
+      <translation>Hasz ostatniego bloku:</translation>
     </message>
     <message>
       <location line="+39"/>
       <source>Number of transactions:</source>
-      <translation type="unfinished"/>
+      <translation>Liczba transakcji:</translation>
     </message>
     <message>
       <location line="+23"/>
       <source>Total size:</source>
-      <translation type="unfinished"/>
+      <translation>Całkowity rozmiar:</translation>
     </message>
     <message>
       <location line="+54"/>
@@ -2215,7 +2219,7 @@
     <message>
       <location line="+60"/>
       <location filename="../rpcconsole.cpp" line="+552"/>
-      <location line="+864"/>
+      <location line="+865"/>
       <source>Select a peer to view detailed information.</source>
       <translation>Wybierz uczestnika żeby zobaczyć szczegółowe informacje.</translation>
     </message>
@@ -2340,7 +2344,7 @@
       <translation>Razem</translation>
     </message>
     <message>
-      <location filename="../rpcconsole.cpp" line="-459"/>
+      <location filename="../rpcconsole.cpp" line="-460"/>
       <source>In:</source>
       <translation>Wejście:</translation>
     </message>
@@ -2996,7 +3000,7 @@ Uwaga: Ponieważ opłata jest obliczana wedle bajtów, opłata &quot;100 satoshi
     <message>
       <location line="+101"/>
       <source>Warning: Invalid Bitcoin Cash address</source>
-      <translation type="unfinished"/>
+      <translation>Ostrzeżenie: Nieprawidłowy adres Bitcoin Cash</translation>
     </message>
     <message>
       <location line="-140"/>
@@ -3041,7 +3045,7 @@ Uwaga: Ponieważ opłata jest obliczana wedle bajtów, opłata &quot;100 satoshi
     <message>
       <location line="+18"/>
       <source>The Bitcoin Cash address to send the payment to</source>
-      <translation type="unfinished"/>
+      <translation>Adres Bitcoin Cash, na który chcesz wysłać płatność</translation>
     </message>
     <message>
       <location line="+75"/>
@@ -3150,7 +3154,7 @@ Uwaga: Ponieważ opłata jest obliczana wedle bajtów, opłata &quot;100 satoshi
   <context>
     <name>ShutdownWindow</name>
     <message>
-      <location filename="../utilitydialog.cpp" line="+79"/>
+      <location filename="../utilitydialog.cpp" line="+56"/>
       <source>%1 is shutting down...</source>
       <translation>%1 się zamyka...</translation>
     </message>
@@ -3180,7 +3184,7 @@ Uwaga: Ponieważ opłata jest obliczana wedle bajtów, opłata &quot;100 satoshi
     <message>
       <location line="+18"/>
       <source>The Bitcoin Cash address to sign the message with</source>
-      <translation type="unfinished"/>
+      <translation>Adres Bitcoin Cash, którym podpisać wiadomość</translation>
     </message>
     <message>
       <location line="+7"/>
@@ -3222,17 +3226,17 @@ Uwaga: Ponieważ opłata jest obliczana wedle bajtów, opłata &quot;100 satoshi
     <message>
       <location line="+21"/>
       <source>Sign the message to prove you own this Bitcoin Cash address</source>
-      <translation type="unfinished"/>
+      <translation>Podpisz tą wiadomość aby udowodnić że jesteś posiadaczem tego adresu Bitcoin Cash</translation>
     </message>
     <message>
       <location line="+106"/>
       <source>The Bitcoin Cash address the message was signed with</source>
-      <translation type="unfinished"/>
+      <translation>Adres Bitcoin Cash, którym wiadomość została podpisana</translation>
     </message>
     <message>
       <location line="+37"/>
       <source>Verify the message to ensure it was signed with the specified Bitcoin Cash address</source>
-      <translation type="unfinished"/>
+      <translation>Zweryfikuj wiadomość aby upewnić się, że została podpisana podanym adresem Bitcoin Cash</translation>
     </message>
     <message>
       <location line="-140"/>
@@ -3703,7 +3707,7 @@ Uwaga: Ponieważ opłata jest obliczana wedle bajtów, opłata &quot;100 satoshi
       <translation>(brak)</translation>
     </message>
     <message>
-      <location line="+218"/>
+      <location line="+217"/>
       <source>(no label)</source>
       <translation>(brak etykiety)</translation>
     </message>
@@ -3935,14 +3939,14 @@ Uwaga: Ponieważ opłata jest obliczana wedle bajtów, opłata &quot;100 satoshi
   <context>
     <name>UnitDisplayStatusBarControl</name>
     <message>
-      <location filename="../bitcoingui.cpp" line="+156"/>
+      <location filename="../bitcoingui.cpp" line="+166"/>
       <source>Unit to show amounts in. Click to select another unit.</source>
       <translation>Jednostka w jakiej pokazywane są kwoty. Kliknij aby wybrać inną.</translation>
     </message>
     <message>
       <location line="+24"/>
       <source>Change unit to %1</source>
-      <translation type="unfinished"/>
+      <translation>Zmień jednostkę na %1</translation>
     </message>
   </context>
   <context>
@@ -4064,7 +4068,7 @@ Uwaga: Ponieważ opłata jest obliczana wedle bajtów, opłata &quot;100 satoshi
     <message>
       <location line="+2"/>
       <source>Cannot provide specific connections and have addrman find outgoing connections at the same time.</source>
-      <translation type="unfinished"/>
+      <translation>Nie można podać określonych połączeń i jednocześnie użyć addrmana do wyszukiwania wychodzących połączeń.</translation>
     </message>
     <message>
       <location line="+10"/>
@@ -4264,12 +4268,12 @@ Uwaga: Ponieważ opłata jest obliczana wedle bajtów, opłata &quot;100 satoshi
     <message>
       <location line="+1"/>
       <source>Verifying wallet...</source>
-      <translation type="unfinished"/>
+      <translation>Weryfikacja portfela...</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Verifying wallets...</source>
-      <translation type="unfinished"/>
+      <translation>Weryfikacja portfelów...</translation>
     </message>
     <message>
       <location line="+2"/>
