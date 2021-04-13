@@ -112,7 +112,7 @@ bool CTxMemPool::CalculateMemPoolAncestors(
         txiter stageit = *parentHashes.begin();
 
         setAncestors.insert(stageit);
-        parentHashes.erase(stageit);
+        parentHashes.erase(parentHashes.begin());
         totalSizeWithAncestors += stageit->GetTxSize();
 
         if (stageit->GetSizeWithDescendants() + entry.GetTxSize() >
@@ -361,7 +361,7 @@ void CTxMemPool::CalculateDescendants(txiter entryit,
     while (!stage.empty()) {
         txiter it = *stage.begin();
         setDescendants.insert(it);
-        stage.erase(it);
+        stage.erase(stage.begin());
 
         const setEntries &setChildren = GetMemPoolChildren(it);
         for (txiter childiter : setChildren) {
