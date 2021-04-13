@@ -1592,7 +1592,7 @@
     <message>
       <location line="+14"/>
       <source>Not a valid HTTP or HTTPS URL.</source>
-      <translation type="unfinished"/>
+      <translation>Keine gültige HTTP- oder HTTPS-URL.</translation>
     </message>
     <message>
       <location line="+27"/>
