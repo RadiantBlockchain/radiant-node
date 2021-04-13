@@ -243,7 +243,7 @@
     <message>
       <location line="+6"/>
       <source>IMPORTANT: Any previous backups you have made of your wallet file should be replaced with the newly generated, encrypted wallet file. For security reasons, previous backups of the unencrypted wallet file will become useless as soon as you start using the new, encrypted wallet.</source>
-      <translation>IMPORTANTE: Qualsiasi backup precedente che hai fatto del file del tuo portafoglio deve essere sostituito con il file del portafoglio cifrato appena generato. Per motivi di sicurezza, i backup precedenti dei file dei portafogli non cifrati diventeranno inutili dal momento che inizierai a usare il nuovo portafoglio cifrato.</translation>
+      <translation>IMPORTANTE: Qualsiasi backup precedente del file del tuo portafoglio deve essere sostituito con il file del portafoglio cifrato appena generato. Per motivi di sicurezza, i backup precedenti dei file dei portafogli non cifrati diventeranno obsoleti dal momento che inizierai a usare il nuovo portafoglio cifrato.</translation>
     </message>
     <message>
       <location line="+11"/>
@@ -1593,7 +1593,7 @@ Per specificare più URL separarli con una barra verticale "|".</translation>
     <message>
       <location line="+14"/>
       <source>Not a valid HTTP or HTTPS URL.</source>
-      <translation type="unfinished"/>
+      <translation>Non è un URL di tipo HTTP o HTTPS valido.</translation>
     </message>
     <message>
       <location line="+27"/>
