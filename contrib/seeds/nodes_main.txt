@@ -104,3 +104,11 @@
 [2a02:c207:2022:9236::1]:8333
 [2a03:4000:51:c58:4436:feff:fe3f:ac6f]:8333
 [2a0a:51c0:0:136::4]:8333
+5qahxbd3ra56bas4.onion:10333
+7dmfpadnxh3lttvd.onion:8333
+bchponzidlqjpsqp.onion:8333
+kcsjlkpfaad3tr43.onion:8333
+kister7332my5jka.onion:8333
+kisternetg2pq7wx.onion:8333
+v5hpuymvdivmq65z.onion:11432
+xp77eelk2nj4peqh.onion:8333
