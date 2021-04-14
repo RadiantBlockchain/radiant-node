@@ -1946,7 +1946,7 @@ static UniValue gettransaction(const Config &config,
             "seconds since epoch (1 Jan 1970 GMT)\n"
             "  \"bip125-replaceable\": \"yes|no|unknown\",  (string) Whether "
             "this transaction could be replaced due to BIP125 "
-            "(replace-by-fee);\n"
+            "(replace-by-fee) (DEPRECATED);\n"
             "                                                   may be unknown "
             "for unconfirmed transactions not in the mempool\n"
             "  \"details\" : [\n"
