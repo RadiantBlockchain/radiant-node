@@ -309,6 +309,10 @@ all of them on our GitLab repository.
   block height after a node restart. Note the field is deprecated and will be
   removed in a subsequent release.
 
+- On some platforms, the splash screen can be maximized, but it cannot be
+  unmaximized again (see #255). This has only been observed on Mac OSX,
+  not on Linux or Windows builds.
+
 ---
 
 ## Changes since Bitcoin Cash Node 22.2.0
@@ -381,6 +385,7 @@ set (in HTML and Markdown).
 - 0ce476c4a251daf9ec21953eb5042125bea99946 mempool: Remove all quadratic stats; add activation logic for tachyon
 - 24e2ac46f139fc9c151b0e5bd4d8ba768fdfe3d5 mempool: entry_time index removal
 - d408e3b094a2e031460c91ef53b8bce3481139bb Update default assume valid and minimum chain work params prior to Tachyon activation
+- 93ad75adec6bfdf67f458e66c831808e1eb2d03a mempool: Slight performance nit when erasing from setEntries
 
 #### GUI
 
