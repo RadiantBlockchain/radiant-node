@@ -32,6 +32,12 @@ bitcoind --scalenet
 python3 make_chainparams.py -a 127.0.0.1:38332 > chainparams_scalenet.txt
 ```
 
+**Note**: Scalenet should not be updated since it already has the chainparams it
+needs to be reorged back to height 10,000.  Without manually editing to comment-out
+the sys.exit call, the above script will exit with an error message if executed
+against a `bitcoind` that is on scalenet.
+
+
 ## Build C++ Header File
 ```
 python3 generate_chainparams_constants.py . > ../../../src/chainparamsconstants.h
