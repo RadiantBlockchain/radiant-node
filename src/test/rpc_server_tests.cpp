@@ -8,13 +8,13 @@
 #include <chainparams.h>
 #include <config.h>
 #include <software_outdated.h>
+#include <util/defer.h>
 #include <util/system.h>
 
 #include <test/setup_common.h>
 
 #include <boost/test/unit_test.hpp>
 
-#include <functional>
 #include <string>
 
 BOOST_FIXTURE_TEST_SUITE(rpc_server_tests, TestingSetup)
@@ -37,13 +37,6 @@ static bool isRpcMethodNotFound(const JSONRPCError &u) {
 static bool isRpcDisabled(const JSONRPCError &u) {
     return u.code == RPC_DISABLED;
 }
-
-struct Defer {
-    const std::function<void()> func;
-    template <typename F>
-    Defer(F && f) : func(f) {}
-    ~Defer() { func(); }
-};
 
 BOOST_AUTO_TEST_CASE(rpc_server_execute_command) {
     DummyConfig config;
