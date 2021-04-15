@@ -51,7 +51,8 @@ BOOST_AUTO_TEST_CASE(MempoolMinimumFeeEstimate) {
             CTransactionRef ptx = mpool.get(txid);
             block.push_back(ptx);
         }
-        mpool.removeForBlock(block, ++blocknum);
+        ++blocknum;
+        mpool.removeForBlock(block);
         block.clear();
     }
 

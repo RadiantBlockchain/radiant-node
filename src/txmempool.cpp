@@ -15,7 +15,6 @@
 #include <consensus/validation.h>
 #include <dsproof/dsproof.h>
 #include <dsproof/storage.h>
-#include <mempool/defaultbatchupdater.h>
 #include <policy/fees.h>
 #include <policy/mempool.h>
 #include <policy/policy.h>
@@ -239,8 +238,6 @@ CTxMemPool::CTxMemPool()
     // transactions becomes O(N^2) where N is the number of transactions in the
     // pool
     nCheckFrequency = 0;
-
-    batchUpdater = std::make_unique<mempool::DefaultBatchUpdater>(*this);
 }
 
 CTxMemPool::~CTxMemPool() {}
@@ -421,14 +418,28 @@ void CTxMemPool::removeConflicts(const CTransaction &tx) {
  * Called when a block is connected. Removes from mempool and updates the miner
  * fee estimator.
  */
-void CTxMemPool::removeForBlock(const std::vector<CTransactionRef> &vtx,
-                                unsigned int nBlockHeight) {
+void CTxMemPool::removeForBlock(const std::vector<CTransactionRef> &vtx) {
+    DisconnectedBlockTransactions disconnectpool;
+    disconnectpool.addForBlock(vtx);
+
     LOCK(cs);
 
-    batchUpdater->removeForBlock(vtx, nBlockHeight);
+    // iterate in topological order (parents before children)
+    for (const CTransactionRef &tx : reverse_iterate(disconnectpool.GetQueuedTx().get<insertion_order>())) {
+        const txiter it = mapTx.find(tx->GetId());
+        if (it != mapTx.end()) {
+            setEntries stage;
+            stage.insert(it);
+            RemoveStaged(stage, MemPoolRemovalReason::BLOCK);
+        }
+        removeConflicts(*tx);
+        ClearPrioritisation(tx->GetId());
+    }
 
     lastRollingFeeUpdate = GetTime();
     blockSinceLastRollingFeeBump = true;
+
+    disconnectpool.clear();
 }
 
 void CTxMemPool::_clear(bool clearDspOrphans /*= true*/) {
