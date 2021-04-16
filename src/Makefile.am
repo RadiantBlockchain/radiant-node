@@ -227,6 +227,7 @@ BITCOIN_CORE_H = \
   ui_interface.h \
   undo.h \
   util/bitmanip.h \
+  util/defer.h \
   util/moneystr.h \
   util/saltedhashers.h \
   util/system.h \

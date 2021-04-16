@@ -44,6 +44,7 @@
 #include <txmempool.h>
 #include <ui_interface.h>
 #include <undo.h>
+#include <util/defer.h>
 #include <util/moneystr.h>
 #include <util/strencodings.h>
 #include <util/system.h>
@@ -3177,16 +3178,6 @@ bool PreciousBlock(const Config &config, CValidationState &state,
                    CBlockIndex *pindex) {
     return g_chainstate.PreciousBlock(config, state, pindex);
 }
-
-namespace {
-// Leverage RAII to run a functor at scope end
-template <typename Func>
-struct Defer {
-    Func func;
-    Defer(Func && f) : func(std::move(f)) {}
-    ~Defer() { func(); }
-};
-} // namespace
 
 bool CChainState::UnwindBlock(const Config &config, CValidationState &state,
                               CBlockIndex *pindex, bool invalidate) {
