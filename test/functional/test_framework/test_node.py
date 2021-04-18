@@ -163,7 +163,11 @@ class TestNode():
             self.process.kill()
 
     def __getattr__(self, name):
-        """Dispatches any unrecognised messages to the RPC connection or a CLI instance."""
+        """Dispatches any unrecognised method name to the RPC connection or a CLI instance."""
+        return self._get_rpc_or_cli_method(name)
+
+    def _get_rpc_or_cli_method(self, name):
+        """Returns the CLI or RPC connection method 'name'."""
         if self.use_cli:
             return getattr(self.cli, name)
         else:
@@ -172,6 +176,23 @@ class TestNode():
             assert self.rpc_connected, self._node_msg(
                 "Error: No RPC connection")
             return getattr(self.rpc, name)
+
+    def call_rpc(self, name: str, *args, **kwargs):
+        """Wrapper for any rpc or cli call that optionally accepts the kwarg
+        `ignore_error=<str>` where <str> is some error message substring we
+        tolerate as a JSONRPCException. If no exception is raised or if no
+        `ignore_error` kwarg is present, returns the result of calling rpc
+        `name`. If `ignore_error` is specified and there is a matching
+        exception message, returns None. This wrapper was originally designed
+        to facilitate dsproof tests."""
+        ignore_error = kwargs.pop('ignore_error', None)
+        try:
+            return self._get_rpc_or_cli_method(name)(*args, **kwargs)
+        except JSONRPCException as exc:
+            if ignore_error is None or ignore_error not in str(exc):
+                raise exc
+            self.log.info("call_rpc: Ignoring exception from '{}': {}".format(name, repr(exc)))
+            return None
 
     def clear_default_args(self):
         self.default_args.clear()
