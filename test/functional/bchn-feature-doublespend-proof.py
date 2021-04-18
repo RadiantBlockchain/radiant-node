@@ -87,7 +87,7 @@ class DoubleSpendProofTest(BitcoinTestFramework):
         # Submit to two different nodes, because a node would simply reject
         # a double spend submitted through RPC
         firstDSTxId = self.nodes[0].sendrawtransaction(firstDSTx)
-        self.nodes[1].sendrawtransaction(secondDSTx)
+        self.nodes[1].call_rpc('sendrawtransaction', secondDSTx, ignore_error='txn-mempool-conflict')
         wait_until(
             lambda: dspReceiver.message_count["dsproof-beta"] == 1,
             lock=mininode_lock,
@@ -130,7 +130,7 @@ class DoubleSpendProofTest(BitcoinTestFramework):
         #    IE if a valid proof is known, no new proofs will be constructed
         #    We submit a _triple_ spend transaction to the third node
         connect_nodes(self.nodes[0], self.nodes[2])
-        self.nodes[2].sendrawtransaction(thirdDSTx)
+        self.nodes[2].call_rpc('sendrawtransaction', thirdDSTx, ignore_error='txn-mempool-conflict')
         #    Await for a new dsp to be relayed to the node
         #    if such a dsp (or the double or triple spending tx) arrives, the test fails
         assert_raises(
@@ -159,7 +159,7 @@ class DoubleSpendProofTest(BitcoinTestFramework):
         secondDSTx = create_tx_with_script(tx, 0, b'', int(49.90 * COIN), CScript([OP_FALSE]))
 
         self.nodes[0].sendrawtransaction(ToHex(firstDSTx))
-        self.nodes[1].sendrawtransaction(ToHex(secondDSTx))
+        self.nodes[1].call_rpc('sendrawtransaction', ToHex(secondDSTx), ignore_error='txn-mempool-conflict')
 
         assert_raises(
             AssertionError,
@@ -178,7 +178,7 @@ class DoubleSpendProofTest(BitcoinTestFramework):
         secondDSTx = create_raw_transaction(self.nodes[0], unconfirmedtx, self.nodes[0].getnewaddress(), 24.9)
 
         self.nodes[0].sendrawtransaction(firstDSTx)
-        self.nodes[1].sendrawtransaction(secondDSTx)
+        self.nodes[1].call_rpc('sendrawtransaction', secondDSTx, ignore_error='txn-mempool-conflict')
 
         wait_until(
             lambda: dspReceiver.message_count["dsproof-beta"] == 2,
@@ -217,7 +217,7 @@ class DoubleSpendProofTest(BitcoinTestFramework):
         firstDSTx = create_raw_transaction(self.nodes[0], txid1, self.nodes[0].getnewaddress(), 48.9, vout1)
         secondDSTx = create_raw_transaction(self.nodes[0], txid1, self.nodes[1].getnewaddress(), 48.9, vout1)
         self.nodes[0].sendrawtransaction(firstDSTx)
-        self.nodes[1].sendrawtransaction(secondDSTx)
+        self.nodes[1].call_rpc('sendrawtransaction', secondDSTx, ignore_error='txn-mempool-conflict')
 
         # We still get a dsproof, showing that not all ancestors have
         # to be P2PKH.
@@ -258,7 +258,7 @@ class DoubleSpendProofTest(BitcoinTestFramework):
         firstDSTx = create_raw_transaction(self.nodes[1], txid, self.nodes[0].getnewaddress(), 49.98, vout2)
         secondDSTx = create_raw_transaction(self.nodes[1], txid, self.nodes[1].getnewaddress(), 49.98, vout2)
         self.nodes[0].sendrawtransaction(firstDSTx)
-        self.nodes[1].sendrawtransaction(secondDSTx)
+        self.nodes[1].call_rpc('sendrawtransaction', secondDSTx, ignore_error='txn-mempool-conflict')
         # We get a dsproof.
         wait_until(
             lambda: dspReceiver.message_count["dsproof-beta"] == 4,
@@ -282,7 +282,7 @@ class DoubleSpendProofTest(BitcoinTestFramework):
         firstDSTx = create_raw_transaction(self.nodes[0], fundingtxid, self.nodes[0].getnewaddress(), 48.9, vout)
         secondDSTx = create_raw_transaction(self.nodes[0], fundingtxid, self.nodes[1].getnewaddress(), 48.9, vout)
         self.nodes[0].sendrawtransaction(firstDSTx)
-        self.nodes[1].sendrawtransaction(secondDSTx)
+        self.nodes[1].call_rpc('sendrawtransaction', secondDSTx, ignore_error='txn-mempool-conflict')
         # No dsproof is generated.
         assert_raises(
             AssertionError,
@@ -322,7 +322,6 @@ class DoubleSpendProofTest(BitcoinTestFramework):
             lock=mininode_lock,
             timeout=5
         )
-
 
         # Finally, ensure that the non-dsproof node has the messages we expect in its log
         # (this checks that dsproof was disabled for this node)

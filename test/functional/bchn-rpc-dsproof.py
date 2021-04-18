@@ -38,7 +38,7 @@ class DoubleSpendProofRPCTest(BitcoinTestFramework):
         second_ds_tx = create_raw_transaction(self.nodes[0], funding_txid, self.nodes[0].getnewaddress(), 49.95)
 
         first_ds_tx_id = self.nodes[0].sendrawtransaction(first_ds_tx)
-        second_ds_tx_id = self.nodes[1].sendrawtransaction(second_ds_tx)
+        second_ds_tx_id = self.nodes[1].call_rpc('sendrawtransaction', second_ds_tx, ignore_error='txn-mempool-conflict')
 
         vout = find_output(self.nodes[0], first_ds_tx_id, Decimal('49.95'))
         child = create_raw_transaction(self.nodes[0], first_ds_tx_id, self.nodes[0].getnewaddress(), 49.90, vout)
@@ -63,7 +63,12 @@ class DoubleSpendProofRPCTest(BitcoinTestFramework):
         dsp_node1 = self.nodes[1].getdsproof(dsplist[0])
         # each node has the same dsproof, but associated with the txid it sees in mempool
         assert_equal(dsp["txid"], first_ds_tx_id)
-        assert_equal(dsp_node1["txid"], second_ds_tx_id)
+        if second_ds_tx_id is not None:
+            # common case where node1 saw the RPC tx2 before the p2p tx1
+            assert_equal(dsp_node1["txid"], second_ds_tx_id)
+        else:
+            # node1 happened to see the first tx via p2p first
+            assert_equal(dsp_node1["txid"], first_ds_tx_id)
         # we expect this dsp tx to invalidate 3 tx's total (parent, child, and grandchild)
         assert_equal(len(dsp["descendants"]), 3)
         # Check that the dsp has the "outpoint" key and it is what we expect
@@ -166,7 +171,7 @@ class DoubleSpendProofRPCTest(BitcoinTestFramework):
                                                            self.nodes[0].getnewaddress(), 49.97, 0)
 
         transaction_2outputs_id = self.nodes[0].sendrawtransaction(transaction_2_outputs)
-        self.nodes[1].sendrawtransaction(doublespendingtransaction)
+        self.nodes[1].call_rpc('sendrawtransaction', doublespendingtransaction, ignore_error='txn-mempool-conflict')
         paths[0].insert(0, transaction_2outputs_id)  # root of both possible paths
         paths[1].insert(0, transaction_2outputs_id)
 
@@ -352,7 +357,6 @@ class DoubleSpendProofRPCTest(BitcoinTestFramework):
             lambda: len(self.nodes[0].getdsprooflist(False, True)) == 0,
             timeout=90
         )
-
 
     def run_test(self):
         self.basic_check()
