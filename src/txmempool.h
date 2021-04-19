@@ -38,8 +38,6 @@ class Config;
 class DoubleSpendProof;
 class DoubleSpendProofStorage;
 
-namespace mempool { class BatchUpdater; }
-
 
 extern RecursiveMutex cs_main;
 
@@ -372,8 +370,6 @@ private:
 
     bool m_is_loaded GUARDED_BY(cs){false};
 
-    std::unique_ptr<mempool::BatchUpdater> batchUpdater;
-
     //! Used by addUnchecked to generate ever-increasing CTxMemPoolEntry::entryId's
     uint64_t nextEntryId GUARDED_BY(cs) = 1;
 
@@ -584,8 +580,7 @@ public:
         const CTransaction &tx,
         MemPoolRemovalReason reason = MemPoolRemovalReason::UNKNOWN);
     void removeConflicts(const CTransaction &tx) EXCLUSIVE_LOCKS_REQUIRED(cs);
-    void removeForBlock(const std::vector<CTransactionRef> &vtx,
-                        unsigned int nBlockHeight);
+    void removeForBlock(const std::vector<CTransactionRef> &vtx);
 
     void clear(bool clearDspOrphans = true);
     // lock free

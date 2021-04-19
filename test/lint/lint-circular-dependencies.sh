@@ -39,7 +39,6 @@ EXPECTED_CIRCULAR_DEPENDENCIES=(
     "chainparams -> protocol -> config -> chainparams"
     "config -> policy/policy -> validation -> config"
     "config -> policy/policy -> validation -> protocol -> config"
-    "mempool/defaultbatchupdater -> txmempool -> mempool/defaultbatchupdater"
 )
 
 EXIT_CODE=0

@@ -504,7 +504,6 @@ add_library(server
 	net_processing.cpp
 	node/transaction.cpp
 	noui.cpp
-	mempool/defaultbatchupdater.cpp
 	outputtype.cpp
 	policy/fees.cpp
 	policy/policy.cpp

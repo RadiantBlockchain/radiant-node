@@ -2633,7 +2633,7 @@ bool CChainState::ConnectTip(const Config &config, CValidationState &state,
              nTimeChainState * MILLI / nBlocksTotal);
 
     // Remove conflicting transactions from the mempool.;
-    g_mempool.removeForBlock(blockConnecting.vtx, pindexNew->nHeight);
+    g_mempool.removeForBlock(blockConnecting.vtx);
     disconnectpool.removeForBlock(blockConnecting.vtx);
 
     // If this block is activating a fork, we move all mempool transactions
