@@ -27,6 +27,7 @@ add_executable(bench_bitcoin
 	mempool_eviction.cpp
 	merkle_root.cpp
 	prevector.cpp
+	removeforblock.cpp
 	rollingbloom.cpp
 	rpc_blockchain.cpp
 	rpc_mempool.cpp
