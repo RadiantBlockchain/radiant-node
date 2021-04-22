@@ -41,7 +41,15 @@ Bitcoin Cash Node version 23.0.1 is now available from:
 
 ## Low-level RPC changes
 
-...
+The `getmempoolancestors` and `getmempooldescendants` RPC methods now
+return a list of transactions that are sorted topologically (with parents
+coming before children). Previously they were sorted by transaction id.
+
+Mempool entries from the verbose versions of: `getrawmempool`, `getmempoolentry`,
+`getmempoolancestors`, and `getmempooldescendants` which contain a `spentby`
+key now have the transactions in the `spentby` list sorted topologically (with
+parents coming before children). Previously this list was sorted by transaction
+id.
 
 ## User interface changes
 

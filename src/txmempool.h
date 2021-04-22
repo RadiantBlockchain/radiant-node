@@ -132,7 +132,9 @@ public:
                     bool spendsCoinbase, int64_t _sigOpCount, LockPoints lp);
 
     uint64_t GetEntryId() const { return entryId; }
-    //! This should only be set by addUnchecked() before entry insertion into mempool
+    //! This should only be set exactly once by addUnchecked() before entry insertion into the mempool.
+    //! In other words, it may not be mutated for an instance whose storage is in CTxMemPool::mapTx, otherwise mempool
+    //! invariants will be violated.
     void SetEntryId(uint64_t eid) { entryId = eid; }
 
     const CTransaction &GetTx() const { return *this->tx; }
@@ -436,12 +438,12 @@ public:
     //! All tx hashes/entries in mapTx, in random order
     std::vector<std::pair<TxHash, txiter>> vTxHashes;
 
-    struct CompareIteratorById {
+    struct CompareIteratorByEntryId {
         bool operator()(const txiter &a, const txiter &b) const {
-            return a->GetTx().GetId() < b->GetTx().GetId();
+            return a->GetEntryId() < b->GetEntryId();
         }
     };
-    typedef std::set<txiter, CompareIteratorById> setEntries;
+    using setEntries = std::set<txiter, CompareIteratorByEntryId>;
 
     const setEntries &GetMemPoolParents(txiter entry) const
         EXCLUSIVE_LOCKS_REQUIRED(cs);
@@ -538,7 +540,7 @@ private:
         setEntries children;
     };
 
-    typedef std::map<txiter, TxLinks, CompareIteratorById> txlinksMap;
+    using txlinksMap = std::map<txiter, TxLinks, CompareIteratorByEntryId>;
     txlinksMap mapLinks;
 
     void UpdateParent(txiter entry, txiter parent, bool add);
