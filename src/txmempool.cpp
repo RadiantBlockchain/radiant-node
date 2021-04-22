@@ -33,6 +33,8 @@
 #include <limits>
 #include <optional>
 #include <stdexcept>
+#include <tuple>
+#include <utility>
 
 /// Used in various places in this file to signify "no limit" for CalculateMemPoolAncestors
 inline constexpr uint64_t nNoLimit = std::numeric_limits<uint64_t>::max();
@@ -280,7 +282,7 @@ void CTxMemPool::addUnchecked(const CTxMemPoolEntry &entryIn, const setEntries &
     // Sanity check: We should always end up inserting at the end of the entry_id index
     assert(&*mapTx.get<entry_id>().rbegin() == &*newit);
 
-    mapLinks.insert(make_pair(newit, TxLinks()));
+    mapLinks.try_emplace(newit);
 
     // Update cachedInnerUsage to include contained transaction's usage.
     // (When we update the entry for in-mempool parents, memory usage will be
@@ -290,7 +292,7 @@ void CTxMemPool::addUnchecked(const CTxMemPoolEntry &entryIn, const setEntries &
     const CTransaction &tx = newit->GetTx();
     std::set<TxId> setParentTransactions;
     for (const CTxIn &in : tx.vin) {
-        mapNextTx.insert(std::make_pair(&in.prevout, &tx));
+        mapNextTx.emplace(&in.prevout, &tx);
         setParentTransactions.insert(in.prevout.GetTxId());
     }
     // Don't bother worrying about child transactions of this one. It is
