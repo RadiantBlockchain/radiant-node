@@ -6,6 +6,7 @@
 #include <txmempool.h>
 
 #include <algorithm/contains.h>
+#include <algorithm/erase_if.h>
 #include <chain.h>
 #include <chainparams.h> // for GetConsensus.
 #include <clientversion.h>
@@ -333,9 +334,11 @@ void CTxMemPool::removeUnchecked(txiter it, MemPoolRemovalReason reason) {
 
     totalTxSize -= it->GetTxSize();
     cachedInnerUsage -= it->DynamicMemoryUsage();
-    cachedInnerUsage -= memusage::DynamicUsage(mapLinks[it].parents) +
-                        memusage::DynamicUsage(mapLinks[it].children);
-    mapLinks.erase(it);
+    if (const auto linksiter = mapLinks.find(it); linksiter != mapLinks.end()) {
+        cachedInnerUsage -= memusage::DynamicUsage(linksiter->second.parents) +
+                            memusage::DynamicUsage(linksiter->second.children);
+        mapLinks.erase(linksiter);
+    }
     mapTx.erase(it);
     nTransactionsUpdated++;
 }
@@ -419,10 +422,16 @@ void CTxMemPool::removeConflicts(const CTransaction &tx) {
  * fee estimator.
  */
 void CTxMemPool::removeForBlock(const std::vector<CTransactionRef> &vtx) {
+    LOCK(cs);
+
+    if (mapTx.empty() && mapDeltas.empty()) {
+        // fast-path for IBD and/or when mempool is empty; there is no need to
+        // do any of the set-up work below which eats precious cycles.
+        return;
+    }
+
     DisconnectedBlockTransactions disconnectpool;
     disconnectpool.addForBlock(vtx);
-
-    LOCK(cs);
 
     // iterate in topological order (parents before children)
     for (const CTransactionRef &tx : reverse_iterate(disconnectpool.GetQueuedTx().get<insertion_order>())) {
@@ -431,10 +440,15 @@ void CTxMemPool::removeForBlock(const std::vector<CTransactionRef> &vtx) {
             setEntries stage;
             stage.insert(it);
             RemoveStaged(stage, MemPoolRemovalReason::BLOCK);
+        } else {
+            removeConflicts(*tx);
         }
-        removeConflicts(*tx);
-        ClearPrioritisation(tx->GetId());
     }
+    // clear prioritisations (mapDeltas); optmized for the common case where
+    // mapDeltas is empty or much smaller than block.vtx
+    algo::erase_if(mapDeltas, [&disconnectpool](const auto &kv) {
+        return algo::contains(disconnectpool.GetQueuedTx(), kv.first);
+    });
 
     lastRollingFeeUpdate = GetTime();
     blockSinceLastRollingFeeBump = true;
@@ -829,21 +843,23 @@ void CTxMemPool::addUnchecked(const CTxMemPoolEntry &entry) {
     return addUnchecked(entry, setAncestors);
 }
 
+// NB: The pointer type is only used for template overload selection and never dereferenced so this is safe.
+inline constexpr size_t setEntriesIncrementalUsage =
+        memusage::IncrementalDynamicUsage(static_cast<CTxMemPool::setEntries *>(nullptr));
+
 void CTxMemPool::UpdateChild(txiter entry, txiter child, bool add) {
-    setEntries s;
     if (add && mapLinks[entry].children.insert(child).second) {
-        cachedInnerUsage += memusage::IncrementalDynamicUsage(s);
+        cachedInnerUsage += setEntriesIncrementalUsage;
     } else if (!add && mapLinks[entry].children.erase(child)) {
-        cachedInnerUsage -= memusage::IncrementalDynamicUsage(s);
+        cachedInnerUsage -= setEntriesIncrementalUsage;
     }
 }
 
 void CTxMemPool::UpdateParent(txiter entry, txiter parent, bool add) {
-    setEntries s;
     if (add && mapLinks[entry].parents.insert(parent).second) {
-        cachedInnerUsage += memusage::IncrementalDynamicUsage(s);
+        cachedInnerUsage += setEntriesIncrementalUsage;
     } else if (!add && mapLinks[entry].parents.erase(parent)) {
-        cachedInnerUsage -= memusage::IncrementalDynamicUsage(s);
+        cachedInnerUsage -= setEntriesIncrementalUsage;
     }
 }
 
@@ -1226,8 +1242,7 @@ void CTxMemPool::SetIsLoaded(bool loaded) {
 /** Maximum bytes for transactions to store for processing during reorg */
 static const size_t MAX_DISCONNECTED_TX_POOL_SIZE = 20 * DEFAULT_EXCESSIVE_BLOCK_SIZE;
 
-void DisconnectedBlockTransactions::addForBlock(
-    const std::vector<CTransactionRef> &vtx) {
+void DisconnectedBlockTransactions::addForBlock(const std::vector<CTransactionRef> &vtx) {
     for (const auto &tx : reverse_iterate(vtx)) {
         // If we already added it, just skip.
         auto it = queuedTx.find(tx->GetId());
@@ -1239,7 +1254,7 @@ void DisconnectedBlockTransactions::addForBlock(
         addTransaction(tx);
 
         // Fill in the set of parents.
-        std::unordered_set<TxId, SaltedTxIdHasher> parents;
+        std::set<TxId> parents;
         for (const CTxIn &in : tx->vin) {
             parents.insert(in.prevout.GetTxId());
         }
@@ -1248,8 +1263,7 @@ void DisconnectedBlockTransactions::addForBlock(
         // if we already know of the parent of the current transaction. If so,
         // we remove them from the set and then add them back.
         while (parents.size() > 0) {
-            std::unordered_set<TxId, SaltedTxIdHasher> worklist(
-                std::move(parents));
+            std::set<TxId> worklist(std::move(parents));
             parents.clear();
 
             for (const TxId &txid : worklist) {

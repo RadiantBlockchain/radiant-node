@@ -82,6 +82,11 @@ inline constexpr size_t IncrementalDynamicUsage(const std::set<X, Y> &) {
     return MallocUsage(sizeof(stl_tree_node<X>));
 }
 
+template <typename X, typename Y>
+inline constexpr size_t IncrementalDynamicUsage(const std::set<X, Y> *) {
+    return MallocUsage(sizeof(stl_tree_node<X>));
+}
+
 template <typename X, typename Y, typename Z>
 inline size_t DynamicUsage(const std::map<X, Y, Z> &m) {
     return MallocUsage(sizeof(stl_tree_node<std::pair<const X, Y>>)) * m.size();
