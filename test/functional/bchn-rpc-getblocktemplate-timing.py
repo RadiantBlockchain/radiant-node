@@ -45,7 +45,7 @@ class GBTTimingTest(BitcoinTestFramework):
         self.setup_test()
 
         passes = fails = 0
-        success_threshold = 0.66
+        success_threshold = 0.50
         max_tries = 13
 
         while (passes <= (passes + fails) * success_threshold) and (passes + fails < max_tries):
