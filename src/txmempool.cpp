@@ -1318,7 +1318,7 @@ void DisconnectedBlockTransactions::importMempool(CTxMemPool &pool) {
         for (const CTxMemPoolEntry &e : pool.mapTx.get<entry_id>()) {
             vtx.push_back(e.GetSharedTx());
             // save entry time, feeDelta, and height for use in updateMempoolForReorg()
-            txInfo.try_emplace(e.GetTx().GetId(), TxInfo{e.GetTime(), e.GetModifiedFee() - e.GetFee(), e.GetHeight()});
+            txInfo.try_emplace(e.GetTx().GetId(), e.GetTime(), e.GetModifiedFee() - e.GetFee(), e.GetHeight());
             // notify all observers of this (possibly temporary) removal
             pool.NotifyEntryRemoved(e.GetSharedTx(), MemPoolRemovalReason::REORG);
         }
