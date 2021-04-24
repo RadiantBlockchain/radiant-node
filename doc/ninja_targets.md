@@ -1,12 +1,6 @@
 Ninja build system targets
 ==========================
 
-Bitcoin Cash Node currently has two build systems:
-
-1. CMake + Ninja (CMake is used to generate Ninja build files)
-
-2. "autoconf" (autogen, configure, make).
-
 This document describes how the CMake/Ninja build system works and how to use it.
 
 You will find some information on how to set up a Ninja build, and what are the
@@ -14,6 +8,8 @@ build targets and their effects.
 
 
 ## Generally understanding the Ninja build system
+
+CMake is used to generate Ninja build files.
 
 Please briefly acquaint yourself with the Ninja documentation at <https://ninja-build.org/manual.html>
 
@@ -24,8 +20,7 @@ An out-of-tree build creates build products in a separate folder where they do
 not interfere with the source code working area.
 
 An in-tree build is not recommended and therefore not described further, but it
-is noted that in-tree builds are possible, both with Ninja and with the autoconf
-build method.
+is noted that in-tree builds are possible.
 
 To set up an out-of-tree Ninja build:
 
@@ -72,14 +67,6 @@ See also the description of the `clean` target at: <https://ninja-build.org/manu
 If you need to 'clean up hardest' then the right way is to change to the
 source folder of your checked out working area, and remove the entire
 `build/` folder. (`rm -rf build`)
-
-If you are using the Ninja build method together with the autoconf build
-in the same working area, there may be unwanted interactions between the
-two at some points.
-
-It is recommended to delete all Ninja build/ artifacts when doing autoconf
-build tests, and vice versa, do a `make distclean` if you have been using autoconf
-and are switching to doing some Ninja builds on your tree.
 
 
 ## Build-related targets
