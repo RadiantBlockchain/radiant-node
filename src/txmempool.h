@@ -832,6 +832,8 @@ private:
         const int64_t time;
         const Amount feeDelta;
         const unsigned height;
+        TxInfo(int64_t time_, Amount feeDelta_, unsigned height_) noexcept
+            : time(time_), feeDelta(feeDelta_), height(height_) {}
     };
 
     using TxInfoMap = std::unordered_map<TxId, TxInfo, SaltedTxIdHasher>;
