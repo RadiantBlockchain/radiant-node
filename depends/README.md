@@ -34,7 +34,7 @@ For example, cross-building for Linux on ARM (run from the project root):
 
     mkdir build_arm
     cd build_arm
-    cmake -GNinja .. -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/LinuxARM.cmake
+    cmake -GNinja .. -DENABLE_MAN=OFF -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/LinuxARM.cmake
     ninja
 
 Note that it will use all the CPU cores available on the machine by default.
@@ -56,7 +56,7 @@ from the project root):
 
     mkdir build_osx
     cd build_osx
-    cmake -GNinja .. -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/OSX.cmake
+    cmake -GNinja .. -DENABLE_MAN=OFF -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/OSX.cmake
     ninja
 
 No other options are needed, the paths are automatically configured.
