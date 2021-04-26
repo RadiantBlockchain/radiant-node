@@ -313,9 +313,6 @@ All these options are passed via `-D` (defines) to the `cmake` command.
 - -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/Win64.cmake  # select 64-bit Windows
   toolchain
 
-- -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/Win32.cmake  # select 32-bit Windows
-  toolchain
-
 - -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/LinuxARM.cmake  # select ARM Linux
   toolchain
 
