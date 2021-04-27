@@ -222,14 +222,15 @@ class GBTLightTest(BitcoinTestFramework):
         self.sync_all()
 
         # Wait for getblocktemplate to see the txids (it uses a 5s caching strategy before it calculates a new template)
-        # 'setmocktime' here worked too but I prefer to let the clock advance normally, rather than use a pegged
+        # 'setmocktime' here worked too but we prefer to let the clock advance normally, rather than use a pegged
         # mocktime for this test case.  (Real execution time for this whole test case is about the same whether using
         # mocktime or this polling strategy, so better to keep time advancing normally).
-        self.wait_for_txs(txids)
+        self.wait_for_txs(txids, 0)
+        self.wait_for_txs(txids, 1)
 
         # Check that, once the nodes are synced, they give the same template
-        gbtl0 = self.nodes[0].getblocktemplatelight()  # in the python test framework you can simply call the rpc by name
-        gbtl1 = self.nodes[1].getblocktemplatelight()  # no need to declare it anywhere
+        gbtl0 = self.nodes[0].getblocktemplatelight()
+        gbtl1 = self.nodes[1].getblocktemplatelight()
         assert_blocktemplate_equal(gbtl0, gbtl1)
 
         # check job_id is ok
