@@ -133,6 +133,11 @@ Cash Node using these dependencies.
 In this example, `-DBUILD_BITCOIN_WALLET=OFF` should be passed to the `cmake`
 command line to ensure that the build will not fail due to missing dependencies.
 
+NOTE: The SDK_PATH should be set to the parent folder in which the
+`MacOSX10.14.sdk/` is located. Alternatively, you can unpack the SDK within
+the `depends/SDKs/` folder or create a symbolic link named `MacOSX10.14.sdk/`
+to it from there.
+
 Additional targets:
 
     download: run 'make download' to fetch all sources without building them
