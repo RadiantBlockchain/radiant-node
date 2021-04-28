@@ -34,12 +34,12 @@
 #else
 #include <arpa/inet.h>
 #include <climits>
+#include <fcntl.h>
 #include <ifaddrs.h>
 #include <net/if.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
-#include <sys/fcntl.h>
 #include <sys/mman.h>
 #include <sys/select.h>
 #include <sys/socket.h>
