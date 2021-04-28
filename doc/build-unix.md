@@ -8,6 +8,8 @@ Some notes on how to build Bitcoin Cash Node in Unix.
   in this directory.
 * For Arch Linux specific instructions, see [build-unix-arch.md](build-unix-arch.md)
   in this directory.
+* For Alpine specific instructions, see [build-unix-alpine.md](build-unix-alpine.md)
+  in this directory.
 * For FreeBSD specific instructions, see [build-freebsd.md](build-freebsd.md) in
   this directory.
 
