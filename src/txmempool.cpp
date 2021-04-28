@@ -1241,8 +1241,9 @@ void CTxMemPool::SetIsLoaded(bool loaded) {
     m_is_loaded = loaded;
 }
 
-/** Maximum bytes for transactions to store for processing during reorg */
-static const size_t MAX_DISCONNECTED_TX_POOL_SIZE = 20 * DEFAULT_EXCESSIVE_BLOCK_SIZE;
+/* static */ uint64_t DisconnectedBlockTransactions::maxDynamicUsage() {
+    return std::max(20 * DEFAULT_EXCESSIVE_BLOCK_SIZE, GetConfig().GetMaxMemPoolSize());
+}
 
 void DisconnectedBlockTransactions::addForBlock(const std::vector<CTransactionRef> &vtx) {
     for (const auto &tx : reverse_iterate(vtx)) {
@@ -1291,7 +1292,8 @@ void DisconnectedBlockTransactions::addForBlock(const std::vector<CTransactionRe
     }
 
     // Keep the size under control.
-    while (DynamicMemoryUsage() > MAX_DISCONNECTED_TX_POOL_SIZE) {
+    const auto maxUsage = maxDynamicUsage();
+    while (DynamicMemoryUsage() > maxUsage) {
         // Drop the earliest entry, and remove its children from the
         // mempool.
         auto it = queuedTx.get<insertion_order>().begin();
@@ -1337,7 +1339,8 @@ void DisconnectedBlockTransactions::importMempool(CTxMemPool &pool) {
 
     // We limit memory usage because we can't know if more blocks will be
     // disconnected
-    while (DynamicMemoryUsage() > MAX_DISCONNECTED_TX_POOL_SIZE) {
+    const auto maxUsage = maxDynamicUsage();
+    while (DynamicMemoryUsage() > maxUsage) {
         // Drop the earliest entry which, by definition, has no children
         removeEntry(queuedTx.get<insertion_order>().begin());
     }

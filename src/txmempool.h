@@ -848,6 +848,11 @@ private:
     /// Note that the returned pointer is only valid for as long as its underlying map node is valid.
     const TxInfo *getTxInfo(const CTransactionRef &tx) const;
 
+    /// @returns the maximum number of bytes that this instance will use for DynamicMemoryUsage()
+    /// before txs are culled from this instance. Right now this is max(640MB, maxMempoolSize) and
+    /// it relies on the global Config object being valid and correctly configured.
+    static uint64_t maxDynamicUsage();
+
 public:
     // It's almost certainly a logic bug if we don't clear out queuedTx before
     // destruction, as we add to it while disconnecting blocks, and then we
