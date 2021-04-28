@@ -160,6 +160,7 @@ nav:
       - Linux build guides:
           - Ubuntu/Debian build guide: doc/build-unix-deb.md
           - Arch Linux build guide: doc/build-unix-arch.md
+          - Alpine Linux build guide: doc/build-unix-alpine.md
           - Fedora/CentOS build guide: doc/build-unix-rpm.md
       - FreeBSD build guide: doc/build-freebsd.md
       - macOS build guide: doc/build-osx.md
