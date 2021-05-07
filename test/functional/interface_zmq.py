@@ -16,6 +16,8 @@ from test_framework.util import (
 )
 
 
+ADDRESS = "tcp://127.0.0.1:28332"
+
 class ZMQSubscriber:
     def __init__(self, socket, topic):
         self.sequence = 0
@@ -52,11 +54,10 @@ class ZMQTest (BitcoinTestFramework):
         # test fails if the publishing order changes.
         # Note that the publishing order is not defined in the documentation and
         # is subject to change.
-        address = "tcp://127.0.0.1:28332"
         self.zmq_context = zmq.Context()
         socket = self.zmq_context.socket(zmq.SUB)
         socket.set(zmq.RCVTIMEO, 60000)
-        socket.connect(address)
+        socket.connect(ADDRESS)
 
         # Subscribe to all available topics.
         self.hashblock = ZMQSubscriber(socket, b"hashblock")
@@ -67,7 +68,7 @@ class ZMQTest (BitcoinTestFramework):
         self.rawds = ZMQSubscriber(socket, b"rawds")
 
         self.extra_args = [
-            ["-zmqpub{}={}".format(sub.topic.decode(), address) for sub in [
+            ["-zmqpub{}={}".format(sub.topic.decode(), ADDRESS) for sub in [
                 self.hashblock, self.hashtx, self.rawblock, self.rawtx, self.hashds, self.rawds]],
             [],
         ]
@@ -122,6 +123,18 @@ class ZMQTest (BitcoinTestFramework):
         # Should receive the broadcasted raw transaction.
         hex = self.rawtx.receive()
         assert_equal(payment_txid, hash256_reversed(hex).hex())
+
+        self.log.info("Test the getzmqnotifications RPC")
+        assert_equal(self.nodes[0].getzmqnotifications(), [
+            {"type": "pubhashblock", "address": ADDRESS},
+            {"type": "pubhashds", "address": ADDRESS},
+            {"type": "pubhashtx", "address": ADDRESS},
+            {"type": "pubrawblock", "address": ADDRESS},
+            {"type": "pubrawds", "address": ADDRESS},
+            {"type": "pubrawtx", "address": ADDRESS},
+        ])
+
+        assert_equal(self.nodes[1].getzmqnotifications(), [])
 
         # Do a double-spend and verify that we got the double-spend tx notifications (hashds & rawds)
         self.log.info("Creating double-spend transactions")
