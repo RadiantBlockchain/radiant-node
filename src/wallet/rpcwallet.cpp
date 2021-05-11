@@ -4425,7 +4425,7 @@ static const ContextFreeRPCCommand commands[] = {
     { "wallet",             "setlabel",                     setlabel,                     {"address","label"} },
     { "wallet",             "settxfee",                     settxfee,                     {"amount"} },
     { "wallet",             "signmessage",                  signmessage,                  {"address","message"} },
-    { "wallet",             "signrawtransactionwithwallet", signrawtransactionwithwallet, {"hextring","prevtxs","sighashtype"} },
+    { "wallet",             "signrawtransactionwithwallet", signrawtransactionwithwallet, {"hexstring","prevtxs","sighashtype"} },
     { "wallet",             "unloadwallet",                 unloadwallet,                 {"wallet_name"} },
     { "wallet",             "walletcreatefundedpsbt",       walletcreatefundedpsbt,       {"inputs","outputs","locktime","options","bip32derivs"} },
     { "wallet",             "walletlock",                   walletlock,                   {} },
