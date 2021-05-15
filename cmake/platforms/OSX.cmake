@@ -2,7 +2,13 @@
 
 set(CMAKE_SYSTEM_NAME Darwin)
 set(CMAKE_SYSTEM_PROCESSOR x86_64)
-set(TOOLCHAIN_PREFIX ${CMAKE_SYSTEM_PROCESSOR}-apple-darwin16)
+
+# Use given TOOLCHAIN_PREFIX if specified
+if(CMAKE_TOOLCHAIN_PREFIX)
+  set(TOOLCHAIN_PREFIX ${CMAKE_TOOLCHAIN_PREFIX})
+else()
+  set(TOOLCHAIN_PREFIX ${CMAKE_SYSTEM_PROCESSOR}-apple-darwin16)
+endif()
 
 # On OSX, we use clang by default.
 set(CMAKE_C_COMPILER clang)

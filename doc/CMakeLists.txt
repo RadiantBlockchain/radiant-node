@@ -28,7 +28,7 @@ add_custom_target(doc-html
 )
 
 option(ENABLE_MAN "Enable manpages" ON)
-if(ENABLE_MAN)
+if(ENABLE_MAN AND BUILD_BITCOIN_DAEMON)
 	configure_file(
 		../cmake/utils/gen-doc-man-footer.sh.in
 		man/gen-doc-man-footer.sh
