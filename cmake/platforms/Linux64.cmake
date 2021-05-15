@@ -2,7 +2,13 @@
 
 set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_SYSTEM_PROCESSOR x86_64)
-set(TOOLCHAIN_PREFIX ${CMAKE_SYSTEM_PROCESSOR}-linux-gnu)
+
+# Use given TOOLCHAIN_PREFIX if specified
+if(CMAKE_TOOLCHAIN_PREFIX)
+  set(TOOLCHAIN_PREFIX ${CMAKE_TOOLCHAIN_PREFIX})
+else()
+  set(TOOLCHAIN_PREFIX ${CMAKE_SYSTEM_PROCESSOR}-linux-gnu)
+endif()
 
 # Cross compilers to use for C and C++
 set(CMAKE_C_COMPILER gcc)

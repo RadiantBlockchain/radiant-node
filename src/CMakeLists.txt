@@ -10,6 +10,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_VISIBILITY_PRESET hidden)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
+option(BUILD_BITCOIN_DAEMON "Build bitcoind" ON)
 option(BUILD_BITCOIN_WALLET "Activate the wallet functionality" ON)
 option(BUILD_BITCOIN_ZMQ "Activate the ZeroMQ functionalities" ON)
 option(BUILD_BITCOIN_SEEDER "Build bitcoin-seeder" ON)
@@ -20,6 +21,7 @@ option(BUILD_LIBBITCOINCONSENSUS "Build the bitcoinconsenus shared library" ON)
 option(ENABLE_BIP70 "Enable BIP70 (payment protocol) support in GUI" ON)
 option(ENABLE_HARDENING "Harden the executables" ON)
 option(ENABLE_REDUCE_EXPORTS "Reduce the amount of exported symbols" OFF)
+option(ENABLE_STATIC_LIBGCC "Statically link libgcc" OFF)
 option(ENABLE_STATIC_LIBSTDCXX "Statically link libstdc++" OFF)
 option(ENABLE_GLIBC_BACK_COMPAT "Enable Glibc compatibility features" OFF)
 option(ENABLE_QRCODE "Enable QR code display" ON)
@@ -116,6 +118,11 @@ if(ENABLE_REDUCE_EXPORTS)
 
 	# Also hide symbols from static libraries
 	add_linker_flags(-Wl,--exclude-libs,ALL)
+endif()
+
+# Enable statically linking libgcc
+if(ENABLE_STATIC_LIBGCC)
+	add_linker_flags(-static-libgcc)
 endif()
 
 # Enable statically linking libstdc++
@@ -632,15 +639,18 @@ if(BUILD_BITCOIN_TX)
 endif()
 
 # bitcoind
-add_executable(bitcoind bitcoind.cpp)
-target_link_libraries(bitcoind server)
-if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	target_sources(bitcoind PRIVATE bitcoind-res.rc)
-endif()
-add_to_symbols_check(bitcoind)
-add_to_security_check(bitcoind)
+if(BUILD_BITCOIN_DAEMON)
+	add_executable(bitcoind bitcoind.cpp)
+	target_link_libraries(bitcoind server)
+	if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+		target_sources(bitcoind PRIVATE bitcoind-res.rc)
+	endif()
 
-install_target(bitcoind)
+	add_to_symbols_check(bitcoind)
+	add_to_security_check(bitcoind)
+
+	install_target(bitcoind)
+endif()
 
 # Bitcoin-qt
 if(BUILD_BITCOIN_QT)
