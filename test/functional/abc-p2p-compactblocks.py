@@ -95,10 +95,6 @@ class FullBlockTest(BitcoinTestFramework):
         self.blocks = {}
         self.excessive_block_size = 16 * ONE_MEGABYTE
         self.extra_args = [['-whitelist=127.0.0.1',
-                            '-limitancestorcount=999999',
-                            '-limitancestorsize=999999',
-                            '-limitdescendantcount=999999',
-                            '-limitdescendantsize=999999',
                             '-maxmempool=99999',
                             '-blockmaxsize={}'.format(
                                 self.excessive_block_size),

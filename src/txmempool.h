@@ -23,7 +23,6 @@
 #include <boost/multi_index_container.hpp>
 #include <boost/signals2/signal.hpp>
 
-#include <atomic>
 #include <map>
 #include <memory>
 #include <optional>
@@ -104,22 +103,6 @@ class CTxMemPoolEntry {
     //! Track the height and time at which tx was final
     LockPoints lockPoints;
 
-    // NOTE:
-    // The below 4 members will stop being updated after Tachyon activation,
-    // and should be removed in the release after Tachyon is checkpointed.
-    //
-    // Information about descendants of this transaction that are in the
-    // mempool; if we remove this transaction we must remove all of these
-    // descendants as well.
-    //! number of descendant transactions
-    uint64_t nCountWithDescendants;
-    //! ... and size
-    uint64_t nSizeWithDescendants;
-    //! ... and total fees (all including us)
-    Amount nModFeesWithDescendants;
-    //! ... and sigop count
-    int64_t nSigOpCountWithDescendants;
-
     //! If not nullptr, this entry has an associated DoubleSpendProof.
     //! We use a DspIdPtr here to use less memory than a direct DspId would
     //! in the common case of no proof for this entry, while still keeping this
@@ -151,23 +134,11 @@ public:
     size_t DynamicMemoryUsage() const { return nUsageSize; }
     const LockPoints &GetLockPoints() const { return lockPoints; }
 
-    // Adjusts the descendant state. -- To be removed after tachyon
-    void UpdateDescendantState(int64_t modifySize, Amount modifyFee,
-                               int64_t modifyCount, int64_t modifySigOpCount);
-
     // Updates the fee delta used for mining priority score, and the
     // modified fees with descendants.
     void UpdateFeeDelta(Amount feeDelta);
     // Update the LockPoints after a reorg
     void UpdateLockPoints(const LockPoints &lp);
-
-    uint64_t GetCountWithDescendants() const { return nCountWithDescendants; }
-    uint64_t GetSizeWithDescendants() const { return nSizeWithDescendants; }
-    uint64_t GetVirtualSizeWithDescendants() const;
-    Amount GetModFeesWithDescendants() const { return nModFeesWithDescendants; }
-    int64_t GetSigOpCountWithDescendants() const {
-        return nSigOpCountWithDescendants;
-    }
 
     bool GetSpendsCoinbase() const { return spendsCoinbase; }
 
@@ -184,25 +155,6 @@ public:
 };
 
 // --- Helpers for modifying CTxMemPool::mapTx, which is a boost multi_index.
-
-// Remove after tachyon
-struct update_descendant_state {
-    update_descendant_state(int64_t _modifySize, Amount _modifyFee,
-                            int64_t _modifyCount, int64_t _modifySigOpCount)
-        : modifySize(_modifySize), modifyFee(_modifyFee),
-          modifyCount(_modifyCount), modifySigOpCount(_modifySigOpCount) {}
-
-    void operator()(CTxMemPoolEntry &e) {
-        e.UpdateDescendantState(modifySize, modifyFee, modifyCount,
-                                modifySigOpCount);
-    }
-
-private:
-    int64_t modifySize;
-    Amount modifyFee;
-    int64_t modifyCount;
-    int64_t modifySigOpCount;
-};
 
 struct update_fee_delta {
     explicit update_fee_delta(Amount _feeDelta) : feeDelta(_feeDelta) {}
@@ -346,9 +298,9 @@ enum class MemPoolRemovalReason {
  *
  * Computational limits:
  *
- * Updating all in-mempool ancestors of a newly added transaction before tachyon
- * activates can be slow. After tachyon, no bound exists on how many in-mempool
- * ancestors there may be.
+ * Updating of all in-mempool ancestors does not occur anymore in this codebase
+ * after the May 15th 2021 network upgrade.  As such, there is no bound on how
+ * many in-mempool ancestors of a tx there may be.
  */
 class CTxMemPool {
 private:
@@ -448,9 +400,6 @@ public:
     const setEntries &GetMemPoolParents(txiter entry) const
         EXCLUSIVE_LOCKS_REQUIRED(cs);
     const setEntries &GetMemPoolChildren(txiter entry) const
-        EXCLUSIVE_LOCKS_REQUIRED(cs);
-    /// Remove after tachyon; after tachyon activates this will be inaccurate
-    uint64_t CalculateDescendantMaximum(txiter entry) const
         EXCLUSIVE_LOCKS_REQUIRED(cs);
 
     /**
@@ -570,13 +519,11 @@ public:
 
     // addUnchecked must update state for all parents of a given transaction,
     // updating child links as necessary.
-    // Pre-tachyon: automatically calculates setAncestors, calls addUnchecked(entry, setAncestors)
-    // Post-tachyon: identical to just calling addUnchecked(entry, {})
-    // These 2 overloads should be collapsed down into 1 post-tachyon (just a single-argument version).
-    void addUnchecked(const CTxMemPoolEntry &entry)
-        EXCLUSIVE_LOCKS_REQUIRED(cs, cs_main);
-    void addUnchecked(const CTxMemPoolEntry &entry, const setEntries &setAncestors /* only used pre-tachyon */)
-        EXCLUSIVE_LOCKS_REQUIRED(cs, cs_main);
+    void addUnchecked(CTxMemPoolEntry &&entry) EXCLUSIVE_LOCKS_REQUIRED(cs, cs_main);
+    // This overload of addUnchecked is provided for convenience, but critical paths should use the above version.
+    void addUnchecked(const CTxMemPoolEntry &entry) EXCLUSIVE_LOCKS_REQUIRED(cs, cs_main) {
+        addUnchecked(CTxMemPoolEntry{entry});
+    }
 
     void removeRecursive(
         const CTransaction &tx,
@@ -631,20 +578,12 @@ public:
     /**
      * Try to calculate all in-mempool ancestors of entry.
      *  (these are all calculated including the tx itself)
-     *  limitAncestorCount = max number of ancestors
-     *  limitAncestorSize = max size of ancestors
-     *  limitDescendantCount = max number of descendants any ancestor can have
-     *  limitDescendantSize = max size of descendants any ancestor can have
-     *  errString = populated with error reason if any limits are hit
      * fSearchForParents = whether to search a tx's vin for in-mempool parents,
      * or look up parents from mapLinks. Must be true for entries not in the
-     * mempool
+     * mempool.
      */
-    bool CalculateMemPoolAncestors(
-        const CTxMemPoolEntry &entry, setEntries &setAncestors,
-        uint64_t limitAncestorCount, uint64_t limitAncestorSize,
-        uint64_t limitDescendantCount, uint64_t limitDescendantSize,
-        std::string &errString, bool fSearchForParents = true) const
+    void CalculateMemPoolAncestors(const CTxMemPoolEntry &entry, setEntries &setAncestors,
+                                   bool fSearchForParents = true) const
         EXCLUSIVE_LOCKS_REQUIRED(cs);
 
     /**
@@ -686,17 +625,6 @@ public:
      */
     void LimitSize(size_t limit, unsigned long age);
 
-    /**
-     * Calculate the ancestor and descendant count for the given transaction.
-     * The counts include the transaction itself.
-     *
-     * NOTE: Since we are removing the unconf. ancestor limits after tachyon,
-     *       this function's existence is a potential DoS. It should not be
-     *       called after tachyon since it relies on calculating quadratic
-     *       stats.
-     */
-    void GetTransactionAncestry_deprecated_slow(const TxId &txid, size_t &ancestors, size_t &descendants) const;
-
     /** @returns true if the mempool is fully loaded */
     bool IsLoaded() const;
 
@@ -730,19 +658,11 @@ public:
     boost::signals2::signal<void(CTransactionRef, MemPoolRemovalReason)>
         NotifyEntryRemoved;
 
-    /**
-     *  Tachyon activation latch. This is latched permanently to true in
-     *  AcceptToMemoryPool the first time a tx arrives and IsTachyonActivated()
-     *  returns true.  This should be removed after tachyon is checkpointed and
-     *  its mempool-accept/relay rules become retroactively permanent.
-     */
-    std::atomic_bool tachyonLatched{false};
-
 private:
     /**
      * Update parents of `it` to add/remove it as a child transaction (updates mapLinks).
      */
-    void UpdateParentsOf(bool add, txiter it, const setEntries *setAncestors = nullptr /* only used pre-tachyon */)
+    void UpdateParentsOf(bool add, txiter it)
         EXCLUSIVE_LOCKS_REQUIRED(cs);
     /**
      * For each transaction being removed, sever links between parents

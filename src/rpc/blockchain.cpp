@@ -589,10 +589,7 @@ static UniValue getmempoolancestors(const Config &config,
     }
 
     CTxMemPool::setEntries setAncestors;
-    uint64_t noLimit = std::numeric_limits<uint64_t>::max();
-    std::string dummy;
-    g_mempool.CalculateMemPoolAncestors(*it, setAncestors, noLimit, noLimit,
-                                        noLimit, noLimit, dummy, false);
+    g_mempool.CalculateMemPoolAncestors(*it, setAncestors, false);
 
     if (!fVerbose) {
         UniValue::Array ret;

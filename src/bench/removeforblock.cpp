@@ -56,13 +56,11 @@ static void benchRemoveForBlock(const Config& config, benchmark::State& state,
     assert(nTx > 0 && blockMB > 0);
 
     // save initial state
-    const bool origTachyonLatched = g_mempool.tachyonLatched.exchange(true);
     const auto origBlockMinTxFee = gArgs.GetArg("-blockmintxfee", "");
     gArgs.ForceSetArg("-blockmintxfee", "0");
 
     // undo above on scope end
-    const Defer d([&origTachyonLatched, &origBlockMinTxFee] {
-        g_mempool.tachyonLatched = origTachyonLatched;
+    const Defer d([&origBlockMinTxFee] {
         gArgs.ForceSetArg("-blockmintxfee", origBlockMinTxFee);
         g_mempool.clear();
     });
@@ -145,7 +143,6 @@ static void benchRemoveForBlock(const Config& config, benchmark::State& state,
         const auto &index = g_mempool.mapTx.get<entry_id>(); // iterate by entry id
         pools.emplace_back();
         auto &pool = pools.back();
-        pool.tachyonLatched = g_mempool.tachyonLatched.load();
         for (auto it = index.begin(); it != index.end(); ++it) {
             LOCK(pool.cs);
             pool.addUnchecked(*it);
