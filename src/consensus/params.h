@@ -43,8 +43,10 @@ struct Params {
     int phononHeight;
     /** Unix time used for MTP activation of 15 Nov 2020 12:00:00 UTC upgrade */
     int axionActivationTime;
-    /** Unix time used for tentative MTP activation of 15 May 2021 12:00:00 UTC upgrade */
-    int tachyonActivationTime;
+
+    /** Note: Unix time used for MTP activation of the 15 May 2021 12:00:00 UTC upgrade was 1621080000, but since
+     *  it was a relay-rules-only upgrade, so we no longer track this time for blockchain consensus. */
+
     /** Unix time used for tentative MTP activation of 15 May 2022 12:00:00 UTC upgrade */
     int64_t upgrade8ActivationTime;
     /** Default blocksize limit -- can be overridden with the -excessiveblocksize= command-line switch */

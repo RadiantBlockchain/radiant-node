@@ -39,9 +39,8 @@ bool IsPhononEnabled(const Consensus::Params &params,
 bool IsAxionEnabled(const Consensus::Params &params,
                     const CBlockIndex *pindexPrev);
 
-/** Check if May 15th, 2021 protocol upgrade has activated. */
-bool IsTachyonEnabled(const Consensus::Params &params,
-                      const CBlockIndex *pindexPrev);
+/** Note: May 15th, 2021 protocol upgrade was relay-only, and has no on-chain rules.
+ *  The function "IsTachyonEnabled" that used to live here has been removed. */
 
 /** Check if tentative May 15th, 2022 protocol upgrade has activated. */
 bool IsUpgrade8Enabled(const Consensus::Params &params, const CBlockIndex *pindexPrev);

@@ -91,16 +91,6 @@ bool IsAxionEnabled(const Consensus::Params &params,
            gArgs.GetArg("-axionactivationtime", params.axionActivationTime);
 }
 
-bool IsTachyonEnabled(const Consensus::Params &params,
-                      const CBlockIndex *pindexPrev) {
-    if (pindexPrev == nullptr) {
-        return false;
-    }
-
-    return pindexPrev->GetMedianTimePast() >=
-           gArgs.GetArg("-tachyonactivationtime", params.tachyonActivationTime);
-}
-
 bool IsUpgrade8Enabled(const Consensus::Params &params, const CBlockIndex *pindexPrev) {
     if (pindexPrev == nullptr) {
         return false;
