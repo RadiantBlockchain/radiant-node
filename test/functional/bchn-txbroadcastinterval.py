@@ -85,16 +85,11 @@ class TxBroadcastIntervalTest(BitcoinTestFramework):
         args = [
             ["-txbroadcastinterval={}".format(self.options.interval),
                 "-txbroadcastrate=1", "-excessiveblocksize=2000000",
-                "-blockmaxsize=2000000",
-                "-limitancestorcount={}".format(self.options.samplesize+1),
-                "-limitdescendantcount={}".format(self.options.samplesize+1)],
+                "-blockmaxsize=2000000"],
             ["-txbroadcastinterval=1",
                 "-txbroadcastrate=1", "-excessiveblocksize=2000000",
-                "-blockmaxsize=2000000",
-                "-limitancestorcount={}".format(self.options.samplesize+1),
-                "-limitdescendantcount={}".format(self.options.samplesize+1)],
-            ["-limitancestorcount={}".format(self.options.samplesize+1),
-                "-limitdescendantcount={}".format(self.options.samplesize+1)]
+                "-blockmaxsize=2000000"],
+            []
         ]
         self.extra_args = args
 

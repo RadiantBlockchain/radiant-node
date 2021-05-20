@@ -12,25 +12,17 @@ from decimal import Decimal
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import (
     assert_equal,
-    assert_raises_rpc_error,
     satoshi_round,
 )
 
-MAX_ANCESTORS = 50
-MAX_DESCENDANTS = 50
-
 
 class MempoolPackagesAdditionalTest(BitcoinTestFramework):
-    # This test tests mempool ancestor chain limits, which
-    # no longer are enforced after tachyon, so we need to
-    # force tachyon to activate in the distant future
-    TACHYON_FAR_FUTURE = f"-tachyonactivationtime={int(9e9)}"
 
     def set_test_params(self):
         self.num_nodes = 2
-        common_params = ["-maxorphantx=1000", self.TACHYON_FAR_FUTURE]
+        common_params = ["-maxorphantx=1000"]
         self.extra_args = [common_params,
-                           common_params + ["-limitancestorcount=5"]]
+                           common_params]
 
     def skip_test_if_missing_module(self):
         self.skip_if_no_wallet()
@@ -74,7 +66,8 @@ class MempoolPackagesAdditionalTest(BitcoinTestFramework):
         assert_equal(entry, mempool[txid])
 
         # Build 49 chained 1-input-one-output txs on top of the 50-output tx
-        # if we used all 50, we would exceed descendant limit in this loop!
+        # Pre-tachyon: If we used all 50, we would exceed descendant limit in this loop!
+        # Now: We may loop as much as we like until funds are exhausted (no ancestor limit).
         fanout_txid = [''] * 50
         fanout_sent_values = [0,] * 50
         for i in range(49):
@@ -90,13 +83,13 @@ class MempoolPackagesAdditionalTest(BitcoinTestFramework):
             entry = self.nodes[0].getmempoolentry(fanout_txid[i])
             assert_equal(entry, mempool[fanout_txid[i]])
 
-        # Adding one more transaction (using the 50th vout of the fat tx) fails due to descendant limit hit.
-        assert_raises_rpc_error(-26, "too-long-mempool-chain, too many descendants for tx {}".format(txid),
-                                self.chain_transaction, self.nodes[0], txid, 49, sent_value, fee, 1)
+        # Adding one more transaction (using the 50th vout of the fat tx) used to fail due to descendant limit hit.
+        # Now, it always succeeds.
+        self.chain_transaction(self.nodes[0], txid, 49, sent_value, fee, 1)
 
-        # Adding a descendent to one of the slim txs also fails.
-        assert_raises_rpc_error(-26, "too-long-mempool-chain, too many descendants for tx {}".format(txid),
-                                self.chain_transaction, self.nodes[0], fanout_txid[0], 0, fanout_sent_values[0], fee, 1)
+        # Adding a descendent to one of the slim txs used to also fail.
+        # Now, it always succeeds.
+        self.chain_transaction(self.nodes[0], fanout_txid[0], 0, fanout_sent_values[0], fee, 1)
 
         # clear mempool
         self.nodes[0].generate(1)

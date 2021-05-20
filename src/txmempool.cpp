@@ -30,14 +30,10 @@
 
 #include <algorithm>
 #include <functional>
-#include <limits>
 #include <optional>
 #include <stdexcept>
 #include <tuple>
 #include <utility>
-
-/// Used in various places in this file to signify "no limit" for CalculateMemPoolAncestors
-inline constexpr uint64_t nNoLimit = std::numeric_limits<uint64_t>::max();
 
 CTxMemPoolEntry::CTxMemPoolEntry(const CTransactionRef &_tx, const Amount _nFee,
                                  int64_t _nTime, unsigned int _entryHeight,
@@ -47,10 +43,6 @@ CTxMemPoolEntry::CTxMemPoolEntry(const CTransactionRef &_tx, const Amount _nFee,
       nUsageSize(RecursiveDynamicUsage(tx)), nTime(_nTime),
       entryHeight(_entryHeight), spendsCoinbase(_spendsCoinbase),
       sigOpCount(_sigOpCount), lockPoints(lp) {
-    nCountWithDescendants = 1;
-    nSizeWithDescendants = GetTxSize();
-    nSigOpCountWithDescendants = sigOpCount;
-    nModFeesWithDescendants = nFee;
 
     feeDelta = Amount::zero();
 }
@@ -59,16 +51,7 @@ size_t CTxMemPoolEntry::GetTxVirtualSize() const {
     return GetVirtualTransactionSize(nTxSize, sigOpCount);
 }
 
-// Remove after tachyon
-uint64_t CTxMemPoolEntry::GetVirtualSizeWithDescendants() const {
-    // note this is distinct from the sum of descendants' individual virtual
-    // sizes, and may be smaller.
-    return GetVirtualTransactionSize(nSizeWithDescendants,
-                                     nSigOpCountWithDescendants);
-}
-
 void CTxMemPoolEntry::UpdateFeeDelta(Amount newFeeDelta) {
-    nModFeesWithDescendants += newFeeDelta - feeDelta; // Remove after tachyon; this stat is unused after tachyon
     feeDelta = newFeeDelta;
 }
 
@@ -76,11 +59,8 @@ void CTxMemPoolEntry::UpdateLockPoints(const LockPoints &lp) {
     lockPoints = lp;
 }
 
-bool CTxMemPool::CalculateMemPoolAncestors(
-    const CTxMemPoolEntry &entry, setEntries &setAncestors,
-    uint64_t limitAncestorCount, uint64_t limitAncestorSize,
-    uint64_t limitDescendantCount, uint64_t limitDescendantSize,
-    std::string &errString, bool fSearchForParents /* = true */) const {
+void CTxMemPool::CalculateMemPoolAncestors(const CTxMemPoolEntry &entry, setEntries &setAncestors,
+                                           bool fSearchForParents /* = true */) const {
     setEntries parentHashes;
     const CTransaction &tx = entry.GetTx();
 
@@ -94,12 +74,6 @@ bool CTxMemPool::CalculateMemPoolAncestors(
                 continue;
             }
             parentHashes.insert(*piter);
-            if (parentHashes.size() + 1 > limitAncestorCount) {
-                errString =
-                    strprintf("too many unconfirmed parents [limit: %u]",
-                              limitAncestorCount);
-                return false;
-            }
         }
     } else {
         // If we're not searching for parents, we require this to be an entry in
@@ -117,63 +91,20 @@ bool CTxMemPool::CalculateMemPoolAncestors(
         parentHashes.erase(parentHashes.begin());
         totalSizeWithAncestors += stageit->GetTxSize();
 
-        if (stageit->GetSizeWithDescendants() + entry.GetTxSize() >
-            limitDescendantSize) {
-            errString = strprintf(
-                "exceeds descendant size limit for tx %s [limit: %u]",
-                stageit->GetTx().GetId().ToString(), limitDescendantSize);
-            return false;
-        }
-
-        if (stageit->GetCountWithDescendants() + 1 > limitDescendantCount) {
-            errString = strprintf("too many descendants for tx %s [limit: %u]",
-                                  stageit->GetTx().GetId().ToString(),
-                                  limitDescendantCount);
-            return false;
-        }
-
-        if (totalSizeWithAncestors > limitAncestorSize) {
-            errString = strprintf("exceeds ancestor size limit [limit: %u]",
-                                  limitAncestorSize);
-            return false;
-        }
-
         const setEntries &setMemPoolParents = GetMemPoolParents(stageit);
         for (txiter phash : setMemPoolParents) {
             // If this is a new ancestor, add it.
-            if (setAncestors.count(phash) == 0) {
+            if (!algo::contains(setAncestors, phash)) {
                 parentHashes.insert(phash);
-            }
-            if (parentHashes.size() + setAncestors.size() + 1 >
-                limitAncestorCount) {
-                errString =
-                    strprintf("too many unconfirmed ancestors [limit: %u]",
-                              limitAncestorCount);
-                return false;
             }
         }
     }
-
-    return true;
 }
 
-void CTxMemPool::UpdateParentsOf(bool add, txiter it, const setEntries *setAncestors) {
+void CTxMemPool::UpdateParentsOf(bool add, txiter it) {
     // add or remove this tx as a child of each parent
     for (txiter piter : GetMemPoolParents(it)) {
         UpdateChild(piter, it, add);
-    }
-
-    // Remove this after tachyon
-    if (setAncestors && !tachyonLatched) {
-        const int64_t updateCount = (add ? 1 : -1);
-        const int64_t updateSize = updateCount * it->GetTxSize();
-        const int64_t updateSigOpCount = updateCount * it->GetSigOpCount();
-        const Amount updateFee = updateCount * it->GetModifiedFee();
-        for (txiter ancestorIt : *setAncestors) {
-            mapTx.modify(ancestorIt,
-                         update_descendant_state(updateSize, updateFee, updateCount,
-                                                 updateSigOpCount));
-        }
     }
 }
 
@@ -185,29 +116,10 @@ void CTxMemPool::UpdateChildrenForRemoval(txiter it) {
 }
 
 void CTxMemPool::UpdateForRemoveFromMempool(const setEntries &entriesToRemove) {
-    if (!tachyonLatched) {
-        // remove this branch after tachyon
-        // slow quadratic branch, only for pre-activation compatibility
-        for (txiter removeIt : entriesToRemove) {
-            setEntries setAncestors;
-            const CTxMemPoolEntry &entry = *removeIt;
-            std::string dummy;
-            // Since this is a tx that is already in the mempool, we can call CMPA
-            // with fSearchForParents = false.  If the mempool is in a consistent
-            // state, then using true or false should both be correct, though false
-            // should be a bit faster.
-            CalculateMemPoolAncestors(entry, setAncestors, nNoLimit, nNoLimit,
-                                      nNoLimit, nNoLimit, dummy, false);
-            // Note that UpdateParentsOf severs the child links that point to
-            // removeIt in the entries for the parents of removeIt.
-            UpdateParentsOf(false, removeIt, &setAncestors);
-        }
-    } else {
-        for (txiter removeIt : entriesToRemove) {
-            // Note that UpdateParentsOf severs the child links that point to
-            // removeIt in the mapLinks entries for the parents of removeIt.
-            UpdateParentsOf(false, removeIt);
-        }
+    for (txiter removeIt : entriesToRemove) {
+        // Note that UpdateParentsOf severs the child links that point to
+        // removeIt in the mapLinks entries for the parents of removeIt.
+        UpdateParentsOf(false, removeIt);
     }
     // After updating all the parent links, we can now sever the link between
     // each transaction being removed and any mempool children (ie, update
@@ -215,19 +127,6 @@ void CTxMemPool::UpdateForRemoveFromMempool(const setEntries &entriesToRemove) {
     for (txiter removeIt : entriesToRemove) {
         UpdateChildrenForRemoval(removeIt);
     }
-}
-
-void CTxMemPoolEntry::UpdateDescendantState(int64_t modifySize,
-                                            Amount modifyFee,
-                                            int64_t modifyCount,
-                                            int64_t modifySigOpCount) {
-    nSizeWithDescendants += modifySize;
-    assert(int64_t(nSizeWithDescendants) > 0);
-    nModFeesWithDescendants += modifyFee;
-    nCountWithDescendants += modifyCount;
-    assert(int64_t(nCountWithDescendants) > 0);
-    nSigOpCountWithDescendants += modifySigOpCount;
-    assert(int64_t(nSigOpCountWithDescendants) >= 0);
 }
 
 CTxMemPool::CTxMemPool()
@@ -260,8 +159,7 @@ void CTxMemPool::AddTransactionsUpdated(unsigned int n) {
     nTransactionsUpdated += n;
 }
 
-void CTxMemPool::addUnchecked(const CTxMemPoolEntry &entryIn, const setEntries &setAncestors) {
-    CTxMemPoolEntry entry{entryIn};
+void CTxMemPool::addUnchecked(CTxMemPoolEntry &&entry) {
     // get a guaranteed unique id (in case tests re-use the same object)
     entry.SetEntryId(nextEntryId++);
 
@@ -303,7 +201,7 @@ void CTxMemPool::addUnchecked(const CTxMemPoolEntry &entryIn, const setEntries &
     for (const auto &pit : GetIterSet(setParentTransactions)) {
         UpdateParent(newit, pit, true);
     }
-    UpdateParentsOf(true, newit, tachyonLatched ? nullptr : &setAncestors);
+    UpdateParentsOf(true, newit);
 
     nTransactionsUpdated++;
     totalTxSize += entry.GetTxSize();
@@ -354,7 +252,7 @@ void CTxMemPool::removeUnchecked(txiter it, MemPoolRemovalReason reason) {
 void CTxMemPool::CalculateDescendants(txiter entryit,
                                       setEntries &setDescendants) const {
     setEntries stage;
-    if (setDescendants.count(entryit) == 0) {
+    if (!algo::contains(setDescendants, entryit)) {
         stage.insert(entryit);
     }
     // Traverse down the children of entry, only adding children that are not
@@ -547,9 +445,7 @@ void CTxMemPool::check(const CCoinsViewCache *pcoins) const {
         assert(setParentCheck == GetMemPoolParents(it));
         // Verify ancestor state is correct.
         setEntries setAncestors;
-        std::string dummy;
-        const bool ok = CalculateMemPoolAncestors(*it, setAncestors, nNoLimit, nNoLimit, nNoLimit, nNoLimit, dummy);
-        assert(ok);
+        CalculateMemPoolAncestors(*it, setAncestors);
         // all ancestors should have entryId < this tx's entryId
         for (const auto &ancestor : setAncestors)
             assert(ancestor->GetEntryId() < it->GetEntryId());
@@ -571,14 +467,6 @@ void CTxMemPool::check(const CCoinsViewCache *pcoins) const {
             }
         }
         assert(setChildrenCheck == GetMemPoolChildren(it));
-        if (!tachyonLatched) { //! Remove after tachyon
-            // Also check to make sure size is greater than sum with immediate
-            // children. Just a sanity check, not definitive that this calc is
-            // correct...
-            assert(it->GetSizeWithDescendants() >= child_sizes + it->GetTxSize());
-            assert(it->GetSigOpCountWithDescendants() >=
-                   child_sigop_counts + it->GetSigOpCount());
-        }
 
         if (fDependsWait) {
             waitingOnDependants.push_back(&(*it));
@@ -696,17 +584,6 @@ void CTxMemPool::PrioritiseTransaction(const TxId &txid,
         txiter it = mapTx.find(txid);
         if (it != mapTx.end()) {
             mapTx.modify(it, update_fee_delta(delta));
-            if (!tachyonLatched) { // Remove after tachyon
-                // Now update all ancestors' modified fees with descendants
-                setEntries setAncestors;
-                std::string dummy;
-                CalculateMemPoolAncestors(*it, setAncestors, nNoLimit, nNoLimit,
-                                          nNoLimit, nNoLimit, dummy, false);
-                for (txiter ancestorIt : setAncestors) {
-                    mapTx.modify(ancestorIt,
-                                 update_descendant_state(0, nFeeDelta, 0, 0));
-                }
-            }
             ++nTransactionsUpdated;
         }
     }
@@ -833,16 +710,6 @@ void CTxMemPool::LimitSize(size_t limit, unsigned long age) {
     for (const COutPoint &removed : vNoSpendsRemaining) {
         pcoinsTip->Uncache(removed);
     }
-}
-
-void CTxMemPool::addUnchecked(const CTxMemPoolEntry &entry) {
-    setEntries setAncestors;
-    if (!tachyonLatched) {
-        std::string dummy;
-        CalculateMemPoolAncestors(entry, setAncestors, nNoLimit, nNoLimit, nNoLimit,
-                                  nNoLimit, dummy);
-    }
-    return addUnchecked(entry, setAncestors);
 }
 
 // NB: The pointer type is only used for template overload selection and never dereferenced so this is safe.
@@ -1189,46 +1056,6 @@ void CTxMemPool::TrimToSize(size_t sizelimit,
                  "Removed %u txn, rolling minimum fee bumped to %s\n",
                  nTxnRemoved, maxFeeRateRemoved.ToString());
     }
-}
-
-/// Remove after tachyon; after tachyon activates this will be inaccurate
-uint64_t CTxMemPool::CalculateDescendantMaximum(txiter entry) const {
-    // find parent with highest descendant count
-    std::vector<txiter> candidates;
-    setEntries counted;
-    candidates.push_back(entry);
-    uint64_t maximum = 0;
-    while (candidates.size()) {
-        txiter candidate = candidates.back();
-        candidates.pop_back();
-        if (!counted.insert(candidate).second) {
-            continue;
-        }
-        const setEntries &parents = GetMemPoolParents(candidate);
-        if (parents.size() == 0) {
-            maximum = std::max(maximum, candidate->GetCountWithDescendants());
-        } else {
-            for (txiter i : parents) {
-                candidates.push_back(i);
-            }
-        }
-    }
-    return maximum;
-}
-
-void CTxMemPool::GetTransactionAncestry_deprecated_slow(const TxId &txId, size_t &ancestors,
-                                                        size_t &descendants) const {
-    ancestors = descendants = 0;
-    LOCK(cs);
-    auto it = mapTx.find(txId);
-    if (it == mapTx.end())
-        return;
-    const auto &entry = *it;
-    CTxMemPool::setEntries setAncestors;
-    std::string errString;
-    CalculateMemPoolAncestors(entry, setAncestors, nNoLimit, nNoLimit, nNoLimit, nNoLimit, errString, false);
-    ancestors = setAncestors.size() + 1 /* add this tx */;
-    descendants = CalculateDescendantMaximum(it);
 }
 
 bool CTxMemPool::IsLoaded() const {

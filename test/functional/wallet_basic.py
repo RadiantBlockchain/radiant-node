@@ -22,15 +22,10 @@ from test_framework.util import (
 
 class WalletTest(BitcoinTestFramework):
 
-    # This test tests mempool ancestor chain limits, which
-    # no longer are enforced after tachyon, so we need to
-    # force tachyon to activate in the distant future
-    TACHYON_FAR_FUTURE = f"-tachyonactivationtime={int(9e9)}"
-
     def set_test_params(self):
         self.num_nodes = 4
         self.extra_args = [
-            ["-acceptnonstdtxn=1", self.TACHYON_FAR_FUTURE],
+            ["-acceptnonstdtxn=1"],
         ] * self.num_nodes
         self.setup_clean_chain = True
 
@@ -458,17 +453,16 @@ class WalletTest(BitcoinTestFramework):
             # disabled until issue is fixed: https://github.com/bitcoin/bitcoin/issues/7463
             # '-salvagewallet',
         ]
-        chainlimit = 6
         for m in maintenance:
             self.log.info("check " + m)
             self.stop_nodes()
             # set lower ancestor limit for later
             self.start_node(
-                0, self.extra_args[0] + [m, "-limitancestorcount=" + str(chainlimit)])
+                0, self.extra_args[0] + [m])
             self.start_node(
-                1, self.extra_args[1] + [m, "-limitancestorcount=" + str(chainlimit)])
+                1, self.extra_args[1] + [m])
             self.start_node(
-                2, self.extra_args[2] + [m, "-limitancestorcount=" + str(chainlimit)])
+                2, self.extra_args[2] + [m])
             if m == '-reindex':
                 # reindex will leave rpc warm up "early"; Wait for it to finish
                 wait_until(lambda: [block_count] * 3 ==
@@ -484,7 +478,9 @@ class WalletTest(BitcoinTestFramework):
         assert_equal(len(self.nodes[0].listsinceblock(
             blocks[1])["transactions"]), 0)
 
-        # ==Check that wallet prefers to use coins that don't exceed mempool li
+        # ==Check that wallet no longer enforces any chain limit
+
+        chainlimit = 50  # This was the old default chain limit of 50
 
         # Get all non-zero utxos together
         chain_addrs = [self.nodes[0].getnewaddress(
@@ -513,36 +509,23 @@ class WalletTest(BitcoinTestFramework):
         assert_equal(self.nodes[0].getmempoolinfo()['size'], chainlimit * 2)
         assert_equal(len(txid_list), chainlimit * 2)
 
-        # Without walletrejectlongchains, we will still generate a txid
-        # The tx will be stored in the wallet but not accepted to the mempool
+        # Check that the extra tx made it to mempool (no unconf. chain limit enforced)
         extra_txid = self.nodes[0].sendtoaddress(
             sending_addr, Decimal('0.0001'))
-        assert extra_txid not in self.nodes[0].getrawmempool()
+        assert extra_txid in self.nodes[0].getrawmempool()
         assert extra_txid in [tx["txid"]
                               for tx in self.nodes[0].listtransactions()]
-        self.nodes[0].abandontransaction(extra_txid)
         total_txs = len(self.nodes[0].listtransactions("*", 99999))
 
-        # Try with walletrejectlongchains
-        # Double chain limit but require combining inputs, so we pass
-        # SelectCoinsMinConf
-        self.stop_node(0)
-        self.start_node(0,
-                        self.extra_args[0] + ["-walletrejectlongchains",
-                                              "-limitancestorcount=" + str(2 * chainlimit)])
-
         # wait until the wallet has submitted all transactions to the mempool
-        wait_until(lambda: len(self.nodes[0].getrawmempool()) == chainlimit * 2)
+        wait_until(lambda: len(self.nodes[0].getrawmempool()) == chainlimit * 2 + 1)
 
         node0_balance = self.nodes[0].getbalance()
-        # With walletrejectlongchains we will not create the tx and store it in
-        # our wallet.
-        assert_raises_rpc_error(-4, "Transaction has too long of a mempool chain",
-                                self.nodes[0].sendtoaddress, sending_addr, node0_balance - Decimal('0.01'))
+        # Send a tx past the old limit -- it should send just fine
+        self.nodes[0].sendtoaddress(sending_addr, node0_balance - Decimal('0.01'))
 
-        # Verify nothing new in wallet
-        assert_equal(total_txs, len(
-            self.nodes[0].listtransactions("*", 99999)))
+        # Verify something new in wallet
+        assert_equal(total_txs + 1, len(self.nodes[0].listtransactions("*", 99999)))
 
         # Test getaddressinfo on external address. Note that these addresses
         # are taken from disablewallet.py
@@ -562,7 +545,7 @@ class WalletTest(BitcoinTestFramework):
         # Test getaddressinfo 'ischange' field on change address.
         self.nodes[0].generate(1)
         destination = self.nodes[1].getnewaddress()
-        txid = self.nodes[0].sendtoaddress(destination, 0.123)
+        txid = self.nodes[0].sendtoaddress(destination, 0.00123)
         tx = self.nodes[0].decoderawtransaction(
             self.nodes[0].getrawtransaction(txid))
         output_addresses = [vout['scriptPubKey']['addresses'][0]

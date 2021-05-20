@@ -20,111 +20,6 @@
 
 BOOST_FIXTURE_TEST_SUITE(mempool_tests, TestingSetup)
 
-
-// this test should be removed after tachyon is checkpointed
-BOOST_AUTO_TEST_CASE(TestPreAndPostTachyonAccounting) {
-    for (const bool tachyon : {false, true}) {
-        CTxMemPool testPool;
-        testPool.tachyonLatched = tachyon; // test pre-tachyon versus post-tachyon behavior
-        LOCK2(cs_main, testPool.cs);
-        TestMemPoolEntryHelper entry;
-        CMutableTransaction parentOfAll;
-
-        // Vector to track unspent outputs that are used to construct txs
-        std::vector<CTxIn> outpoints;
-        const size_t maxOutputs = 3;
-
-        // Construct a parent for the rest of the chain
-        parentOfAll.vin.resize(1);
-        parentOfAll.vin[0].scriptSig = CScript();
-        // Give us a couple outpoints so we can spend them
-        for (size_t i = 0; i < maxOutputs; i++) {
-            parentOfAll.vout.emplace_back(10 * SATOSHI, CScript() << OP_TRUE);
-        }
-        TxId parentOfAllId = parentOfAll.GetId();
-        testPool.addUnchecked(entry.SigOpCount(0).FromTx(parentOfAll));
-
-        // Add some outpoints to the tracking vector
-        for (size_t i = 0; i < maxOutputs; i++) {
-            outpoints.emplace_back(COutPoint(parentOfAllId, i));
-        }
-
-        Amount totalFee = Amount::zero();
-        size_t totalSize = CTransaction(parentOfAll).GetTotalSize();
-        size_t totalVirtualSize = totalSize;
-        int64_t totalSigOpCount = 0;
-
-        // Generate 100 transactions
-        for (size_t totalTransactions = 0; totalTransactions < 100;
-             totalTransactions++) {
-            CMutableTransaction tx;
-
-            // Consume random inputs, but make sure we don't consume more than
-            // available
-            for (size_t input = std::min(InsecureRandRange(maxOutputs) + 1,
-                                         uint64_t(outpoints.size()));
-                 input > 0; input--) {
-                std::swap(outpoints[InsecureRandRange(outpoints.size())],
-                          outpoints.back());
-                tx.vin.emplace_back(outpoints.back());
-                outpoints.pop_back();
-            }
-
-            // Produce random number of outputs
-            for (size_t output = InsecureRandRange(maxOutputs) + 1; output > 0;
-                 output--) {
-                tx.vout.emplace_back(10 * SATOSHI, CScript() << OP_TRUE);
-            }
-
-            TxId curId = tx.GetId();
-
-            // Record the outputs
-            for (size_t output = tx.vout.size(); output > 0; output--) {
-                outpoints.emplace_back(COutPoint(curId, output));
-            }
-
-            const Amount randFee = int64_t(InsecureRandRange(300)) * SATOSHI;
-            const int randSigOpCount = InsecureRandRange(5);
-
-            testPool.addUnchecked(
-                entry.Fee(randFee).SigOpCount(randSigOpCount).FromTx(tx));
-
-            // Calculate overall values
-            totalFee += randFee;
-            const auto txSize = CTransaction(tx).GetTotalSize();
-            totalSize += txSize;
-            const auto txVSize = GetVirtualTransactionSize(CTransaction(tx).GetTotalSize(), randSigOpCount);
-            totalVirtualSize += txVSize;
-            totalSigOpCount += randSigOpCount;
-            const CTxMemPoolEntry &parentEntry = *testPool.mapTx.find(parentOfAllId);
-
-            uint64_t totalVirtualSize_strict =
-                GetVirtualTransactionSize(totalSize, totalSigOpCount);
-
-            if (!tachyon) {
-                BOOST_CHECK_EQUAL(parentEntry.GetCountWithDescendants(),
-                                  testPool.mapTx.size());
-                BOOST_CHECK_EQUAL(parentEntry.GetSizeWithDescendants(), totalSize);
-                BOOST_CHECK_EQUAL(parentEntry.GetVirtualSizeWithDescendants(),
-                                  totalVirtualSize_strict);
-                BOOST_CHECK_EQUAL(parentEntry.GetModFeesWithDescendants(), totalFee);
-                BOOST_CHECK_EQUAL(parentEntry.GetSigOpCountWithDescendants(),
-                                  totalSigOpCount);
-            } else {
-                // with tachyon latched, we stop tracking these -- they stay at their defaults
-                BOOST_CHECK_EQUAL(parentEntry.GetCountWithDescendants(), 1);
-                BOOST_CHECK_EQUAL(parentEntry.GetSizeWithDescendants(), parentEntry.GetTxSize());
-                BOOST_CHECK_EQUAL(parentEntry.GetVirtualSizeWithDescendants(), parentEntry.GetTxVirtualSize());
-                BOOST_CHECK_EQUAL(parentEntry.GetModFeesWithDescendants(), parentEntry.GetModifiedFee());
-                BOOST_CHECK_EQUAL(parentEntry.GetSigOpCount(), 0);
-                BOOST_CHECK_EQUAL(parentEntry.GetSigOpCountWithDescendants(), 0);
-            }
-            // Verify that Tachyon activation status didn't accidentally change during the test.
-            BOOST_CHECK_EQUAL(testPool.tachyonLatched, tachyon);
-        }
-    }
-}
-
 BOOST_AUTO_TEST_CASE(MempoolRemoveTest) {
     // Test CTxMemPool::remove functionality
 
@@ -610,10 +505,53 @@ make_tx(std::vector<Amount> &&output_values,
     return MakeTransactionRef(tx);
 }
 
+struct TestMemPoolWithAncestryChecker : CTxMemPool
+{
+    uint64_t CalculateDescendantMaximum(txiter entry) const EXCLUSIVE_LOCKS_REQUIRED(cs) {
+        // find parent with highest descendant count
+        std::vector<txiter> candidates;
+        setEntries counted;
+        candidates.push_back(entry);
+        uint64_t maximum = 0;
+        while (candidates.size()) {
+            txiter candidate = candidates.back();
+            candidates.pop_back();
+            if (!counted.insert(candidate).second) {
+                continue;
+            }
+            const setEntries &parents = GetMemPoolParents(candidate);
+            if (parents.size() == 0) {
+                setEntries descendants;
+                CalculateDescendants(candidate, descendants);
+                maximum = std::max(maximum, uint64_t{descendants.size()});
+            } else {
+                for (txiter i : parents) {
+                    candidates.push_back(i);
+                }
+            }
+        }
+        return maximum;
+    }
+
+    void GetTransactionAncestry_deprecated_slow(const TxId &txId, size_t &ancestors, size_t &descendants) const
+    EXCLUSIVE_LOCKS_REQUIRED(cs) {
+        ancestors = descendants = 0;
+        auto it = mapTx.find(txId);
+        if (it == mapTx.end())
+            return;
+        const auto &entry = *it;
+        CTxMemPool::setEntries setAncestors;
+        std::string errString;
+        CalculateMemPoolAncestors(entry, setAncestors, false);
+        ancestors = setAncestors.size() + 1 /* add this tx */;
+        descendants = CalculateDescendantMaximum(it);
+    }
+};
+
 BOOST_AUTO_TEST_CASE(MempoolAncestryTests) {
     size_t ancestors, descendants;
 
-    CTxMemPool pool;
+    TestMemPoolWithAncestryChecker pool;
     LOCK2(cs_main, pool.cs);
     TestMemPoolEntryHelper entry;
 

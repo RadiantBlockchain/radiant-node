@@ -10,28 +10,22 @@ from decimal import Decimal
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import (
     assert_equal,
-    assert_raises_rpc_error,
     satoshi_round,
     sync_blocks,
     sync_mempools,
 )
 
-MAX_ANCESTORS = 50
-MAX_DESCENDANTS = 50
+OLD_MAX_ANCESTORS = 50
+OLD_MAX_DESCENDANTS = 50
 
 
 class MempoolPackagesTest(BitcoinTestFramework):
 
-    # This test tests mempool ancestor chain limits, which
-    # no longer are enforced after tachyon, so we need to
-    # force tachyon to activate in the distant future
-    TACHYON_FAR_FUTURE = f"-tachyonactivationtime={int(9e9)}"
-
     def set_test_params(self):
         self.num_nodes = 2
-        common_params = ["-maxorphantx=1000", self.TACHYON_FAR_FUTURE]
+        common_params = ["-maxorphantx=1000"]
         self.extra_args = [common_params,
-                           common_params + ["-limitancestorcount=5"]]
+                           common_params]
 
     def skip_test_if_missing_module(self):
         self.skip_if_no_wallet()
@@ -62,9 +56,9 @@ class MempoolPackagesTest(BitcoinTestFramework):
         value = utxo[0]['amount']
 
         fee = Decimal("0.0001")
-        # MAX_ANCESTORS transactions off a confirmed tx should be fine
+        # OLD_MAX_ANCESTORS transactions off a confirmed tx should be fine
         chain = []
-        for i in range(MAX_ANCESTORS):
+        for i in range(OLD_MAX_ANCESTORS):
             (txid, sent_value) = self.chain_transaction(
                 self.nodes[0], txid, 0, value, fee, 1)
             value = sent_value
@@ -73,7 +67,7 @@ class MempoolPackagesTest(BitcoinTestFramework):
         # Check mempool has MAX_ANCESTORS transactions in it, and descendant and ancestor
         # count and fees should look correct
         mempool = self.nodes[0].getrawmempool(True)
-        assert_equal(len(mempool), MAX_ANCESTORS)
+        assert_equal(len(mempool), OLD_MAX_ANCESTORS)
 
         # Check that some of the keys we expect exist
         for txdict in mempool.values():
@@ -130,9 +124,8 @@ class MempoolPackagesTest(BitcoinTestFramework):
             assert_equal(mempool[x], v_descendants[x])
         assert chain[0] not in v_descendants.keys()
 
-        # Adding one more transaction on to the chain should fail.
-        assert_raises_rpc_error(-26, "too-long-mempool-chain",
-                                self.chain_transaction, self.nodes[0], txid, vout, value, fee, 1)
+        # Post-tachyon: Adding one more transaction on to the chain no longer fails
+        self.chain_transaction(self.nodes[0], txid, vout, value, fee, 1)
 
         # Check that prioritising a tx before it's added to the mempool works
         # First clear the mempool by mining a block.
@@ -171,9 +164,9 @@ class MempoolPackagesTest(BitcoinTestFramework):
             transaction_package.append(
                 {'txid': txid, 'vout': i, 'amount': sent_value})
 
-        # Sign and send up to MAX_DESCENDANT transactions chained off the
+        # Sign and send up to OLD_MAX_DESCENDANT transactions chained off the
         # parent tx
-        for i in range(MAX_DESCENDANTS - 1):
+        for i in range(OLD_MAX_DESCENDANTS - 1):
             utxo = transaction_package.pop(0)
             (txid, sent_value) = self.chain_transaction(
                 self.nodes[0], utxo['txid'], utxo['vout'], utxo['amount'], fee, 10)
@@ -190,10 +183,9 @@ class MempoolPackagesTest(BitcoinTestFramework):
         for child in tx_children:
             assert_equal(mempool[child]['depends'], [parent_transaction])
 
-        # Sending one more chained transaction will fail
+        # Post-tachyon: Sending one more chained transaction will succeed
         utxo = transaction_package.pop(0)
-        assert_raises_rpc_error(-26, "too-long-mempool-chain", self.chain_transaction,
-                                self.nodes[0], utxo['txid'], utxo['vout'], utxo['amount'], fee, 10)
+        self.chain_transaction(self.nodes[0], utxo['txid'], utxo['vout'], utxo['amount'], fee, 10)
 
         # TODO: check that node1's mempool is as expected
 

@@ -3406,34 +3406,6 @@ CreateTransactionResult CWallet::CreateTransaction(
         }
     }
 
-    // After tachyon this option and this limitation will no longer exist
-    if (!::g_mempool.tachyonLatched
-            && gArgs.GetBoolArg("-walletrejectlongchains", DEFAULT_WALLET_REJECT_LONG_CHAINS)) {
-        // Lastly, ensure this tx will pass the mempool's chain limits.
-        LockPoints lp;
-        CTxMemPoolEntry entry(tx, Amount::zero(), 0, 0, false, 0, lp);
-        CTxMemPool::setEntries setAncestors;
-        size_t nLimitAncestors =
-            gArgs.GetArg("-limitancestorcount", DEFAULT_ANCESTOR_LIMIT);
-        size_t nLimitAncestorSize =
-            gArgs.GetArg("-limitancestorsize", DEFAULT_ANCESTOR_SIZE_LIMIT) *
-            1000;
-        size_t nLimitDescendants =
-            gArgs.GetArg("-limitdescendantcount", DEFAULT_DESCENDANT_LIMIT);
-        size_t nLimitDescendantSize =
-            gArgs.GetArg("-limitdescendantsize",
-                         DEFAULT_DESCENDANT_SIZE_LIMIT) *
-            1000;
-        std::string errString;
-        LOCK(::g_mempool.cs);
-        if (!g_mempool.CalculateMemPoolAncestors(
-                entry, setAncestors, nLimitAncestors, nLimitAncestorSize,
-                nLimitDescendants, nLimitDescendantSize, errString)) {
-            strFailReason = _("Transaction has too long of a mempool chain");
-            return CreateTransactionResult::CT_ERROR;
-        }
-    }
-
     return CreateTransactionResult::CT_OK;
 }
 
@@ -4924,13 +4896,9 @@ CWallet::GroupOutputs(const std::vector<COutput> &outputs,
         if (output.fSpendable) {
             CInputCoin input_coin = output.GetInputCoin();
 
-            // deprecated -- after activation these 2 stats should always just be 0 since these stat becomes irrelevant
+            // deprecated -- after tachyon these 2 stats will always just be 0 since these stats become irrelevant
             // at that point.
             size_t ancestors{}, descendants{};
-            if (!g_mempool.tachyonLatched) {
-                // do not call this after activation -- it is slow for unlimited ancestors
-                g_mempool.GetTransactionAncestry_deprecated_slow(output.tx->GetId(), ancestors, descendants);
-            }
 
             if (!single_coin &&
                 ExtractDestination(output.tx->tx->vout[output.i].scriptPubKey,
