@@ -134,8 +134,8 @@ public:
         // Nov 15, 2020 12:00:00 UTC protocol upgrade
         consensus.axionActivationTime = 1605441600;
 
-        // May 15, 2021 12:00:00 UTC protocol upgrade
-        consensus.tachyonActivationTime = 1621080000;
+        // May 15, 2021 12:00:00 UTC protocol upgrade was 1621080000, but since this upgrade was for relay rules only,
+        // we do not track this time (since it does not apply at all to the blockchain itself).
 
         // May 15, 2022 12:00:00 UTC tentative protocol upgrade
         consensus.upgrade8ActivationTime = 1652616000;
@@ -345,10 +345,6 @@ public:
         // Nov 15, 2020 12:00:00 UTC protocol upgrade
         consensus.axionActivationTime = 1605441600;
 
-        // May 15, 2021 12:00:00 UTC tentative protocol upgrade
-        // (always active on test networks)
-        consensus.tachyonActivationTime = 0;
-
         // May 15, 2022 12:00:00 UTC tentative protocol upgrade
         consensus.upgrade8ActivationTime = 1652616000;
 
@@ -519,10 +515,6 @@ public:
         // Nov 15, 2020 12:00:00 UTC protocol upgrade
         consensus.axionActivationTime = 1605441600;
 
-        // May 15, 2021 12:00:00 UTC tentative protocol upgrade
-        // (always active on test networks)
-        consensus.tachyonActivationTime = 0;
-
         // May 15, 2022 12:00:00 UTC tentative protocol upgrade
         consensus.upgrade8ActivationTime = 1652616000;
 
@@ -666,10 +658,6 @@ public:
         // Nov 15, 2020 12:00:00 UTC protocol upgrade
         consensus.axionActivationTime = 1605441600;
 
-        // May 15, 2021 12:00:00 UTC tentative protocol upgrade
-        // (always active on test networks)
-        consensus.tachyonActivationTime = 0;
-
         // May 15, 2022 12:00:00 UTC tentative protocol upgrade
         consensus.upgrade8ActivationTime = 1652616000;
 
@@ -796,10 +784,6 @@ public:
 
         // Nov 15, 2020 12:00:00 UTC protocol upgrade
         consensus.axionActivationTime = 1605441600;
-
-        // May 15, 2021 12:00:00 UTC tentative protocol upgrade
-        // (always active on test networks)
-        consensus.tachyonActivationTime = 0;
 
         // May 15, 2022 12:00:00 UTC tentative protocol upgrade
         consensus.upgrade8ActivationTime = 1652616000;
