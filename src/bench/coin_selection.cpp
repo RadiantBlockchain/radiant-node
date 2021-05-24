@@ -51,10 +51,10 @@ static void CoinSelection(benchmark::State &state) {
         COutput output(wtx.get(), 0 /* iIn */, 6 * 24 /* nDepthIn */,
                        true /* spendable */, true /* solvable */,
                        true /* safe */);
-        groups.emplace_back(output.GetInputCoin(), 6, false, 0, 0);
+        groups.emplace_back(output.GetInputCoin(), 6, false);
     }
 
-    const CoinEligibilityFilter filter_standard(1, 6, 0);
+    const CoinEligibilityFilter filter_standard(1, 6);
     const CoinSelectionParams coin_selection_params(
         true, 34, 148, CFeeRate(Amount::zero()), 0);
     while (state.KeepRunning()) {
@@ -81,9 +81,7 @@ static void add_coin(const CWallet &wallet, const Amount nValue, int nInput,
     tx.vout[nInput].nValue = nValue;
     auto wtx =
         std::make_unique<CWalletTx>(&wallet, MakeTransactionRef(std::move(tx)));
-    set.emplace_back(
-        COutput(wtx.get(), nInput, 0, true, true, true).GetInputCoin(), 0, true,
-        0, 0);
+    set.emplace_back(COutput(wtx.get(), nInput, 0, true, true, true).GetInputCoin(), 0, true);
     wtxn.emplace_back(std::move(wtx));
 }
 

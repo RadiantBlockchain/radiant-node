@@ -80,17 +80,9 @@ public:
 struct CoinEligibilityFilter {
     const int conf_mine;
     const int conf_theirs;
-    const uint64_t max_ancestors;
-    const uint64_t max_descendants;
 
-    CoinEligibilityFilter(int conf_mine_, int conf_theirs_,
-                          uint64_t max_ancestors_)
-        : conf_mine(conf_mine_), conf_theirs(conf_theirs_),
-          max_ancestors(max_ancestors_), max_descendants(max_ancestors_) {}
-    CoinEligibilityFilter(int conf_mine_, int conf_theirs_,
-                          uint64_t max_ancestors_, uint64_t max_descendants_)
-        : conf_mine(conf_mine_), conf_theirs(conf_theirs_),
-          max_ancestors(max_ancestors_), max_descendants(max_descendants_) {}
+    CoinEligibilityFilter(int conf_mine_, int conf_theirs_)
+        : conf_mine(conf_mine_), conf_theirs(conf_theirs_) {}
 };
 
 struct OutputGroup {
@@ -98,27 +90,20 @@ struct OutputGroup {
     bool m_from_me{true};
     Amount m_value = Amount::zero();
     int m_depth{999};
-    size_t m_ancestors{0}; ///< deprecated
-    size_t m_descendants{0}; ///< deprecated
     Amount effective_value = Amount::zero();
     Amount fee = Amount::zero();
     Amount long_term_fee = Amount::zero();
 
     OutputGroup() {}
-    OutputGroup(std::vector<CInputCoin> &&outputs, bool from_me, Amount value,
-                int depth, size_t ancestors, size_t descendants)
-        : m_outputs(std::move(outputs)), m_from_me(from_me), m_value(value),
-          m_depth(depth), m_ancestors(ancestors), m_descendants(descendants) {}
-    OutputGroup(const CInputCoin &output, int depth, bool from_me,
-                size_t ancestors, size_t descendants)
+    OutputGroup(std::vector<CInputCoin> &&outputs, bool from_me, Amount value, int depth)
+        : m_outputs(std::move(outputs)), m_from_me(from_me), m_value(value), m_depth(depth) {}
+    OutputGroup(const CInputCoin &output, int depth, bool from_me)
         : OutputGroup() {
-        Insert(output, depth, from_me, ancestors, descendants);
+        Insert(output, depth, from_me);
     }
-    void Insert(const CInputCoin &output, int depth, bool from_me,
-                size_t ancestors, size_t descendants);
+    void Insert(const CInputCoin &output, int depth, bool from_me);
     std::vector<CInputCoin>::iterator Discard(const CInputCoin &output);
-    bool
-    EligibleForSpending(const CoinEligibilityFilter &eligibility_filter) const;
+    bool EligibleForSpending(const CoinEligibilityFilter &eligibility_filter) const;
 };
 
 bool SelectCoinsBnB(std::vector<OutputGroup> &utxo_pool,

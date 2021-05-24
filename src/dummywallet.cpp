@@ -26,7 +26,7 @@ void DummyWalletInit::AddWalletOptions() const {
         "-wallet=<path>", "-walletbroadcast", "-walletdir=<dir>",
         "-walletnotify=<cmd>", "-zapwallettxes=<mode>",
         // Wallet debug options
-        "-dblogsize=<n>", "-flushwallet", "-privdb", "-walletrejectlongchains"};
+        "-dblogsize=<n>", "-flushwallet", "-privdb"};
     gArgs.AddHiddenArgs(opts);
 }
 
