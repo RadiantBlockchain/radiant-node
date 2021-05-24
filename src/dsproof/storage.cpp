@@ -44,7 +44,11 @@ bool DoubleSpendProofStorage::add(const DoubleSpendProof &proof)
             if (it->orphan) {
                 // mark it as not an orphan now due to explicit add
                 decrementOrphans(1);
-                m_proofs.modify(it, [](Entry &e) { e.orphan = false; }, ModFastFail());
+                m_proofs.modify(it, [](Entry &e) {
+                    e.orphan = false;
+                    // we must clear the "bannable nodeId" here since we accepted this proof as good (see issue #311)
+                    e.nodeId = -1;
+                }, ModFastFail());
             }
             return false;
         }
