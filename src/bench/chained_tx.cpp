@@ -137,11 +137,6 @@ static void benchATMP(const Config& config,
 {
     const Amount absurdFee(Amount::zero());
 
-    gArgs.ForceSetArg("-limitdescendantcount", std::to_string(chainedTxs.size()));
-    gArgs.ForceSetArg("-limitancestorcount", std::to_string(chainedTxs.size()));
-    gArgs.ForceSetArg("-limitancestorsize", std::to_string(chainedTxs.size() * 1000));
-    gArgs.ForceSetArg("-limitdescendantsize", std::to_string(chainedTxs.size() * 1000));
-
     LOCK(::cs_main);
     assert(g_mempool.size() == 0);
     while (state.KeepRunning()) {
@@ -209,18 +204,6 @@ static void benchReorg(const Config& config,
         }
     }
     CBlockIndex* mostWorkTip  = ::ChainActive().Tip();
-
-
-    // `AcceptToMemoryPool` is used during re-org, so we need to ajust its
-    // limits.
-    gArgs.ForceSetArg("-limitdescendantcount",
-                      std::to_string(chainSizePerBlock));
-    gArgs.ForceSetArg("-limitancestorcount",
-                      std::to_string(chainSizePerBlock));
-    gArgs.ForceSetArg("-limitancestorsize",
-                      std::to_string(chainSizePerBlock * 1000));
-    gArgs.ForceSetArg("-limitdescendantsize",
-                      std::to_string(chainSizePerBlock * 1000));
 
     while (state.KeepRunning()) {
         CValidationState vstate;

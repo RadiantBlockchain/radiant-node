@@ -86,8 +86,6 @@ static constexpr Amount DEFAULT_TRANSACTION_MINFEE_PER_KB = 1000 * SATOSHI;
 static constexpr Amount WALLET_INCREMENTAL_RELAY_FEE(5000 * SATOSHI);
 //! Default for -spendzeroconfchange
 static constexpr bool DEFAULT_SPEND_ZEROCONF_CHANGE = true;
-//! Default for -walletrejectlongchains
-static constexpr bool DEFAULT_WALLET_REJECT_LONG_CHAINS = false;
 //! Default for -avoidpartialspends
 static constexpr bool DEFAULT_AVOIDPARTIALSPENDS = false;
 static constexpr bool DEFAULT_WALLETBROADCAST = true;

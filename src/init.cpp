@@ -858,29 +858,6 @@ void SetupServerArgs() {
                            "the main chain (default: %u)",
                            DEFAULT_STOPATHEIGHT),
                  true, OptionsCategory::DEBUG_TEST);
-    gArgs.AddArg("-limitancestorcount=<n>",
-                 strprintf("Prior to the May 2021 Bitcoin Cash Network Upgrade, do not accept transactions if number of in-mempool "
-                           "ancestors is <n> or more (deprecated, default: %u)",
-                           DEFAULT_ANCESTOR_LIMIT),
-                 true, OptionsCategory::DEBUG_TEST); // Remove after Tachyon
-    gArgs.AddArg(
-        "-limitancestorsize=<n>",
-        strprintf("Prior to the May 2021 Bitcoin Cash Network Upgrade, do not accept transactions whose size with all in-mempool "
-                  "ancestors exceeds <n> kilobytes (deprecated, default: %u)",
-                  DEFAULT_ANCESTOR_SIZE_LIMIT),
-        true, OptionsCategory::DEBUG_TEST); // Remove after Tachyon
-    gArgs.AddArg(
-        "-limitdescendantcount=<n>",
-        strprintf("Prior to the May 2021 Bitcoin Cash Network Upgrade, do not accept transactions if any ancestor would have <n> "
-                  "or more in-mempool descendants (deprecated, default: %u)",
-                  DEFAULT_DESCENDANT_LIMIT),
-        true, OptionsCategory::DEBUG_TEST); // Remove after Tachyon
-    gArgs.AddArg(
-        "-limitdescendantsize=<n>",
-        strprintf("Prior to the May 2021 Bitcoin Cash Network Upgrade, do not accept transactions if any ancestor would have more "
-                  "than <n> kilobytes of in-mempool descendants (deprecated, default: %u).",
-                  DEFAULT_DESCENDANT_SIZE_LIMIT),
-        true, OptionsCategory::DEBUG_TEST); // Remove after Tachyon
     gArgs.AddArg("-addrmantest", "Allows to test address relay on localhost",
                  true, OptionsCategory::DEBUG_TEST);
 
@@ -1851,15 +1828,13 @@ bool AppInitParameterInteraction(Config &config) {
     }
 
     // mempool limits
-    int64_t nMempoolSizeMax = ONE_MEGABYTE * gArgs.GetArg("-maxmempool", DEFAULT_MAX_MEMPOOL_SIZE_PER_MB *
-                                                     config.GetExcessiveBlockSize() / ONE_MEGABYTE);
-
-    int64_t nMempoolSizeMin = gArgs.GetArg("-limitdescendantsize", DEFAULT_DESCENDANT_SIZE_LIMIT) * 1000 * 40;
-    if (nMempoolSizeMax < 0 || nMempoolSizeMax < nMempoolSizeMin) {
-        return InitError(strprintf(_("-maxmempool must be at least %d MB"),
-                                   std::ceil(nMempoolSizeMin / 1000000.0)));
+    const int64_t nMempoolSizeMax =
+        ONE_MEGABYTE * gArgs.GetArg("-maxmempool", DEFAULT_MAX_MEMPOOL_SIZE_PER_MB * config.GetExcessiveBlockSize()
+                                                   / ONE_MEGABYTE);
+    if (nMempoolSizeMax < 0) {
+        return InitError("-maxmempool must be at least 0 MB");
     } else {
-         config.SetMaxMemPoolSize((uint64_t)nMempoolSizeMax);
+        config.SetMaxMemPoolSize(uint64_t(nMempoolSizeMax));
     }
 
     // block pruning; get the amount of disk space (in MiB) to allot for block &

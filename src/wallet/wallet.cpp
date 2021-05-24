@@ -2807,51 +2807,18 @@ bool CWallet::SelectCoins(const std::vector<COutput> &vAvailableCoins,
     std::vector<OutputGroup> groups =
         GroupOutputs(vCoins, !coin_control.m_avoid_partial_spends);
 
-    // Note: after tachyon the ancestor stats will always be 0, since this
-    // limitation becomes irrelevant.
-    size_t max_ancestors = std::max<size_t>(
-        1, gArgs.GetArg("-limitancestorcount", DEFAULT_ANCESTOR_LIMIT));
-    size_t max_descendants = std::max<size_t>(
-        1, gArgs.GetArg("-limitdescendantcount", DEFAULT_DESCENDANT_LIMIT));
-    bool fRejectLongChains = gArgs.GetBoolArg(
-        "-walletrejectlongchains", DEFAULT_WALLET_REJECT_LONG_CHAINS);
-
     bool res =
         nTargetValue <= nValueFromPresetInputs ||
         SelectCoinsMinConf(nTargetValue - nValueFromPresetInputs,
-                           CoinEligibilityFilter(1, 6, 0), groups, setCoinsRet,
+                           CoinEligibilityFilter(1, 6), groups, setCoinsRet,
                            nValueRet, coin_selection_params, bnb_used) ||
         SelectCoinsMinConf(nTargetValue - nValueFromPresetInputs,
-                           CoinEligibilityFilter(1, 1, 0), groups, setCoinsRet,
+                           CoinEligibilityFilter(1, 1), groups, setCoinsRet,
                            nValueRet, coin_selection_params, bnb_used) ||
         (m_spend_zero_conf_change &&
          SelectCoinsMinConf(nTargetValue - nValueFromPresetInputs,
-                            CoinEligibilityFilter(0, 1, 2), groups, setCoinsRet,
-                            nValueRet, coin_selection_params, bnb_used)) ||
-        (m_spend_zero_conf_change &&
-         SelectCoinsMinConf(
-             nTargetValue - nValueFromPresetInputs,
-             CoinEligibilityFilter(0, 1, std::min<size_t>(4, max_ancestors / 3),
-                                   std::min<size_t>(4, max_descendants / 3)),
-             groups, setCoinsRet, nValueRet, coin_selection_params,
-             bnb_used)) ||
-        (m_spend_zero_conf_change &&
-         SelectCoinsMinConf(nTargetValue - nValueFromPresetInputs,
-                            CoinEligibilityFilter(0, 1, max_ancestors / 2,
-                                                  max_descendants / 2),
-                            groups, setCoinsRet, nValueRet,
-                            coin_selection_params, bnb_used)) ||
-        (m_spend_zero_conf_change &&
-         SelectCoinsMinConf(nTargetValue - nValueFromPresetInputs,
-                            CoinEligibilityFilter(0, 1, max_ancestors - 1,
-                                                  max_descendants - 1),
-                            groups, setCoinsRet, nValueRet,
-                            coin_selection_params, bnb_used)) ||
-        (m_spend_zero_conf_change && !fRejectLongChains &&
-         SelectCoinsMinConf(
-             nTargetValue - nValueFromPresetInputs,
-             CoinEligibilityFilter(0, 1, std::numeric_limits<uint64_t>::max()),
-             groups, setCoinsRet, nValueRet, coin_selection_params, bnb_used));
+                            CoinEligibilityFilter(0, 1), groups, setCoinsRet,
+                            nValueRet, coin_selection_params, bnb_used));
 
     // Because SelectCoinsMinConf clears the setCoinsRet, we now add the
     // possible inputs to the coinset.
@@ -4896,10 +4863,6 @@ CWallet::GroupOutputs(const std::vector<COutput> &outputs,
         if (output.fSpendable) {
             CInputCoin input_coin = output.GetInputCoin();
 
-            // deprecated -- after tachyon these 2 stats will always just be 0 since these stats become irrelevant
-            // at that point.
-            size_t ancestors{}, descendants{};
-
             if (!single_coin &&
                 ExtractDestination(output.tx->tx->vout[output.i].scriptPubKey,
                                    dst)) {
@@ -4911,12 +4874,10 @@ CWallet::GroupOutputs(const std::vector<COutput> &outputs,
                     gmap.erase(dst);
                 }
                 gmap[dst].Insert(input_coin, output.nDepth,
-                                 output.tx->IsFromMe(ISMINE_ALL), ancestors,
-                                 descendants);
+                                 output.tx->IsFromMe(ISMINE_ALL));
             } else {
                 groups.emplace_back(input_coin, output.nDepth,
-                                    output.tx->IsFromMe(ISMINE_ALL), ancestors,
-                                    descendants);
+                                    output.tx->IsFromMe(ISMINE_ALL));
             }
         }
     }

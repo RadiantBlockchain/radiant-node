@@ -36,9 +36,9 @@ typedef std::set<CInputCoin> CoinSet;
 static std::vector<COutput> vCoins;
 static Amount balance = Amount::zero();
 
-CoinEligibilityFilter filter_standard(1, 6, 0);
-CoinEligibilityFilter filter_confirmed(1, 1, 0);
-CoinEligibilityFilter filter_standard_extra(6, 6, 0);
+CoinEligibilityFilter filter_standard(1, 6);
+CoinEligibilityFilter filter_confirmed(1, 1);
+CoinEligibilityFilter filter_standard_extra(6, 6);
 CoinSelectionParams coin_selection_params(false, 0, 0, CFeeRate(Amount::zero()),
                                           0);
 
@@ -115,7 +115,7 @@ GroupCoins(const std::vector<CInputCoin> &coins) {
     static std::vector<OutputGroup> static_groups;
     static_groups.clear();
     for (auto &coin : coins) {
-        static_groups.emplace_back(coin, 0, true, 0, 0);
+        static_groups.emplace_back(coin, 0, true);
     }
     return static_groups;
 }
@@ -128,8 +128,7 @@ inline std::vector<OutputGroup> &GroupCoins(const std::vector<COutput> &coins) {
         // defined below; perhaps set safe to false for !fIsFromMe in add_coin()
         const bool is_me =
             coin.tx->fDebitCached && coin.tx->nDebitCached == SATOSHI;
-        static_groups.emplace_back(coin.GetInputCoin(), coin.nDepth, is_me, 0,
-                                   0);
+        static_groups.emplace_back(coin.GetInputCoin(), coin.nDepth, is_me);
     }
     return static_groups;
 }

@@ -343,20 +343,11 @@ bool KnapsackSolver(const Amount nTargetValue, std::vector<OutputGroup> &groups,
 
  ******************************************************************************/
 
-void OutputGroup::Insert(const CInputCoin &output, int depth, bool from_me,
-                         size_t ancestors, size_t descendants) {
+void OutputGroup::Insert(const CInputCoin &output, int depth, bool from_me) {
     m_outputs.push_back(output);
     m_from_me &= from_me;
     m_value += output.effective_value;
     m_depth = std::min(m_depth, depth);
-    // ancestors here express the number of ancestors the new coin will end up
-    // having, which is the sum, rather than the max; this will overestimate in
-    // the cases where multiple inputs have common ancestors
-    m_ancestors += ancestors;
-    // descendants is the count as seen from the top ancestor, not the
-    // descendants as seen from the coin itself; thus, this value is counted as
-    // the max, not the sum
-    m_descendants = std::max(m_descendants, descendants);
     effective_value = m_value;
 }
 
@@ -374,10 +365,7 @@ OutputGroup::Discard(const CInputCoin &output) {
     return m_outputs.erase(it);
 }
 
-bool OutputGroup::EligibleForSpending(
-    const CoinEligibilityFilter &eligibility_filter) const {
+bool OutputGroup::EligibleForSpending(const CoinEligibilityFilter &eligibility_filter) const {
     return m_depth >= (m_from_me ? eligibility_filter.conf_mine
-                                 : eligibility_filter.conf_theirs) &&
-           m_ancestors <= eligibility_filter.max_ancestors &&
-           m_descendants <= eligibility_filter.max_descendants;
+                                 : eligibility_filter.conf_theirs);
 }

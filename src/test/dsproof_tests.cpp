@@ -545,10 +545,7 @@ BOOST_FIXTURE_TEST_CASE(dsproof_recursive_search_mempool, TestChain100Setup) {
         txIdDspMap[txid] = proof;
     }
 
-    const size_t txChainLen =
-            std::max<size_t>(0, std::min<int64_t>(gArgs.GetArg("-limitancestorcount",  DEFAULT_ANCESTOR_LIMIT),
-                                                  gArgs.GetArg("-limitdescendantcount",  DEFAULT_DESCENDANT_LIMIT)) - 1);
-    BOOST_CHECK(txChainLen > 1);
+    constexpr size_t txChainLen = 500; // build chains of length 500
     std::map<TxId, std::list<CTransactionRef>> dblSpendChildren;
     for (const auto &ds : dblSpendRoots) {
         // for each root dbl spend, create a chain of txChainLen child tx's
