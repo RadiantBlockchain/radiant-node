@@ -4586,10 +4586,11 @@ bool PeerLogicValidation::SendMessages(const Config &config, CNode *pto,
     {
         LOCK(pto->cs_inventory);
 
-        // (tx/sec/MB) * (block_bytes) * (ms/broadcast) * (1 sec/1000 ms) * (1 MB/1000000 bytes) = tx/broadcast
-        // (rounded up)
-        const uint64_t nMaxBroadcasts = (config.GetInvBroadcastRate() * config.GetExcessiveBlockSize() *
-                                         config.GetInvBroadcastInterval() + (1000 * 1000000 - 1)) / 1000 / 1000000;
+        // txs per broadcast = (tx/sec/MB) * (block_bytes) * (ms/broadcast) * (1 sec/1000 ms) * (1 MB/1000000 bytes) (rounded up)
+        const uint64_t invBroadcastInterval = config.GetInvBroadcastInterval();
+        const uint64_t nMaxBroadcasts = (config.GetInvBroadcastRate() * config.GetExcessiveBlockSize()
+                                         * std::max(invBroadcastInterval, uint64_t{1}) + (1000 * 1000000 - 1))
+                                        / 1000 / 1000000;
         vInv.reserve(std::max<size_t>(pto->vInventoryBlockToSend.size(), nMaxBroadcasts));
 
         // Add blocks
@@ -4614,16 +4615,14 @@ bool PeerLogicValidation::SendMessages(const Config &config, CNode *pto,
 
         // Check whether periodic sends should happen
         bool fSendTrickle = pto->HasPermission(PF_NOBAN);
-        if (pto->nNextInvSend < nNow) {
+        if (!invBroadcastInterval || pto->nNextInvSend < nNow) {
             fSendTrickle = true;
             if (pto->fInbound) {
-                pto->nNextInvSend = connman->PoissonNextSendInbound(
-                    nNow, config.GetInvBroadcastInterval());
+                pto->nNextInvSend = connman->PoissonNextSendInbound(nNow, invBroadcastInterval);
             } else {
                 // Use half the delay for outbound peers, as there is less
                 // privacy concern for them.
-                pto->nNextInvSend =
-                    PoissonNextSend(nNow, config.GetInvBroadcastInterval() >> 1);
+                pto->nNextInvSend = PoissonNextSend(nNow, invBroadcastInterval >> 1);
             }
         }
 
