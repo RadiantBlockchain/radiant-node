@@ -60,7 +60,7 @@ bool IsStandard(const CScript &scriptPubKey, txnouttype &whichType) {
     return true;
 }
 
-bool IsStandardTx(const CTransaction &tx, std::string &reason, bool allowMultipleOpReturn) {
+bool IsStandardTx(const CTransaction &tx, std::string &reason) {
     if (tx.nVersion > CTransaction::MAX_STANDARD_VERSION || tx.nVersion < 1) {
         reason = "version";
         return false;
@@ -108,11 +108,6 @@ bool IsStandardTx(const CTransaction &tx, std::string &reason, bool allowMultipl
         }
     }
 
-    // only one OP_RETURN txout is permitted
-    if (!allowMultipleOpReturn && nDataOut > 1) {
-        reason = "multi-op-return";
-        return false;
-    }
     if (nDataSize > nMaxDatacarrierBytes) {
         reason = "oversize-op-return";
         return false;
