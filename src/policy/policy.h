@@ -124,7 +124,7 @@ bool IsStandard(const CScript &scriptPubKey, txnouttype &whichType);
  * @return True if all outputs (scriptPubKeys) use only standard transaction
  * forms
  */
-bool IsStandardTx(const CTransaction &tx, std::string &reason, bool allowMultipleOpReturn);
+bool IsStandardTx(const CTransaction &tx, std::string &reason);
 
 /**
  * Check for standard transaction types
