@@ -138,3 +138,6 @@ nbproject/
 .cproject
 .project
 .pydevproject
+
+#Local Development Environment - Visual Studio Code
+.vscode
