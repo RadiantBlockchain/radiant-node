@@ -5,6 +5,7 @@
 #include <bench/bench.h>
 #include <bench/data.h>
 #include <checkqueue.h>
+#include <logging.h>
 #include <policy/policy.h>
 #include <prevector.h>
 #include <primitives/transaction.h>
@@ -21,7 +22,6 @@
 #include <utility>
 #include <vector>
 
-static constexpr int MIN_CORES = 2;
 static constexpr int PREVECTOR_SIZE = 28;
 static constexpr size_t QUEUE_BATCH_SIZE = 128; // this is the parameter normally used in validation.cpp
 
@@ -29,6 +29,7 @@ static constexpr size_t QUEUE_BATCH_SIZE = 128; // this is the parameter normall
 // checks all contain a prevector that is indirect 50% of the time and there is
 // a little bit of work done between calls to Add.
 static void CCheckQueueSpeedPrevectorJob(benchmark::State &state) {
+    static constexpr int MIN_CORES = 2;
     static constexpr size_t BATCHES = 101;
     static constexpr size_t BATCH_SIZE = 30;
 
@@ -132,7 +133,13 @@ static void CCheckQueue_RealData32MB(bool cacheSigs, benchmark::State &state) {
     // Step 3: Setup threads for our CCheckQueue
     CCheckQueue<CScriptCheck> queue{QUEUE_BATCH_SIZE};
     boost::thread_group tg;
-    for (int i = 0, nThreads = std::max(MIN_CORES, GetNumCores()); i < nThreads; ++i) {
+    int nThreads = gArgs.GetArg("-par", DEFAULT_SCRIPTCHECK_THREADS);
+    const int nCores = std::max(GetNumCores(), 1);
+    if (!nThreads) nThreads = nCores;
+    else if (nThreads < 0) nThreads = std::max(0, nCores + nThreads); // negative means leave n cores free
+    LogPrintf("%s: Using %d threads for signature verification\n", __func__, nThreads);
+    --nThreads; // account for the fact that this main thread also does processing in .Wait() below
+    for (int i = 0; i < nThreads; ++i) {
         tg.create_thread([&] { queue.Thread(); });
     }
     Defer d([&tg]{

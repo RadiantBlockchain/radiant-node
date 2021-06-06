@@ -7,8 +7,10 @@
 #include <crypto/sha256.h>
 #include <key.h>
 #include <logging.h>
+#include <script/sigcache.h>
 #include <util/strencodings.h>
 #include <util/system.h>
+#include <validation.h>
 
 #include <memory>
 
@@ -66,6 +68,17 @@ static void SetupBenchArgs() {
                  strprintf("Output debugging information (default: %u, supplying <category> is optional)", 0)
                  + ". If <category> is not supplied or if <category> = 1, output all debugging information. "
                    "<category> can be: " + ListLogCategories() + ".", false, OptionsCategory::DEBUG_TEST);
+    gArgs.AddArg(
+        "-maxsigcachesize=<n>",
+        strprintf("Limit size of signature cache to <n> MiB (0 to %d, default: %d)",
+                  MAX_MAX_SIG_CACHE_SIZE, DEFAULT_MAX_SIG_CACHE_SIZE),
+        false, OptionsCategory::DEBUG_TEST);
+    gArgs.AddArg(
+        "-par=<n>",
+        strprintf("Set the number of script verification threads (0 = auto, <0 = leave that many cores free, "
+                  "default: %d). Currently only affects the CCheckQueue_RealBlock_32MB* benches.",
+                  DEFAULT_SCRIPTCHECK_THREADS),
+        false, OptionsCategory::DEBUG_TEST);
 }
 
 int main(int argc, char **argv) {
