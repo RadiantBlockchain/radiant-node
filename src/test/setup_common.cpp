@@ -124,9 +124,7 @@ TestingSetup::TestingSetup(const std::string &chainName)
 
     // Start script-checking threads. Set g_parallel_script_checks to true so they are used.
     constexpr int script_check_threads = 2;
-    for (int i = 0; i < script_check_threads; ++i) {
-        threadGroup.create_thread([i]() { return ThreadScriptCheck(i); });
-    }
+    StartScriptCheckWorkerThreads(script_check_threads);
     g_parallel_script_checks = true;
 
     g_banman =
@@ -139,6 +137,7 @@ TestingSetup::TestingSetup(const std::string &chainName)
 TestingSetup::~TestingSetup() {
     threadGroup.interrupt_all();
     threadGroup.join_all();
+    StopScriptCheckWorkerThreads();
     GetMainSignals().FlushBackgroundCallbacks();
     GetMainSignals().UnregisterBackgroundSignalScheduler();
     g_connman.reset();
