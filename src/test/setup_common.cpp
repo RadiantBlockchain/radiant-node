@@ -122,10 +122,9 @@ TestingSetup::TestingSetup(const std::string &chainName)
         }
     }
 
-    // Start script-checking threads. Set g_parallel_script_checks to true so they are used.
+    // Start script-checking threads
     constexpr int script_check_threads = 2;
     StartScriptCheckWorkerThreads(script_check_threads);
-    g_parallel_script_checks = true;
 
     g_banman =
         std::make_unique<BanMan>(GetDataDir() / "banlist.dat", chainparams,

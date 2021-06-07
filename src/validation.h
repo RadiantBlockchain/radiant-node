@@ -207,10 +207,6 @@ extern uint256 g_best_block;
 extern std::atomic_bool fImporting;
 extern std::atomic_bool fReindex;
 extern bool fIsBareMultisigStd;
-/** Whether there are dedicated script-checking threads running.
- * False indicates all script checking is done on the main threadMessageHandler thread.
- */
-extern bool g_parallel_script_checks;
 extern bool fRequireStandard;
 extern bool fCheckBlockIndex;
 extern bool fCheckpointsEnabled;
