@@ -1891,7 +1891,8 @@ bool CChainState::ConnectBlock(const CBlock &block, CValidationState &state,
     CBlockUndo blockundo;
     blockundo.vtxundo.resize(block.vtx.size() - 1);
 
-    CCheckQueueControl<CScriptCheck> control(fScriptChecks ? &scriptcheckqueue : nullptr);
+    CCheckQueueControl<CScriptCheck> control(fScriptChecks ? &scriptcheckqueue
+                                                           : nullptr);
 
     // Add all outputs
     try {
