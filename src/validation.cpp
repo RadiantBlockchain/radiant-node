@@ -48,6 +48,7 @@
 #include <util/moneystr.h>
 #include <util/strencodings.h>
 #include <util/system.h>
+#include <util/time.h>
 #include <validationinterface.h>
 #include <warnings.h>
 
@@ -5879,6 +5880,126 @@ bool DumpMempool(const CTxMemPool &pool) {
     }
     return true;
 }
+
+inline constexpr uint64_t DSPROOF_DUMP_VERSION = 1;
+
+bool DumpDSProofs(const CTxMemPool &pool) {
+    Tic start, mid;
+
+    auto *const storage = pool.doubleSpendProofStorage();
+    assert(storage != nullptr);
+
+    auto proofs = storage->getAll(true /* includeOrphans */);
+    std::sort(proofs.begin(), proofs.end(), [](const auto &a, const auto &b){
+        return  a.second < b.second; // sort by whether this proof is an orphan, with non-orphans first
+    });
+
+    static Mutex dump_mutex;
+    LOCK(dump_mutex);
+
+    mid.fin();
+
+    try {
+        FILE *const filestr = fsbridge::fopen(GetDataDir() / "dsproofs.dat.new", "wb");
+        if (!filestr) {
+            return false;
+        }
+
+        CAutoFile file(filestr, SER_DISK, CLIENT_VERSION);
+
+        file << uint64_t{DSPROOF_DUMP_VERSION};
+
+        file << uint64_t{proofs.size()};
+        for (const auto & [proof, isOrphan] : proofs) {
+            file << proof;
+        }
+
+        if (!FileCommit(file.Get())) {
+            throw std::runtime_error("FileCommit failed");
+        }
+        file.fclose();
+        RenameOver(GetDataDir() / "dsproofs.dat.new", GetDataDir() / "dsproofs.dat");
+        LogPrintf("Dumped %i dsproof%s: %s msec to copy, %s msec to dump\n",
+                  proofs.size(), proofs.size() != 1 ? "s" : "", mid.msecStr(3), start.msecStr(3));
+    } catch (const std::exception &e) {
+        LogPrintf("Failed to dump dsproofs: %s. Continuing anyway.\n", e.what());
+        return false;
+    }
+    return true;
+}
+
+bool LoadDSProofs(CTxMemPool &pool) {
+    Tic start;
+
+    auto *const storage = pool.doubleSpendProofStorage();
+    assert(storage != nullptr);
+
+    FILE *const filestr = fsbridge::fopen(GetDataDir() / "dsproofs.dat", "rb");
+    CAutoFile file(filestr, SER_DISK, CLIENT_VERSION);
+    if (file.IsNull()) {
+        LogPrintf("Failed to open dsproofs file on disk. Continuing anyway.\n");
+        return false;
+    }
+
+    size_t succeeded{}, failed{}, already_there{};
+
+    try {
+        uint64_t version;
+        file >> version;
+        if (version != DSPROOF_DUMP_VERSION) {
+            return false;
+        }
+
+        uint64_t num;
+        file >> num;
+        num = std::min(num, uint64_t{storage->maxOrphans()}); // clamp to max configured orphan store
+        while (num--) {
+            DoubleSpendProof proof;
+            file >> proof;
+            try {
+                LOCK2(cs_main, pool.cs);
+
+                // Validate the proof to prevent us from inadvertently adding corrupt data
+                switch (proof.validate(pool)) {
+                case DoubleSpendProof::Validity::Valid:
+                    if (auto tx = pool.addDoubleSpendProof(proof)) {
+                        // added as non-orphan, tell other subsystems
+                        GetMainSignals().TransactionDoubleSpent(tx, proof.GetId());
+                        ++succeeded;
+                    } else {
+                        ++failed;
+                    }
+                    break;
+                case DoubleSpendProof::Validity::MissingTransaction:
+                case DoubleSpendProof::Validity::MissingUTXO:
+                    if (storage->addOrphan(proof, -1 /* no NodeId */, true /* onlyIfNotExists */)) {
+                        // added as orphan
+                        ++succeeded;
+                    } else {
+                        ++already_there;
+                    }
+                    break;
+                default:
+                    ++failed;
+                }
+
+            } catch (const std::exception &) {
+                ++failed;
+            }
+            if (ShutdownRequested()) {
+                return false;
+            }
+        }
+    } catch (const std::exception &e) {
+        LogPrintf("Failed to deserialize dsproofs from disk: %s. Continuing anyway.\n", e.what());
+        return false;
+    }
+
+    LogPrintf("Imported dsproofs from disk: %i succeeded, %i failed, %i already there, %s msec elapsed\n",
+              succeeded, failed, already_there, start.msecStr());
+    return true;
+}
+
 
 bool IsBlockPruned(const CBlockIndex *pblockindex) {
     return (fHavePruned && !pblockindex->nStatus.hasData() &&

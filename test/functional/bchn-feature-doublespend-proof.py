@@ -308,7 +308,7 @@ class DoubleSpendProofTest(BitcoinTestFramework):
 
         # Send the two conflicting transactions to the same node via RPC
         assert_equal(dspReceiver.message_count["dsproof-beta"], 4)
-        self.nodes[0].sendrawtransaction(firstDSTx)
+        firstDSTxId = self.nodes[0].sendrawtransaction(firstDSTx)
         # send second tx to same node via RPC
         # -- it's normal for it to reject the tx, but it should still generate a dsproof broadcast
         assert_raises_rpc_error(
@@ -323,7 +323,7 @@ class DoubleSpendProofTest(BitcoinTestFramework):
             timeout=5
         )
 
-        # Finally, ensure that the non-dsproof node has the messages we expect in its log
+        # Ensure that the non-dsproof node has the messages we expect in its log
         # (this checks that dsproof was disabled for this node)
         debug_log = os.path.join(non_dsproof_node.datadir, 'regtest', 'debug.log')
         dsp_inv_ctr = 0
@@ -339,6 +339,37 @@ class DoubleSpendProofTest(BitcoinTestFramework):
                             and "DSP broadcasting" not in line and "bad-dsproof" not in line)
         # We expect it to have received at least some DSP inv broadcasts
         assert_greater_than(dsp_inv_ctr, 0)
+
+        # Finally test that restarting the node persists the dsproof
+        # - ensure nodes 0 & 1 saw the dsp
+        assert self.nodes[0].getdsproof(firstDSTxId) is not None
+        wait_until(
+            lambda: self.nodes[1].getdsproof(firstDSTxId) is not None,
+            timeout=10
+        )
+
+        # Node 1 will have a deleted dsproofs.dat, check that we get the error message we expect
+        # and that the proof won't come back.
+        with self.nodes[1].assert_debug_log(
+                expected_msgs=['Imported mempool transactions from disk',
+                               'Failed to open dsproofs file on disk. Continuing anyway.'],
+                timeout=60):
+            dsproofs_dat = os.path.join(self.nodes[1].datadir, 'regtest', 'dsproofs.dat')
+            self.stop_node(1)
+            # remove the dsproofs.dat file to keep the proof from coming back
+            os.remove(dsproofs_dat)
+            self.start_node(1, self.extra_args[1])
+        # Node 1 has no dsproofs.dat it should forget the dsproof after a restart.
+        assert self.nodes[1].getdsproof(firstDSTxId) is None
+
+        # Node 0 -- default behavior; it should still see the dsproof for the txid after a restart.
+        # Wait for the debug log to say that the expected number of dsproofs were loaded without error
+        with self.nodes[0].assert_debug_log(expected_msgs=['Imported dsproofs from disk: 5'], timeout=60):
+            self.restart_node(0, self.extra_args[0])
+        wait_until(
+            lambda: self.nodes[0].getdsproof(firstDSTxId) is not None,
+            timeout=60,
+        )
 
 
 if __name__ == '__main__':
