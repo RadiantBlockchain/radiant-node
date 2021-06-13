@@ -21,7 +21,11 @@ Bitcoin Cash Node version 23.0.1 is now available from:
 
 ## Added functionality
 
-...
+- Double-spend proofs now are persisted across restarts to a file in the
+data directory called `dsproofs.dat`. The mechanism for this is similar
+to how the mempool is already persisted across restarts. Double-spend
+proofs are not persisted if the node was started with `-persistmempool=0`
+or `-doublespendproof=0`.
 
 ## Deprecated functionality
 

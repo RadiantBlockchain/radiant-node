@@ -258,6 +258,9 @@ void Shutdown(NodeContext &node) {
     if (::g_mempool.IsLoaded() &&
         gArgs.GetArg("-persistmempool", DEFAULT_PERSIST_MEMPOOL)) {
         DumpMempool(::g_mempool);
+        if (DoubleSpendProof::IsEnabled()) {
+            DumpDSProofs(::g_mempool);
+        }
     }
 
     // FlushStateToDisk generates a ChainStateFlushed callback, which we should
@@ -1344,7 +1347,11 @@ static void ThreadImport(const Config &config,
             return;
         }
     } // End scope of CImportingNow
+
     if (gArgs.GetArg("-persistmempool", DEFAULT_PERSIST_MEMPOOL)) {
+        if (DoubleSpendProof::IsEnabled()) {
+            LoadDSProofs(::g_mempool);
+        }
         LoadMempool(config, ::g_mempool);
     }
     ::g_mempool.SetIsLoaded(!ShutdownRequested());

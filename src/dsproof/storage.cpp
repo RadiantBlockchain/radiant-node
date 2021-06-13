@@ -60,11 +60,14 @@ bool DoubleSpendProofStorage::add(const DoubleSpendProof &proof)
     return true;
 }
 
-void DoubleSpendProofStorage::addOrphan(const DoubleSpendProof &proof, NodeId nodeId)
+bool DoubleSpendProofStorage::addOrphan(const DoubleSpendProof &proof, NodeId nodeId, bool onlyIfNotExists)
 {
     LOCK(m_lock);
-    add(proof);
     const DspId &hash = proof.GetId();
+    if (onlyIfNotExists && algo::contains(m_proofs, hash)) {
+        return false;
+    }
+    add(proof);
     auto it = m_proofs.find(hash);
     assert(it != m_proofs.end()); // cannot happen since above add() call guarantees it now exists
 
@@ -76,6 +79,7 @@ void DoubleSpendProofStorage::addOrphan(const DoubleSpendProof &proof, NodeId no
             e.timeStamp = GetTime();
         e.orphan = true;
     }, ModFastFail());
+    return true;
 }
 
 std::list<std::pair<DspId, NodeId>> DoubleSpendProofStorage::findOrphans(const COutPoint &prevOut) const

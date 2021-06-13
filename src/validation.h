@@ -825,6 +825,12 @@ bool DumpMempool(const CTxMemPool &pool);
 /** Load the mempool from disk. */
 bool LoadMempool(const Config &config, CTxMemPool &pool);
 
+/** Dump all dsproofs to disk. */
+bool DumpDSProofs(const CTxMemPool &pool);
+
+/** Load dsproofs from disk. */
+bool LoadDSProofs(CTxMemPool &pool);
+
 //! Check whether the block associated with this index entry is pruned or not.
 bool IsBlockPruned(const CBlockIndex *pblockindex);
 

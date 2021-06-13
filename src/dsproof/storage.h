@@ -55,16 +55,24 @@ public:
     /// Note that "adding" an existing orphan is supported. The proof
     /// will get marked as a non-orphan (equivalent to 'claimOrphan()').
     ///
-    /// May throw std::invalid_argument if the supplied proof is empty
-    /// or has a null hash.
+    /// @throws std::invalid_argument if the supplied proof is empty
+    ///     or has a null hash.
     bool add(const DoubleSpendProof &proof);
     /// Remove by proof-id, returns true if proof was found and removed.
     bool remove(const DspId &hash);
 
     /// add()s and additionally registers the proof as an orphan.
     /// Orphans expire after secondsToKeepOrphans() elapses. They may
-    /// be claimed using 'claimOrphan()'.
-    void addOrphan(const DoubleSpendProof &proof, NodeId peerId);
+    /// be claimed using 'claimOrphan()'. Existing proofs will be
+    /// recategorized as an orphan.
+    /// @param onlyIfNotExists - if true, only add the orphan if no such
+    ///     proof exists. Do not recategorize or otherwise modify existing
+    ///     proofs.
+    /// @returns true, unless onlyIfNotExists == true, in which case this
+    ///     may return false if the proof already existed.
+    /// @throws std::invalid_argument if the supplied proof is empty
+    ///     or has a null hash.
+    bool addOrphan(const DoubleSpendProof &proof, NodeId peerId, bool onlyIfNotExists = false);
     /// Returns all (not yet verified) orphans matching prevOut.
     /// Each item is a pair of a uint256 and the nodeId that send the proof to us.
     std::list<std::pair<DspId, NodeId>> findOrphans(const COutPoint &prevOut) const;
