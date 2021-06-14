@@ -385,6 +385,62 @@ static UniValue getdsprooflist(const Config &,
     return ret;
 }
 
+static UniValue getdsproofscore(const Config &,
+                                const JSONRPCRequest &request) {
+    if (request.fHelp || request.params.size() != 1) {
+        throw std::runtime_error(
+            RPCHelpMan{
+                "getdsproofscore",
+                "\nReturn a double-spend confidence score for a mempool transaction.\n",
+                {{"txid", RPCArg::Type::STR_HEX, /* opt */ false, /* default_val */ "",
+                  "The in-memory txid to query."},
+                },
+                RPCResults{
+                    RPCResult{"n          (numeric) A value from 0.0 to 1.0, with 1.0 indicating that the\n"
+                              "           transaction in question has no current dsproofs for it or any of its\n"
+                              "           mempool ancestors, but that a future dsproof is possible. Confidence\n"
+                              "           that this transaction has no known double-spends is relatively high.\n"
+                              "\n"
+                              "           A value of 0.0 indicates that the tx in question or one of its\n"
+                              "           mempool ancestors has a dsproof, or that it or one of its mempool\n"
+                              "           ancestors does not support dsproofs (not P2PKH), so confidence in\n"
+                              "           this tx should be low.\n"
+                              "\n"
+                              "           A value of 0.25 indicates that up to the first 20,000 ancestors were\n"
+                              "           checked and all have no proofs but *can* have proofs. Since the tx\n"
+                              "           in question has a very large mempool ancestor set, double-spend\n"
+                              "           confidence should be considered medium-to-low. (This value may also\n"
+                              "           be returned for transactions which exceed depth 1,000 in an\n"
+                              "           unconfirmed ancestor chain).\n"},
+                },
+                RPCExamples{HelpExampleCli("getdsproofscore", "d3aac244e46f4bc5e2140a07496a179624b42d12600bfeafc358154ec89a720c") +
+                            HelpExampleRpc("getdsproofscore", "d3aac244e46f4bc5e2140a07496a179624b42d12600bfeafc358154ec89a720c")}
+            }.ToStringWithResultsAndExamples());
+    }
+
+    ThrowIfDisabled(); // don't proceed if the subsystem was disabled with -doublespendproof=0
+
+    RPCTypeCheck(request.params, {UniValue::VSTR});
+
+    // lookup by txid only
+    const TxId txId{ParseHashV(request.params[0], "txid")};
+
+    double score{};
+
+    try {
+        g_mempool.recursiveDSProofSearch(txId, nullptr, &score);
+    } catch (const CTxMemPool::RecursionLimitReached &e) {
+        // ok, score will be set for us correctly anyway in this case
+        LogPrint(BCLog::DSPROOF, "getdsproofscore (txid: %s) caught exception: %s\n", txId.ToString(), e.what());
+    }
+
+    if (score < 0.0) {
+        /* A score of <0.0 means txid not found */
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Transaction not in mempool");
+    }
+
+    return score;
+}
 
 // clang-format off
 static const ContextFreeRPCCommand commands[] = {
@@ -392,6 +448,7 @@ static const ContextFreeRPCCommand commands[] = {
     //  ------------------- ------------------------  ----------------------  ----------
     { "blockchain",         "getdsproof",             getdsproof,             {"dspid|txid|outpoint", "verbosity|verbose", "recursive"} },
     { "blockchain",         "getdsprooflist",         getdsprooflist,         {"verbosity|verbose", "include_orphans"} },
+    { "blockchain",         "getdsproofscore",        getdsproofscore,        {"txid"} },
 };
 // clang-format on
 

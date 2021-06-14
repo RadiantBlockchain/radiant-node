@@ -846,7 +846,7 @@ auto CTxMemPool::getDoubleSpendProof(const DspId &dspId, DspDescendants *desc) c
 //! Lookup a dsproof by TxId.
 auto CTxMemPool::getDoubleSpendProof(const TxId &txId, DspDescendants *desc) const -> std::optional<DoubleSpendProof> {
     LOCK(cs);
-    return getDoubleSpendProof_common(txId, nullptr, desc);
+    return getDoubleSpendProof_common(txId, desc);
 }
 
 //! Helper (requires cs is held)
@@ -859,74 +859,85 @@ auto CTxMemPool::getDspDescendantsForIter(txiter it) const -> DspDescendants {
     return ret;
 }
 
-auto CTxMemPool::getDoubleSpendProof_common(const TxId &txId, txiter *txit, DspDescendants *desc) const
--> std::optional<DoubleSpendProof> {
+auto CTxMemPool::getDoubleSpendProof_common(const TxId &txId, DspDescendants *desc) const -> std::optional<DoubleSpendProof> {
     std::optional<DoubleSpendProof> ret;
-
-    auto it = mapTx.find(txId);
-    if (txit)
-        *txit = it; // tell caller about `it` (even if no hit for txId)
-    if (it != mapTx.end()) {
+    if (auto it = mapTx.find(txId); it != mapTx.end()) {
         // txId found in mempool
-        if (it->HasDsp()) {
-            ret.emplace(m_dspStorage->lookup(it->GetDspId()));
-            if (ret->isEmpty()) {
-                // hash points to missing dsp from storage -- should never happen
-                throw std::runtime_error(strprintf("Unexpected state: DspId %s for TxId %s missing from storage",
-                                                   it->GetDspId().ToString(), txId.ToString()));
-            }
-            if (desc) {
-                // caller supplied a descendants set they want populated, so populate it on this hit
-                *desc = getDspDescendantsForIter(it);
-            }
+        ret = getDoubleSpendProof_common(it, desc);
+    }
+    return ret;
+}
+
+auto CTxMemPool::getDoubleSpendProof_common(txiter it, DspDescendants *desc) const -> std::optional<DoubleSpendProof> {
+    std::optional<DoubleSpendProof> ret;
+    if (it->HasDsp()) {
+        ret.emplace(m_dspStorage->lookup(it->GetDspId()));
+        if (ret->isEmpty()) {
+            // hash points to missing dsp from storage -- should never happen
+            throw std::runtime_error(strprintf("Unexpected state: DspId %s for TxId %s missing from storage",
+                                               it->GetDspId().ToString(), it->GetTx().GetId().ToString()));
+        }
+        if (desc) {
+            // caller supplied a descendants set they want populated, so populate it on this hit
+            *desc = getDspDescendantsForIter(it);
         }
     }
     return ret;
 }
 
+
+// for vtable
+CTxMemPool::RecursionLimitReached::~RecursionLimitReached() {}
+
 //! If txId or any of its in-mempool ancestors have a dsproof, then a valid optional will be returned.
-auto CTxMemPool::recursiveDSProofSearch(const TxId &txIdIn, DspDescendants *desc) const -> std::optional<DspRecurseResult> {
-    constexpr auto recursionMax = 1'000u; // limit recursion depth
+auto CTxMemPool::recursiveDSProofSearch(const TxId &txId, DspDescendants *desc, double *score) const
+-> std::optional<DspRecurseResult> {
+    constexpr auto recursionMax = 1'000u, ancestorMax = 20'000u; // limit recursion and ancestor depth for this call
     std::optional<DspRecurseResult> ret;
     DspQueryPath path;
     std::optional<DoubleSpendProof> optProof;
-    std::set<TxId> seenTxIds; // to prevent recursion into tx's we've already searched
+    setEntries seenTxs; // to prevent recursion into tx's we've already searched
 
     // we must use a std::function because lambdas cannot see themselves
-    std::function<void(const TxId &)> search = [&](const TxId &txId) EXCLUSIVE_LOCKS_REQUIRED(cs) {
+    std::function<void(txiter)> search = [&](txiter txit) EXCLUSIVE_LOCKS_REQUIRED(cs_main, cs) {
+        const TxId txId{txit->GetTx().GetId()};
         path.push_back(txId);
 
-        if (path.size() > recursionMax) {
+        if (path.size() > recursionMax || seenTxs.size() > ancestorMax) {
+            if (score) *score = std::min(0.25, *score);
             // guard against excessively long mempool chains eating up resources
-            throw std::runtime_error(strprintf("recursiveDSProofSearch: mempool depth limit exceeded (%d)", recursionMax));
+            throw RecursionLimitReached(strprintf("recursiveDSProofSearch: mempool depth limit exceeded (%d, %d)",
+                                                  path.size(), seenTxs.size()));
         }
 
         // search this txId
-        txiter txit;
-        if ((optProof = getDoubleSpendProof_common(txId, &txit, desc))) {
+        if ((optProof = getDoubleSpendProof_common(txit, desc))) {
             // dsp found for this txId. Setting `ret` ends any recursion
             ret.emplace(std::move(*optProof), std::move(path));
+            if (score) *score = 0.0; // proof found, set score to 0
             return;
         }
-        // `txit` will be valid only if txId is a mempool tx, in which case it may have unconfirmed parents,
-        // so keep searching recursively.
-        if (txit != mapTx.end()) {
-            const auto &parents = GetMemPoolParents(txit);
-            // recurse for each input's txId (only if never seen)
-            for (const auto &parent : parents) {
-                const TxId &parentTxId = parent->GetTx().GetId();
 
-                // if we have already searched this parentTxId, skip
-                if (!seenTxIds.insert(parentTxId).second)
-                    continue;
+        // caller wants a score -- we abort early in that case if we reach a tx that cannot have a proof (not p2pkh)
+        if (score && !DoubleSpendProof::checkIsProofPossibleForAllInputsOfTx(*this, txit->GetTx())) {
+            // proof not possible for this tx, stop searching
+            *score = 0.0;
+            return;
+        }
 
-                // recurse; NB: this may modify `optProof`, `seenTxIds` and/or `ret`
-                search(parentTxId);
+        // `txit` always refers to a mempool tx, in which case it may have unconfirmed parents,
+        // so keep searching recursively; recurse for each parent (only if never seen).
+        for (const auto &parent : GetMemPoolParents(txit)) {
+            // if we have already searched this parent, skip
+            if (!seenTxs.insert(parent).second)
+                continue;
 
-                if (ret) {
-                    // recursive search yielded a result, return early
-                    return;
-                }
+            // recurse; NB: this may modify `optProof`, `seenTxs`, `*score` and/or `ret`
+            search(parent);
+
+            if (ret || (score && *score < 0.001)) {
+                // recursive search yielded an answer of some sort, return early
+                return;
             }
         }
 
@@ -934,8 +945,15 @@ auto CTxMemPool::recursiveDSProofSearch(const TxId &txIdIn, DspDescendants *desc
         path.pop_back();
     };
 
-    LOCK(cs);
-    search(txIdIn);
+    LOCK2(cs_main, cs);
+
+    if (txiter txit = mapTx.find(txId); txit != mapTx.end()) {
+        if (score) *score = 1.0; // assume good until proven otherwise
+        search(txit);
+    } else if (score) {
+        // confidence score is -1.0 for an unknown tx
+        *score = -1.0;
+    }
 
     return ret;
 }

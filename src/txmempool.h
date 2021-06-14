@@ -27,6 +27,7 @@
 #include <memory>
 #include <optional>
 #include <set>
+#include <stdexcept>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -458,6 +459,12 @@ public:
     //!     associated with the result (if there is a non-orphan result), including the result TxId itself.
     //! @throws std::runtime_error on internal error
     std::optional<DspTxIdPair> getDoubleSpendProof(const COutPoint &outpoint, DspDescendants *descendants = nullptr) const;
+
+    //! Thrown by recursiveDSProofSearch below if the search exceeded 1,000 ancestors deep, or 20,000 ancestors total.
+    struct RecursionLimitReached : std::runtime_error {
+        using std::runtime_error::runtime_error;
+        ~RecursionLimitReached();
+    };
     //!
     //! Recrusive search for a double-spend proof for a TxId and all its in-mempool ancestors.
     //!
@@ -468,19 +475,29 @@ public:
     //!     of ancestor tx's leading to the double-spent tx.
     //! @param descendants - If not nullptr, also populate the set with all the tx's that descend from the TxId
     //!     associated with the result, including the result TxId itself.
-    //! @throws std::runtime_error on internal error
-    std::optional<DspRecurseResult> recursiveDSProofSearch(const TxId &txId, DspDescendants *descendants = nullptr) const;
+    //! @param score - If not nullptr, the search is performed differently; we scan until we reach a parent tx
+    //!     that either has a proof or we cannot ever produce a proof for (not P2PKH). In that case we set score to
+    //!     0.0 (no confidence), and we stop scanning. If no such parent exists and no proof is found for this or any
+    //!     ancestor, we set score to 1.0 (high confidence). We also may set score to 0.25 (low confidence) if the
+    //!     recursion depth is reached (in which case RecursionLimitReached is thrown). We set score to -1.0 if txId is
+    //!     not found in the mempool.
+    //! @throws std::runtime_error on internal error, or RecursionLimitReached if the search exceeded a depth of 1,000
+    //!     ancestors deep, or 20,000 ancestors total.
+    std::optional<DspRecurseResult> recursiveDSProofSearch(const TxId &txId, DspDescendants *descendants = nullptr,
+                                                           double *score = nullptr) const;
 
 private:
     //! Lookup a dsproof by TxId -- caller must hold cs.
     //! @returns a valid optional contaning the proof if such a proof exists for `txId`.
-    //! @param tx - if non-nullptr, `*tx` will be set to point to the in-mempool txiter for `txId`, or will be set to
-    //!     mapTx.end() if `txId` is not found in the mempool.
     //! @param desc - if non-nullptr, `*desc` will be set to contain all the in-memory descendants of `txId` (including
     //!     `txId` itself). This set is only populated when there is a successful result.
     //! @throws std::runtime_error on internal error
-    std::optional<DoubleSpendProof>
-    getDoubleSpendProof_common(const TxId &txId, txiter *tx = nullptr, DspDescendants *desc = nullptr) const EXCLUSIVE_LOCKS_REQUIRED(cs);
+    std::optional<DoubleSpendProof> getDoubleSpendProof_common(const TxId &txId, DspDescendants *desc = nullptr) const
+        EXCLUSIVE_LOCKS_REQUIRED(cs);
+    //! Called by above function.
+    //! @pre - `it` must be valid and point to an entry in mapTx
+    std::optional<DoubleSpendProof> getDoubleSpendProof_common(txiter it, DspDescendants *desc = nullptr) const
+        EXCLUSIVE_LOCKS_REQUIRED(cs);
     //! Helper function for getDoubleSpendProof_common and others
     DspDescendants getDspDescendantsForIter(txiter) const EXCLUSIVE_LOCKS_REQUIRED(cs);
 

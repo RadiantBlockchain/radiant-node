@@ -41,7 +41,14 @@ or `-doublespendproof=0`.
 
 ## New RPC methods
 
-...
+### `getdsproofscore`
+
+`getdsproofscore` returns a double-spend confidence score for a
+mempool transaction.
+
+Please refer to the documentation pages for
+[getdsproofscore](https://docs.bitcoincashnode.org/doc/json-rpc/getdsproofscore/)
+for details about additional arguments and the returned data.
 
 ## Low-level RPC changes
 

@@ -61,6 +61,22 @@ public:
     //! (implemented in dsproof_validate.cpp)
     Validity validate(const CTxMemPool &mempool, CTransactionRef spendingTx = {}) const EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
+    //! This *must* be called with cs_main and mempool.cs already held!
+    //!
+    //! Checks whether a tx is compatible with dsproofs and/or whether
+    //! it can have a double-spend proof generated for it for all of its
+    //! inputs.
+    //!
+    //! For now this basically just checks:
+    //!
+    //! 1. That all inputs to `tx` have "known" Coins (that is, prevouts
+    //!    refering to txs in the mempool or confirmed in the blockchain).
+    //! 2. All inputs to `tx` are spends from p2pkh addresses.
+    //!
+    //! If either of the above are false, this will return false.
+    //!
+    static bool checkIsProofPossibleForAllInputsOfTx(const CTxMemPool &mempool, const CTransaction &tx) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
+
     const TxId & prevTxId() const { return m_outPoint.GetTxId(); }
     uint32_t prevOutIndex() const { return m_outPoint.GetN(); }
     const COutPoint & outPoint() const { return m_outPoint; }

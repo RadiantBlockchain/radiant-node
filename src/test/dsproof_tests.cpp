@@ -275,9 +275,34 @@ BOOST_FIXTURE_TEST_CASE(dsproof_doublespend_mempool, TestChain100Setup) {
     const CScript scriptPubKey = GetScriptForDestination(coinbaseKey.GetPubKey().GetID());
     const size_t firstTxIdx = m_coinbase_txns.size();
 
+    // we were given a blockchain that mines to a p2pk address --
+    // check that txs that spend those cannot have dsproofs
+    BOOST_CHECK(!m_coinbase_txns.empty());
+    for (const auto & tx : m_coinbase_txns) {
+        LOCK2(cs_main, g_mempool.cs);
+        // belt-and-suspenders check that coinbase tx cannot have double spend proofs
+        BOOST_CHECK(!DoubleSpendProof::checkIsProofPossibleForAllInputsOfTx(g_mempool, *tx));
+        CMutableTransaction spend;
+        spend.nVersion = 1;
+        spend.vin.resize(1);
+        spend.vin[0].prevout = COutPoint(tx->GetId(), 0);
+        spend.vout.resize(1);
+        spend.vout[0].nValue = int64_t(GetRand(1'000)) * CENT;
+        spend.vout[0].scriptPubKey = scriptPubKey;
+        // Sign:
+        const auto ok = SignSignature(provider, *tx, spend, 0, SigHashType().withForkId());
+        BOOST_CHECK(ok);
+        // Also a tx spending a p2pk cannot have a dsproof
+        BOOST_CHECK(!DoubleSpendProof::checkIsProofPossibleForAllInputsOfTx(g_mempool, CTransaction{spend}));
+    }
+
+    // next, mine a bunch of blocks that send coinbase to p2pkh
     for (int i = 0; i < COINBASE_MATURITY*2 + 1; ++i) {
         const CBlock b = CreateAndProcessBlock({}, scriptPubKey);
         m_coinbase_txns.push_back(b.vtx[0]);
+        LOCK2(cs_main, g_mempool.cs);
+        // belt-and-suspenders check that coinbase tx cannot have double spend proofs
+        BOOST_CHECK(!DoubleSpendProof::checkIsProofPossibleForAllInputsOfTx(g_mempool, *m_coinbase_txns.back()));
     }
 
     // Some code-paths below need locks held
@@ -318,6 +343,8 @@ BOOST_FIXTURE_TEST_CASE(dsproof_doublespend_mempool, TestChain100Setup) {
             auto [ok, state] = ToMemPool(spend1);
             BOOST_CHECK(ok);
             BOOST_CHECK(state.IsValid());
+            // p2pkh can have dsproof
+            BOOST_CHECK(DoubleSpendProof::checkIsProofPossibleForAllInputsOfTx(g_mempool, CTransaction(spend1)));
         }
         // Add second tx to mempool, check that it is rejected and that the dsproof generated is what we expect
         {
