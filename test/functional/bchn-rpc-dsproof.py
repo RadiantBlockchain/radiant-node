@@ -38,7 +38,9 @@ class DoubleSpendProofRPCTest(BitcoinTestFramework):
         second_ds_tx = create_raw_transaction(self.nodes[0], funding_txid, self.nodes[0].getnewaddress(), 49.95)
 
         first_ds_tx_id = self.nodes[0].sendrawtransaction(first_ds_tx)
-        second_ds_tx_id = self.nodes[1].call_rpc('sendrawtransaction', second_ds_tx, ignore_error='txn-mempool-conflict')
+        assert_equal(self.nodes[0].getdsproofscore(first_ds_tx_id), 1.0)  # score is 1.0 until we see a dsproof
+        second_ds_tx_id = self.nodes[1].call_rpc('sendrawtransaction', second_ds_tx,
+                                                 ignore_error='txn-mempool-conflict')
 
         vout = find_output(self.nodes[0], first_ds_tx_id, Decimal('49.95'))
         child = create_raw_transaction(self.nodes[0], first_ds_tx_id, self.nodes[0].getnewaddress(), 49.90, vout)
@@ -52,6 +54,8 @@ class DoubleSpendProofRPCTest(BitcoinTestFramework):
             lambda: len(self.nodes[0].getdsprooflist()) == 1 and len(self.nodes[1].getdsprooflist()) == 1,
             timeout=10
         )
+
+        assert_equal(self.nodes[0].getdsproofscore(first_ds_tx_id), 0.0)  # score is 0 after we see a dsproof
 
         dsplist = self.nodes[0].getdsprooflist()
         assert_equal(len(dsplist), 1)
@@ -195,8 +199,7 @@ class DoubleSpendProofRPCTest(BitcoinTestFramework):
         paths[1].insert(0, transaction_2inputs_id)
 
         # add 1 more grandchild tx for good measure
-        e_tx = create_raw_transaction(self.nodes[0], transaction_2inputs_id,
-                                           self.nodes[0].getnewaddress(), 24.95*2, 0)
+        e_tx = create_raw_transaction(self.nodes[0], transaction_2inputs_id, self.nodes[0].getnewaddress(), 24.95*2, 0)
         e_txid = self.nodes[0].sendrawtransaction(e_tx)
         paths_shorter = deepcopy(paths)
         paths[0].insert(0, e_txid)  # leaf tx of both possible paths
@@ -358,10 +361,64 @@ class DoubleSpendProofRPCTest(BitcoinTestFramework):
             timeout=90
         )
 
+    def p2sh_score_check(self):
+        """Create a P2SH, send to the P2SH, create a child of it that sends to P2PKH, and check dsproof scores"""
+        self.nodes[0].generate(1)
+        self.sync_all()
+        pubkey = self.nodes[0].getaddressinfo(self.nodes[0].getnewaddress())['pubkey']
+        p2sh = self.nodes[0].addmultisigaddress(1, [pubkey], "")['address']
+        to_p2sh_txid = self.nodes[0].sendtoaddress(p2sh, 49)
+        vout = find_output(self.nodes[0], to_p2sh_txid, Decimal('49'))
+        self.sync_all()
+        # Now spend it to a P2PKH
+        from_p2sh_tx = create_raw_transaction(self.nodes[0], to_p2sh_txid, self.nodes[0].getnewaddress(), 48.9, vout)
+        from_p2sh_txid = self.nodes[0].sendrawtransaction(from_p2sh_tx)
+        # Test that getdsproofscore should be 1.0 for a tx that sends to p2sh but itself spends p2pkh
+        assert_equal(self.nodes[0].getdsproofscore(to_p2sh_txid), 1.0)
+        # Test that getdsproofscore should be 0.0 for a tx that spends from a p2sh to a p2pkh
+        assert_equal(self.nodes[0].getdsproofscore(from_p2sh_txid), 0.0)
+        # Now mine a block to confirm just the above 2 txns
+        prev_blockhash = self.nodes[0].getblockchaininfo()["bestblockhash"]
+        blockhash, = self.nodes[0].generate(1)
+        assert_equal(self.nodes[0].getrawmempool(False), [])
+        assert_equal(self.nodes[0].getblockchaininfo()["bestblockhash"], blockhash)
+        # Next invalidate the above block, so that we send the parent txns back to mempool
+        self.nodes[0].invalidateblock(blockhash)
+        wait_until(
+            lambda: self.nodes[0].getblockchaininfo()["bestblockhash"] == prev_blockhash,
+            timeout=30
+        )
+        # Check that txns were resurrected and put back into the mempool
+        assert_equal(sorted(self.nodes[0].getrawmempool(False)), sorted([to_p2sh_txid, from_p2sh_txid]))
+        # Test that the children of the 0.0 tx, which all spend a p2pkh, inherit the 0.0 score
+        prev_txid = from_p2sh_txid
+        prev_amount = Decimal('48.9')
+        txids = []
+        for _ in range(10):
+            vout = find_output(self.nodes[0], prev_txid, prev_amount)
+            amount = prev_amount - Decimal('0.1')
+            child_tx = create_raw_transaction(self.nodes[0], prev_txid, self.nodes[0].getnewaddress(), amount, vout)
+            child_txid = self.nodes[0].sendrawtransaction(child_tx)
+            assert_equal(self.nodes[0].getdsproofscore(child_txid), 0.0)
+            prev_txid = child_txid
+            prev_amount = amount
+            txids.append(child_txid)
+        # Now, bring back the block, confirming the parents that "contaminated" the children
+        # with the 0.0 score. The scores now for all children should 1.0.
+        self.nodes[0].reconsiderblock(blockhash)
+        wait_until(
+            lambda: self.nodes[0].getblockchaininfo()["bestblockhash"] == blockhash,
+            timeout=30
+        )
+        assert_equal(sorted(self.nodes[0].getrawmempool(False)), sorted(txids))
+        # The scores are 1.0 for all the child txns after their score=0.0 parents are confirmed
+        assert all(self.nodes[0].getdsproofscore(txid) == 1.0 for txid in txids)
+
     def run_test(self):
         self.basic_check()
         self.paths_check()
         self.orphan_list_check()
+        self.p2sh_score_check()
 
 
 if __name__ == '__main__':

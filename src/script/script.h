@@ -543,6 +543,7 @@ public:
     }
 
     bool IsPayToScriptHash() const;
+    bool IsPayToPubKeyHash() const;
     bool IsCommitment(const std::vector<uint8_t> &data) const;
     bool IsWitnessProgram(int &version, std::vector<uint8_t> &program) const;
     bool IsWitnessProgram() const;

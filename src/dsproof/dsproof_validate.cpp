@@ -159,3 +159,31 @@ auto DoubleSpendProof::validate(const CTxMemPool &mempool, CTransactionRef spend
     }
     return Valid;
 }
+
+/* static */ bool DoubleSpendProof::checkIsProofPossibleForAllInputsOfTx(const CTxMemPool &mempool, const CTransaction &tx)
+{
+    AssertLockHeld(cs_main);
+    AssertLockHeld(mempool.cs);
+
+    if (tx.vin.empty() || tx.IsCoinBase()) {
+        return false;
+    }
+
+    const CCoinsViewMemPool view(pcoinsTip.get(), mempool); // this checks both mempool coins and confirmed coins
+
+    // Check all inputs
+    for (const auto & txin : tx.vin) {
+        Coin coin;
+        if (!view.GetCoin(txin.prevout, coin)) {
+            // if the Coin this tx spends is missing then either this tx just got mined or our mempool + blockchain
+            // view just doesn't have the coin.
+            return false;
+        }
+        if (!coin.GetTxOut().scriptPubKey.IsPayToPubKeyHash()) {
+            // For now, dsproof only supports P2PKH
+            return false;
+        }
+    }
+
+    return true;
+}

@@ -224,6 +224,7 @@ BOOST_AUTO_TEST_CASE(is) {
     CScript p2sh;
     p2sh << OP_HASH160 << ToByteVector(dummy) << OP_EQUAL;
     BOOST_CHECK(p2sh.IsPayToScriptHash());
+    BOOST_CHECK(!p2sh.IsPayToPubKeyHash());
 
     // Not considered pay-to-script-hash if using one of the OP_PUSHDATA
     // opcodes:
@@ -231,6 +232,7 @@ BOOST_AUTO_TEST_CASE(is) {
                                      0,          0,  0, 0, 0, 0, 0,       0,
                                      0,          0,  0, 0, 0, 0, OP_EQUAL};
     BOOST_CHECK(CScript(direct, direct + sizeof(direct)).IsPayToScriptHash());
+    BOOST_CHECK(!CScript(direct, direct + sizeof(direct)).IsPayToPubKeyHash());
     static const uint8_t pushdata1[] = {OP_HASH160, OP_PUSHDATA1,
                                         20,         0,
                                         0,          0,
@@ -245,6 +247,8 @@ BOOST_AUTO_TEST_CASE(is) {
                                         0,          OP_EQUAL};
     BOOST_CHECK(
         !CScript(pushdata1, pushdata1 + sizeof(pushdata1)).IsPayToScriptHash());
+    BOOST_CHECK(
+        !CScript(pushdata1, pushdata1 + sizeof(pushdata1)).IsPayToPubKeyHash());
     static const uint8_t pushdata2[] = {OP_HASH160, OP_PUSHDATA2,
                                         20,         0,
                                         0,          0,
@@ -260,6 +264,8 @@ BOOST_AUTO_TEST_CASE(is) {
                                         OP_EQUAL};
     BOOST_CHECK(
         !CScript(pushdata2, pushdata2 + sizeof(pushdata2)).IsPayToScriptHash());
+    BOOST_CHECK(
+        !CScript(pushdata2, pushdata2 + sizeof(pushdata2)).IsPayToPubKeyHash());
     static const uint8_t pushdata4[] = {OP_HASH160, OP_PUSHDATA4,
                                         20,         0,
                                         0,          0,
@@ -276,22 +282,38 @@ BOOST_AUTO_TEST_CASE(is) {
                                         OP_EQUAL};
     BOOST_CHECK(
         !CScript(pushdata4, pushdata4 + sizeof(pushdata4)).IsPayToScriptHash());
+    BOOST_CHECK(
+        !CScript(pushdata4, pushdata4 + sizeof(pushdata4)).IsPayToPubKeyHash());
 
     CScript not_p2sh;
     BOOST_CHECK(!not_p2sh.IsPayToScriptHash());
+    BOOST_CHECK(!not_p2sh.IsPayToPubKeyHash());
 
     not_p2sh.clear();
     not_p2sh << OP_HASH160 << ToByteVector(dummy) << ToByteVector(dummy)
              << OP_EQUAL;
     BOOST_CHECK(!not_p2sh.IsPayToScriptHash());
+    BOOST_CHECK(!not_p2sh.IsPayToPubKeyHash());
 
     not_p2sh.clear();
     not_p2sh << OP_NOP << ToByteVector(dummy) << OP_EQUAL;
     BOOST_CHECK(!not_p2sh.IsPayToScriptHash());
+    BOOST_CHECK(!not_p2sh.IsPayToPubKeyHash());
 
     not_p2sh.clear();
     not_p2sh << OP_HASH160 << ToByteVector(dummy) << OP_CHECKSIG;
     BOOST_CHECK(!not_p2sh.IsPayToScriptHash());
+    BOOST_CHECK(!not_p2sh.IsPayToPubKeyHash());
+
+    // lastly, check p2pkh
+    CScript p2pkh;
+    p2pkh << OP_DUP << OP_HASH160 << ToByteVector(dummy) << OP_EQUALVERIFY << OP_CHECKSIG;
+    BOOST_CHECK(!p2pkh.IsPayToScriptHash());
+    BOOST_CHECK(p2pkh.IsPayToPubKeyHash());
+    // break p2pkh by erasing the 10th byte
+    p2pkh.erase(p2pkh.begin() + 10);
+    BOOST_CHECK(!p2pkh.IsPayToScriptHash());
+    BOOST_CHECK(!p2pkh.IsPayToPubKeyHash());
 }
 
 BOOST_AUTO_TEST_CASE(switchover) {
