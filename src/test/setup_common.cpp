@@ -121,10 +121,10 @@ TestingSetup::TestingSetup(const std::string &chainName)
                                                FormatStateMessage(state)));
         }
     }
-    nScriptCheckThreads = 3;
-    for (int i = 0; i < nScriptCheckThreads - 1; i++) {
-        threadGroup.create_thread([i]() { return ThreadScriptCheck(i); });
-    }
+
+    // Start script-checking threads
+    constexpr int script_check_threads = 2;
+    StartScriptCheckWorkerThreads(script_check_threads);
 
     g_banman =
         std::make_unique<BanMan>(GetDataDir() / "banlist.dat", chainparams,
@@ -136,6 +136,7 @@ TestingSetup::TestingSetup(const std::string &chainName)
 TestingSetup::~TestingSetup() {
     threadGroup.interrupt_all();
     threadGroup.join_all();
+    StopScriptCheckWorkerThreads();
     GetMainSignals().FlushBackgroundCallbacks();
     GetMainSignals().UnregisterBackgroundSignalScheduler();
     g_connman.reset();

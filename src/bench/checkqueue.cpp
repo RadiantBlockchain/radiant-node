@@ -16,8 +16,6 @@
 #include <util/system.h>
 #include <validation.h>
 
-#include <boost/thread/thread.hpp>
-
 #include <limits>
 #include <utility>
 #include <vector>
@@ -43,10 +41,7 @@ static void CCheckQueueSpeedPrevectorJob(benchmark::State &state) {
         void swap(PrevectorJob &x) { p.swap(x.p); };
     };
     CCheckQueue<PrevectorJob> queue{QUEUE_BATCH_SIZE};
-    boost::thread_group tg;
-    for (auto x = 0; x < std::max(MIN_CORES, GetNumCores()); ++x) {
-        tg.create_thread([&] { queue.Thread(); });
-    }
+    queue.StartWorkerThreads(std::max(MIN_CORES, GetNumCores()) - 1);
     while (state.KeepRunning()) {
         // Make insecure_rand here so that each iteration is identical.
         FastRandomContext insecure_rand(true);
@@ -63,8 +58,7 @@ static void CCheckQueueSpeedPrevectorJob(benchmark::State &state) {
         // for clarity
         control.Wait();
     }
-    tg.interrupt_all();
-    tg.join_all();
+    queue.StopWorkerThreads();
 }
 
 static void CCheckQueue_RealData32MB(bool cacheSigs, benchmark::State &state) {
@@ -132,19 +126,15 @@ static void CCheckQueue_RealData32MB(bool cacheSigs, benchmark::State &state) {
 
     // Step 3: Setup threads for our CCheckQueue
     CCheckQueue<CScriptCheck> queue{QUEUE_BATCH_SIZE};
-    boost::thread_group tg;
     int nThreads = gArgs.GetArg("-par", DEFAULT_SCRIPTCHECK_THREADS);
     const int nCores = std::max(GetNumCores(), 1);
     if (!nThreads) nThreads = nCores;
-    else if (nThreads < 0) nThreads = std::max(0, nCores + nThreads); // negative means leave n cores free
-    LogPrintf("%s: Using %d threads for signature verification\n", __func__, nThreads);
+    else if (nThreads < 0) nThreads = std::max(1, nCores + nThreads); // negative means leave n cores free
+    LogPrintf("%s: Using %d thread%s for signature verification\n", __func__, nThreads, nThreads != 1 ? "s" : "");
     --nThreads; // account for the fact that this main thread also does processing in .Wait() below
-    for (int i = 0; i < nThreads; ++i) {
-        tg.create_thread([&] { queue.Thread(); });
-    }
-    Defer d([&tg]{
-        tg.interrupt_all();
-        tg.join_all();
+    queue.StartWorkerThreads(nThreads);
+    Defer d([&queue]{
+        queue.StopWorkerThreads();
     });
 
     // And finally: Run the benchmark

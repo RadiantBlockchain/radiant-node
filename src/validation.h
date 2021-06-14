@@ -96,8 +96,8 @@ static constexpr unsigned int BLOCKFILE_CHUNK_SIZE = 0x1000000; // 16 MiB
 /** The pre-allocation chunk size for rev?????.dat files (since 0.8) */
 static constexpr unsigned int UNDOFILE_CHUNK_SIZE = 0x100000; // 1 MiB
 
-/** Maximum number of script-checking threads allowed */
-static constexpr int MAX_SCRIPTCHECK_THREADS = 16;
+/** Maximum number of dedicated script-checking threads allowed */
+static constexpr int MAX_SCRIPTCHECK_THREADS = 15;
 /** -par default (number of script-checking threads, 0 = auto) */
 static constexpr int DEFAULT_SCRIPTCHECK_THREADS = 0;
 /**
@@ -206,7 +206,6 @@ extern std::condition_variable g_best_block_cv;
 extern uint256 g_best_block;
 extern std::atomic_bool fImporting;
 extern std::atomic_bool fReindex;
-extern int nScriptCheckThreads;
 extern bool fIsBareMultisigStd;
 extern bool fRequireStandard;
 extern bool fCheckBlockIndex;
@@ -395,10 +394,10 @@ bool LoadChainTip(const Config &config) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
  */
 void UnloadBlockIndex();
 
-/**
- * Run an instance of the script checking thread.
- */
-void ThreadScriptCheck(int worker_num);
+/** Run instances of script checking worker threads */
+void StartScriptCheckWorkerThreads(int threads_num);
+/** Stop all of the script checking worker threads */
+void StopScriptCheckWorkerThreads();
 
 /**
  * Check whether we are doing an initial block download (synchronizing from disk
