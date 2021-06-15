@@ -1051,6 +1051,14 @@ void SetupServerArgs() {
                            DEFAULT_MAX_INITIAL_GBT_TIME),
                  false, OptionsCategory::BLOCK_CREATION);
 
+    gArgs.AddArg("-gbtcheckvalidity",
+                 strprintf("Set whether to test generated block templates for validity in getblocktemplate and/or "
+                           "getblocktemplatelight. Mining nodes may wish to skip validity checks as a performance "
+                           "optimization, particularly when mining large blocks. Validity checking can also be set "
+                           "on individual gbt calls by specifying the \"checkvalidity\": boolean key in the "
+                           "template_request object given to gbt. (default: %d)", DEFAULT_GBT_CHECK_VALIDITY),
+                 false, OptionsCategory::BLOCK_CREATION);
+
     gArgs.AddArg("-blockmintxfee=<amt>",
                  strprintf("Set lowest fee rate (in %s/kB) for transactions to "
                            "be included in block creation. (default: %s)",
@@ -1909,6 +1917,9 @@ bool AppInitParameterInteraction(Config &config) {
         return InitError(_("Transaction broadcast rate must not be configured with a negative value."));
     }
     config.SetInvBroadcastRate(nTxBroadcastRate);
+
+    // process and save -gbtcheckvalidity arg (if specified)
+    config.SetGBTCheckValidity(gArgs.GetBoolArg("-gbtcheckvalidity", DEFAULT_GBT_CHECK_VALIDITY));
 
     // Sanity check argument for min fee for including tx in block
     // TODO: Harmonize which arguments need sanity checking and where that

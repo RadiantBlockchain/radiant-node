@@ -90,9 +90,13 @@ public:
      *  @param timeLimitSecs   If >0, limit the amount of time spent
      *                         assembling the block to this time limit,
      *                         in seconds. If <= 0, no time limit.
+     *  @param checkValidity   If false, we do not call TestBlockValidity
+     *                         and instead assume the block we create
+     *                         is valid. This option is offered for
+     *                         performance.
      */
     std::unique_ptr<CBlockTemplate>
-    CreateNewBlock(const CScript &scriptPubKeyIn, double timeLimitSecs = 0.);
+    CreateNewBlock(const CScript &scriptPubKeyIn, double timeLimitSecs = 0., bool checkValidity = true);
 
     uint64_t GetMaxGeneratedBlockSize() const { return nMaxGeneratedBlockSize; }
 

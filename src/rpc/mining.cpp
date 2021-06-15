@@ -371,6 +371,8 @@ static UniValue getblocktemplatecommon(bool fLight, const Config &config, const 
 
     std::string strMode = "template";
     const UniValue *lpval = &NullUniValue;
+    bool checkValidity = config.GetGBTCheckValidity();
+    bool ignoreCacheOverride = false;
     std::set<std::string> setClientRules;
     if (!request.params[0].isNull()) {
         const UniValue::Object &oparam = request.params[0].get_obj();
@@ -382,7 +384,15 @@ static UniValue getblocktemplatecommon(bool fLight, const Config &config, const 
         } else {
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid mode");
         }
+
         lpval = &oparam["longpollid"];
+        // Check the block template for validity? (affects strMode == "template" only)
+        if (const UniValue &tval = oparam["checkvalidity"]; !tval.isNull()) {
+            checkValidity = tval.get_bool();
+        }
+        if (const UniValue &tval = oparam["ignorecache"]; !tval.isNull()) {
+            ignoreCacheOverride = tval.get_bool();
+        }
 
         if (strMode == "proposal") {
             const UniValue &dataval = oparam["data"];
@@ -505,7 +515,7 @@ static UniValue getblocktemplatecommon(bool fLight, const Config &config, const 
     static std::unique_ptr<LightResult> plightresult; // fLight mode only, cached result associated with pblocktemplate
     static bool fIgnoreCache = false;
     bool fNewTip = (pindexPrev && pindexPrev != ::ChainActive().Tip());
-    if (pindexPrev != ::ChainActive().Tip() || fIgnoreCache ||
+    if (pindexPrev != ::ChainActive().Tip() || fIgnoreCache || ignoreCacheOverride ||
         (g_mempool.GetTransactionsUpdated() != nTransactionsUpdatedLast &&
          GetTime() - nStart > 5)) {
         // Clear pindexPrev so future calls make a new block, despite any
@@ -535,7 +545,7 @@ static UniValue getblocktemplatecommon(bool fLight, const Config &config, const 
         // Create new block
         CScript scriptDummy = CScript() << OP_TRUE;
         pblocktemplate =
-            BlockAssembler(config, g_mempool).CreateNewBlock(scriptDummy, timeLimitSecs);
+            BlockAssembler(config, g_mempool).CreateNewBlock(scriptDummy, timeLimitSecs, checkValidity);
         plightresult.reset();
         if (!pblocktemplate) {
             throw JSONRPCError(RPC_OUT_OF_MEMORY, "Out of memory");
@@ -725,6 +735,38 @@ static UniValue getblocktemplatecommon(bool fLight, const Config &config, const 
     return result;
 }
 
+static std::vector<RPCArg> getGBTArgs(const Config &config, bool fLight) {
+    std::vector<RPCArg> ret{
+        {"template_request", RPCArg::Type::OBJ, /* opt */ true, /* default_val */ "",
+         "A json object in the following spec",
+         {
+             {"mode", RPCArg::Type::STR, /* opt */ true, /* default_val */ "",
+              "This must be set to \"template\", \"proposal\" (see BIP23), or omitted"},
+             {"capabilities", RPCArg::Type::ARR, /* opt */ true, /* default_val */ "",
+              "A list of strings",
+              {
+                  {"support", RPCArg::Type::STR, /* opt */ true, /* default_val */ "",
+                   "client side supported feature, "
+                   "'longpoll', 'coinbasetxn', 'coinbasevalue', 'proposal', 'serverlist', 'workid'"},
+                 },
+             },
+             {"longpollid", RPCArg::Type::STR, /* opt */ true, /* default_val */ "",
+              "Enables long-polling mode: specify the current best block hash (hex)"},
+             {"checkvalidity", RPCArg::Type::BOOL, /* opt */ true,
+              /* default_val*/ config.GetGBTCheckValidity() ? "true" : "false",
+              "Specify whether to test the generated block template for validity (\"template\" mode only)"},
+             {"ignorecache", RPCArg::Type::BOOL, /* opt */ true, /* default_val */ "false",
+              "Specify whether to unconditionally ignore the cached block template"},
+         }, "\"template_request\""},
+    };
+    if (fLight) {
+        ret.push_back({"additional_txs", RPCArg::Type::ARR, /* opt */ true, /* default_val */ "[]",
+                       "Hex encoded transactions to add to the block (each tx must be unique and valid)",
+                       {}, "\"additional_txs\""});
+    }
+    return ret;
+}
+
 static UniValue getblocktemplate(const Config &config, const JSONRPCRequest &request) {
     if (request.fHelp || request.params.size() > 1) {
         // If you change the help text of getblocktemplate below,
@@ -735,22 +777,7 @@ static UniValue getblocktemplate(const Config &config, const JSONRPCRequest &req
             "that is used to explicitly select between the default 'template' request or a 'proposal'.\n"
             "It returns data needed to construct a block to work on.\n"
             "For full specification, see BIP22/BIP23.\n",
-            {
-                {"template_request", RPCArg::Type::OBJ, /* opt */ true, /* default_val */ "",
-                 "A json object in the following spec",
-                 {
-                     {"mode", RPCArg::Type::STR, /* opt */ true, /* default_val */ "",
-                      "This must be set to \"template\", \"proposal\" (see BIP23), or omitted"},
-                     {"capabilities", RPCArg::Type::ARR, /* opt */ true, /* default_val */ "",
-                      "A list of strings",
-                      {
-                          {"support", RPCArg::Type::STR, /* opt */ true, /* default_val */ "",
-                           "client side supported feature, "
-                           "'longpoll', 'coinbasetxn', 'coinbasevalue', 'proposal', 'serverlist', 'workid'"},
-                         },
-                     },
-                 }, "\"template_request\""},
-            },
+            getGBTArgs(config, /* light */ false),
             RPCResult{
                 "{\n"
                 "  \"version\" : n,                    (numeric) The preferred block version\n"
@@ -820,26 +847,7 @@ static UniValue getblocktemplatelight(const Config &config, const JSONRPCRequest
             "that is used to explicitly select between the default 'template' request or a 'proposal'.\n"
             "It returns data needed to construct a block to work on.\n"
             "For full specification, see the getblocktemplatelight spec in the doc folder, and BIP22/BIP23.\n",
-            {
-                {"template_request", RPCArg::Type::OBJ, /* opt */ true, /* default_val */ "",
-                 "A json object in the following spec",
-                 {
-                     {"mode", RPCArg::Type::STR, /* opt */ true, /* default_val */ "",
-                      "This must be set to \"template\", \"proposal\" (see BIP23), or omitted"},
-                     {"capabilities", RPCArg::Type::ARR, /* opt */ true, /* default_val */ "",
-                      "A list of strings",
-                      {
-                          {"support", RPCArg::Type::STR, /* opt */ true, /* default_val */ "",
-                           "client side supported feature, "
-                           "'longpoll', 'coinbasetxn', 'coinbasevalue', 'proposal', 'serverlist', 'workid'"},
-                         },
-                     },
-                 }, "\"template_request\""},
-                 {"additional_txs", RPCArg::Type::ARR, /* opt */ true, /* default_val */ "[]",
-                 "Hex encoded transactions to add to the block (each tx must be unique and valid)",
-                 {
-                 }, "\"additional_txs\""},
-            },
+            getGBTArgs(config, true),
             RPCResult{
                 "{\n"
                 "  \"version\" : n,                    (numeric) The preferred block version\n"
