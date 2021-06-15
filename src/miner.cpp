@@ -120,7 +120,7 @@ void BlockAssembler::resetBlock() {
 }
 
 std::unique_ptr<CBlockTemplate>
-BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn, double timeLimitSecs) {
+BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn, double timeLimitSecs, bool checkValidity) {
     const int64_t nTimeStart = GetTimeMicros();
 
     resetBlock();
@@ -215,10 +215,12 @@ BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn, double timeLimitSe
     pblocktemplate->entries[0].fees = -1 * nFees;
     pblock->vtx[0] = pblocktemplate->entries[0].tx;
 
-    uint64_t nSerializeSize = GetSerializeSize(*pblock, PROTOCOL_VERSION);
+    const uint64_t nByteSize =
+            checkValidity ? GetSerializeSize(*pblock, PROTOCOL_VERSION)
+                          : nBlockSize; // if not checking validity, skip re-serializing the block and estimate the size
 
-    LogPrintf("CreateNewBlock(): total size: %u txs: %u fees: %ld sigops %d\n",
-              nSerializeSize, nBlockTx, nFees, nBlockSigOps);
+    LogPrintf("CreateNewBlock(): %s: %u txs: %u fees: %ld sigops %d\n",
+              checkValidity ? "total size" : "estimated size", nByteSize, nBlockTx, nFees, nBlockSigOps);
 
     // Fill in header.
     pblock->hashPrevBlock = pindexPrev->GetBlockHash();
@@ -227,14 +229,16 @@ BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn, double timeLimitSe
     pblock->nNonce = 0;
     pblocktemplate->entries[0].sigOpCount = 0;
 
-    CValidationState state;
-    if (!TestBlockValidity(state, chainparams, *pblock, pindexPrev,
-                           BlockValidationOptions(GetConfig())
-                               .withCheckPoW(false)
-                               .withCheckMerkleRoot(false))) {
-        throw std::runtime_error(strprintf("%s: TestBlockValidity failed: %s",
-                                           __func__,
-                                           FormatStateMessage(state)));
+    if (checkValidity) {
+        CValidationState state;
+        if (!TestBlockValidity(state, chainparams, *pblock, pindexPrev,
+                               BlockValidationOptions(GetConfig())
+                                   .withCheckPoW(false)
+                                   .withCheckMerkleRoot(false))) {
+            throw std::runtime_error(strprintf("%s: TestBlockValidity failed: %s",
+                                               __func__,
+                                               FormatStateMessage(state)));
+        }
     }
     const int64_t nTime2 = GetTimeMicros();
 

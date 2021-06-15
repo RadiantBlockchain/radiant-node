@@ -33,6 +33,11 @@ static constexpr int64_t DEFAULT_MAX_INITIAL_GBT_TIME = 0;
  */
 static constexpr Amount DEFAULT_BLOCK_MIN_TX_FEE_PER_KB(1000 * SATOSHI);
 /**
+ * Default for -gbtcheckvalidity, which determines whether we call
+ * TestBlockValidity() on the generated block template.
+ */
+static constexpr bool DEFAULT_GBT_CHECK_VALIDITY = true;
+/**
  * The maximum size for transactions we're willing to relay/mine.
  */
 static constexpr unsigned int MAX_STANDARD_TX_SIZE = 100000;

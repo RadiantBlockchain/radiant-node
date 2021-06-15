@@ -47,6 +47,9 @@ public:
 
     virtual void SetRejectSubVersions(const std::set<std::string> &reject) = 0;
     virtual const std::set<std::string> & GetRejectSubVersions() const = 0;
+
+    virtual void SetGBTCheckValidity(bool) = 0;
+    virtual bool GetGBTCheckValidity() const = 0;
 };
 
 class GlobalConfig final : public Config {
@@ -72,8 +75,12 @@ public:
     void SetRejectSubVersions(const std::set<std::string> &reject) override { rejectSubVersions = reject; }
     const std::set<std::string> & GetRejectSubVersions() const override { return rejectSubVersions; }
 
+    void SetGBTCheckValidity(bool b) override { gbtCheckValidity = b; }
+    bool GetGBTCheckValidity() const override { return gbtCheckValidity; }
+
 private:
     bool useCashAddr;
+    bool gbtCheckValidity;
     Amount excessUTXOCharge;
     uint64_t nInvBroadcastRate;
     uint64_t nInvBroadcastInterval;
@@ -121,6 +128,9 @@ public:
         static const std::set<std::string> dummy;
         return dummy;
     }
+
+    void SetGBTCheckValidity(bool) override {}
+    bool GetGBTCheckValidity() const override { return false; }
 
 private:
     std::unique_ptr<CChainParams> chainParams;
