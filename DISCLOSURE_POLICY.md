@@ -76,13 +76,6 @@ contact at emergentreasons at gmail dot com
 3F4F4CFA80488BA38DD45FF042D1A8643349D91F
 ```
 
-### Andrea Suisani
-```
-Bitcoin Cash Node Developer and Maintainer
-contact at sickpig at gmail dot com
-17D16F72C0091B1FED7795FBA9CA1D0EE3789741
-```
-
 ### Dagur Valberg Johannsson
 ```
 Bitcoin Cash Node Developer and Maintainer
