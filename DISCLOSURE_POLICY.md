@@ -90,6 +90,13 @@ contact at imaginary dot username dot btc at gmail dot com
 9ACAD88350645C0D7781337D451A17BA597CF529
 ```
 
+### Calin Culianu
+```
+Bitcoin Cash Node Developer and Maintainer
+contact at calin dot culianu at gmail dot com
+D465135F97D0047E18E99DC321810A542031C02C
+```
+
 ## Disclosure Relationships
 
 Neighboring projects that may be affected by bugs, potential exploits, or other
