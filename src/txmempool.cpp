@@ -900,8 +900,7 @@ auto CTxMemPool::recursiveDSProofSearch(const TxId &txId, DspDescendants *desc, 
 
     // we must use a std::function because lambdas cannot see themselves
     std::function<void(txiter)> search = [&](txiter txit) EXCLUSIVE_LOCKS_REQUIRED(cs_main, cs) {
-        const TxId txId{txit->GetTx().GetId()};
-        path.push_back(txId);
+        path.push_back(txit->GetTx().GetId());
 
         if (path.size() > recursionMax || seenTxs.size() > ancestorMax) {
             if (score) *score = std::min(0.25, *score);
