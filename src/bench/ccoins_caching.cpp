@@ -4,6 +4,8 @@
 
 #include <bench/bench.h>
 #include <coins.h>
+#include <consensus/tx_verify.h>
+#include <consensus/validation.h>
 #include <policy/policy.h>
 #include <wallet/crypter.h>
 
@@ -88,4 +90,43 @@ static void CCoinsCaching(benchmark::State &state) {
     }
 }
 
+static void CheckTxInputs(benchmark::State &state) {
+    CBasicKeyStore keystore;
+    CCoinsView coinsDummy;
+    CCoinsViewCache coins(&coinsDummy);
+    constexpr size_t nTx = 3072;
+    std::vector<CTransactionRef> transactions;
+    transactions.reserve(nTx);
+
+    for (size_t i = 0; i < nTx; ++i) {
+        const auto dummyTransactions = SetupDummyInputs(keystore, coins);
+        CMutableTransaction tx;
+        tx.vin.resize(3);
+        tx.vin[0].prevout = COutPoint(dummyTransactions[0].GetId(), 1);
+        tx.vin[0].scriptSig << std::vector<uint8_t>(65, 0);
+        tx.vin[1].prevout = COutPoint(dummyTransactions[1].GetId(), 0);
+        tx.vin[1].scriptSig << std::vector<uint8_t>(65, 0)
+                            << std::vector<uint8_t>(33, 4);
+        tx.vin[2].prevout = COutPoint(dummyTransactions[1].GetId(), 1);
+        tx.vin[2].scriptSig << std::vector<uint8_t>(65, 0)
+                            << std::vector<uint8_t>(33, 4);
+        tx.vout.resize(1);
+        tx.vout[0].nValue = 20 * COIN;
+        tx.vout[0].scriptPubKey << OP_1;
+        transactions.push_back(MakeTransactionRef(tx));
+    }
+
+
+    // Benchmark.
+    while (state.KeepRunning()) {
+        for (const CTransactionRef &tx : transactions) {
+            CValidationState valstate;
+            Amount txfee;
+            const bool success = Consensus::CheckTxInputs(*tx, valstate, coins, 0, txfee);
+            assert(success);
+        }
+    }
+}
+
 BENCHMARK(CCoinsCaching, 170 * 1000);
+BENCHMARK(CheckTxInputs, 1000);
