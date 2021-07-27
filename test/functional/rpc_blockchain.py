@@ -346,15 +346,15 @@ class BlockchainTest(BitcoinTestFramework):
 
     def _test_stopatheight(self):
         assert_equal(self.nodes[0].getblockcount(), 200)
-        self.nodes[0].generatetoaddress(
-            6, self.nodes[0].get_deterministic_priv_key().address)
+        self.generatetoaddress(self.nodes[0],
+                               6, self.nodes[0].get_deterministic_priv_key().address)
         assert_equal(self.nodes[0].getblockcount(), 206)
         self.log.debug('Node should not stop at this height')
         assert_raises(subprocess.TimeoutExpired,
                       lambda: self.nodes[0].process.wait(timeout=3))
         try:
-            self.nodes[0].generatetoaddress(
-                1, self.nodes[0].get_deterministic_priv_key().address)
+            self.generatetoaddress(self.nodes[0],
+                                   1, self.nodes[0].get_deterministic_priv_key().address)
         except (ConnectionError, http.client.BadStatusLine):
             pass  # The node already shut down before response
         self.log.debug('Node should stop at this height...')

@@ -20,7 +20,7 @@ class NodeSetupAndSyncTest(BitcoinTestFramework):
         assert self.nodes[1].getmempoolinfo()["loaded"]
 
         # Mature some coins for easy spending, have a tx in the mempool
-        self.nodes[0].generate(101)
+        self.generate(self.nodes[0], 101)
         self.sync_all()  # to prevent bad-txns-nonfinal on the following sendtoaddress
         self.nodes[0].sendtoaddress(self.nodes[1].getnewaddress(), "1")
         self.sync_all()

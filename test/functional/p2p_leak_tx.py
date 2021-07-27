@@ -27,7 +27,7 @@ class P2PLeakTxTest(BitcoinTestFramework):
     def run_test(self):
         # The block and tx generating node
         gen_node = self.nodes[0]
-        gen_node.generate(1)
+        self.generate(gen_node, 1)
 
         # An "attacking" inbound peer
         inbound_peer = self.nodes[0].add_p2p_connection(P2PNode())

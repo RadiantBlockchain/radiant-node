@@ -37,7 +37,7 @@ class AbandonConflictTest(BitcoinTestFramework):
                 total += self.nodes[0].calculate_fee_from_txid(txid)
 
             return satoshi_round(total)
-        self.nodes[1].generate(100)
+        self.generate(self.nodes[1], 100)
         self.sync_blocks()
         balance = self.nodes[0].getbalance()
         txA = self.nodes[0].sendtoaddress(
@@ -48,7 +48,7 @@ class AbandonConflictTest(BitcoinTestFramework):
             self.nodes[0].getnewaddress(), Decimal("10"))
 
         self.sync_mempools()
-        self.nodes[1].generate(1)
+        self.generate(self.nodes[1], 1)
 
         # Can not abandon non-wallet transaction
         assert_raises_rpc_error(-5, 'Invalid or non-wallet transaction id',
@@ -197,7 +197,7 @@ class AbandonConflictTest(BitcoinTestFramework):
         tx = self.nodes[0].createrawtransaction(inputs, outputs)
         signed = self.nodes[0].signrawtransactionwithwallet(tx)
         self.nodes[1].sendrawtransaction(signed["hex"])
-        self.nodes[1].generate(1)
+        self.generate(self.nodes[1], 1)
 
         connect_nodes(self.nodes[0], self.nodes[1])
         self.sync_blocks()

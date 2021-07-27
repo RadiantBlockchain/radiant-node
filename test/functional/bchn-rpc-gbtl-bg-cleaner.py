@@ -35,7 +35,7 @@ class GBTLightBGCleanerTest(BitcoinTestFramework):
 
     def run_test(self):
         # generate just 1 block to leave IBD state (no wallet is required for this test so we use hard-coded key)
-        self.nodes[0].generatetoaddress(1, self.nodes[0].get_deterministic_priv_key().address)
+        self.generatetoaddress(self.nodes[0], 1, self.nodes[0].get_deterministic_priv_key().address)
 
         self.sync_all()
 

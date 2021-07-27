@@ -574,8 +574,8 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
                 for peer in range(4):
                     for j in range(25):
                         set_node_times(self.nodes, block_time)
-                        self.nodes[peer].generatetoaddress(
-                            1, self.nodes[peer].get_deterministic_priv_key().address)
+                        self.generatetoaddress(self.nodes[peer],
+                                               1, self.nodes[peer].get_deterministic_priv_key().address)
                         block_time += 10 * 60
                     # Must sync before next peer starts generating blocks
                     self.sync_blocks()

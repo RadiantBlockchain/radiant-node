@@ -37,7 +37,7 @@ class GetBlockTemplateTest(BitcoinTestFramework):
         assert_raises_rpc_error(-10, "Bitcoin is downloading blocks...", self.nodes[0].getblocktemplate)
 
         # Mature some coins for easy spending, have a tx in the mempool
-        self.nodes[0].generate(101)
+        self.generate(self.nodes[0], 101)
         txid = self.nodes[0].sendtoaddress(self.nodes[1].getnewaddress(), "1")
         self.sync_all()
 

@@ -142,7 +142,7 @@ class BlockSigChecksTest(BitcoinTestFramework):
         [node] = self.nodes
         node.add_p2p_connection(P2PDataStore())
         # Get out of IBD
-        node.generatetoaddress(1, node.get_deterministic_priv_key().address)
+        self.generatetoaddress(node, 1, node.get_deterministic_priv_key().address)
 
         tip = self.getbestblock(node)
 
@@ -155,7 +155,7 @@ class BlockSigChecksTest(BitcoinTestFramework):
         self.spendable_outputs = deque(block.vtx[0] for block in blocks)
 
         self.log.info("Mature the blocks.")
-        node.generatetoaddress(100, node.get_deterministic_priv_key().address)
+        self.generatetoaddress(node, 100, node.get_deterministic_priv_key().address)
 
         tip = self.getbestblock(node)
 
@@ -238,7 +238,7 @@ class BlockSigChecksTest(BitcoinTestFramework):
 
         self.log.info(
             "There are too many sigchecks in mempool to mine in a single block. Make sure the node won't mine invalid blocks.")
-        node.generatetoaddress(1, node.get_deterministic_priv_key().address)
+        self.generatetoaddress(node, 1, node.get_deterministic_priv_key().address)
         tip = self.getbestblock(node)
         # only 39 txes got mined.
         assert_equal(len(node.getrawmempool()), 11)

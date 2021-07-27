@@ -77,7 +77,7 @@ class ToolWalletTest(BitcoinTestFramework):
         # mutate the wallet to check the info command output changes
         # accordingly
         self.start_node(0)
-        self.nodes[0].generate(1)
+        self.generate(self.nodes[0], 1)
         self.stop_node(0)
 
         out = textwrap.dedent('''\

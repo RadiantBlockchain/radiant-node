@@ -46,7 +46,7 @@ class MempoolFeeDeltaTest(BitcoinTestFramework):
 
         # Create 1 block for the first group of nodes to make reorg code kick in
         # below.
-        self.nodes[0].generate(1)
+        self.generate(self.nodes[0], 1)
         self.sync_blocks(self.nodes[0:1])
         self.sync_mempools(self.nodes[0:1])
 
@@ -66,7 +66,7 @@ class MempoolFeeDeltaTest(BitcoinTestFramework):
         # Trigger reorg -- block created above will roll back so the DisconnectedBlockTransactions
         # code on the C++ side will kick in, temporarily emptying out the mempool and filling it
         # again. Fee deltas for in-memory txs should be preserved across this process.
-        self.nodes[3].generate(10)
+        self.generate(self.nodes[3], 10)
         connect_nodes(self.nodes[1], self.nodes[2])
         self.sync_blocks()
 

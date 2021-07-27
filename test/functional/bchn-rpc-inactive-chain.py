@@ -62,10 +62,10 @@ class RPCInactiveChain(BitcoinTestFramework):
         self._disconnect_all_nodes()
 
         # Generate a smaller chain on node0
-        shorter = self.nodes[0].generatetoaddress(5, addr0)
+        shorter = self.generatetoaddress(self.nodes[0], 5, addr0)
         assert_equal(len(shorter), 5)
         # Generate a longer chain on node1
-        longer = self.nodes[1].generatetoaddress(10, addr1)
+        longer = self.generatetoaddress(self.nodes[1], 10, addr1)
         assert_equal(len(longer), 10)
 
         info0 = self.nodes[0].getblockchaininfo()

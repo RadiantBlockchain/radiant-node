@@ -131,8 +131,7 @@ class NativeIntrospectionTest(BitcoinTestFramework):
         self.block_heights[block.sha256] = block_height
         return block
 
-    @staticmethod
-    def ensure_spendable_txns_have_differing_amounts(node, scriptPubKey,
+    def ensure_spendable_txns_have_differing_amounts(self, node, scriptPubKey,
                                                      spendable_txns: List[CTransaction]) -> List[CTransaction]:
         """Takes an array of spendable_txns and spends them all with differing amounts, then mines
         a block.  It then returns the confirmed txns generated from this operation.
@@ -164,7 +163,7 @@ class NativeIntrospectionTest(BitcoinTestFramework):
         node.p2p.send_txs_and_test(ret, node)
         assert_equal(node.getrawmempool(), [tx.hash for tx in ret])
         # Mine the block
-        tiphash = node.generatetoaddress(1, node.get_deterministic_priv_key().address)[0]
+        tiphash = self.generatetoaddress(node, 1, node.get_deterministic_priv_key().address)[0]
         # Ensure mempool empty
         assert_equal(node.getrawmempool(), [])
         block = node.getblock(tiphash, 1)
@@ -188,7 +187,7 @@ class NativeIntrospectionTest(BitcoinTestFramework):
         spendable_txns = [block.vtx[0] for block in blocks]
 
         self.log.info("Mature the blocks and get out of IBD.")
-        node.generatetoaddress(100, node.get_deterministic_priv_key().address)
+        self.generatetoaddress(node, 100, node.get_deterministic_priv_key().address)
 
         self.log.info("Setting up spends to test and mining the funding txns")
 
@@ -879,7 +878,7 @@ class NativeIntrospectionTest(BitcoinTestFramework):
         # --------------------------------------------------------------------
 
         prevtiphash = node.getbestblockhash()
-        tiphash = node.generatetoaddress(1, node.get_deterministic_priv_key().address)[0]
+        tiphash = self.generatetoaddress(node, 1, node.get_deterministic_priv_key().address)[0]
         assert prevtiphash != tiphash
         assert_equal(node.getrawmempool(), [])
         blockinfo = node.getblock(tiphash, 1)

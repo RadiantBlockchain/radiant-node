@@ -74,7 +74,7 @@ class MempoolAcceptanceTest(BitcoinTestFramework):
         ))['hex']
         txid_in_block = node.sendrawtransaction(
             hexstring=raw_tx_in_block, allowhighfees=True)
-        node.generate(1)
+        self.generate(node, 1)
         self.mempool_size = 0
         self.check_mempool_result(
             result_expected=[{'txid': txid_in_block, 'allowed': False,
@@ -173,7 +173,7 @@ class MempoolAcceptanceTest(BitcoinTestFramework):
         ))['hex']
         txid_spend_both = node.sendrawtransaction(
             hexstring=raw_tx_spend_both, allowhighfees=True)
-        node.generate(1)
+        self.generate(node, 1)
         self.mempool_size = 0
         # Now see if we can add the coins back to the utxo set by sending the
         # exact txs again

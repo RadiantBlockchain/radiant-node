@@ -33,7 +33,7 @@ class MerkleBlockTest(BitcoinTestFramework):
 
     def run_test(self):
         self.log.info("Mining blocks...")
-        self.nodes[0].generate(105)
+        self.generate(self.nodes[0], 105)
         self.sync_all()
 
         chain_height = self.nodes[1].getblockcount()
@@ -55,7 +55,7 @@ class MerkleBlockTest(BitcoinTestFramework):
         assert_raises_rpc_error(-5, "Transaction not yet in block",
                                 self.nodes[0].gettxoutproof, [txid1])
 
-        self.nodes[0].generate(1)
+        self.generate(self.nodes[0], 1)
         blockhash = self.nodes[0].getblockhash(chain_height + 1)
         self.sync_all()
 
@@ -76,7 +76,7 @@ class MerkleBlockTest(BitcoinTestFramework):
             [txin_spent], {self.nodes[0].getnewaddress(): 49.98})
         txid3 = self.nodes[0].sendrawtransaction(
             self.nodes[1].signrawtransactionwithwallet(tx3)["hex"])
-        self.nodes[0].generate(1)
+        self.generate(self.nodes[0], 1)
         self.sync_all()
 
         txid_spent = txin_spent["txid"]

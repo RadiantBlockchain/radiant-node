@@ -27,7 +27,7 @@ class DoubleSpendProofRPCTest(BitcoinTestFramework):
     def basic_check(self):
         """Tests basic getdsproof/getdsprooflist functionality"""
 
-        self.nodes[0].generate(1)
+        self.generate(self.nodes[0], 1)
         self.sync_all()
 
         # Create and mine a regular non-coinbase transaction for spending
@@ -131,7 +131,7 @@ class DoubleSpendProofRPCTest(BitcoinTestFramework):
                 assert_greater_than(len(data), 216)
 
         # If any of the competing transactions is mined, the DPSs are put in the orphan list
-        self.nodes[0].generate(1)
+        self.generate(self.nodes[0], 1)
         self.sync_all()
         assert_equal(len(self.nodes[0].getdsprooflist()), 0)  # no non-orphan results
         dsps_all_orphans = self.nodes[0].getdsprooflist(0, True)
@@ -145,7 +145,7 @@ class DoubleSpendProofRPCTest(BitcoinTestFramework):
          - the 'paths' key in a lookup by child txid works as expected,
          - the 'descendants' key in the lookup of a dsp works as expected. """
 
-        self.nodes[0].generate(1)
+        self.generate(self.nodes[0], 1)
         self.sync_all()
 
         # Create a transaction on a double spent chain with multiple paths back to the DSP
@@ -330,7 +330,7 @@ class DoubleSpendProofRPCTest(BitcoinTestFramework):
 
         # Mining a block should take every dsproof and send them to the orphan list
         # it should also keep the same orphans from before around
-        block_hash = self.nodes[0].generate(1)[0]
+        block_hash = self.generate(self.nodes[0], 1)[0]
         self.sync_all()
         # No non-orphans
         assert_equal(len(self.nodes[0].getdsprooflist()), 0)
@@ -363,7 +363,7 @@ class DoubleSpendProofRPCTest(BitcoinTestFramework):
 
     def p2sh_score_check(self):
         """Create a P2SH, send to the P2SH, create a child of it that sends to P2PKH, and check dsproof scores"""
-        self.nodes[0].generate(1)
+        self.generate(self.nodes[0], 1)
         self.sync_all()
         pubkey = self.nodes[0].getaddressinfo(self.nodes[0].getnewaddress())['pubkey']
         p2sh = self.nodes[0].addmultisigaddress(1, [pubkey], "")['address']
@@ -379,7 +379,7 @@ class DoubleSpendProofRPCTest(BitcoinTestFramework):
         assert_equal(self.nodes[0].getdsproofscore(from_p2sh_txid), 0.0)
         # Now mine a block to confirm just the above 2 txns
         prev_blockhash = self.nodes[0].getblockchaininfo()["bestblockhash"]
-        blockhash, = self.nodes[0].generate(1)
+        blockhash, = self.generate(self.nodes[0], 1)
         assert_equal(self.nodes[0].getrawmempool(False), [])
         assert_equal(self.nodes[0].getblockchaininfo()["bestblockhash"], blockhash)
         # Next invalidate the above block, so that we send the parent txns back to mempool

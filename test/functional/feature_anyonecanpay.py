@@ -20,7 +20,7 @@ class AnyoneCanPayTest(BitcoinTestFramework):
 
     def test_anyonecanpay(self):
         # Get a mature coinbase for block 1
-        self.nodes[0].generate(101)
+        self.generate(self.nodes[0], 101)
         assert_equal(Decimal('50'), self.nodes[0].getbalance())
         assert_equal(Decimal('0'), self.nodes[1].getbalance())
 
@@ -46,7 +46,7 @@ class AnyoneCanPayTest(BitcoinTestFramework):
         assert 'errors' not in signed1
 
         tx1_id = self.nodes[0].sendrawtransaction(signed1['hex'])
-        self.nodes[0].generate(1)
+        self.generate(self.nodes[0], 1)
         self.sync_all()
         assert_equal(Decimal('50.00'), self.nodes[0].getbalance())
         assert_equal(Decimal('49.99'), self.nodes[1].getbalance())
@@ -70,7 +70,7 @@ class AnyoneCanPayTest(BitcoinTestFramework):
         assert_equal(signed2['complete'], True)
         assert 'errors' not in signed2
         self.nodes[1].sendrawtransaction(signed2['hex'])
-        self.nodes[1].generate(1)
+        self.generate(self.nodes[1], 1)
         self.sync_all()
 
         # Check balances. Node 0 got an additional full block maturing

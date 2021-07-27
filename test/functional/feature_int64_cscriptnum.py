@@ -129,7 +129,7 @@ class Int64CScriptNum(BitcoinTestFramework):
         spendable_txns = [block.vtx[0] for block in blocks]
 
         self.log.info("Mature the blocks and get out of IBD.")
-        node.generatetoaddress(100, node.get_deterministic_priv_key().address)
+        self.generatetoaddress(node, 100, node.get_deterministic_priv_key().address)
 
         self.log.info("Setting up spends to test and mining the fundings")
 
@@ -493,7 +493,7 @@ class Int64CScriptNum(BitcoinTestFramework):
 
         # Finally, mine the mempool and ensure that all txns made it into a block
         prevtiphash = node.getbestblockhash()
-        tiphash = node.generatetoaddress(1, node.get_deterministic_priv_key().address)[0]
+        tiphash = self.generatetoaddress(node, 1, node.get_deterministic_priv_key().address)[0]
         assert prevtiphash != tiphash
         assert_equal(node.getrawmempool(), [])
         blockinfo = node.getblock(tiphash, 1)

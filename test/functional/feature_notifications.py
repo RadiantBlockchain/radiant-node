@@ -46,7 +46,7 @@ class NotificationsTest(BitcoinTestFramework):
     def run_test(self):
         self.log.info("test -blocknotify")
         block_count = 10
-        blocks = self.nodes[1].generate(block_count)
+        blocks = self.generate(self.nodes[1], block_count)
 
         # wait at most 10 seconds for expected number of files before reading
         # the content
@@ -100,9 +100,9 @@ class NotificationsTest(BitcoinTestFramework):
         # Create an invalid chain and ensure the node warns.
         self.log.info("test -alertnotify for forked chain")
         fork_block = self.nodes[0].getbestblockhash()
-        self.nodes[0].generate(1)
+        self.generate(self.nodes[0], 1)
         invalid_block = self.nodes[0].getbestblockhash()
-        self.nodes[0].generate(7)
+        self.generate(self.nodes[0], 7)
 
         # Invalidate a large branch, which should trigger an alert.
         self.nodes[0].invalidateblock(invalid_block)

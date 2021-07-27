@@ -79,7 +79,7 @@ class P2PFingerprintTest(BitcoinTestFramework):
         self.nodes[0].setmocktime(int(time.time()) - 60 * 24 * 60 * 60)
 
         # Generating a chain of 10 blocks
-        block_hashes = self.nodes[0].generatetoaddress(
+        block_hashes = self.generatetoaddress(self.nodes[0],
             10, self.nodes[0].get_deterministic_priv_key().address)
 
         # Create longer chain starting 2 blocks before current tip
@@ -113,8 +113,8 @@ class P2PFingerprintTest(BitcoinTestFramework):
 
         # Longest chain is extended so stale is much older than chain tip
         self.nodes[0].setmocktime(0)
-        tip = self.nodes[0].generatetoaddress(
-            1, self.nodes[0].get_deterministic_priv_key().address)[0]
+        tip = self.generatetoaddress(self.nodes[0],
+                                     1, self.nodes[0].get_deterministic_priv_key().address)[0]
         assert_equal(self.nodes[0].getblockcount(), 14)
 
         # Send getdata & getheaders to refresh last received getheader message

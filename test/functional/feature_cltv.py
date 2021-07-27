@@ -100,7 +100,7 @@ class BIP65Test(BitcoinTestFramework):
 
         self.log.info("Mining {} blocks".format(CLTV_HEIGHT - 2))
         self.coinbase_txids = [self.nodes[0].getblock(
-            b)['tx'][0] for b in self.nodes[0].generate(CLTV_HEIGHT - 2)]
+            b)['tx'][0] for b in self.generate(self.nodes[0], CLTV_HEIGHT - 2)]
         self.nodeaddress = self.nodes[0].getnewaddress()
 
         self.log.info(

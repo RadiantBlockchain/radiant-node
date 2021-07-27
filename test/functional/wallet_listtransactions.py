@@ -19,7 +19,7 @@ class ListTransactionsTest(BitcoinTestFramework):
 
     def run_test(self):
         # Leave IBD
-        self.nodes[0].generate(1)
+        self.generate(self.nodes[0], 1)
         # Simple send, 0 to 1:
         txid = self.nodes[0].sendtoaddress(self.nodes[1].getnewaddress(), 0.1)
         self.sync_all()
@@ -30,7 +30,7 @@ class ListTransactionsTest(BitcoinTestFramework):
                             {"txid": txid},
                             {"category": "receive", "amount": Decimal("0.1"), "confirmations": 0})
         # mine a block, confirmations should change:
-        self.nodes[0].generate(1)
+        self.generate(self.nodes[0], 1)
         self.sync_all()
         assert_array_result(self.nodes[0].listtransactions(),
                             {"txid": txid},
@@ -104,7 +104,7 @@ class ListTransactionsTest(BitcoinTestFramework):
         txid_B = self.nodes[1].sendtoaddress(multisig_B["address"], 0.01)
         txid_C = self.nodes[1].sendtoaddress(plain_addr_C, 0.01)
 
-        self.nodes[1].generate(1)
+        self.generate(self.nodes[1], 1)
         self.sync_all()
 
         # check label_A_watchonly results

@@ -66,7 +66,7 @@ class MiningTest(BitcoinTestFramework):
         assert_equal(mining_info['pooledtx'], 0)
 
         # Mine a block to leave initial block download
-        node.generatetoaddress(1, node.get_deterministic_priv_key().address)
+        self.generatetoaddress(node, 1, node.get_deterministic_priv_key().address)
         tmpl = node.getblocktemplate()
         self.log.info("getblocktemplate: Test capability advertised")
         assert 'proposal' in tmpl['capabilities']
@@ -258,7 +258,7 @@ class MiningTest(BitcoinTestFramework):
                          branchlen=0) in node.getchaintips()
 
         # Building a few blocks should give the same results
-        node.generatetoaddress(10, node.get_deterministic_priv_key().address)
+        self.generatetoaddress(node, 10, node.get_deterministic_priv_key().address)
         assert_raises_rpc_error(-25, 'time-too-old', lambda: node.submitheader(
             hexdata=CBlockHeader(bad_block_time).serialize().hex()))
         assert_raises_rpc_error(-25, 'bad-prevblk', lambda: node.submitheader(

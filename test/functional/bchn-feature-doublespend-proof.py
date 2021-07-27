@@ -64,7 +64,7 @@ class DoubleSpendProofTest(BitcoinTestFramework):
         dspReceiver = P2PInterface()
         self.nodes[0].add_p2p_connection(dspReceiver)
         # workaround - nodes think they're in IBD unless one block is mined
-        self.nodes[0].generate(1)
+        self.generate(self.nodes[0], 1)
         self.sync_all()
         # Disconnect the third node, will be used later for triple-spend
         disconnect_nodes(self.nodes[1], self.nodes[2])
@@ -143,7 +143,7 @@ class DoubleSpendProofTest(BitcoinTestFramework):
 
         # Only P2PKH inputs are protected
         # Check that a non-P2PKH output is not protected
-        self.nodes[0].generate(1)
+        self.generate(self.nodes[0], 1)
         fundingtxid = self.nodes[0].getblock(self.nodes[0].getblockhash(2))['tx'][0]
         fundingtx = FromHex(CTransaction(), self.nodes[0].getrawtransaction(fundingtxid))
         fundingtx.rehash()
@@ -170,7 +170,7 @@ class DoubleSpendProofTest(BitcoinTestFramework):
         )
 
         # Check that unconfirmed outputs are also protected
-        self.nodes[0].generate(1)
+        self.generate(self.nodes[0], 1)
         unconfirmedtx = self.nodes[0].sendtoaddress(self.nodes[0].getnewaddress(), 25)
         self.sync_all()
 
@@ -191,7 +191,7 @@ class DoubleSpendProofTest(BitcoinTestFramework):
 
         # Check that a double spent tx, which has some non-P2PKH inputs
         # in its ancestor, still results in a dsproof being emitted.
-        self.nodes[0].generate(1)
+        self.generate(self.nodes[0], 1)
         # Create a 1-of-2 multisig address which will be an in-mempool
         # ancestor to a double-spent tx
         pubkey0 = self.nodes[0].getaddressinfo(
@@ -232,7 +232,7 @@ class DoubleSpendProofTest(BitcoinTestFramework):
 
         # Check that a double spent tx, which has some unconfirmed ANYONECANPAY
         # transactions in its ancestry, still results in a dsproof being emitted.
-        self.nodes[0].generate(1)
+        self.generate(self.nodes[0], 1)
         fundingtxid = self.nodes[0].getblock(self.nodes[0].getblockhash(5))['tx'][0]
         vout1 = find_output(self.nodes[0], fundingtxid, Decimal('50'))
         addr = self.nodes[1].getnewaddress()
@@ -270,7 +270,7 @@ class DoubleSpendProofTest(BitcoinTestFramework):
         assert(len(dsps) == 4)
 
         # Create a P2SH to double-spend directly (1-of-1 multisig)
-        self.nodes[0].generate(1)
+        self.generate(self.nodes[0], 1)
         self.sync_all()
         pubkey2 = self.nodes[0].getaddressinfo(
             self.nodes[0].getnewaddress())['pubkey']
@@ -299,7 +299,7 @@ class DoubleSpendProofTest(BitcoinTestFramework):
 
         # Next, test that submitting a double-spend via the RPC interface also results in a broadcasted
         # dsproof
-        self.nodes[0].generate(1)
+        self.generate(self.nodes[0], 1)
         self.sync_all()
         fundingtxid = self.nodes[0].getblock(self.nodes[0].getblockhash(6))['tx'][0]
         # Create 2 new double-spends

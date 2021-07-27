@@ -72,10 +72,10 @@ class StressTest(BitcoinTestFramework):
         fanout = target + 1 if target < 100 else 100 if target < 100 * 50 else target // 50
         num_stages = -(-target // fanout) + 1  # rounds up
         print("Fanout={}, num_stages={}".format(fanout, num_stages))
-        self.nodes[0].generate(101)
-        self.nodes[0].generate(num_stages * self.num_nodes - 1)
+        self.generate(self.nodes[0], 101)
+        self.generate(self.nodes[0], num_stages * self.num_nodes - 1)
         time.sleep(0.2)
-        self.nodes[0].generate(1)
+        self.generate(self.nodes[0], 1)
         node_addresses = [[] for _ in self.nodes]
         self.node_addresses = node_addresses
         t0 = time.time()
@@ -101,10 +101,10 @@ class StressTest(BitcoinTestFramework):
                 self.nodes[0].sendmany('', payments)
             t2 = time.time()
             print("Filling node wallets took {:3.3f} sec for stage {}:{}".format(t2 - t1, i, stage))
-        self.nodes[0].generate(1)
+        self.generate(self.nodes[0], 1)
         self.sync_blocks()
         for i in range(1 + (target * self.num_nodes) // 20000):
-            self.nodes[0].generate(1)
+            self.generate(self.nodes[0], 1)
             self.sync_blocks(timeout=20)
             blk = self.nodes[0].getblock(self.nodes[0].getbestblockhash(), 1)
             print("Block has {} transactions and is {} bytes".format(len(blk['tx']), blk['size']))
@@ -193,7 +193,7 @@ class StressTest(BitcoinTestFramework):
             oldheight = self.nodes[0].getblockcount()
             if not i:
                 print("Generating block ", end="")
-            self.nodes[0].generate(1)
+            self.generate(self.nodes[0], 1)
             t2b = time.time()
             if not i:
                 print("took {:3.3f} sec".format(t2b - t2a))

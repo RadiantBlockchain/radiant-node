@@ -46,7 +46,7 @@ class MempoolPackagesAdditionalTest(BitcoinTestFramework):
 
     def run_test(self):
         # Mine some blocks and have them mature.
-        self.nodes[0].generate(101)
+        self.generate(self.nodes[0], 101)
         fee = Decimal("0.0001")
 
         # begin issue 225 tests
@@ -92,7 +92,7 @@ class MempoolPackagesAdditionalTest(BitcoinTestFramework):
         self.chain_transaction(self.nodes[0], fanout_txid[0], 0, fanout_sent_values[0], fee, 1)
 
         # clear mempool
-        self.nodes[0].generate(1)
+        self.generate(self.nodes[0], 1)
         # TODO: more tests
 
         # end issue 225 tests
