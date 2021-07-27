@@ -411,6 +411,14 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         connect_nodes_bi(self.nodes[1], self.nodes[2])
         self.sync_all()
 
+    def generate(self, generator, *args, **kwargs):
+        blocks = generator.generate(*args, **kwargs)
+        return blocks
+
+    def generatetoaddress(self, generator, *args, **kwargs):
+        blocks = generator.generatetoaddress(*args, **kwargs)
+        return blocks
+
     def sync_blocks(self, nodes=None, wait=1, timeout=60):
         """
         Wait until everybody has the same tip.
