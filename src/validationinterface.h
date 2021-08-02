@@ -31,12 +31,28 @@ enum class MemPoolRemovalReason;
 
 // These functions dispatch to one or all registered wallets
 
-/** Register a wallet to receive updates from core */
+/**
+ *  Register a wallet to receive updates from core.
+ *  WARNING: Do not call this after the app has initialized and threads are started.  It is not thread-safe.
+ */
 void RegisterValidationInterface(CValidationInterface *pwalletIn);
-/** Unregister a wallet from core */
+/**
+ *  Unregister a wallet from core.
+ *  WARNING: Do not call this after the app has initialized and threads are started.  It is not thread-safe.
+ *           It may, however, be called by the "shutdown" code.
+ */
 void UnregisterValidationInterface(CValidationInterface *pwalletIn);
-/** Unregister all wallets from core */
+/**
+ *  Unregister all wallets from core
+ *  WARNING: Do not call this after the app has initialized and threads are started.  It is not thread-safe.
+ *           It may, however, be called by the "shutdown" code.
+ */
 void UnregisterAllValidationInterfaces();
+/**
+ *  Called from the init process to indicate that future calls to Register/UnregisterValidationInterface()
+ *  are no longer safe (this is for debug log purposes only).
+ */
+void SetValidationInterfaceRegistrationsUnsafe(bool unsafe);
 /**
  * Pushes a function to callback onto the notification queue, guaranteeing any
  * callbacks generated prior to now are finished when the function is called.

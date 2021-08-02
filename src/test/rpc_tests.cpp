@@ -23,6 +23,10 @@
 
 #include <rpc/blockchain.h>
 
+#include <array>
+#include <thread>
+#include <vector>
+
 UniValue CallRPC(const std::string &args)
 {
     std::vector<std::string> vArgs;
@@ -566,6 +570,44 @@ BOOST_AUTO_TEST_CASE(rpc_getblockstats_calculate_percentiles_by_size)
 
     for (int64_t i = 0; i < NUM_GETBLOCKSTATS_PERCENTILES; i++) {
         BOOST_CHECK_EQUAL(result4[i], Amount(1 * SATOSHI));
+    }
+}
+
+BOOST_AUTO_TEST_CASE(rpc_submitblock_parallel) {
+    /* This test ensures that submitblock has no regressions after partially fixing issue #149, and that it supports
+     * receiving blocks in parallel without crashing. */
+    static constexpr size_t n_threads = 4, n_iters_per_thread = 100;
+    const std::array<std::string, 2> dummy_blocks_hex = {{
+        "00000020ba9483ce1345d9b51538a47c84ca69a2f374428f79a2fa29cfeb406b000000001884a0413e9f76b0560"
+        "5ccbefc4b6be0024dfa86d3767f9777bd2cfe65c30bd858a4445fffff001d9f4528e20101000000010000000000"
+        "000000000000000000000000000000000000000000000000000000ffffffff2e02300600fec3121900fe78ca070"
+        "00963676d696e657234320800000000000000000b2f636865636b73756d302f00ffffffff0100f2052a01000000"
+        "1976a91477f70060b91e3f5a89b6de3531a580c8494605e988ac00000000",
+        "00000020ff1e59f17554af4fef82141c0fd9034f74d44f9f06957bcfac362723000000001a4245e03250e70dee6"
+        "503ee8daf6b81a6807e330394265a022cc2b8ba81a4ad2cf0c860ffff001da8aa3c1f0101000000010000000000"
+        "000000000000000000000000000000000000000000000000000000ffffffff48037728160c0b2f454233322f414"
+        "431322f042cf0c86004ed6201250c0d979b604e050000000000000a626368706f6f6c172f20626974636f696e63"
+        "6173682e6e6574776f726b202fffffffff01c817a804000000001976a914158b5d181552c9f4f267c0de68aae49"
+        "63043993988ac00000000",
+    }};
+    std::vector<std::vector<UniValue>> results(n_threads);
+    std::vector<std::thread> threads;
+    for (size_t i = 0; i < n_threads; ++i) {
+        threads.emplace_back([&hex = dummy_blocks_hex[i % dummy_blocks_hex.size()], &res = results[i]]{
+             for (size_t j = 0; j < n_iters_per_thread; ++j) {
+                 // push results -- we do this to avoid doing unsafe BOOST_CHECK_EQUAL in a thread
+                 res.push_back(CallRPC("submitblock " + hex));
+             }
+        });
+    }
+    for (auto & thr : threads)
+        thr.join();
+    // ensure all results match what we expect; these are real blocks from testnet3 and testnet4, so they will have
+    // gone through basic checks and thus our submitblock_StateCatcher should have been invoked.
+    for (const auto &res : results) {
+        for (const auto &unival : res) {
+            BOOST_CHECK_EQUAL(unival.get_str(), "prev-blk-not-found");
+        }
     }
 }
 

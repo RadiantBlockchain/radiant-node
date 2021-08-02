@@ -1,4 +1,5 @@
 // Copyright (c) 2017 The Bitcoin Core developers
+// Copyright (c) 2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -20,6 +21,13 @@ class Config;
 UniValue generateBlocks(const Config &config,
                         std::shared_ptr<CReserveScript> coinbaseScript,
                         int nGenerate, uint64_t nMaxTries, bool keepScript);
+
+namespace rpc {
+/** Called by init code to register the internal "submitblock_StateCatcher" class. */
+void RegisterSubmitBlockCatcher();
+/** Called by shutdown code to delete the internal "submitblock_StateCatcher" class. */
+void UnregisterSubmitBlockCatcher();
+} // namespace rpc
 
 namespace gbtl {
 /** Used by getblocktemplatelight for the "merkle" UniValue entry it returns.  Returns a merkle branch used to

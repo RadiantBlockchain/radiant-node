@@ -22,6 +22,7 @@
 #include <util/strencodings.h>
 #include <util/system.h>
 #include <util/threadnames.h>
+#include <validationinterface.h>
 #include <walletinitinterface.h>
 
 #include <cstdio>
@@ -211,7 +212,9 @@ static bool AppInit(int argc, char *argv[]) {
     if (!fRet) {
         Interrupt();
     } else {
+        SetValidationInterfaceRegistrationsUnsafe(true);
         WaitForShutdown();
+        SetValidationInterfaceRegistrationsUnsafe(false);
     }
     Shutdown(node);
 
