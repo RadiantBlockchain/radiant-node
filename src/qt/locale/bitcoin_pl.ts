@@ -1600,7 +1600,7 @@
     <message>
       <location line="+14"/>
       <source>Not a valid HTTP or HTTPS URL.</source>
-      <translation type="unfinished"/>
+      <translation>Nieprawidłowy adres URL HTTP lub HTTPS.</translation>
     </message>
     <message>
       <location line="+27"/>
