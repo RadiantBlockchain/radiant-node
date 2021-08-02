@@ -38,6 +38,7 @@
 #include <policy/mempool.h>
 #include <policy/policy.h>
 #include <rpc/blockchain.h>
+#include <rpc/mining.h>
 #include <rpc/register.h>
 #include <rpc/server.h>
 #include <rpc/util.h>
@@ -312,6 +313,7 @@ void Shutdown(NodeContext &node) {
                   fsbridge::get_filesystem_error_message(e));
     }
     node.chain_clients.clear();
+    rpc::UnregisterSubmitBlockCatcher();
     UnregisterAllValidationInterfaces();
     GetMainSignals().UnregisterBackgroundSignalScheduler();
     GetMainSignals().UnregisterWithMempoolSignals(g_mempool);
@@ -2140,6 +2142,10 @@ bool AppInitMain(Config &config, RPCServer &rpcServer,
     // the interfaces, it doesn't load wallet data. Wallets actually get loaded
     // when load() and start() interface methods are called below.
     g_wallet_init_interface.Construct(node);
+
+    // Register the special submitblock state catcher validation interface before
+    // we start RPC
+    rpc::RegisterSubmitBlockCatcher();
 
     /**
      * Register RPC commands regardless of -server setting so they will be

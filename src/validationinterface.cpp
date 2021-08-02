@@ -117,7 +117,19 @@ CMainSignals &GetMainSignals() {
     return g_signals;
 }
 
+static std::atomic_bool g_reg_unsafe{false};
+
+void SetValidationInterfaceRegistrationsUnsafe(bool unsafe) { g_reg_unsafe = unsafe; }
+
+static void LogIfUnsafe(const char *func) {
+    if (g_reg_unsafe) {
+        LogPrintf("WARNING: %s called from outside of the init/shutdown code paths (thread: %s)."
+                  " This is not supported! FIXME!\n", func, util::ThreadGetInternalName());
+    }
+}
+
 void RegisterValidationInterface(CValidationInterface *pwalletIn) {
+    LogIfUnsafe(__func__);
     ValidationInterfaceConnections &conns =
         g_signals.m_internals->m_connMainSignals[pwalletIn];
     conns.UpdatedBlockTip = g_signals.m_internals->UpdatedBlockTip.connect(
@@ -163,6 +175,7 @@ void RegisterValidationInterface(CValidationInterface *pwalletIn) {
 
 void UnregisterValidationInterface(CValidationInterface *pwalletIn) {
     if (g_signals.m_internals) {
+        LogIfUnsafe(__func__);
         g_signals.m_internals->m_connMainSignals.erase(pwalletIn);
     }
 }
@@ -171,6 +184,7 @@ void UnregisterAllValidationInterfaces() {
     if (!g_signals.m_internals) {
         return;
     }
+    LogIfUnsafe(__func__);
     g_signals.m_internals->m_connMainSignals.clear();
 }
 

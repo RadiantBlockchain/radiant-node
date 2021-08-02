@@ -39,7 +39,10 @@
 #include <cstdint>
 #include <cstring>
 #include <list>
+#include <map>
 #include <memory>
+#include <utility>
+#include <vector>
 
 /**
  * Return average network hashes per second based on the last 'lookup' blocks,
@@ -887,26 +890,84 @@ static UniValue getblocktemplatelight(const Config &config, const JSONRPCRequest
     return getblocktemplatecommon(true, config, request);
 }
 
-class submitblock_StateCatcher : public CValidationInterface {
+namespace {
+struct submitblock_StateCatcher final : CValidationInterface, std::enable_shared_from_this<submitblock_StateCatcher> {
+    struct ReqEntry {
+        Mutex mut;
+        CValidationState state GUARDED_BY(mut);
+        bool found GUARDED_BY(mut) {false};
+    };
+
+private:
+    using Requests = std::multimap<BlockHash, std::weak_ptr<ReqEntry>>;
+    Mutex mut;
+    Requests requests GUARDED_BY(mut);
+
+    submitblock_StateCatcher() = default; // force user code to use Create() to construct instances
+
 public:
-    uint256 hash;
-    bool found;
-    CValidationState state;
+    // factory method to create a new instance
+    static std::shared_ptr<submitblock_StateCatcher> Create() {
+        // NB: we cannot make_shared here because of the private c'tor
+        return std::shared_ptr<submitblock_StateCatcher>(new submitblock_StateCatcher);
+    }
 
-    explicit submitblock_StateCatcher(const uint256 &hashIn)
-        : hash(hashIn), found(false), state() {}
+    // call this to "listen" for BlockChecked events on a block hash
+    std::shared_ptr<ReqEntry> AddRequest(const BlockHash &hash) {
+        LOCK(mut);
+        auto it = requests.emplace(std::piecewise_construct, std::forward_as_tuple(hash), std::forward_as_tuple());
+        std::shared_ptr<ReqEntry> ret(new ReqEntry, [weakSelf=weak_from_this(), it](ReqEntry *e){
+            // this deleter will auto-clean entry from the multimap when caller is done with the Request instance
+            if (auto self = weakSelf.lock()) {
+                LOCK(self->mut);
+                self->requests.erase(it);
+            }
+            delete e;
+        });
+        it->second = ret; // save weak_ptr ref
+        return ret;
+    }
 
-protected:
-    void BlockChecked(const CBlock &block,
-                      const CValidationState &stateIn) override {
-        if (block.GetHash() != hash) {
-            return;
+    // from CValidationInterface
+    void BlockChecked(const CBlock &block, const CValidationState &stateIn) override {
+        assert(!weak_from_this().expired());
+        std::vector<std::shared_ptr<ReqEntry>> matches;
+        {
+            LOCK(mut);
+            for (auto [it, end] = requests.equal_range(block.GetHash()); it != end; ++it) {
+                if (auto req = it->second.lock()) {
+                    matches.push_back(std::move(req));
+                }
+            }
         }
-
-        found = true;
-        state = stateIn;
+        for (const auto &req : matches) {
+            LOCK(req->mut);
+            req->state = stateIn;
+            req->found = true;
+        }
     }
 };
+
+std::shared_ptr<submitblock_StateCatcher> submitblock_Catcher;
+
+} // namespace
+
+namespace rpc {
+void RegisterSubmitBlockCatcher() {
+    if (submitblock_Catcher) {
+        LogPrintf("WARNING: %s called, but a valid submitblock_Catcher instance is already alive! FIXME!\n", __func__);
+        UnregisterSubmitBlockCatcher(); // kill current instance
+    }
+    submitblock_Catcher = submitblock_StateCatcher::Create();
+    RegisterValidationInterface(submitblock_Catcher.get());
+}
+void UnregisterSubmitBlockCatcher() {
+    if (submitblock_Catcher) {
+        UnregisterValidationInterface(submitblock_Catcher.get());
+        submitblock_Catcher.reset();
+    }
+}
+} // namespace rpc
 
 /// If jobId is not nullptr, we are in `submitblocklight` mode, otherwise we are in regular `submitblock` mode.
 static UniValue submitblockcommon(const Config &config, const JSONRPCRequest &request,
@@ -954,30 +1015,32 @@ static UniValue submitblockcommon(const Config &config, const JSONRPCRequest &re
         }
     }
 
+    if (!submitblock_Catcher) {
+        // The catcher has not yet been initialized -- this should never happen under normal circumstances but
+        // in case some tests or benches neglect to initialize, we check for this.
+        throw JSONRPCError(RPC_IN_WARMUP, "The submitblock subsystem has not yet been fully started.");
+    }
+    const auto sc_req = submitblock_Catcher->AddRequest(block.GetHash());
     bool new_block;
-    submitblock_StateCatcher sc(block.GetHash());
-    RegisterValidationInterface(&sc);
-    bool accepted =
-        ProcessNewBlock(config, blockptr, /* fForceProcessing */ true, /* fNewBlock */ &new_block);
-    // We are only interested in BlockChecked which will have been dispatched
-    // in-thread, so no need to sync before unregistering.
-    UnregisterValidationInterface(&sc);
-    // Sync to ensure that the catcher's slots aren't executing when it goes out
-    // of scope and is deleted.
-    SyncWithValidationInterfaceQueue();
+    const bool accepted = ProcessNewBlock(config, blockptr, /* fForceProcessing */ true, /* fNewBlock */ &new_block);
+    // Note: We are only interested in BlockChecked which will have been dispatched in-thread before ProcessnewBlock
+    //       returns.
+
     if (!new_block && accepted) {
         return "duplicate";
     }
 
-    if (!sc.found) {
+    LOCK(sc_req->mut);
+    if (!sc_req->found) {
         return "inconclusive";
     }
+    auto result = BIP22ValidationResult(config, sc_req->state);
 
-    auto result = BIP22ValidationResult(config, sc.state);
     if (jobId) {
         LogPrint(BCLog::RPC, "SubmitBlock (light) deserialize duration: %f seconds\n", tDeserTx / 1e6);
     }
     LogPrint(BCLog::RPC, "SubmitBlock total duration: %f seconds\n", (GetTimeMicros() - t0) / 1e6);
+
     return result;
 }
 

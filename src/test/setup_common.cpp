@@ -20,6 +20,7 @@
 #include <pow.h>
 #include <pubkey.h>
 #include <random.h>
+#include <rpc/mining.h>
 #include <rpc/register.h>
 #include <rpc/server.h>
 #include <script/script_error.h>
@@ -106,6 +107,7 @@ TestingSetup::TestingSetup(const std::string &chainName)
     // from blocking due to queue overrun.
     threadGroup.create_thread(std::bind(&CScheduler::serviceQueue, &scheduler));
     GetMainSignals().RegisterBackgroundSignalScheduler(scheduler);
+    rpc::RegisterSubmitBlockCatcher();
 
     g_mempool.setSanityCheck(1.0);
     pblocktree.reset(new CBlockTreeDB(1 << 20, true));
@@ -138,6 +140,7 @@ TestingSetup::~TestingSetup() {
     threadGroup.join_all();
     StopScriptCheckWorkerThreads();
     GetMainSignals().FlushBackgroundCallbacks();
+    rpc::UnregisterSubmitBlockCatcher();
     GetMainSignals().UnregisterBackgroundSignalScheduler();
     g_connman.reset();
     g_banman.reset();
