@@ -17,6 +17,7 @@
 #ifdef USE_DBUS
 #include <QtDBus>
 #include <cstdint>
+#include <cstring>
 #endif
 // Include ApplicationServices.h after QtDbus to avoid redefinition of check().
 // This affects at least OSX 10.6. See /usr/include/AssertMacros.h for details.
@@ -107,16 +108,17 @@ FreedesktopImage::FreedesktopImage(const QImage &img)
       bitsPerSample(BITS_PER_SAMPLE) {
     // Convert 00xAARRGGBB to RGBA bytewise (endian-independent) format
     QImage tmp = img.convertToFormat(QImage::Format_ARGB32);
-    const uint32_t *data = reinterpret_cast<const uint32_t *>(tmp.bits());
 
     unsigned int num_pixels = width * height;
     image.resize(num_pixels * BYTES_PER_PIXEL);
 
     for (unsigned int ptr = 0; ptr < num_pixels; ++ptr) {
-        image[ptr * BYTES_PER_PIXEL + 0] = data[ptr] >> 16; // R
-        image[ptr * BYTES_PER_PIXEL + 1] = data[ptr] >> 8;  // G
-        image[ptr * BYTES_PER_PIXEL + 2] = data[ptr];       // B
-        image[ptr * BYTES_PER_PIXEL + 3] = data[ptr] >> 24; // A
+        uint32_t pixel;
+        std::memcpy(&pixel, tmp.bits() + ptr * sizeof(uint32_t), sizeof(uint32_t));
+        image[ptr * BYTES_PER_PIXEL + 0] = pixel >> 16; // R
+        image[ptr * BYTES_PER_PIXEL + 1] = pixel >> 8;  // G
+        image[ptr * BYTES_PER_PIXEL + 2] = pixel;       // B
+        image[ptr * BYTES_PER_PIXEL + 3] = pixel >> 24; // A
     }
 }
 
