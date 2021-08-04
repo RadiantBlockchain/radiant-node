@@ -395,6 +395,8 @@ public:
         vSeeds.emplace_back("testnet-seed.bchd.cash");
         // Loping.net
         vSeeds.emplace_back("seed.tbch.loping.net");
+        // Bitcoin Unlimited
+        vSeeds.emplace_back("testnet-seed.bitcoinunlimited.info");
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<uint8_t>(1, 111);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<uint8_t>(1, 196);
