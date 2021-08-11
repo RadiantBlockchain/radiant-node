@@ -269,6 +269,9 @@ public:
                                             "b74c911071c4ef0b4a0509f9b5a8ce")},
                 {682900, BlockHash::fromHex("0000000000000000018b0a60a00ca53b69"
                                             "b213a8515e5eedbf8a207f0355fe42")},
+
+                // Upgrade 7 ("tachyon") era (actual activation block was 688094)
+                {699484, BlockHash::fromHex("0000000000000000030192242425926218184a609a63efee615b7586d7f3972b")},
             }};
 
         // Data as of block
@@ -439,6 +442,11 @@ public:
                               "0000000023e0680a8a062b3cc289a4a341124ce7fcb6340ede207e194d73b60a")},
                 {1442860, BlockHash::fromHex(
                               "000000000004f42ffcf218d285cbd8d8d93e1c5a4262bdd1fdfd1991cfdb5027")},
+
+                // Upgrade 7 ("tachyon") era (actual activation block was in the past significantly before this)
+                {1459354, BlockHash::fromHex(
+                              "00000000499a0384fe7f46f4e5470271804df474b19229aee839ea898d5d07e2")},
+
             }};
 
         // Data as of block
@@ -582,6 +590,9 @@ public:
                 // Axion activation.
                 {16845, BlockHash::fromHex("00000000fb325b8f34fe80c96a5f708a08699a68bbab82dba4474d86bd743077")},
                 {38000, BlockHash::fromHex("000000000015197537e59f339e3b1bbf81a66f691bd3d7aa08560fc7bf5113fb")},
+
+                // Upgrade 7 ("tachyon") era (actual activation block was in the past significantly before this)
+                {54700, BlockHash::fromHex("00000000009af4379d87f17d0f172ee4769b48839a5a3a3e81d69da4322518b8")},
             }};
 
         // Data as of block
