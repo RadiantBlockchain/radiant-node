@@ -880,4 +880,80 @@ BOOST_AUTO_TEST_CASE(txsize_activation_test) {
     BOOST_CHECK_EQUAL(state.GetRejectReason(), "bad-txns-undersize");
 }
 
+BOOST_FIXTURE_TEST_CASE(checktxinput_test, TestChain100Setup) {
+    CScript const p2pk_scriptPubKey = CScript() << ToByteVector(coinbaseKey.GetPubKey()) << OP_CHECKSIG;
+    CScript const p2sh_scriptPubKey = GetScriptForDestination(CScriptID(p2pk_scriptPubKey));
+
+    CMutableTransaction funding_tx_1;
+    CScript noppyScriptPubKey;
+    {
+        funding_tx_1.nVersion = 1;
+        funding_tx_1.vin.resize(1);
+        funding_tx_1.vin[0].prevout = COutPoint(m_coinbase_txns[0]->GetId(), 0);
+        funding_tx_1.vout.resize(1);
+        funding_tx_1.vout[0].nValue = 50 * COIN;
+
+        noppyScriptPubKey << OP_IF << OP_NOP10 << OP_ENDIF << OP_1;
+        funding_tx_1.vout[0].scriptPubKey = noppyScriptPubKey;
+        std::vector<uint8_t> fundingVchSig;
+        uint256 fundingSigHash = SignatureHash(p2pk_scriptPubKey, CTransaction(funding_tx_1), 0, SigHashType().withForkId(), m_coinbase_txns[0]->vout[0].nValue);
+        BOOST_CHECK(coinbaseKey.SignECDSA(fundingSigHash, fundingVchSig));
+        fundingVchSig.push_back(uint8_t(SIGHASH_ALL | SIGHASH_FORKID));
+        funding_tx_1.vin[0].scriptSig << fundingVchSig;
+    }
+
+    // Spend the funding transaction by mining it into a block
+    {
+        CBlock block = CreateAndProcessBlock({funding_tx_1}, p2pk_scriptPubKey);
+        BOOST_CHECK(::ChainActive().Tip()->GetBlockHash() == block.GetHash());
+        BOOST_CHECK(pcoinsTip->GetBestBlock() == block.GetHash());
+    }
+
+    CMutableTransaction funding_tx_2;
+    {
+        funding_tx_2.nVersion = 1;
+        funding_tx_2.vin.resize(1);
+        funding_tx_2.vin[0].prevout = COutPoint(m_coinbase_txns[1]->GetId(), 0);
+        funding_tx_2.vout.resize(1);
+        funding_tx_2.vout[0].nValue = 50 * COIN;
+
+        noppyScriptPubKey << OP_IF << OP_NOP10 << OP_ENDIF << OP_1;
+        funding_tx_2.vout[0].scriptPubKey = noppyScriptPubKey;
+        std::vector<uint8_t> fundingVchSig;
+        uint256 fundingSigHash = SignatureHash(p2pk_scriptPubKey, CTransaction(funding_tx_2), 0, SigHashType().withForkId(), m_coinbase_txns[0]->vout[0].nValue);
+        BOOST_CHECK(coinbaseKey.SignECDSA(fundingSigHash, fundingVchSig));
+        fundingVchSig.push_back(uint8_t(SIGHASH_ALL | SIGHASH_FORKID));
+        funding_tx_2.vin[0].scriptSig << fundingVchSig;
+    }
+
+    {
+        CMutableTransaction spend_tx;
+        spend_tx.nVersion = 1;
+        spend_tx.vin.resize(2);
+        spend_tx.vin[0].prevout = COutPoint(funding_tx_1.GetId(), 0);
+        spend_tx.vin[0].scriptSig << OP_1;
+        spend_tx.vin[1].prevout = COutPoint(funding_tx_2.GetId(), 0);
+        spend_tx.vin[1].scriptSig << OP_1;
+        spend_tx.vout.resize(2);
+        spend_tx.vout[0].nValue = 11 * CENT;
+        spend_tx.vout[0].scriptPubKey = p2sh_scriptPubKey;
+        spend_tx.vout[1].nValue = 11 * CENT;
+        spend_tx.vout[1].scriptPubKey = p2sh_scriptPubKey;
+
+        CTransaction const tx(spend_tx);
+        CValidationState state;
+        Amount txfee;
+
+        CTxOut txout;
+        txout.scriptPubKey = p2pk_scriptPubKey;
+        txout.nValue = Amount::zero();
+        pcoinsTip->AddCoin(spend_tx.vin[1].prevout, Coin(txout, 1, false), true);
+
+        BOOST_CHECK(Consensus::CheckTxInputs(tx, state, pcoinsTip.get(), 0, txfee));
+
+        pcoinsTip->SpendCoin(spend_tx.vin[1].prevout);
+        BOOST_CHECK( ! Consensus::CheckTxInputs(tx, state, pcoinsTip.get(), 0, txfee));
+    }
+}
+
 BOOST_AUTO_TEST_SUITE_END()
