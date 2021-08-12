@@ -156,18 +156,19 @@ namespace Consensus {
 bool CheckTxInputs(const CTransaction &tx, CValidationState &state,
                    const CCoinsViewCache &inputs, int nSpendHeight,
                    Amount &txfee) {
-    // are the actual inputs available?
-    if (!inputs.HaveInputs(tx)) {
-        return state.DoS(100, false, REJECT_INVALID,
-                         "bad-txns-inputs-missingorspent", false,
-                         strprintf("%s: inputs missing/spent", __func__));
-    }
+    assert(!tx.IsCoinBase()); // precondition of this function
 
     Amount nValueIn = Amount::zero();
     for (const auto &in : tx.vin) {
         const COutPoint &prevout = in.prevout;
         const Coin &coin = inputs.AccessCoin(prevout);
-        assert(!coin.IsSpent());
+
+        // Is the actual input available?
+        if (coin.IsSpent()) {
+            return state.DoS(100, false, REJECT_INVALID,
+                             "bad-txns-inputs-missingorspent", false,
+                             strprintf("%s: inputs missing/spent", __func__));
+        }
 
         // If prev is coinbase, check that it's matured
         if (coin.IsCoinBase() &&
