@@ -221,6 +221,21 @@ as a Merge Request.
     sudo apt-get install python-autopep8 flake8 php-codesniffer shellcheck
     ```
 
+10. Further task-specific dependencies
+
+    In order to run the automated tests, you'll need the tools listed in the "dependencies" sections of these two documents:
+
+    - [Linting](doc/linting.md)
+    - [Functional Tests](doc/functional-tests.md)
+
+    To produce coverage reports, you'll need the dependencies listed in:
+
+    - [Coverage](doc/coverage.md)
+
+    To run benchmarks, see the "LFS dependency" section in:
+
+    - [Benchmarking](doc/benchmarking.md)
+
 
 Working with The Bitcoin Cash Node Repository
 ---------------------------------------------
