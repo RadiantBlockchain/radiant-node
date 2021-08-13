@@ -1,6 +1,6 @@
-# Release Notes for Bitcoin Cash Node version 23.0.1
+# Release Notes for Bitcoin Cash Node version 23.1.0
 
-Bitcoin Cash Node version 23.0.1 is now available from:
+Bitcoin Cash Node version 23.1.0 is now available from:
 
   <https://bitcoincashnode.org>
 
@@ -23,7 +23,7 @@ This is a minor release of Bitcoin Cash Node (BCHN) containing several minor bug
 
 ## Usage recommendations
 
-Users who are running v22.x.x or earlier are strongly urged to upgrade to v23.0.1, since the v22 series (and previous) do not implement the recent [May 15, 2021 Network Upgrade](https://upgradespecs.bitcoincashnode.org/2021-05-15-upgrade/).  Users running v23.0.0 may also wish to upgrade to this version, since it does improve performance and does fix some minor bugs.
+Users who are running v22.x.x or earlier are strongly urged to upgrade to v23.1.0, since the v22 series (and previous) do not implement the recent [May 15, 2021 Network Upgrade](https://upgradespecs.bitcoincashnode.org/2021-05-15-upgrade/).  Users running v23.0.0 may also wish to upgrade to this version, since it does improve performance and does fix some minor bugs.
 
 
 ## Network changes
@@ -81,11 +81,11 @@ The `getblocktemplate` and `getblocktemplatelight` template-request dictionary n
 
 ## User interface changes
 
-Bitcoin Cash Node 23.0.1 does not introduce any user interface changes as compared to 23.0.0.
+Bitcoin Cash Node 23.1.0 does not introduce any user interface changes as compared to 23.0.0.
 
 ## Regressions
 
-Bitcoin Cash Node 23.0.1 does not introduce any known regressions as compared to 23.0.0.
+Bitcoin Cash Node 23.1.0 does not introduce any known regressions as compared to 23.0.0.
 
 ## Known Issues
 
