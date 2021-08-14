@@ -11,6 +11,7 @@
 #include <seeder/db.h>
 #include <seeder/dns.h>
 #include <streams.h>
+#include <tinyformat.h>
 #include <util/strencodings.h>
 #include <util/system.h>
 
@@ -408,6 +409,7 @@ extern "C" void *ThreadDumper(void *) {
 
 extern "C" void *ThreadStats(void *) {
     bool first = true;
+    size_t lastLineLength = 0;
     do {
         char c[256];
         std::time_t tim = std::time(nullptr);
@@ -417,11 +419,13 @@ extern "C" void *ThreadStats(void *) {
         db.GetStats(stats);
         if (first) {
             first = false;
+            // ANSI: create 3 newlines, then move cursor up 3 lines
             std::fprintf(stdout, "\n\n\n\x1b[3A");
         } else {
+            // ANSI: delete current line, restore cursor position to saved
             std::fprintf(stdout, "\x1b[2K\x1b[u");
         }
-        std::fprintf(stdout, "\x1b[s");
+        std::fprintf(stdout, "\x1b[s"); // ANSI: save cursor position
         uint64_t requests = 0;
         uint64_t queries = 0;
         for (const auto *dnsThread : dnsThreads) {
@@ -430,13 +434,17 @@ extern "C" void *ThreadStats(void *) {
             requests += dnsThread->dns_opt.nRequests;
             queries += dnsThread->dbQueries;
         }
-        std::fprintf(stdout,
-                     "%s %i/%i available (%i tried in %is, %i new, %i active), %i "
-                     "banned; %llu DNS requests, %llu db queries\n",
-                     c, stats.nGood, stats.nAvail, stats.nTracked, stats.nAge,
-                     stats.nNew, stats.nAvail - stats.nTracked - stats.nNew,
-                     stats.nBanned, (unsigned long long)requests,
-                     (unsigned long long)queries);
+        // pad the line with spaces to ensure old text from the end is cleared
+        const auto line = strprintf("%s %i/%i available (%i tried in %is, %i new, %i active), %i "
+                                    "banned; %llu DNS requests, %llu db queries",
+                                    c, stats.nGood, stats.nAvail, stats.nTracked, stats.nAge,
+                                    stats.nNew, stats.nAvail - stats.nTracked - stats.nNew,
+                                    stats.nBanned, (unsigned long long)requests,
+                                    (unsigned long long)queries);
+        const size_t padLen = line.size() < lastLineLength ? lastLineLength - line.size() : 0;
+        const std::string pad(padLen, ' ');
+        lastLineLength = line.length();
+        std::fprintf(stdout, "%s%s\n", line.c_str(), pad.c_str());
         Sleep(1000);
     } while (1);
     return nullptr;
