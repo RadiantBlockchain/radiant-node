@@ -3432,7 +3432,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
                 //    caught in FillBlock with READ_STATUS_FAILED, so
                 //    impossible here)
                 // 3. the block is otherwise invalid (eg invalid coinbase,
-                //    block is too big, too many legacy sigops, etc).
+                //    block is too big, etc).
                 // So if CheckBlock failed, #3 is the only possibility.
                 // Under BIP 152, we don't DoS-discourage unless proof of work is
                 // invalid (we don't require all the stateless checks to have

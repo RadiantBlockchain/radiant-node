@@ -37,18 +37,18 @@
 
 CTxMemPoolEntry::CTxMemPoolEntry(const CTransactionRef &_tx, const Amount _nFee,
                                  int64_t _nTime, unsigned int _entryHeight,
-                                 bool _spendsCoinbase, int64_t _sigOpCount,
+                                 bool _spendsCoinbase, int64_t _sigChecks,
                                  LockPoints lp)
     : tx(_tx), nFee(_nFee), nTxSize(tx->GetTotalSize()),
       nUsageSize(RecursiveDynamicUsage(tx)), nTime(_nTime),
       entryHeight(_entryHeight), spendsCoinbase(_spendsCoinbase),
-      sigOpCount(_sigOpCount), lockPoints(lp) {
+      sigChecks(_sigChecks), lockPoints(lp) {
 
     feeDelta = Amount::zero();
 }
 
 size_t CTxMemPoolEntry::GetTxVirtualSize() const {
-    return GetVirtualTransactionSize(nTxSize, sigOpCount);
+    return GetVirtualTransactionSize(nTxSize, sigChecks);
 }
 
 void CTxMemPoolEntry::UpdateFeeDelta(Amount newFeeDelta) {

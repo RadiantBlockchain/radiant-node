@@ -163,11 +163,11 @@ BOOST_AUTO_TEST_CASE(MempoolIndexingTest) {
     TestMemPoolEntryHelper entry;
 
     /**
-     * Remove the default nonzero sigops, since the below tests are focussing on
+     * Remove the default nonzero sigchecks, since the below tests are focussing on
      * fee-based ordering and involve some artificially very tiny 21-byte
      * transactions without any inputs.
      */
-    entry.SigOpCount(0);
+    entry.SigChecks(0);
 
     /* 3rd highest fee */
     CMutableTransaction tx1 = CMutableTransaction();
@@ -776,9 +776,9 @@ BOOST_AUTO_TEST_CASE(GetModifiedFeeRateTest) {
     BOOST_CHECK_EQUAL(2000 * SATOSHI,
                       entryFeeModified.GetModifiedFeeRate().GetFee(1000));
 
-    // Excessive sigop count "modifies" size
+    // Excessive sigchecks count "modifies" size
     CTxMemPoolEntry entrySizeModified = entry.Fee(1000 * SATOSHI)
-                                             .SigOpCount(2000 / DEFAULT_BYTES_PER_SIGOP)
+                                             .SigChecks(2000 / DEFAULT_BYTES_PER_SIGCHECK)
                                              .FromTx(tx);
     BOOST_CHECK_EQUAL(500 * SATOSHI,
                       entrySizeModified.GetModifiedFeeRate().GetFee(1000));

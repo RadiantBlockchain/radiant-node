@@ -3670,8 +3670,8 @@
         <translation>Behold ikke transaktioner i hukommelsespuljen i mere end &lt;n&gt; timer (default: %u)</translation>
     </message>
     <message>
-        <source>Equivalent bytes per sigop in transactions for relay and mining (default: %u)</source>
-        <translation>Tilsvarende bytes pr. sigop i transaktioner, som videresendes og mines (standard: %u)</translation>
+        <source>Equivalent bytes per sigcheck in transactions for relay and mining (default: %u)</source>
+        <translation>Tilsvarende bytes pr. sigcheck i transaktioner, som videresendes og mines (standard: %u)</translation>
     </message>
     <message>
         <source>Fees (in %s/kB) smaller than this are considered zero fee for transaction creation (default: %s)</source>

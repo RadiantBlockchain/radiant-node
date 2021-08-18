@@ -91,13 +91,8 @@ class CTxMemPoolEntry {
     const unsigned int entryHeight;
     //! keep track of transactions that spend a coinbase
     const bool spendsCoinbase;
-    /**
-     * Total sigop plus P2SH sigops count.
-     * After the sigchecks activation we repurpose the 'sigops' tracking in
-     * mempool/mining to actually track sigchecks instead. (Proper SigOps will
-     * not need to be counted any more since it's getting deactivated.)
-     */
-    const int64_t sigOpCount;
+    //! Total sigchecks
+    const int64_t sigChecks;
     //! Used for determining the priority of the transaction for mining in a
     //! block
     Amount feeDelta;
@@ -113,7 +108,7 @@ class CTxMemPoolEntry {
 public:
     CTxMemPoolEntry(const CTransactionRef &_tx, const Amount _nFee,
                     int64_t _nTime, unsigned int _entryHeight,
-                    bool spendsCoinbase, int64_t _sigOpCount, LockPoints lp);
+                    bool spendsCoinbase, int64_t _sigChecks, LockPoints lp);
 
     uint64_t GetEntryId() const { return entryId; }
     //! This should only be set exactly once by addUnchecked() before entry insertion into the mempool.
@@ -129,7 +124,7 @@ public:
 
     int64_t GetTime() const { return nTime; }
     unsigned int GetHeight() const { return entryHeight; }
-    int64_t GetSigOpCount() const { return sigOpCount; }
+    int64_t GetSigChecks() const { return sigChecks; }
     Amount GetModifiedFee() const { return nFee + feeDelta; }
     CFeeRate GetModifiedFeeRate() const { return CFeeRate(GetModifiedFee(), GetTxVirtualSize()); }
     size_t DynamicMemoryUsage() const { return nUsageSize; }

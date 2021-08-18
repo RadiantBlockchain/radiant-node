@@ -681,7 +681,9 @@ static UniValue getblocktemplatecommon(bool fLight, const Config &config, const 
             entry.emplace_back("txid", tx.GetId().GetHex());
             entry.emplace_back("hash", tx.GetHash().GetHex());
             entry.emplace_back("fee", pblocktemplate->entries[index_in_template].fees / SATOSHI);
-            entry.emplace_back("sigops", pblocktemplate->entries[index_in_template].sigOpCount);
+            // This field is named sigops for compatibility reasons, but since the May 2020
+            // protocol upgrade, internally we refer to this metric as "sigChecks".
+            entry.emplace_back("sigops", pblocktemplate->entries[index_in_template].sigChecks);
 
             transactions.emplace_back(std::move(entry));
             index_in_template++;

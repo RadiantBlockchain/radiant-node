@@ -153,21 +153,21 @@ bool AreInputsStandard(const CTransaction &tx, const CCoinsViewCache &mapInputs,
 }
 
 CFeeRate dustRelayFee = CFeeRate(DUST_RELAY_TX_FEE);
-uint32_t nBytesPerSigOp = DEFAULT_BYTES_PER_SIGOP;
+uint32_t nBytesPerSigCheck = DEFAULT_BYTES_PER_SIGCHECK;
 
-int64_t GetVirtualTransactionSize(int64_t nSize, int64_t nSigOpCount,
-                                  unsigned int bytes_per_sigop) {
-    return std::max(nSize, nSigOpCount * bytes_per_sigop);
+int64_t GetVirtualTransactionSize(int64_t nSize, int64_t nSigChecks,
+                                  unsigned int bytes_per_sigcheck) {
+    return std::max(nSize, nSigChecks * bytes_per_sigcheck);
 }
 
-int64_t GetVirtualTransactionSize(const CTransaction &tx, int64_t nSigOpCount,
-                                  unsigned int bytes_per_sigop) {
+int64_t GetVirtualTransactionSize(const CTransaction &tx, int64_t nSigChecks,
+                                  unsigned int bytes_per_sigcheck) {
     return GetVirtualTransactionSize(::GetSerializeSize(tx, PROTOCOL_VERSION),
-                                     nSigOpCount, bytes_per_sigop);
+                                     nSigChecks, bytes_per_sigcheck);
 }
 
-int64_t GetVirtualTransactionInputSize(const CTxIn &txin, int64_t nSigOpCount,
-                                       unsigned int bytes_per_sigop) {
+int64_t GetVirtualTransactionInputSize(const CTxIn &txin, int64_t nSigChecks,
+                                       unsigned int bytes_per_sigcheck) {
     return GetVirtualTransactionSize(::GetSerializeSize(txin, PROTOCOL_VERSION),
-                                     nSigOpCount, bytes_per_sigop);
+                                     nSigChecks, bytes_per_sigcheck);
 }
