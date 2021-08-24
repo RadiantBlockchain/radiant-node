@@ -42,7 +42,7 @@ def setup():
             ['git', 'clone', 'https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node.git'])
     os.chdir('gitian-builder')
     make_image_prog = ['bin/make-base-vm',
-                       '--suite', 'bionic', '--arch', 'amd64']
+                       '--distro', 'debian', '--suite', 'buster', '--arch', 'amd64']
     if args.docker:
         make_image_prog += ['--docker']
     elif not args.kvm:
@@ -201,7 +201,7 @@ def main():
     global args, workdir
     num_cpus = multiprocessing.cpu_count()
 
-    parser = argparse.ArgumentParser(usage='%(prog)s [options] signer version')
+    parser = argparse.ArgumentParser(description='Script for running full Gitian builds.')
     parser.add_argument('-c', '--commit', action='store_true', dest='commit',
                         help='Indicate that the version argument is for a commit or branch')
     parser.add_argument('-R', '--merge-request', action='store_true', dest='merge_request',
@@ -233,39 +233,48 @@ def main():
     parser.add_argument('-n', '--no-commit', action='store_false',
                         dest='commit_files', help='Do not commit anything to git')
     parser.add_argument(
-        'signer', help='GPG signer to sign each build assert file')
+        'signer', nargs='?', help='GPG signer to sign each build assert file')
     parser.add_argument(
-        'version', help='Version number, commit, or branch to build. If building a commit or branch, the -c option must be specified')
+        'version', nargs='?', help='Version number, commit, or branch to build. If building a commit or branch, the -c option must be specified')
 
     args = parser.parse_args()
     workdir = os.getcwd()
 
-    args.linux = 'l' in args.os
-    args.windows = 'w' in args.os
-    args.macos = 'm' in args.os
-
     args.is_bionic = b'bionic' in subprocess.check_output(
         ['lsb_release', '-cs'])
+
+    if args.kvm and args.docker:
+        raise Exception('Error: cannot have both kvm and docker')
+
+    # Set environment variable USE_LXC or USE_DOCKER, let gitian-builder know
+    # that we use lxc or docker
+    if args.docker:
+        os.environ.pop('USE_LXC', None)
+        os.environ['USE_DOCKER'] = '1'
+    elif args.kvm:
+        os.environ.pop('USE_LXC', None)
+        os.environ.pop('USE_DOCKER', None)
+    else:
+        os.environ['USE_LXC'] = '1'
+        os.environ.pop('USE_DOCKER', None)
+        if 'GITIAN_HOST_IP' not in os.environ.keys():
+            os.environ['GITIAN_HOST_IP'] = '10.0.3.1'
+        if 'LXC_GUEST_IP' not in os.environ.keys():
+            os.environ['LXC_GUEST_IP'] = '10.0.3.5'
+
+    if args.setup:
+        setup()
 
     if args.buildsign:
         args.build = True
         args.sign = True
 
-    if args.kvm and args.docker:
-        raise Exception('Error: cannot have both kvm and docker')
+    if not args.build and not args.sign and not args.verify:
+        sys.exit(0)
 
-    args.sign_prog = 'true' if args.detach_sign else 'gpg --detach-sign'
-
-    # Set environment variable USE_LXC or USE_DOCKER, let gitian-builder know
-    # that we use lxc or docker
-    if args.docker:
-        os.environ['USE_DOCKER'] = '1'
-    elif not args.kvm:
-        os.environ['USE_LXC'] = '1'
-        if 'GITIAN_HOST_IP' not in os.environ.keys():
-            os.environ['GITIAN_HOST_IP'] = '10.0.3.1'
-        if 'LXC_GUEST_IP' not in os.environ.keys():
-            os.environ['LXC_GUEST_IP'] = '10.0.3.5'
+    args.linux = 'l' in args.os
+    args.windows = 'w' in args.os
+    args.macos = 'm' in args.os
 
     # Disable for MacOS if no SDK found
     if args.macos and not os.path.isfile(
@@ -273,13 +282,15 @@ def main():
         print('Cannot build for MacOS, SDK does not exist. Will build for other OSes')
         args.macos = False
 
+    args.sign_prog = 'true' if args.detach_sign else 'gpg --detach-sign'
+
     script_name = os.path.basename(sys.argv[0])
     # Signer and version shouldn't be empty
-    if args.signer == '':
+    if not args.signer:
         print(script_name + ': Missing signer.')
         print('Try ' + script_name + ' --help for more information')
         exit(1)
-    if args.version == '':
+    if not args.version:
         print(script_name + ': Missing version.')
         print('Try ' + script_name + ' --help for more information')
         exit(1)
@@ -288,9 +299,6 @@ def main():
     if args.commit and args.merge_request:
         raise Exception('Cannot have both commit and merge request')
     args.commit = ('' if args.commit else 'v') + args.version
-
-    if args.setup:
-        setup()
 
     # If this is the first time you run gitian_build you never had a chance of initialize
     # the project repo inside gitian-builder directory, in fact this is usually done by

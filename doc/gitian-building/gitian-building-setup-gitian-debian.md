@@ -101,7 +101,7 @@ There will be a lot of warnings printed during the build of the image. These can
 ## Downloading dependencies
 
 Gitian may have problems connecting to the internet, which can make the build
-flacky. In order to avoid this, it is possible to download dependencies ahead
+flaky. In order to avoid this, it is possible to download dependencies ahead
 of time.
 
 Execute the following as user `gitianuser`:

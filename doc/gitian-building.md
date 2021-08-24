@@ -17,9 +17,14 @@ More independent Gitian builders are needed, which is why this guide exists.
 It is preferred you follow these steps yourself instead of using someone else's
 VM image to avoid 'contaminating' the build.
 
-The instructions below use the automated script [gitian-build.py](https://github.com/bitcoin-cash-node/bitcoin-cash-node/blob/master/contrib/gitian-build.py)
+If you are running Debian or Ubuntu, see
+[Running Gitian with Docker on Ubuntu/Debian](./gitian-building/gitian-building-docker.md)
+for a relitively straightforward setup and build process.
+
+The instructions below use the automated script [gitian-build.py](../contrib/gitian-build.py)
 which only works in Debian/Ubuntu. For manual steps and instructions for fully
 offline signing, see [this guide](./gitian-building/gitian-building-manual.md).
+
 
 ## Preparing the Gitian builder host
 
@@ -93,19 +98,26 @@ To build the most recent tag:
 ./gitian-build.py --detach-sign --no-commit -b satoshi 22.2.0
 ```
 
-To speed up the build, use `-j 5 -m 5000` as the first arguments, where `5` is
-the number of CPU's you allocated to the VM plus one, and 5000 is a little bit
-less than then the MB's of RAM you allocated.
+If running in a VM, to speed up the build use `-j 5 -m 5000` as the first
+arguments, where `5` is the number of CPU's you allocated to the VM plus one,
+and 5000 is a little bit less than then the MB's of RAM you allocated.
 
-If all went well, this produces a number of (uncommited) `.assert` files in the
-gitian.sigs repository.
+## Verify hashes
 
-You need to copy these uncommited changes to your host machine, where you can
-sign them:
+If all went well, this prints a report with hashes for each asset produced.
+E.g.:
 
-```bash
-export NAME=satoshi
-gpg --output $VERSION-linux/$NAME/bitcoin-cash-node-linux-22.2.0-build.assert.sig --detach-sign 22.2.0-linux/$NAME/bitcoin-cash-node-linux-22.2.0-build.assert
-gpg --output $VERSION-osx-unsigned/$NAME/bitcoin-cash-node-osx-22.2.0-build.assert.sig --detach-sign 22.2.0-osx-unsigned/$NAME/bitcoin-cash-node-osx-22.2.0-build.assert
-gpg --output $VERSION-win-unsigned/$NAME/bitcoin-cash-node-win-22.2.0-build.assert.sig --detach-sign 22.2.0-win-unsigned/$NAME/bitcoin-cash-node-win-22.2.0-build.assert
 ```
+[...]
+Generating report
+4dcfd0b27ff21736483f22aba1f6c4bd8845f0b2582f2f6c4314bd90488dddd1  bitcoin-cash-node-23.1.0-win-unsigned.tar.gz
+1c2e737651b69f46cb2ab4e28d8da34168274d526330569c1b2f4d0dff4e11da  bitcoin-cash-node-23.1.0-win64-debug.zip
+8f68a567d257107ba33c494c49e151d38678891de853eddc0ad2f391ae1c254e  bitcoin-cash-node-23.1.0-win64-setup-unsigned.exe
+c73136187dcbbf124088029bd65e6303118563d1d04c5fca464f9492cd365e69  bitcoin-cash-node-23.1.0-win64.zip
+0356cf228afb7da3bf945198f27fdadd972e1c5e5f6df57d863bb4c16e2836e0  src/bitcoin-cash-node-23.1.0.tar.gz
+```
+
+Confirm with other developers that the hashes match with theirs.
+
+Lastly, follow the instructions at [Gitian signing](./gitian-signing.md) if you
+need to sign your builds too.
