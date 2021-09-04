@@ -11,6 +11,8 @@ namespace data {
 
 extern const std::vector<uint8_t> block413567;
 extern const std::vector<uint8_t> block556034;
+extern const std::vector<uint8_t> coins_spent_413567;
+extern const std::vector<uint8_t> coins_spent_556034;
 
 } // namespace data
 } // namespace benchmark

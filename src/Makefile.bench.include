@@ -18,6 +18,8 @@ bench_bench_bitcoin_SOURCES = \
   bench/checkqueue.cpp \
   bench/data/block413567.cpp \
   bench/data/block556034.cpp \
+  bench/data/coins_spent_413567.cpp \
+  bench/data/coins_spent_556034.cpp \
   bench/dsproof.cpp \
   bench/duplicate_inputs.cpp \
   bench/examples.cpp \
