@@ -19,6 +19,8 @@ add_executable(bench_bitcoin
 	crypto_hash.cpp
 	data/block413567.cpp
 	data/block556034.cpp
+	data/coins_spent_413567.cpp
+	data/coins_spent_556034.cpp
 	dsproof.cpp
 	duplicate_inputs.cpp
 	examples.cpp
