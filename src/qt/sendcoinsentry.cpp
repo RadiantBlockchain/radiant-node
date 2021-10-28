@@ -165,6 +165,7 @@ bool SendCoinsEntry::validate(interfaces::Node &node) {
     }
 #endif
 
+    ui->payTo->fixup();
     if (!ui->payTo->validate()) {
         retval = false;
     }

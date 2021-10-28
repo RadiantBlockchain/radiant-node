@@ -37,6 +37,12 @@ const WalletInitInterface &g_wallet_init_interface = WalletInit();
 
 void WalletInit::AddWalletOptions() const {
     gArgs.AddArg(
+        "-allowlegacyp2sh",
+        strprintf(
+            "Re-enable deprecated legacy P2SH destination address types in the GUI wallet (default: %d)",
+            DEFAULT_ALLOW_LEGACY_P2SH),
+        false, OptionsCategory::WALLET);
+    gArgs.AddArg(
         "-avoidpartialspends",
         strprintf("Group outputs by address, selecting all or none, instead of "
                   "selecting on a per-output basis. Privacy is improved as an "

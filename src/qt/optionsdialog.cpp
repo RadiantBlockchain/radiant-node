@@ -243,6 +243,8 @@ void OptionsDialog::setMapper() {
                        OptionsModel::SpendZeroConfChange);
     mapper->addMapping(ui->coinControlFeatures,
                        OptionsModel::CoinControlFeatures);
+    mapper->addMapping(ui->allowLegacyP2PKH,
+                       OptionsModel::AllowLegacyP2PKH);
 
     /* Network */
     mapper->addMapping(ui->mapPortUpnp, OptionsModel::MapPortUPnP);

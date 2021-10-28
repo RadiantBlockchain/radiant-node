@@ -90,6 +90,8 @@ static constexpr bool DEFAULT_SPEND_ZEROCONF_CHANGE = true;
 static constexpr bool DEFAULT_AVOIDPARTIALSPENDS = false;
 static constexpr bool DEFAULT_WALLETBROADCAST = true;
 static constexpr bool DEFAULT_DISABLE_WALLET = false;
+//! Default for -allowlegacyp2sh
+static constexpr bool DEFAULT_ALLOW_LEGACY_P2SH = false;
 
 class CChainParams;
 class CCoinControl;

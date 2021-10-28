@@ -5,26 +5,33 @@
 
 #include <qt/qvalidatedlineedit.h>
 
+#include <config.h>
 #include <qt/bitcoinaddressvalidator.h>
 #include <qt/guiconstants.h>
 
 QValidatedLineEdit::QValidatedLineEdit(QWidget *parent)
-    : QLineEdit(parent), valid(true), checkValidator(nullptr) {
+    : QLineEdit(parent), state(QValidator::Acceptable), checkValidator(nullptr) {
     connect(this, &QValidatedLineEdit::textChanged, this,
             &QValidatedLineEdit::markValid);
 }
 
-void QValidatedLineEdit::setValid(bool _valid) {
-    if (_valid == this->valid) {
+void QValidatedLineEdit::setValid(bool valid) {
+    setValid(valid ? QValidator::Acceptable : QValidator::Invalid);
+}
+
+void QValidatedLineEdit::setValid(QValidator::State _state) {
+    if (_state == this->state) {
         return;
     }
 
-    if (_valid) {
+    if (_state == QValidator::Acceptable) {
         setStyleSheet("");
+    } else if (_state == QValidator::Intermediate) {
+        setStyleSheet(STYLE_INTERMEDIATE);
     } else {
         setStyleSheet(STYLE_INVALID);
     }
-    this->valid = _valid;
+    this->state = _state;
 }
 
 void QValidatedLineEdit::focusInEvent(QFocusEvent *evt) {
@@ -63,18 +70,19 @@ void QValidatedLineEdit::setEnabled(bool enabled) {
 }
 
 bool QValidatedLineEdit::validate() {
-    if (text().isEmpty()) {
+    QString input = text();
+    QString origInput = input;
+    if (input.isEmpty()) {
         setValid(true);
     } else if (hasAcceptableInput()) {
         setValid(true);
-
-        // Check contents on focus out
         if (checkValidator) {
-            QString input = text();
             int pos = 0;
-            setValid(checkValidator->validate(input, pos) == QValidator::Acceptable);
-            // note: checkValidator may have modified the text, so update the text
-            setText(input);
+            setValid(checkValidator->validate(input, pos));
+            // checkValidator may have modified the text, if so update the text
+            if (input != origInput) {
+                setText(input);
+            }
         }
     } else {
         setValid(false);
@@ -82,7 +90,18 @@ bool QValidatedLineEdit::validate() {
 
     Q_EMIT validationDidChange(this);
 
-    return valid;
+    return state == QValidator::Acceptable;
+}
+
+void QValidatedLineEdit::fixup() {
+    if (checkValidator) {
+        QString input = text();
+        QString origInput = input;
+        checkValidator->fixup(input);
+        if (input != origInput) {
+            setText(input);
+        }
+    }
 }
 
 void QValidatedLineEdit::setCheckValidator(const QValidator *v) {
@@ -99,5 +118,5 @@ bool QValidatedLineEdit::isValid() {
         }
     }
 
-    return valid;
+    return state == QValidator::Acceptable;
 }

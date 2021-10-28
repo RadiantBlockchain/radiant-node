@@ -19,6 +19,8 @@ static constexpr bool DEFAULT_SPLASHSCREEN = true;
 
 /* Invalid field background style */
 #define STYLE_INVALID "background:#FF8080"
+/* Intermediate state field background style */
+#define STYLE_INTERMEDIATE "background:#EBAB1A"
 
 /* Transaction list -- unconfirmed transaction */
 #define COLOR_UNCONFIRMED QColor(128, 128, 128)

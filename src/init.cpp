@@ -602,7 +602,12 @@ void SetupServerArgs() {
                  false, OptionsCategory::OPTIONS);
     gArgs.AddArg(
         "-usecashaddr",
-        strprintf("Use CashAddr address format for destination encoding instead of the legacy base58 format (default: %d)",
+        strprintf("Use CashAddr address format for destination encoding "
+                  "instead of the legacy base58 format (default: %d). "
+                  "Warning: Disabling this option will also disable all "
+                  "safety checks related to legacy address use. For example, "
+                  "attempts to send to legacy P2SH addresses will be allowed "
+                  "without warning.",
                   DEFAULT_USE_CASHADDR),
         false, OptionsCategory::OPTIONS);
 

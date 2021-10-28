@@ -226,6 +226,16 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QCheckBox" name="allowLegacyP2PKH">
+            <property name="toolTip">
+             <string>Legacy P2PKH addresses are discouraged since their use can result in lost coins. Do not enable this option unless you understand clearly what you are doing.</string>
+            </property>
+            <property name="text">
+             <string>&amp;Allow legacy P2PKH addresses</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>

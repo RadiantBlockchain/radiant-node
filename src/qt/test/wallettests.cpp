@@ -13,6 +13,8 @@
 #include <interfaces/node.h>
 #include <key_io.h>
 #include <qt/bitcoinamountfield.h>
+#include <qt/legacyaddressconvertdialog.h>
+#include <qt/legacyaddressdialog.h>
 #include <qt/optionsmodel.h>
 #include <qt/overviewpage.h>
 #include <qt/platformstyle.h>
@@ -34,6 +36,7 @@
 #include <QDialogButtonBox>
 #include <QListView>
 #include <QPushButton>
+#include <QSettings>
 #include <QTextEdit>
 #include <QTimer>
 #include <QVBoxLayout>
@@ -46,7 +49,7 @@ void ConfirmSend(QString *text = nullptr, bool cancel = false) {
     QTimer::singleShot(0, Qt::PreciseTimer, [text, cancel]() {
         for (QWidget *widget : QApplication::topLevelWidgets()) {
             if (widget->inherits("SendConfirmationDialog")) {
-                SendConfirmationDialog *dialog =
+                auto *dialog =
                     qobject_cast<SendConfirmationDialog *>(widget);
                 if (text) {
                     *text = dialog->text();
@@ -60,14 +63,77 @@ void ConfirmSend(QString *text = nullptr, bool cancel = false) {
     });
 }
 
+//! Press "Close" button in legacy address use denied notification.
+void CloseLegacyNotification() {
+    QTimer::singleShot(0, Qt::PreciseTimer, []() {
+        for (QWidget *widget : QApplication::topLevelWidgets()) {
+            if (widget->inherits("LegacyAddressStopDialog")) {
+                auto *dialog =
+                    qobject_cast<LegacyAddressStopDialog *>(widget);
+                auto *buttonBox =
+                    dialog->findChild<QDialogButtonBox*>("buttonBox");
+                QAbstractButton *button =
+                    buttonBox->button(QDialogButtonBox::Close);
+                button->click();
+            }
+        }
+    });
+}
+
+//! Press "Ok" button in legacy address conversion confirmation dialog
+//! and follow up with a call to ConfirmSend()
+void ConfirmLegacyAddressConvert() {
+    QTimer::singleShot(0, Qt::PreciseTimer, []() {
+        for (QWidget *widget : QApplication::topLevelWidgets()) {
+            if (widget->inherits("LegacyAddressConvertDialog")) {
+                ConfirmSend();
+                auto *dialog =
+                    qobject_cast<LegacyAddressConvertDialog *>(widget);
+                auto *buttonBox =
+                    dialog->findChild<QDialogButtonBox*>("buttonBox");
+                QAbstractButton *button =
+                    buttonBox->button(QDialogButtonBox::Ok);
+                button->click();
+            }
+        }
+    });
+}
+
+//! Press "Yes" button in legacy address use confirmation dialog
+//! and follow up with a call to ConfirmLegacyAddressConvert()
+void ConfirmLegacyAddressUse() {
+    QTimer::singleShot(0, Qt::PreciseTimer, []() {
+        for (QWidget *widget : QApplication::topLevelWidgets()) {
+            if (widget->inherits("LegacyAddressWarnDialog")) {
+                ConfirmLegacyAddressConvert();
+                auto *dialog =
+                    qobject_cast<LegacyAddressWarnDialog *>(widget);
+                auto *buttonBox =
+                    dialog->findChild<QDialogButtonBox*>("buttonBox");
+                QAbstractButton *button =
+                    buttonBox->button(QDialogButtonBox::Yes);
+                button->click();
+            }
+        }
+    });
+}
+
+QString NewAddress(bool legacy=false, bool p2sh=false) {
+    auto destination = p2sh ?
+        CTxDestination(CScriptID()) : CTxDestination(CKeyID());
+    std::string destinationString = legacy ?
+        EncodeLegacyAddr(destination, Params()) : EncodeCashAddr(destination, Params());
+    return QString::fromStdString(destinationString);
+}
+
 //! Send coins to address and return txid.
 TxId SendCoins(CWallet &wallet, SendCoinsDialog &sendCoinsDialog,
-               const CTxDestination &address, Amount amount) {
+               Amount amount, bool legacyAddress=false, bool p2shAddress=false) {
+    const QString address = NewAddress(legacyAddress, p2shAddress);
     QVBoxLayout *entries = sendCoinsDialog.findChild<QVBoxLayout *>("entries");
     SendCoinsEntry *entry =
         qobject_cast<SendCoinsEntry *>(entries->itemAt(0)->widget());
-    entry->findChild<QValidatedLineEdit *>("payTo")->setText(
-        QString::fromStdString(EncodeCashAddr(address, Params())));
+    entry->findChild<QValidatedLineEdit *>("payTo")->setText(address);
     entry->findChild<BitcoinAmountField *>("payAmount")->setValue(amount);
     TxId txid;
     boost::signals2::scoped_connection c =
@@ -77,7 +143,18 @@ TxId SendCoins(CWallet &wallet, SendCoinsDialog &sendCoinsDialog,
                     txid = hash;
                 }
             });
-    ConfirmSend();
+    if (legacyAddress) {
+        QSettings settings;
+        QString permitSetting =
+            p2shAddress ? "fAllowLegacyP2SH" : "fAllowLegacyP2PKH";
+        if (settings.value(permitSetting).toBool()) {
+            ConfirmLegacyAddressUse();
+        } else {
+            CloseLegacyNotification();
+        }
+    } else {
+        ConfirmSend();
+    }
     QMetaObject::invokeMethod(&sendCoinsDialog, "on_sendButton_clicked");
     return txid;
 }
@@ -159,10 +236,8 @@ void TestGUI() {
     TransactionTableModel *transactionTableModel =
         walletModel.getTransactionTableModel();
     QCOMPARE(transactionTableModel->rowCount({}), 105);
-    TxId txid1 = SendCoins(*wallet.get(), sendCoinsDialog,
-                           CTxDestination(CKeyID()), 5 * COIN);
-    TxId txid2 = SendCoins(*wallet.get(), sendCoinsDialog,
-                           CTxDestination(CKeyID()), 10 * COIN);
+    TxId txid1 = SendCoins(*wallet.get(), sendCoinsDialog, 5 * COIN);
+    TxId txid2 = SendCoins(*wallet.get(), sendCoinsDialog, 10 * COIN);
     QCOMPARE(transactionTableModel->rowCount({}), 107);
     QVERIFY(FindTx(*transactionTableModel, txid1).isValid());
     QVERIFY(FindTx(*transactionTableModel, txid2).isValid());
@@ -242,6 +317,28 @@ void TestGUI() {
         receiveCoinsDialog.findChild<QPushButton *>("removeRequestButton");
     removeRequestButton->click();
     QCOMPARE(requestTableModel->rowCount({}), currentRowCount - 1);
+
+    // Ensure send to legacy P2PKH address fails by default
+    QCOMPARE(transactionTableModel->rowCount({}), 107);
+    SendCoins(*wallet.get(), sendCoinsDialog, COIN, true, false);
+    QCOMPARE(transactionTableModel->rowCount({}), 107);
+
+    // Ensure send to legacy P2PKH address succeeds when option allows
+    QSettings settings;
+    settings.setValue("fAllowLegacyP2PKH", true);
+    TxId txid4 = SendCoins(*wallet.get(), sendCoinsDialog, COIN, true, false);
+    QCOMPARE(transactionTableModel->rowCount({}), 108);
+    QVERIFY(FindTx(*transactionTableModel, txid4).isValid());
+
+    // Ensure send to legacy P2SH address fails by default
+    SendCoins(*wallet.get(), sendCoinsDialog, COIN, true, true);
+    QCOMPARE(transactionTableModel->rowCount({}), 108);
+
+    // Ensure send to legacy P2SH address succeeds when option allows
+    settings.setValue("fAllowLegacyP2SH", true);
+    TxId txid6 = SendCoins(*wallet.get(), sendCoinsDialog, COIN, true, false);
+    QCOMPARE(transactionTableModel->rowCount({}), 109);
+    QVERIFY(FindTx(*transactionTableModel, txid6).isValid());
 }
 
 } // namespace

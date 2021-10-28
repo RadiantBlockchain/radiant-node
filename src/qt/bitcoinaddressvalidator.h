@@ -6,6 +6,8 @@
 #ifndef BITCOIN_QT_BITCOINADDRESSVALIDATOR_H
 #define BITCOIN_QT_BITCOINADDRESSVALIDATOR_H
 
+#include <key_io.h>
+
 #include <QValidator>
 
 /**
@@ -31,9 +33,19 @@ class BitcoinAddressCheckValidator : public QValidator {
     Q_OBJECT
 
 public:
-    explicit BitcoinAddressCheckValidator(QObject *parent);
+    explicit BitcoinAddressCheckValidator(QWidget *parent);
 
+    /** @name Methods overridden from QValidator
+    @{*/
     State validate(QString &input, int &pos) const override;
+    void fixup(QString &input) const override;
+    /*@}*/
+
+private:
+    bool GetLegacyAddressUseAuth(const CTxDestination &destination) const;
+    bool GetLegacyAddressConversionAuth(const QString &original,
+                                        const QString &normalized) const;
+    QWidget* parentWidget() const;
 };
 
 #endif // BITCOIN_QT_BITCOINADDRESSVALIDATOR_H
