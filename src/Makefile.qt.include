@@ -321,6 +321,8 @@ BITCOIN_QT_BASE_CPP = \
   qt/csvmodelwriter.cpp \
   qt/guiutil.cpp \
   qt/intro.cpp \
+  qt/legacyaddressdialog.cpp \
+  qt/legacyaddressconvertdialog.cpp \
   qt/modaloverlay.cpp \
   qt/networkstyle.cpp \
   qt/notificator.cpp \
@@ -344,8 +346,6 @@ BITCOIN_QT_WALLET_CPP = \
   qt/coincontroldialog.cpp \
   qt/coincontroltreewidget.cpp \
   qt/editaddressdialog.cpp \
-  qt/legacyaddressdialog.cpp \
-  qt/legacyaddressconvertdialog.cpp \
   qt/openuridialog.cpp \
   qt/overviewpage.cpp \
   qt/paymentserver.cpp \

@@ -93,6 +93,8 @@ add_library(bitcoin-qt-base
 	csvmodelwriter.cpp
 	guiutil.cpp
 	intro.cpp
+	legacyaddressdialog.cpp
+	legacyaddressconvertdialog.cpp
 	modaloverlay.cpp
 	networkstyle.cpp
 	notificator.cpp
@@ -288,8 +290,6 @@ if(BUILD_BITCOIN_WALLET)
 			coincontroldialog.cpp
 			coincontroltreewidget.cpp
 			editaddressdialog.cpp
-			legacyaddressdialog.cpp
-			legacyaddressconvertdialog.cpp
 			openuridialog.cpp
 			overviewpage.cpp
 			paymentserver.cpp
