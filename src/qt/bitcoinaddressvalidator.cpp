@@ -7,6 +7,10 @@
 
 #include <config.h>
 #include <key_io.h>
+#include <qt/legacyaddressconvertdialog.h>
+#include <qt/legacyaddressdialog.h>
+
+#include <QSettings>
 
 /* Base58 characters are:
      "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
@@ -71,19 +75,93 @@ QValidator::State BitcoinAddressEntryValidator::validate(QString &input, [[maybe
     return QValidator::Acceptable;
 }
 
-BitcoinAddressCheckValidator::BitcoinAddressCheckValidator(QObject *parent)
+BitcoinAddressCheckValidator::BitcoinAddressCheckValidator(QWidget *parent)
     : QValidator(parent) {}
 
 QValidator::State BitcoinAddressCheckValidator::validate(QString &input, [[maybe_unused]] int &pos) const {
+    // If CashAddr address format is enabled and the address is a valid legacy address, just return Intermediate state.
+    // fixup() handles legacy address conversion later.
+    if (GetConfig().UseCashAddrEncoding()) {
+        CTxDestination dst = DecodeLegacyAddr(input.toStdString(), GetConfig().GetChainParams());
+        if (IsValidDestination(dst)) {
+            return QValidator::Intermediate;
+        }
+    }
 
-    // Validate the passed Bitcoin Cash address
+    // If the address is otherwise valid, do some fix-up immediately.
     CTxDestination destination = DecodeDestination(input.toStdString(), GetConfig().GetChainParams());
     if (IsValidDestination(destination)) {
-        // Address is valid
         // Normalize address notation (e.g. convert to CashAddr/Base58, add CashAddr prefix, uppercase CashAddr to lowercase)
         input = QString::fromStdString(EncodeDestination(destination, GetConfig()));
         return QValidator::Acceptable;
     }
-
     return QValidator::Invalid;
+}
+
+
+void BitcoinAddressCheckValidator::fixup(QString &input) const /*override*/ {
+
+    // If CashAddr address format is enabled, check if a legacy address has been given
+    bool isLegacy = true;
+    if (GetConfig().UseCashAddrEncoding()) {
+        CTxDestination destination = DecodeLegacyAddr(input.toStdString(), GetConfig().GetChainParams());
+        isLegacy = IsValidDestination(destination);
+        if (isLegacy) {
+            // Check for permission to use this legacy address type
+            if (!GetLegacyAddressUseAuth(destination)) {
+                // Declined, so do not change the address.
+                return;
+            }
+        }
+    }
+
+    CTxDestination destination = DecodeDestination(input.toStdString(), GetConfig().GetChainParams());
+    if (IsValidDestination(destination)) {
+        // We have a valid address
+        // Normalize address notation (e.g. convert to CashAddr/Base58, add CashAddr prefix, uppercase CashAddr to lowercase)
+        QString normalizedInput = QString::fromStdString(EncodeDestination(destination, GetConfig()));
+        // If CashAddr format addresses are enabled and a legacy address is
+        // given, notify the user before converting it to CashAddr
+        if (!GetConfig().UseCashAddrEncoding()
+            || !isLegacy
+            || GetLegacyAddressConversionAuth(input, normalizedInput)) {
+            input = normalizedInput;
+        }
+    }
+}
+
+bool BitcoinAddressCheckValidator::GetLegacyAddressUseAuth(const CTxDestination &destination) const {
+    QSettings settings;
+    LegacyAddressType addressType = LegacyAddressType::P2PKH;
+    bool allowed = settings.value("fAllowLegacyP2PKH").toBool();
+    if (destination.which() == 2) {
+        addressType = LegacyAddressType::P2SH;
+        allowed = settings.value("fAllowLegacyP2SH").toBool();
+    }
+    if (allowed) {
+        // Give warning and allow the user to proceed
+        LegacyAddressWarnDialog dlg(parentWidget());
+        dlg.SetAddressType(addressType);
+        if (!dlg.exec()) {
+            allowed = false;
+        }
+    } else {
+        // Give warning and deny permission to proceed
+        LegacyAddressStopDialog dlg(parentWidget());
+        dlg.SetAddressType(addressType);
+        dlg.exec();
+        allowed = false;
+    }
+    return allowed;
+}
+
+bool BitcoinAddressCheckValidator::GetLegacyAddressConversionAuth(const QString &original, const QString &normalized) const {
+    LegacyAddressConvertDialog dlg(parentWidget());
+    dlg.SetAddresses(original, normalized);
+    dlg.adjustSize();
+    return dlg.exec();
+}
+
+QWidget* BitcoinAddressCheckValidator::parentWidget() const {
+    return qobject_cast<QWidget *>(parent());
 }

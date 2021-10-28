@@ -145,6 +145,7 @@ void OptionsModel::Init(bool resetSettings) {
 
 // Wallet
 #ifdef ENABLE_WALLET
+    settings.setValue("fAllowLegacyP2SH", gArgs.GetBoolArg("-allowlegacyp2sh", false));
     if (!settings.contains("bSpendZeroConfChange")) {
         settings.setValue("bSpendZeroConfChange", true);
     }
@@ -153,6 +154,10 @@ void OptionsModel::Init(bool resetSettings) {
             settings.value("bSpendZeroConfChange").toBool())) {
         addOverriddenOption("-spendzeroconfchange");
     }
+    if (!settings.contains("fAllowLegacyP2PKH")) {
+        settings.setValue("fAllowLegacyP2PKH", false);
+    }
+
 #endif
 
     // Network
@@ -337,6 +342,8 @@ QVariant OptionsModel::data(const QModelIndex &index, int role) const {
 #ifdef ENABLE_WALLET
             case SpendZeroConfChange:
                 return settings.value("bSpendZeroConfChange");
+            case AllowLegacyP2PKH:
+                return settings.value("fAllowLegacyP2PKH");
 #endif
             case DisplayUnit:
                 return nDisplayUnit;
@@ -466,6 +473,9 @@ bool OptionsModel::setData(const QModelIndex &index, const QVariant &value,
                     settings.setValue("bSpendZeroConfChange", value);
                     setRestartRequired(true);
                 }
+                break;
+            case AllowLegacyP2PKH:
+                settings.setValue("fAllowLegacyP2PKH", value);
                 break;
 #endif
             case DisplayUnit:

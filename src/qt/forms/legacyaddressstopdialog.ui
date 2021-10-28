@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>LegacyAddressStopDialog</class>
+ <widget class="QDialog" name="LegacyAddressStopDialog">
+  <property name="windowTitle">
+   <string>Legacy Address Detected</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QLabel" name="p2pkh_label">
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+     <property name="text">
+      <string>You have entered a legacy 'P2PKH' Bitcoin address.&lt;br/&gt;&lt;br/&gt;This type of address is no longer supported by Bitcoin Cash Node because of the risk of loss of funds.&lt;br/&gt;&lt;br/&gt;Please ask the recipient to provide a valid Bitcoin Cash address (in the CashAddr format).&lt;br/&gt;&lt;br/&gt;Or, if you are sure that the address you entered is valid on the Bitcoin Cash chain, you can bypass this check by turning on the "Allow legacy P2PKH addresses" setting under Options > Wallet in the settings dialog.</string>
+     </property>
+     <property name="visible">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="p2sh_label">
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+     <property name="text">
+      <string>You have entered a legacy 'P2SH' Bitcoin address.&lt;br/&gt;&lt;br/&gt;This type of address is no longer supported by Bitcoin Cash Node because of the risk of loss of funds.&lt;br/&gt;&lt;br/&gt;Please ask the recipient to provide a valid Bitcoin Cash address (in the CashAddr format).</string>
+     </property>
+     <property name="visible">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <height>14</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Close</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>LegacyAddressStopDialog</receiver>
+   <slot>reject()</slot>
+  </connection>
+ </connections>
+</ui>

@@ -60,6 +60,9 @@ qt5_wrap_ui(UI_GENERATED_HEADERS
 	forms/helpmessagedialog.ui
 	forms/intro.ui
 	forms/modaloverlay.ui
+	forms/legacyaddressstopdialog.ui
+	forms/legacyaddresswarndialog.ui
+	forms/legacyaddressconvertdialog.ui
 	forms/openuridialog.ui
 	forms/optionsdialog.ui
 	forms/overviewpage.ui
@@ -285,6 +288,8 @@ if(BUILD_BITCOIN_WALLET)
 			coincontroldialog.cpp
 			coincontroltreewidget.cpp
 			editaddressdialog.cpp
+			legacyaddressdialog.cpp
+			legacyaddressconvertdialog.cpp
 			openuridialog.cpp
 			overviewpage.cpp
 			paymentserver.cpp

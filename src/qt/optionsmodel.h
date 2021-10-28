@@ -55,7 +55,9 @@ public:
         DatabaseCache,       // int
         SpendZeroConfChange, // bool
         Listen,              // bool
-        OptionIDRowCount,
+        AllowLegacyP2PKH,    // bool
+        AllowLegacyP2SH,     // bool
+        OptionIDRowCount,    // Keep as final entry
     };
 
     void Init(bool resetSettings = false);
