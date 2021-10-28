@@ -7,10 +7,14 @@
 
 #include <config.h>
 #include <key_io.h>
+
+#ifdef ENABLE_WALLET
 #include <qt/legacyaddressconvertdialog.h>
 #include <qt/legacyaddressdialog.h>
+#endif // ENABLE_WALLET
 
 #include <QSettings>
+#include <QWidget>
 
 /* Base58 characters are:
      "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
@@ -131,6 +135,7 @@ void BitcoinAddressCheckValidator::fixup(QString &input) const /*override*/ {
 }
 
 bool BitcoinAddressCheckValidator::GetLegacyAddressUseAuth(const CTxDestination &destination) const {
+#ifdef ENABLE_WALLET
     QSettings settings;
     LegacyAddressType addressType = LegacyAddressType::P2PKH;
     bool allowed = settings.value("fAllowLegacyP2PKH").toBool();
@@ -153,13 +158,20 @@ bool BitcoinAddressCheckValidator::GetLegacyAddressUseAuth(const CTxDestination 
         allowed = false;
     }
     return allowed;
+#else
+    return true;
+#endif //ENABLE_WALLET
 }
 
 bool BitcoinAddressCheckValidator::GetLegacyAddressConversionAuth(const QString &original, const QString &normalized) const {
+#ifdef ENABLE_WALLET
     LegacyAddressConvertDialog dlg(parentWidget());
     dlg.SetAddresses(original, normalized);
     dlg.adjustSize();
     return dlg.exec();
+#else
+    return true;
+#endif //ENABLE_WALLET
 }
 
 QWidget* BitcoinAddressCheckValidator::parentWidget() const {
