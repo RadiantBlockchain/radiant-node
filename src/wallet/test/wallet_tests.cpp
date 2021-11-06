@@ -621,16 +621,16 @@ BOOST_FIXTURE_TEST_CASE(wallet_bip69, ListCoinsTestingSetup) {
         return true;
     };
 
-    const auto AllRecipientsPresent = [](const std::vector<CRecipient> &recipients, const CTransactionRef &tx) {
+    const auto AllRecipientsPresent = [](const std::vector<CRecipient> &rs, const CTransactionRef &tx) {
         struct RecipientSort {
             bool operator()(const CRecipient &a, const CRecipient &b) const noexcept {
                 return a.nAmount < b.nAmount
                        || (a.nAmount == b.nAmount && a.scriptPubKey < b.scriptPubKey);
             }
         };
-        std::set<CRecipient, RecipientSort> needed{recipients.begin(), recipients.end()}, seen;
+        std::set<CRecipient, RecipientSort> needed{rs.begin(), rs.end()}, seen;
         const size_t nNeeded = needed.size();
-        BOOST_CHECK_EQUAL(nNeeded, recipients.size());
+        BOOST_CHECK_EQUAL(nNeeded, rs.size());
 
         for (const auto &out : tx->vout) {
             const CRecipient r{out.scriptPubKey, out.nValue, false};
