@@ -8,7 +8,10 @@
 #include <config.h>
 #include <consensus/validation.h>
 #include <interfaces/chain.h>
+#include <key.h>
+#include <pubkey.h>
 #include <rpc/server.h>
+#include <util/defer.h>
 #include <validation.h>
 #include <wallet/coincontrol.h>
 #include <wallet/rpcdump.h>
@@ -21,6 +24,7 @@
 
 #include <univalue.h>
 
+#include <array>
 #include <cstdint>
 #include <memory>
 #include <set>
@@ -378,17 +382,24 @@ public:
 
     ~ListCoinsTestingSetup() { wallet.reset(); }
 
-    CWalletTx &AddTx(CRecipient recipient,
-                     CoinSelectionHint coinsel = CoinSelectionHint::Default) {
+    CWalletTx &AddTx(CRecipient recipient, CoinSelectionHint coinsel = CoinSelectionHint::Default,
+                     int *changePosInOut = nullptr) {
+        return AddTx(std::vector<CRecipient>{{recipient}}, coinsel, changePosInOut);
+    }
+
+    CWalletTx &AddTx(const std::vector<CRecipient> &recipients,
+                     CoinSelectionHint coinsel = CoinSelectionHint::Default,
+                     int *changePosInOut = nullptr) {
         CTransactionRef tx;
         CReserveKey reservekey(wallet.get());
         Amount fee;
-        int changePos = -1;
+        int tmp_changePos = -1;
+        int &changePos = changePosInOut ? *changePosInOut : tmp_changePos;
         std::string error;
         CCoinControl dummy;
         BOOST_CHECK_EQUAL(CreateTransactionResult::CT_OK,
                           wallet->CreateTransaction(
-                              *m_locked_chain, {recipient}, tx, reservekey, fee,
+                              *m_locked_chain, recipients, tx, reservekey, fee,
                               changePos, error, dummy, true, coinsel));
 
         // The anti-fee-sniping feature should set the lock time equal to the block height.
@@ -409,6 +420,7 @@ public:
         auto it = wallet->mapWallet.find(tx->GetId());
         BOOST_CHECK(it != wallet->mapWallet.end());
         it->second.SetMerkleBranch(::ChainActive().Tip()->GetBlockHash(), 1);
+
         return it->second;
     }
 
@@ -532,6 +544,193 @@ BOOST_FIXTURE_TEST_CASE(wallet_disableprivkeys, TestChain100Setup) {
     BOOST_CHECK(!wallet->TopUpKeyPool(1000));
     CPubKey pubkey;
     BOOST_CHECK(!wallet->GetKeyFromPool(pubkey, false));
+}
+
+BOOST_FIXTURE_TEST_CASE(wallet_bip69, ListCoinsTestingSetup) {
+    Defer d([]{
+        // undo forceSetArg
+        gArgs.ClearArg("-usebip69");
+    });
+    constexpr size_t N_KEYS = 4;
+    std::array<CKey, N_KEYS> privKeys;
+    std::array<CPubKey, N_KEYS> pubKeys;
+    std::array<CScript, N_KEYS> scriptPubKeys;
+
+    // generate random keys
+    for (size_t i = 0; i < N_KEYS; ++i) {
+        auto &pub = pubKeys[i];
+        auto &priv = privKeys[i];
+        auto &spk = scriptPubKeys[i];
+        priv.MakeNewKey(false);
+        pub = priv.GetPubKey();
+        spk = GetScriptForDestination(pub.GetID()); // P2PKH
+        BOOST_CHECK(pub.IsFullyValid());
+        CTxDestination dest;
+        BOOST_CHECK(ExtractDestination(spk, dest));
+        BOOST_CHECK(dest == CTxDestination(pub.GetID()));
+    }
+
+    // Ensure we have a bunch of small coins
+    {
+        const auto myScriptPubKey = GetScriptForRawPubKey(coinbaseKey.GetPubKey());
+        std::vector<CRecipient> toMe(100, CRecipient{myScriptPubKey, 1000 * CASH, false});
+        for (int i = 0; i < 3; ++i) {
+            for (auto &r: toMe) r.nAmount += 10 * SATOSHI; // make subsequent iterations have slightly larger coins
+            AddTx(toMe);
+        }
+    }
+
+    BOOST_CHECK(wallet->GetBalance() > 50 * COIN);
+    {
+        // count the number of coins we have
+        LOCK2(cs_main, wallet->cs_wallet);
+        size_t nCoins = 0;
+        for (const auto &[dest, vouts] : wallet->ListCoins(*m_locked_chain)) {
+            nCoins += vouts.size();
+        }
+        // we should have a bunch of coins to really exercise this test
+        BOOST_CHECK(nCoins >= 100);
+    }
+
+    std::vector<CRecipient> recipients{{
+        {scriptPubKeys[1], 3040 * CASH, false /* subtract fee */},
+        {scriptPubKeys[3], 8001 * CASH, false /* subtract fee */},
+        {scriptPubKeys[2], 1234 * CASH, false /* subtract fee */},
+        {scriptPubKeys[0], 234 * CASH, false /* subtract fee */},
+    }};
+
+    const auto IsTxSorted = [](const CTransactionRef &tx) {
+        // check outputs are sorted ascending according to: nValue, scriptPubKey
+        for (size_t i = 1; i < tx->vout.size(); ++i) {
+            auto &a = tx->vout[i-1], &b = tx->vout[i];
+            if (a.nValue > b.nValue) {
+                return false;
+            } else if (a.nValue == b.nValue && !((a.scriptPubKey < b.scriptPubKey)
+                                                 || (a.scriptPubKey == b.scriptPubKey))) {
+                return false;
+            }
+        }
+        // check inputs are sorted ascending accorting to COutpoint::operator<
+        for (size_t i = 1; i < tx->vin.size(); ++i) {
+            auto &a = tx->vin[i-1].prevout, &b = tx->vin[i].prevout;
+            if (!(a < b || a == b)) {
+                return false;
+            }
+        }
+
+        return true;
+    };
+
+    const auto AllRecipientsPresent = [](const std::vector<CRecipient> &recipients, const CTransactionRef &tx) {
+        struct RecipientSort {
+            bool operator()(const CRecipient &a, const CRecipient &b) const noexcept {
+                return a.nAmount < b.nAmount
+                       || (a.nAmount == b.nAmount && a.scriptPubKey < b.scriptPubKey);
+            }
+        };
+        std::set<CRecipient, RecipientSort> needed{recipients.begin(), recipients.end()}, seen;
+        const size_t nNeeded = needed.size();
+        BOOST_CHECK_EQUAL(nNeeded, recipients.size());
+
+        for (const auto &out : tx->vout) {
+            const CRecipient r{out.scriptPubKey, out.nValue, false};
+            if (needed.count(r) && !seen.count(r)) {
+                needed.erase(r);
+                seen.insert(r);
+            }
+        }
+
+        return needed.empty() && seen.size() == nNeeded;
+    };
+
+    const auto HasChangeAndOnlyChangeIsMine = [this](int changePos, const CTransactionRef &tx) {
+          if (changePos < 0 || size_t(changePos) >= tx->vout.size())
+              return false;
+          for (size_t i = 0; i < tx->vout.size(); ++i) {
+              const auto ismine = wallet->IsMine(tx->vout[i]);
+              if (i == size_t(changePos)) {
+                  // change pos
+                  if ((ismine & ISMINE_SPENDABLE) != ISMINE_SPENDABLE) {
+                    return false;
+                  }
+              } else {
+                  // other
+                  if (ismine != ISMINE_NO) {
+                      return false;
+                  }
+              }
+          }
+          return true;
+    };
+
+    {
+        // 1. Create tx with BIP69 enabled.
+        //    Postconditions to be met: tx is sorted and change pos is correct.
+        gArgs.ForceSetArg("-usebip69", "1");
+        CTransactionRef tx;
+        int changePos = -1;
+
+        tx = AddTx(recipients, CoinSelectionHint::Default, &changePos).tx;
+
+        BOOST_CHECK(tx->vin.size() > 1); // ensure we had a bunch of inputs in the txn
+        BOOST_CHECK(IsTxSorted(tx));
+        BOOST_CHECK(changePos != -1); // there should definitely be change
+        BOOST_CHECK(AllRecipientsPresent(recipients, tx)); // all recipients should have gotten the exact amounts
+        BOOST_CHECK(HasChangeAndOnlyChangeIsMine(changePos, tx));
+    }
+
+    {
+        // 2. Create tx with BIP69 enabled, but with a hard-coded change pos.
+        //    Postconditions: tx is NOT sorted and change pos is what we requested
+        //                    (BIP69 is not applied when caller requests a specific change pos).
+        gArgs.ForceSetArg("-usebip69", "1");
+        CTransactionRef tx;
+        int changePos = 2; // request change position 2
+
+        tx = AddTx(recipients, CoinSelectionHint::Default, &changePos).tx;
+
+        BOOST_CHECK(tx->vin.size() > 1); // ensure we had a bunch of inputs in the txn
+        BOOST_CHECK( ! IsTxSorted(tx));
+        BOOST_CHECK(changePos == 2); // there should definitely be change, where we said it should be.
+        BOOST_CHECK(AllRecipientsPresent(recipients, tx)); // all recipients should have gotten the exact amounts
+        BOOST_CHECK(HasChangeAndOnlyChangeIsMine(changePos, tx));
+    }
+
+    {
+        // 3. Create tx with BIP69 disabled.
+        //    Postconditions: tx is NOT sorted.
+        gArgs.ForceSetArg("-usebip69", "0");
+        CTransactionRef tx;
+        int changePos = -1; // no specific change position requested
+
+        tx = AddTx(recipients, CoinSelectionHint::Default, &changePos).tx;
+
+        BOOST_CHECK(tx->vin.size() > 1); // ensure we had a bunch of inputs in the txn
+        BOOST_CHECK( ! IsTxSorted(tx));
+        BOOST_CHECK(changePos != -1); // there should definitely be change
+        BOOST_CHECK(AllRecipientsPresent(recipients, tx)); // all recipients should have gotten the exact amounts
+        BOOST_CHECK(HasChangeAndOnlyChangeIsMine(changePos, tx));
+    }
+
+    {
+        // 4. Create a tx with BIP69 enabled but don't sign it.
+        //    Postcondition: BIP69 should NOT be enabled when not signing.
+        gArgs.ForceSetArg("-usebip69", "1");
+        CTransactionRef tx;
+        CReserveKey reservekey(wallet.get());
+        Amount fee;
+        int changePos = -1;
+        std::string error;
+        CCoinControl dummy;
+        const auto res = wallet->CreateTransaction(*m_locked_chain, recipients, tx, reservekey, fee,
+                                                   changePos, error, dummy, false /* don't sign */);
+        BOOST_CHECK_EQUAL(res, CreateTransactionResult::CT_OK);
+        BOOST_CHECK(tx->vin.size() > 1); // ensure we had a bunch of inputs in the txn
+        BOOST_CHECK( ! IsTxSorted(tx));
+        BOOST_CHECK(changePos != -1); // there should definitely be change
+        BOOST_CHECK(AllRecipientsPresent(recipients, tx)); // all recipients should have gotten the exact amounts
+        BOOST_CHECK(HasChangeAndOnlyChangeIsMine(changePos, tx));
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
