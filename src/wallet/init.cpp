@@ -100,6 +100,11 @@ void WalletInit::AddWalletOptions() const {
             "Spend unconfirmed change when sending transactions (default: %d)",
             DEFAULT_SPEND_ZEROCONF_CHANGE),
         false, OptionsCategory::WALLET);
+    gArgs.AddArg("-usebip69",
+                 strprintf("Lexicographically sort transaction inputs and "
+                           "outputs as defined in BIP69 (default: %d)",
+                           DEFAULT_USE_BIP69),
+                 false, OptionsCategory::WALLET);
     gArgs.AddArg("-upgradewallet", "Upgrade wallet to latest format on startup",
                  false, OptionsCategory::WALLET);
     gArgs.AddArg("-wallet=<path>",

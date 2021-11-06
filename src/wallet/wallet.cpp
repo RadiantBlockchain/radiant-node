@@ -41,6 +41,7 @@
 #include <algorithm>
 #include <cassert>
 #include <future>
+#include <optional>
 
 static RecursiveMutex cs_wallets;
 static std::vector<std::shared_ptr<CWallet>> vpwallets GUARDED_BY(cs_wallets);
@@ -2989,6 +2990,31 @@ CWallet::TransactionChangeType(OutputType change_type,
     return m_default_address_type;
 }
 
+static void sortOutputsBIP69(std::vector<CTxOut> &vout, int &nChangePosInOut) {
+    std::optional<CTxOut> savedChangeOut;
+
+    if (nChangePosInOut >= 0 && unsigned(nChangePosInOut) < vout.size()) {
+        // Caller has a change position they are keeping track of, so note which CTxOut it is.
+        savedChangeOut = vout[nChangePosInOut];
+    }
+
+    std::sort(vout.begin(), vout.end(), [](const CTxOut &a, const CTxOut &b){
+        if (a.nValue == b.nValue) {
+            return a.scriptPubKey < b.scriptPubKey;
+        }
+        return a.nValue < b.nValue;
+    });
+
+    if (savedChangeOut) {
+        // Figure out where the change position ended up after the sort. Note
+        // that std::find is ok here because all CTxOuts that compare equal
+        // are identical and indistinguishable.
+        const auto it = std::find(vout.begin(), vout.end(), *savedChangeOut);
+        assert(it != vout.end());
+        nChangePosInOut = it - vout.begin();
+    }
+}
+
 CreateTransactionResult CWallet::CreateTransaction(
     interfaces::Chain::Lock &locked_chainIn,
     const std::vector<CRecipient> &vecSend, CTransactionRef &tx,
@@ -2996,7 +3022,7 @@ CreateTransactionResult CWallet::CreateTransaction(
     std::string &strFailReason, const CCoinControl &coinControl, bool sign,
     CoinSelectionHint coinsel) {
     Amount nValue = Amount::zero();
-    int nChangePosRequest = nChangePosInOut;
+    const int nChangePosRequest = nChangePosInOut < 0 ? -1 : nChangePosInOut;
     unsigned int nSubtractFeeFromAmount = 0;
     for (const auto &recipient : vecSend) {
         if (nValue < Amount::zero() || recipient.nAmount < Amount::zero()) {
@@ -3019,6 +3045,7 @@ CreateTransactionResult CWallet::CreateTransaction(
     CMutableTransaction txNew;
 
     txNew.nLockTime = GetLocktimeForNewTransaction(locked_chainIn);
+    txNew.vout.reserve(vecSend.size() + 1); // reserve 1 extra output for (possible) change
 
     {
         std::set<CInputCoin> setCoins;
@@ -3326,25 +3353,39 @@ CreateTransactionResult CWallet::CreateTransaction(
             reservekey.ReturnKey();
         }
 
-        // Shuffle selected coins and fill in final vin
         txNew.vin.clear();
         std::vector<CInputCoin> selected_coins(setCoins.begin(),
                                                setCoins.end());
-        Shuffle(selected_coins.begin(), selected_coins.end(),
-                FastRandomContext());
 
-        // Note how the sequence number is set to non-maxint so that
-        // the nLockTime set above actually works.
+        // Only use BIP69 when signing otherwise it is not guaranteed that SIGHASH_ALL was used.
+        // Also only use BIP69 if caller is not specifying a particular change position, in which
+        // case BIP69 won't be applied since it may break caller's assumptions.
+        const bool bip69 = sign && nChangePosRequest == -1 && gArgs.GetBoolArg("-usebip69", DEFAULT_USE_BIP69);
+
+        // Possibly-shuffle selected coins and fill in final vin
+
+        // Only shuffle if not using BIP69 since we want the inputs to remain sorted for BIP69.
+        if (!bip69) {
+            Shuffle(selected_coins.begin(), selected_coins.end(),
+                    FastRandomContext());
+        }
+
+        txNew.vin.reserve(selected_coins.size());
         for (const auto &coin : selected_coins) {
-            txNew.vin.push_back(
-                CTxIn(coin.outpoint, CScript(),
-                      std::numeric_limits<uint32_t>::max() - 1));
+            // Note how the sequence number is set to non-maxint so that
+            // the nLockTime set above actually works.
+            txNew.vin.emplace_back(coin.outpoint, CScript(), std::numeric_limits<uint32_t>::max() - 1);
+        }
+
+        if (bip69) {
+            // Note that after this call nChangePosInOut may be modified and **all** iterators to txNew.vout may
+            // be invalidated.
+            sortOutputsBIP69(txNew.vout, nChangePosInOut);
         }
 
         if (sign) {
             SigHashType sigHashType = SigHashType().withForkId();
-
-            int nIn = 0;
+            unsigned int nIn = 0;
             for (const auto &coin : selected_coins) {
                 const CScript &scriptPubKey = coin.txout.scriptPubKey;
                 SignatureData sigdata;
@@ -3359,7 +3400,7 @@ CreateTransactionResult CWallet::CreateTransaction(
                 }
 
                 UpdateInput(txNew.vin.at(nIn), sigdata);
-                nIn++;
+                ++nIn;
             }
         }
 
