@@ -185,17 +185,18 @@ bool CNetAddr::IsLocal() const {
     return false;
 }
 
-bool CNetAddr::IsValid() const {
-    // Cleanup 3-byte shifted addresses caused by garbage in size field of addr
-    // messages from versions before 0.2.9 checksum.
-    // Two consecutive addr messages look like this:
-    // header20 vectorlen3 addr26 addr26 addr26 header20 vectorlen3 addr26
-    // addr26 addr26... so if the first length field is garbled, it reads the
-    // second batch of addr misaligned by 3 bytes.
-    if (std::memcmp(ip, pchIPv4 + 3, sizeof(pchIPv4) - 3) == 0) {
-        return false;
-    }
-
+/**
+ * @returns Whether or not this network address is a valid address that @a could
+ *          be used to refer to an actual host.
+ *
+ * @note A valid address may or may not be publicly routable on the global
+ *       internet. As in, the set of valid addresses is a superset of the set of
+ *       publicly routable addresses.
+ *
+ * @see CNetAddr::IsRoutable()
+ */
+bool CNetAddr::IsValid() const
+{
     // unspecified IPv6 address (::/128)
     uint8_t ipNone6[16] = {};
     if (std::memcmp(ip, ipNone6, 16) == 0) {
