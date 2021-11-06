@@ -354,6 +354,7 @@ BOOST_AUTO_TEST_CASE(methods) {
             for (const auto ch : *uninitialized) {
                 uninitializedCtr += unsigned(ch == uninitializedByte); // false = 0, true = 1
             }
+            uninitialized->~uint256(); // end object lifetime politely
             BOOST_CHECK(uninitializedCtr == uint256::size());
         }
 #if defined(__GNUC__) && !defined(__clang__)
@@ -371,6 +372,7 @@ BOOST_AUTO_TEST_CASE(methods) {
             for (const auto ch : *initialized) {
                 initializedCtr += unsigned(ch == 0x0); // false = 0, true = 1
             }
+            initialized->~uint256(); // end object lifetime politely
             BOOST_CHECK(initializedCtr == uint256::size());
         }
     }
