@@ -133,9 +133,8 @@ QT_MOC_CPP = \
   qt/moc_editaddressdialog.cpp \
   qt/moc_guiutil.cpp \
   qt/moc_intro.cpp \
-  qt/moc_legacyaddressstopdialog.cpp \
-  qt/moc_legacyaddresswarndialog.cpp \
   qt/moc_legacyaddressconvertdialog.cpp \
+  qt/moc_legacyaddressdialog.cpp \
   qt/moc_macdockiconhandler.cpp \
   qt/moc_macnotificationhandler.cpp \
   qt/moc_modaloverlay.cpp \
