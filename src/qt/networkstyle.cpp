@@ -9,6 +9,10 @@
 
 #include <QApplication>
 
+#include <cstring>
+#include <type_traits>
+#include <vector>
+
 static const struct {
     const char *networkId;
     const char *appName;
@@ -34,10 +38,14 @@ NetworkStyle::NetworkStyle(const QString &_appName, int iconColorHue, const char
 
             // generate QImage from QPixmap
             QImage img = pixmap.toImage();
+            std::vector<QRgb> scanLineBuffer(img.width());
 
             // traverse though lines
             for (int y = 0; y < img.height(); y++) {
-                QRgb *scL = reinterpret_cast<QRgb *>(img.scanLine(y));
+                QRgb *scL = scanLineBuffer.data();
+                // copy scanLine to our buffer to guarantee aligned access
+                static_assert(std::is_trivially_constructible_v<QRgb> && std::is_trivially_copyable_v<QRgb>);
+                std::memcpy(scL, img.scanLine(y), img.width() * sizeof(QRgb));
 
                 // loop through pixels
                 for (int x = 0; x < img.width(); x++) {
@@ -51,6 +59,9 @@ NetworkStyle::NetworkStyle(const QString &_appName, int iconColorHue, const char
                     col.setHsl(iconColorHue, 128, qGray(r, g, b), a);
                     scL[x] = col.rgba();
                 }
+
+                // copy changes back to image scanLine
+                std::memcpy(img.scanLine(y), scL, img.width() * sizeof(QRgb));
             }
 
             // convert back to QPixmap
