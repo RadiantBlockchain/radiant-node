@@ -9,6 +9,7 @@
 #include <primitives/transaction.h>
 #include <sync.h>
 #include <tinyformat.h>
+#include <util/bit_cast.h>
 #include <util/moneystr.h>
 #include <util/strencodings.h>
 
@@ -16,6 +17,7 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <cmath>
 #include <cstdint>
 #ifndef WIN32
 #include <csignal>
@@ -1576,6 +1578,52 @@ BOOST_AUTO_TEST_CASE(test_Tic) {
     BOOST_CHECK_EQUAL(tic.msecStr(3), strprintf("%1.3f", tic.msec<double>()));
     BOOST_CHECK_EQUAL(tic.usecStr(3), strprintf("%1.3f", tic.usec<double>()));
     BOOST_CHECK_EQUAL(tic.nsecStr(), strprintf("%i", tic.nsec()));
+}
+
+BOOST_AUTO_TEST_CASE(test_bit_cast) {
+    // convert double to uint64 via bit_cast and back should yield roughly the same value
+    // (we allow for fuzz because floats can be imprecise)
+    BOOST_CHECK_LE(std::abs(bit_cast<double>(bit_cast<uint64_t>(19880124.0)) - 19880124.0),
+                   std::numeric_limits<double>::epsilon());
+
+    // next, use bit_cast with some structs that have similar common members
+    struct S1 {
+        char s[16];
+        int i;
+    };
+
+    struct S2 {
+        char s[16];
+        int i;
+        float f;
+        char s2[32];
+    };
+
+    S2 s2{"hello", 42, 3.14f, "foo"};
+
+    S1 s1 = bit_cast<S1>(s2);
+    BOOST_CHECK_EQUAL(std::strncmp(s1.s, s2.s, sizeof(s1.s)), 0);
+    BOOST_CHECK_EQUAL(s1.i, s2.i);
+
+    // convert from a larger array should work
+    const char zeros[sizeof(s2)]{};
+
+    BOOST_CHECK_NE(s1.s[0], 0);
+    BOOST_CHECK_NE(s1.i, 0);
+    s1 = bit_cast<S1>(zeros);
+    BOOST_CHECK_EQUAL(s1.s[0], 0);
+    BOOST_CHECK_EQUAL(s1.i, 0);
+
+    struct Padded {
+        S1 s1;
+        char padding[sizeof(s2) - sizeof(s1) + sizeof(void *)];
+    };
+    Padded pad{};
+
+    BOOST_CHECK_EQUAL(int(pad.s1.i), 0); // sanity check: ensure was 0-initted
+    BOOST_CHECK_NE(int(s2.f), 0);
+    s2 = bit_cast_unsafe<S2>(pad.s1); // bit_case_unsafe required for a smaller struct to a larger one
+    BOOST_CHECK_EQUAL(int(s2.f), 0);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
