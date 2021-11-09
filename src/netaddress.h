@@ -216,7 +216,13 @@ public:
 };
 
 // std::unordered_map & std::unordered_set support
-struct SaltedNetAddrHasher : SaltedHasherBase { size_t operator()(const CNetAddr &) const; };
-struct SaltedSubNetHasher : SaltedHasherBase { size_t operator()(const CSubNet  &) const; };
+struct SaltedNetAddrHasher : SaltedHasherBase {
+    SaltedNetAddrHasher() noexcept {} // circumvent some libstdc++-11 bugs on Debian unstable
+    size_t operator()(const CNetAddr &) const;
+};
+struct SaltedSubNetHasher : SaltedHasherBase {
+    SaltedSubNetHasher() noexcept {} // circumvent some libstdc++-11 bugs on Debian unstable
+    size_t operator()(const CSubNet  &) const;
+};
 
 #endif // BITCOIN_NETADDRESS_H
