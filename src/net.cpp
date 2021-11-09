@@ -24,6 +24,7 @@
 #include <protocol.h>
 #include <scheduler.h>
 #include <ui_interface.h>
+#include <util/bit_cast.h>
 #include <util/strencodings.h>
 
 #ifdef WIN32
@@ -335,7 +336,7 @@ static CAddress GetBindAddress(SOCKET sock) {
     if (sock != INVALID_SOCKET) {
         if (!getsockname(sock, (struct sockaddr *)&sockaddr_bind,
                          &sockaddr_bind_len)) {
-            addr_bind.SetSockAddr((const struct sockaddr *)&sockaddr_bind);
+            addr_bind.SetSockAddr(sockaddr_bind);
         } else {
             LogPrint(BCLog::NET, "Warning: getsockname failed\n");
         }
@@ -979,7 +980,7 @@ void CConnman::AcceptConnection(const ListenSocket &hListenSocket) {
     int nMaxInbound = nMaxConnections - (nMaxOutbound + nMaxFeeler);
 
     if (hSocket != INVALID_SOCKET) {
-        if (!addr.SetSockAddr((const struct sockaddr *)&sockaddr)) {
+        if (!addr.SetSockAddr(sockaddr)) {
             LogPrintf("Warning: Unknown socket family\n");
         }
     }
@@ -2071,14 +2072,14 @@ bool CConnman::BindListenPort(const CService &addrBind, std::string &strError,
     int nOne = 1;
 
     // Create socket for listening for incoming connections
-    struct sockaddr_storage sockaddr;
-    socklen_t len = sizeof(sockaddr);
-    if (!addrBind.GetSockAddr((struct sockaddr *)&sockaddr, &len)) {
+    const auto optPair = addrBind.GetSockAddr();
+    if (!optPair) {
         strError = strprintf("Error: Bind address family for %s not supported",
                              addrBind.ToString());
         LogPrintf("%s\n", strError);
         return false;
     }
+    auto & [sockaddr, len] = *optPair;
 
     SOCKET hListenSocket = CreateSocket(addrBind);
     if (hListenSocket == INVALID_SOCKET) {
@@ -2109,7 +2110,7 @@ bool CConnman::BindListenPort(const CService &addrBind, std::string &strError,
 #endif
     }
 
-    if (::bind(hListenSocket, (struct sockaddr *)&sockaddr, len) ==
+    if (::bind(hListenSocket, (const struct sockaddr *)&sockaddr, len) ==
         SOCKET_ERROR) {
         int nErr = WSAGetLastError();
         if (nErr == WSAEADDRINUSE) {
@@ -2177,17 +2178,13 @@ void Discover() {
                 continue;
             }
             if (ifa->ifa_addr->sa_family == AF_INET) {
-                struct sockaddr_in *s4 =
-                    reinterpret_cast<struct sockaddr_in *>(ifa->ifa_addr);
-                CNetAddr addr(s4->sin_addr);
+                CNetAddr addr(bit_cast<sockaddr_in>(*ifa->ifa_addr).sin_addr);
                 if (AddLocal(addr, LOCAL_IF)) {
                     LogPrintf("%s: IPv4 %s: %s\n", __func__, ifa->ifa_name,
                               addr.ToString());
                 }
             } else if (ifa->ifa_addr->sa_family == AF_INET6) {
-                struct sockaddr_in6 *s6 =
-                    reinterpret_cast<struct sockaddr_in6 *>(ifa->ifa_addr);
-                CNetAddr addr(s6->sin6_addr);
+                CNetAddr addr(bit_cast_unsafe<sockaddr_in6>(*ifa->ifa_addr).sin6_addr);
                 if (AddLocal(addr, LOCAL_IF)) {
                     LogPrintf("%s: IPv6 %s: %s\n", __func__, ifa->ifa_name,
                               addr.ToString());

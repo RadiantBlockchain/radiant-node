@@ -11,6 +11,7 @@
 #include <netaddress.h>
 #include <random.h>
 #include <tinyformat.h>
+#include <util/bit_cast.h>
 #include <util/strencodings.h>
 
 #include <cstring>
@@ -270,9 +271,9 @@ std::string CNetAddr::ToStringIP() const {
                ".internal";
     }
     CService serv(*this, 0);
-    struct sockaddr_storage sockaddr;
-    socklen_t socklen = sizeof(sockaddr);
-    if (serv.GetSockAddr((struct sockaddr *)&sockaddr, &socklen)) {
+
+    if (const auto optPair = serv.GetSockAddr()) {
+        auto & [sockaddr, socklen] = *optPair;
         char name[1025] = "";
         if (!getnameinfo((const struct sockaddr *)&sockaddr, socklen, name,
                          sizeof(name), nullptr, 0, NI_NUMERICHOST)) {
@@ -498,15 +499,13 @@ CService::CService(const struct sockaddr_in6 &addr)
     assert(addr.sin6_family == AF_INET6);
 }
 
-bool CService::SetSockAddr(const struct sockaddr *paddr) {
-    switch (paddr->sa_family) {
+bool CService::SetSockAddr(const sockaddr_storage &addr) {
+    switch (addr.ss_family) {
         case AF_INET:
-            *this =
-                CService(*reinterpret_cast<const struct sockaddr_in *>(paddr));
+            *this = CService(bit_cast<sockaddr_in>(addr));
             return true;
         case AF_INET6:
-            *this =
-                CService(*reinterpret_cast<const struct sockaddr_in6 *>(paddr));
+            *this = CService(bit_cast<sockaddr_in6>(addr));
             return true;
         default:
             return false;
@@ -524,39 +523,33 @@ bool operator<(const CService &a, const CService &b) {
             a.port < b.port);
 }
 
-bool CService::GetSockAddr(struct sockaddr *paddr, socklen_t *addrlen) const {
+std::optional<std::pair<sockaddr_storage, socklen_t>> CService::GetSockAddr() const {
+    std::optional<std::pair<sockaddr_storage, socklen_t>> ret;
     if (IsIPv4()) {
-        if (*addrlen < (socklen_t)sizeof(struct sockaddr_in)) {
-            return false;
+        constexpr socklen_t addrlen = sizeof(sockaddr_in);
+        static_assert(addrlen <= sizeof(sockaddr_storage));
+        sockaddr_in addrin = {}; // 0-init
+        if (!GetInAddr(&addrin.sin_addr)) {
+            return ret;
         }
-        *addrlen = sizeof(struct sockaddr_in);
-        struct sockaddr_in *paddrin =
-            reinterpret_cast<struct sockaddr_in *>(paddr);
-        memset(paddrin, 0, *addrlen);
-        if (!GetInAddr(&paddrin->sin_addr)) {
-            return false;
+        addrin.sin_family = AF_INET;
+        addrin.sin_port = htons(port);
+        ret.emplace(sockaddr_storage{}, addrlen);
+        std::memcpy(&ret->first, &addrin, addrlen);
+    } else if (IsIPv6()) {
+        constexpr socklen_t addrlen = sizeof(sockaddr_in6);
+        static_assert(addrlen <= sizeof(sockaddr_storage));
+        sockaddr_in6 addrin6 = {}; // 0-init
+        if (!GetIn6Addr(&addrin6.sin6_addr)) {
+            return ret;
         }
-        paddrin->sin_family = AF_INET;
-        paddrin->sin_port = htons(port);
-        return true;
+        addrin6.sin6_scope_id = scopeId;
+        addrin6.sin6_family = AF_INET6;
+        addrin6.sin6_port = htons(port);
+        ret.emplace(sockaddr_storage{}, addrlen);
+        std::memcpy(&ret->first, &addrin6, addrlen);
     }
-    if (IsIPv6()) {
-        if (*addrlen < (socklen_t)sizeof(struct sockaddr_in6)) {
-            return false;
-        }
-        *addrlen = sizeof(struct sockaddr_in6);
-        struct sockaddr_in6 *paddrin6 =
-            reinterpret_cast<struct sockaddr_in6 *>(paddr);
-        memset(paddrin6, 0, *addrlen);
-        if (!GetIn6Addr(&paddrin6->sin6_addr)) {
-            return false;
-        }
-        paddrin6->sin6_scope_id = scopeId;
-        paddrin6->sin6_family = AF_INET6;
-        paddrin6->sin6_port = htons(port);
-        return true;
-    }
-    return false;
+    return ret;
 }
 
 std::vector<uint8_t> CService::GetKey() const {

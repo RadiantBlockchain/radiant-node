@@ -16,8 +16,10 @@
 
 #include <cstdint>
 #include <functional>
+#include <optional>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 enum Network {
@@ -42,6 +44,8 @@ protected:
 public:
     constexpr CNetAddr() noexcept : ip{0} {}
     explicit CNetAddr(const struct in_addr &ipv4Addr);
+    explicit CNetAddr(const struct in6_addr &pipv6Addr, const uint32_t scope = 0);
+
     void SetIP(const CNetAddr &ip);
 
 private:
@@ -111,8 +115,6 @@ public:
     std::vector<uint8_t> GetGroup() const;
     int GetReachabilityFrom(const CNetAddr *paddrPartner = nullptr) const;
 
-    explicit CNetAddr(const struct in6_addr &pipv6Addr,
-                      const uint32_t scope = 0);
     bool GetIn6Addr(struct in6_addr *pipv6Addr) const;
 
     friend bool operator==(const CNetAddr &a, const CNetAddr &b);
@@ -191,8 +193,8 @@ public:
     explicit CService(const struct sockaddr_in &addr);
 
     constexpr uint16_t GetPort() const { return port; }
-    bool GetSockAddr(struct sockaddr *paddr, socklen_t *addrlen) const;
-    bool SetSockAddr(const struct sockaddr *paddr);
+    std::optional<std::pair<sockaddr_storage, socklen_t>> GetSockAddr() const;
+    bool SetSockAddr(const sockaddr_storage &addr);
     friend bool operator==(const CService &a, const CService &b);
     friend bool operator!=(const CService &a, const CService &b) {
         return !(a == b);

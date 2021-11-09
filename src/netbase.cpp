@@ -9,6 +9,7 @@
 #include <random.h>
 #include <sync.h>
 #include <uint256.h>
+#include <util/bit_cast.h>
 #include <util/strencodings.h>
 #include <util/system.h>
 
@@ -113,16 +114,13 @@ static bool LookupIntern(const char *pszName, std::vector<CNetAddr> &vIP,
         CNetAddr resolved;
         if (aiTrav->ai_family == AF_INET) {
             assert(aiTrav->ai_addrlen >= sizeof(sockaddr_in));
-            resolved =
-                CNetAddr(reinterpret_cast<struct sockaddr_in *>(aiTrav->ai_addr)
-                             ->sin_addr);
+            resolved = CNetAddr(bit_cast<sockaddr_in>(*aiTrav->ai_addr).sin_addr);
         }
 
         if (aiTrav->ai_family == AF_INET6) {
             assert(aiTrav->ai_addrlen >= sizeof(sockaddr_in6));
-            struct sockaddr_in6 *s6 =
-                reinterpret_cast<struct sockaddr_in6 *>(aiTrav->ai_addr);
-            resolved = CNetAddr(s6->sin6_addr, s6->sin6_scope_id);
+            const auto s6 = bit_cast_unsafe<sockaddr_in6>(*aiTrav->ai_addr);
+            resolved = CNetAddr(s6.sin6_addr, s6.sin6_scope_id);
         }
 
         // Never allow resolving to an internal address. Consider any such
@@ -493,15 +491,15 @@ static bool Socks5(const std::string &strDest, int port,
 }
 
 SOCKET CreateSocket(const CService &addrConnect) {
-    struct sockaddr_storage sockaddr;
-    socklen_t len = sizeof(sockaddr);
-    if (!addrConnect.GetSockAddr((struct sockaddr *)&sockaddr, &len)) {
+    const auto optPair = addrConnect.GetSockAddr();
+    if (!optPair) {
         LogPrintf("Cannot create socket for %s: unsupported network\n",
                   addrConnect.ToString());
         return INVALID_SOCKET;
     }
+    auto & [sockaddr, len] = *optPair;
 
-    SOCKET hSocket = socket(((struct sockaddr *)&sockaddr)->sa_family,
+    SOCKET hSocket = socket(sockaddr.ss_family,
                             SOCK_STREAM, IPPROTO_TCP);
     if (hSocket == INVALID_SOCKET) {
         return INVALID_SOCKET;
@@ -547,18 +545,18 @@ static void LogConnectFailure(bool manual_connection, const char *fmt,
 
 bool ConnectSocketDirectly(const CService &addrConnect, const SOCKET &hSocket,
                            int nTimeout, bool manual_connection) {
-    struct sockaddr_storage sockaddr;
-    socklen_t len = sizeof(sockaddr);
     if (hSocket == INVALID_SOCKET) {
         LogPrintf("Cannot connect to %s: invalid socket\n",
                   addrConnect.ToString());
         return false;
     }
-    if (!addrConnect.GetSockAddr((struct sockaddr *)&sockaddr, &len)) {
+    const auto optPair = addrConnect.GetSockAddr();
+    if (!optPair) {
         LogPrintf("Cannot connect to %s: unsupported network\n",
                   addrConnect.ToString());
         return false;
     }
+    auto & [sockaddr, len] = *optPair;
     if (connect(hSocket, (struct sockaddr *)&sockaddr, len) == SOCKET_ERROR) {
         int nErr = WSAGetLastError();
         // WSAEINVAL is here because some legacy version of winsock uses it

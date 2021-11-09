@@ -224,6 +224,7 @@ BITCOIN_CORE_H = \
   txmempool.h \
   ui_interface.h \
   undo.h \
+  util/bit_cast.h \
   util/bitmanip.h \
   util/defer.h \
   util/moneystr.h \

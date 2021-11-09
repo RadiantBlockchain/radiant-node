@@ -5,6 +5,7 @@
 #include <netbase.h>
 
 #include <net_permissions.h>
+#include <util/bit_cast.h>
 #include <util/strencodings.h>
 
 #include <test/setup_common.h>
@@ -97,8 +98,9 @@ BOOST_AUTO_TEST_CASE(netbase_splithost) {
     BOOST_CHECK(TestSplitHost("", "", -1));
 }
 
-static bool TestParse(const std::string &src, const std::string &canon) {
-    CService addr(LookupNumeric(src.c_str(), 65535));
+static bool TestParse(const std::string &src, const std::string &canon, CService *out = nullptr) {
+    const CService addr = LookupNumeric(src.c_str(), 65535);
+    if (out) *out = addr;
     return canon == addr.ToString();
 }
 
@@ -464,6 +466,63 @@ BOOST_AUTO_TEST_CASE(netpermissions_test) {
                 strings.end());
     BOOST_CHECK(std::find(strings.begin(), strings.end(), "mempool") !=
                 strings.end());
+}
+
+BOOST_AUTO_TEST_CASE(cservice_get_set_sockaddr_test) {
+    // test CService::GetSockAddr() and SetSockAddr() for IPv4
+    {
+        CService srv;
+        BOOST_CHECK(TestParse("12.34.56.78:1234", "12.34.56.78:1234", &srv));
+        BOOST_CHECK(srv.IsIPv4());
+        auto pair = srv.GetSockAddr();
+        BOOST_CHECK(bool(pair));
+        BOOST_CHECK_EQUAL(pair->second, sizeof(sockaddr_in));
+        CNetAddr netaddr(bit_cast<sockaddr_in>(pair->first).sin_addr);
+        BOOST_CHECK_EQUAL(netaddr.GetByte(0), 78);
+        BOOST_CHECK_EQUAL(netaddr.GetByte(1), 56);
+        BOOST_CHECK_EQUAL(netaddr.GetByte(2), 34);
+        BOOST_CHECK_EQUAL(netaddr.GetByte(3), 12);
+        BOOST_CHECK_EQUAL(bit_cast<sockaddr_in>(pair->first).sin_port, ntohs(1234));
+
+        CService srv2;
+        srv2.SetSockAddr(pair->first);
+        BOOST_CHECK(srv == srv2);
+        BOOST_CHECK(srv2.IsIPv4());
+    }
+
+    // test CService::GetSockAddr() and SetSockAddr() for IPv6
+    {
+        CService srv;
+        BOOST_CHECK(TestParse("[2001:19f0:5:3ebe:5400:3ff:fe43:da2]:1234", "[2001:19f0:5:3ebe:5400:3ff:fe43:da2]:1234", &srv));
+        BOOST_CHECK(srv.IsIPv6());
+        auto pair = srv.GetSockAddr();
+        BOOST_CHECK(bool(pair));
+        BOOST_CHECK_EQUAL(pair->second, sizeof(sockaddr_in6));
+        CNetAddr netaddr(bit_cast<sockaddr_in6>(pair->first).sin6_addr);
+        BOOST_CHECK_EQUAL(netaddr.GetByte(0), 0xa2);
+        BOOST_CHECK_EQUAL(netaddr.GetByte(1), 0x0d);
+        BOOST_CHECK_EQUAL(netaddr.GetByte(2), 0x43);
+        BOOST_CHECK_EQUAL(netaddr.GetByte(3), 0xfe);
+        BOOST_CHECK_EQUAL(netaddr.GetByte(4), 0xff);
+        BOOST_CHECK_EQUAL(netaddr.GetByte(5), 0x03);
+        BOOST_CHECK_EQUAL(netaddr.GetByte(6), 0x00);
+        BOOST_CHECK_EQUAL(netaddr.GetByte(7), 0x54);
+        BOOST_CHECK_EQUAL(netaddr.GetByte(8), 0xbe);
+        BOOST_CHECK_EQUAL(netaddr.GetByte(9), 0x3e);
+        BOOST_CHECK_EQUAL(netaddr.GetByte(10), 0x05);
+        BOOST_CHECK_EQUAL(netaddr.GetByte(11), 0x00);
+        BOOST_CHECK_EQUAL(netaddr.GetByte(12), 0xf0);
+        BOOST_CHECK_EQUAL(netaddr.GetByte(13), 0x19);
+        BOOST_CHECK_EQUAL(netaddr.GetByte(14), 0x01);
+        BOOST_CHECK_EQUAL(netaddr.GetByte(15), 0x20);
+        BOOST_CHECK_EQUAL(bit_cast<sockaddr_in6>(pair->first).sin6_port, ntohs(1234));
+        BOOST_CHECK_EQUAL(bit_cast<sockaddr_in6>(pair->first).sin6_scope_id, 0);
+
+        CService srv2;
+        srv2.SetSockAddr(pair->first);
+        BOOST_CHECK(srv == srv2);
+        BOOST_CHECK(srv2.IsIPv6());
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
