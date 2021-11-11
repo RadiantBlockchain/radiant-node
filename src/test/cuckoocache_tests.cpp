@@ -43,6 +43,7 @@ struct TestMapElement {
         }
 
         bool operator==(const KeyType &rhs) const { return rhs.data == data; }
+        KeyType &operator=(const KeyType &) noexcept = default; // prevent -Wdeprecated-copy
     };
 
 private:
@@ -57,6 +58,8 @@ public:
         : TestMapElement(data, data.GetUint64(0)) {}
     TestMapElement(const KeyType &keyIn, uint32_t valueIn)
         : key(keyIn), value(valueIn) {}
+
+    TestMapElement &operator=(const TestMapElement &) noexcept = default; // prevent -Wdeprecated-copy
 
     const KeyType &getKey() const { return key; }
     uint32_t getValue() const { return value; }

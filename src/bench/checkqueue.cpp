@@ -75,7 +75,7 @@ static void CCheckQueue_RealData32MB(bool cacheSigs, benchmark::State &state) {
     // Step 1: Setup everything -- read all the block tx's and create a CScriptCheck "work" unit for each
     //         of the inputs for which we have the coin (there should be 157783 of these for this block).
     InitSignatureCache(); // just to be consistent -- ensure signature cache is empty
-    size_t nTxIns = 0, nSameBlockCoins = 0;
+    size_t nSameBlockCoins = 0;
     std::map<TxId, CTransactionRef> txidMap;
     std::vector<std::vector<CScriptCheck>> vChecksPerTx;
     struct UnlimitedSigChecks : TxSigCheckLimiter {
@@ -88,7 +88,6 @@ static void CCheckQueue_RealData32MB(bool cacheSigs, benchmark::State &state) {
         txidMap.emplace(tx->GetId(), tx);
     }
     for (const auto & tx : block.vtx) {
-        nTxIns += tx->vin.size();
         if (tx->IsCoinBase()) continue;
         size_t nIn = 0;
         const PrecomputedTransactionData txdata(*tx);

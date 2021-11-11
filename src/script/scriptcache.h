@@ -30,6 +30,7 @@ public:
     bool operator==(const ScriptCacheKey &rhs) const {
         return rhs.data == data;
     }
+    ScriptCacheKey &operator=(const ScriptCacheKey &) noexcept = default; // prevent -Wdepecated-copy
 
     friend class ScriptCacheHasher;
 };

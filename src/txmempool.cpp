@@ -82,14 +82,11 @@ void CTxMemPool::CalculateMemPoolAncestors(const CTxMemPoolEntry &entry, setEntr
         parentHashes = GetMemPoolParents(it);
     }
 
-    size_t totalSizeWithAncestors = entry.GetTxSize();
-
     while (!parentHashes.empty()) {
         txiter stageit = *parentHashes.begin();
 
         setAncestors.insert(stageit);
         parentHashes.erase(parentHashes.begin());
-        totalSizeWithAncestors += stageit->GetTxSize();
 
         const setEntries &setMemPoolParents = GetMemPoolParents(stageit);
         for (txiter phash : setMemPoolParents) {
@@ -453,18 +450,13 @@ void CTxMemPool::check(const CCoinsViewCache *pcoins) const {
         // Check children against mapNextTx
         CTxMemPool::setEntries setChildrenCheck;
         auto iter = mapNextTx.lower_bound(COutPoint(it->GetTx().GetId(), 0));
-        uint64_t child_sizes = 0;
-        int64_t child_sigop_counts = 0;
         for (; iter != mapNextTx.end() &&
                iter->first->GetTxId() == it->GetTx().GetId();
              ++iter) {
             txiter childit = mapTx.find(iter->second->GetId());
             // mapNextTx points to in-mempool transactions
             assert(childit != mapTx.end());
-            if (setChildrenCheck.insert(childit).second) {
-                child_sizes += childit->GetTxSize();
-                child_sigop_counts += childit->GetSigOpCount();
-            }
+            setChildrenCheck.insert(childit);
         }
         assert(setChildrenCheck == GetMemPoolChildren(it));
 
