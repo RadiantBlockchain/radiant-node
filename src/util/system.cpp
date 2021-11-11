@@ -294,21 +294,25 @@ public:
  * This method also tracks when the -no form was supplied, and if so, checks
  * whether there was a double-negative (-nofoo=0 -> -foo=1).
  *
- * If there was not a double negative, it removes the "no" from the key, and
- * returns true, indicating the caller should clear the args vector to indicate
- * a negated option.
+ * If there was not a double negative, it removes the "no" from the key
+ * and clears the args vector to indicate a negated option.
  *
- * If there was a double negative, it removes "no" from the key, sets the value
- * to "1" and returns false.
+ * If there was a double negative, it removes "no" from the key, sets the
+ * value to "1" and pushes the key and the updated value to the args vector.
  *
- * If there was no "no", it leaves key and value untouched and returns false.
+ * If there was no "no", it leaves key and value untouched and pushes them
+ * to the args vector.
  *
  * Where an option was negated can be later checked using the IsArgNegated()
  * method. One use case for this is to have a way to disable options that are
  * not normally boolean (e.g. using -nodebuglogfile to request that debug log
  * output is not sent to any file at all).
  */
-static bool InterpretNegatedOption(std::string &key, std::string &val) {
+
+[[nodiscard]] static bool
+InterpretOption(std::string key, std::string val, unsigned int flags,
+                std::map<std::string, std::vector<std::string>> &args,
+                std::string &error) {
     assert(key[0] == '-');
 
     size_t option_index = key.find('.');
@@ -318,31 +322,29 @@ static bool InterpretNegatedOption(std::string &key, std::string &val) {
         ++option_index;
     }
     if (key.substr(option_index, 2) == "no") {
-        bool bool_val = InterpretBool(val);
         key.erase(option_index, 2);
-        if (!bool_val) {
+        if (flags & ArgsManager::ALLOW_BOOL) {
+            if (InterpretBool(val)) {
+                args[key].clear();
+                return true;
+            }
             // Double negatives like -nofoo=0 are supported (but discouraged)
             LogPrintf(
                 "Warning: parsed potentially confusing double-negative %s=%s\n",
                 key, val);
             val = "1";
         } else {
-            return true;
+            error = strprintf(
+                "Negating of %s is meaningless and therefore forbidden",
+                key.c_str());
+            return false;
         }
     }
-    return false;
+    args[key].push_back(val);
+    return true;
 }
 
-ArgsManager::ArgsManager()
-    : /* These options would cause cross-contamination if values for mainnet
-       * were used while running on regtest/testnet (or vice-versa).
-       * Setting them as section_only_args ensures that sharing a config file
-       * between mainnet and regtest/testnet won't cause problems due to these
-       * parameters by accident. */
-      m_network_only_args{
-          "-addnode", "-connect", "-port",   "-bind",
-          "-rpcport", "-rpcbind", "-wallet",
-      } {
+ArgsManager::ArgsManager() {
     // nothing to do
 }
 
@@ -441,24 +443,20 @@ bool ArgsManager::ParseParameters(int argc, const char *const argv[],
 
     for (int i = 1; i < argc; i++) {
         std::string key(argv[i]);
+        if (key == "-") break; // bitcoin-tx using stdin
         std::string val;
         if (!ParseKeyValue(key, val)) {
             break;
         }
 
-        // Check that the arg is known
-        if (!(IsSwitchChar(key[0]) && key.size() == 1)) {
-            if (!IsArgKnown(key)) {
-                error = strprintf("Invalid parameter %s", key.c_str());
+        const unsigned int flags = FlagsOfKnownArg(key);
+        if (flags) {
+            if (!InterpretOption(key, val, flags, m_override_args, error)) {
                 return false;
             }
-        }
-
-        // Check for -nofoo
-        if (InterpretNegatedOption(key, val)) {
-            m_override_args[key].clear();
         } else {
-            m_override_args[key].push_back(val);
+            error = strprintf("Invalid parameter %s", key.c_str());
+            return false;
         }
     }
 
@@ -477,7 +475,7 @@ bool ArgsManager::ParseParameters(int argc, const char *const argv[],
     return true;
 }
 
-bool ArgsManager::IsArgKnown(const std::string &key) const {
+unsigned int ArgsManager::FlagsOfKnownArg(const std::string &key) const {
     assert(key[0] == '-');
 
     size_t option_index = key.find('.');
@@ -494,11 +492,12 @@ bool ArgsManager::IsArgKnown(const std::string &key) const {
 
     LOCK(cs_args);
     for (const auto &arg_map : m_available_args) {
-        if (arg_map.second.count(base_arg_name)) {
-            return true;
+        const auto search = arg_map.second.find(base_arg_name);
+        if (search != arg_map.second.end()) {
+            return search->second.m_flags;
         }
     }
-    return false;
+    return ArgsManager::NONE;
 }
 
 std::vector<std::string> ArgsManager::GetArgs(const std::string &strArg) const {
@@ -629,31 +628,40 @@ void ArgsManager::ForceSetMultiArg(const std::string &strArg,
 }
 
 void ArgsManager::AddArg(const std::string &name, const std::string &help,
-                         const bool debug_only, const OptionsCategory &cat) {
+                         unsigned int flags, const OptionsCategory &cat) {
     // Parse the name.
     // Anything behind a comma or equals sign is a usage instruction,
     // that needs to be stripped from the argument name.
     auto comma_index = name.find(", ");
     auto eq_index = std::min(comma_index, name.find('='));
+    auto arg_name =
+        eq_index == std::string::npos ? name : name.substr(0, eq_index);
     {
         LOCK(cs_args);
         std::map<std::string, Arg> &arg_map = m_available_args[cat];
-        auto ret = arg_map.emplace(eq_index == std::string::npos ? name : name.substr(0, eq_index),
-                                   Arg(eq_index == std::string::npos ? "" : name.substr(eq_index), help, debug_only));
+        auto ret = arg_map.emplace(
+            arg_name,
+            Arg{eq_index == std::string::npos ? "" : name.substr(eq_index),
+                help, flags});
         // Make sure an insertion actually happened.
         assert(ret.second);
+
+        if (flags & ArgsManager::NETWORK_ONLY) {
+            m_network_only_args.emplace(arg_name);
+        }
     }
     if (comma_index != std::string::npos) {
         // name is a comma-separated list.
         // Any parameter behind the comma is an alias of the current parameter.
         // Use recursion to add aliases as hidden arguments.
-        AddArg(name.substr(comma_index + 2), "", debug_only, OptionsCategory::HIDDEN);
+        AddArg(name.substr(comma_index + 2), "", flags,
+               OptionsCategory::HIDDEN);
     }
 }
 
 void ArgsManager::AddHiddenArgs(const std::vector<std::string> &names) {
     for (const std::string &name : names) {
-        AddArg(name, "", false, OptionsCategory::HIDDEN);
+        AddArg(name, "", ArgsManager::ALLOW_ANY, OptionsCategory::HIDDEN);
     }
 }
 
@@ -722,7 +730,7 @@ std::string ArgsManager::GetHelpMessage() const {
         }
 
         for (const auto &arg : arg_map.second) {
-            if (show_debug || !arg.second.m_debug_only) {
+            if (show_debug || !(arg.second.m_flags & ArgsManager::DEBUG_ONLY)) {
                 std::string name;
                 if (arg.second.m_help_param.empty()) {
                     name = arg.first;
@@ -743,7 +751,7 @@ bool HelpRequested(const ArgsManager &args) {
 
 void SetupHelpOptions(ArgsManager& args)
 {
-    args.AddArg("-?, -h, -help", "Print this help message and exit", false, OptionsCategory::OPTIONS);
+    args.AddArg("-?, -h, -help", "Print this help message and exit", ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
 }
 
 static const int screenWidth = 79;
@@ -998,25 +1006,22 @@ bool ArgsManager::ReadConfigStream(std::istream &stream,
         return false;
     }
     for (const std::pair<std::string, std::string> &option : options) {
-        std::string strKey = std::string("-") + option.first;
-        // Check that the arg is known
-        if (!IsArgKnown(strKey)) {
-            if (!ignore_invalid_keys) {
+        const std::string strKey = std::string("-") + option.first;
+        const unsigned int flags = FlagsOfKnownArg(strKey);
+        if (flags) {
+            if (!InterpretOption(strKey, option.second, flags, m_config_args,
+                                 error)) {
+                return false;
+            }
+        } else {
+            if (ignore_invalid_keys) {
+                LogPrintf("Ignoring unknown configuration value %s\n",
+                          option.first);
+            } else {
                 error = strprintf("Invalid configuration value %s",
                                   option.first.c_str());
                 return false;
-            } else {
-                LogPrintf("Ignoring unknown configuration value %s\n",
-                          option.first);
-                continue;
             }
-        }
-
-        std::string strValue = option.second;
-        if (InterpretNegatedOption(strKey, strValue)) {
-            m_config_args[strKey].clear();
-        } else {
-            m_config_args[strKey].push_back(strValue);
         }
     }
     return true;

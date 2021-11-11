@@ -15,7 +15,7 @@ BOOST_FIXTURE_TEST_SUITE(server_tests, BasicTestingSetup)
 
 BOOST_AUTO_TEST_CASE(server_IsDeprecatedRPCEnabled) {
     ArgsManager testArgs;
-    testArgs.AddArg("-deprecatedrpc", "", false, OptionsCategory::OPTIONS);
+    testArgs.AddArg("-deprecatedrpc", "", ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
 
     const char *argv_test[] = {"bitcoind", "-deprecatedrpc=foo",
                                "-deprecatedrpc=bar"};

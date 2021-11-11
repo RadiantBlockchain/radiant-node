@@ -127,37 +127,37 @@ public:
 private:
     void SetupSeederArgs() {
         SetupHelpOptions(gArgs);
-        gArgs.AddArg("-version", "Print version and exit", false,
+        gArgs.AddArg("-version", "Print version and exit", ArgsManager::ALLOW_ANY,
                      OptionsCategory::OPTIONS);
-        gArgs.AddArg("-host=<host>", "Hostname of the DNS seed", false,
+        gArgs.AddArg("-host=<host>", "Hostname of the DNS seed", ArgsManager::ALLOW_ANY,
                      OptionsCategory::OPTIONS);
-        gArgs.AddArg("-ns=<ns>", "Hostname of the nameserver", false,
+        gArgs.AddArg("-ns=<ns>", "Hostname of the nameserver", ArgsManager::ALLOW_ANY,
                      OptionsCategory::OPTIONS);
         gArgs.AddArg("-mbox=<mbox>",
-                     "E-Mail address reported in SOA records", false,
+                     "E-Mail address reported in SOA records", ArgsManager::ALLOW_ANY,
                      OptionsCategory::OPTIONS);
         gArgs.AddArg("-threads=<threads>",
                      strprintf("Number of crawlers to run in parallel (default: %d)", DEFAULT_NUM_THREADS),
-                     false, OptionsCategory::OPTIONS);
+                     ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
         gArgs.AddArg("-dnsthreads=<threads>",
-                     strprintf("Number of DNS server threads (default: %d)", DEFAULT_NUM_DNS_THREADS), false,
+                     strprintf("Number of DNS server threads (default: %d)", DEFAULT_NUM_DNS_THREADS), ArgsManager::ALLOW_ANY,
                      OptionsCategory::OPTIONS);
         gArgs.AddArg("-port=<port>", strprintf("UDP port to listen on (default: %d)", DEFAULT_PORT),
-                     false, OptionsCategory::CONNECTION);
-        gArgs.AddArg("-onion=<ip:port>", "Tor proxy IP/Port", false,
+                     ArgsManager::ALLOW_ANY, OptionsCategory::CONNECTION);
+        gArgs.AddArg("-onion=<ip:port>", "Tor proxy IP/Port", ArgsManager::ALLOW_ANY,
                      OptionsCategory::CONNECTION);
         gArgs.AddArg("-proxyipv4=<ip:port>", "IPV4 SOCKS5 proxy IP/Port",
-                     false, OptionsCategory::CONNECTION);
+                     ArgsManager::ALLOW_ANY, OptionsCategory::CONNECTION);
         gArgs.AddArg("-proxyipv6=<ip:port>", "IPV6 SOCKS5 proxy IP/Port",
-                     false, OptionsCategory::CONNECTION);
+                     ArgsManager::ALLOW_ANY, OptionsCategory::CONNECTION);
         gArgs.AddArg("-filter=<f1,f2,...>",
-                     "Allow these flag combinations as filters", false,
+                     "Allow these flag combinations as filters", ArgsManager::ALLOW_ANY,
                      OptionsCategory::OPTIONS);
-        gArgs.AddArg("-wipeban", strprintf("Wipe list of banned nodes (default: %d)", DEFAULT_WIPE_BAN), false,
+        gArgs.AddArg("-wipeban", strprintf("Wipe list of banned nodes (default: %d)", DEFAULT_WIPE_BAN), ArgsManager::ALLOW_ANY,
                      OptionsCategory::CONNECTION);
-        gArgs.AddArg("-wipeignore", strprintf("Wipe list of ignored nodes (default: %d)", DEFAULT_WIPE_IGNORE), false,
+        gArgs.AddArg("-wipeignore", strprintf("Wipe list of ignored nodes (default: %d)", DEFAULT_WIPE_IGNORE), ArgsManager::ALLOW_ANY,
                      OptionsCategory::CONNECTION);
-        gArgs.AddArg("-reseed", strprintf("Reseed the database from the fixed seed list (default: %d)", DEFAULT_RESEED), false,
+        gArgs.AddArg("-reseed", strprintf("Reseed the database from the fixed seed list (default: %d)", DEFAULT_RESEED), ArgsManager::ALLOW_ANY,
                      OptionsCategory::CONNECTION);
         SetupChainParamsBaseOptions();
     }
