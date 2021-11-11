@@ -26,6 +26,7 @@
 
 #include <pthread.h>
 #include <strings.h> // for strcasecmp
+#include <unistd.h>
 
 const std::function<std::string(const char *)> G_TRANSLATION_FUN = nullptr;
 
@@ -410,6 +411,8 @@ extern "C" void *ThreadDumper(void *) {
 extern "C" void *ThreadStats(void *) {
     bool first = true;
     size_t lastLineLength = 0;
+    auto stdoutIsTerminal = isatty(fileno(stdout)) == 1;
+
     do {
         char c[256];
         std::time_t tim = std::time(nullptr);
@@ -417,15 +420,17 @@ extern "C" void *ThreadStats(void *) {
         std::strftime(c, 256, "[%y-%m-%d %H:%M:%S]", tmp);
         CAddrDbStats stats;
         db.GetStats(stats);
-        if (first) {
-            first = false;
-            // ANSI: create 3 newlines, then move cursor up 3 lines
-            std::fprintf(stdout, "\n\n\n\x1b[3A");
-        } else {
-            // ANSI: delete current line, restore cursor position to saved
-            std::fprintf(stdout, "\x1b[2K\x1b[u");
+        if (stdoutIsTerminal) {
+            if (first) {
+                first = false;
+                // ANSI: create 3 newlines, then move cursor up 3 lines
+                std::fprintf(stdout, "\n\n\n\x1b[3A");
+            } else {
+                // ANSI: delete current line, restore cursor position to saved
+                std::fprintf(stdout, "\x1b[2K\x1b[u");
+            }
+            std::fprintf(stdout, "\x1b[s"); // ANSI: save cursor position
         }
-        std::fprintf(stdout, "\x1b[s"); // ANSI: save cursor position
         uint64_t requests = 0;
         uint64_t queries = 0;
         for (const auto *dnsThread : dnsThreads) {
@@ -444,8 +449,8 @@ extern "C" void *ThreadStats(void *) {
         const size_t padLen = line.size() < lastLineLength ? lastLineLength - line.size() : 0;
         const std::string pad(padLen, ' ');
         lastLineLength = line.length();
-        std::fprintf(stdout, "%s%s\n", line.c_str(), pad.c_str());
-        Sleep(1000);
+        std::fprintf(stdout, "%s%s\n", line.c_str(), stdoutIsTerminal ? pad.c_str() : "");
+        Sleep(stdoutIsTerminal ? 1000 : 10000);
     } while (1);
     return nullptr;
 }
