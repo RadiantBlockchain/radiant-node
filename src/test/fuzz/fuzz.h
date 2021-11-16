@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <functional>
+#include <string>
 #include <vector>
 
 const std::function<std::string(const char *)> G_TRANSLATION_FUN = nullptr;
