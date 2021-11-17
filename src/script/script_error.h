@@ -80,6 +80,9 @@ enum class ScriptError {
     /* Auxiliary errors (unused by interpreter) */
     SIGCHECKS_LIMIT_EXCEEDED,
 
+    /* Operands checks Bigger Integers (64-bit) */
+    INVALID_NUMBER_RANGE_64_BIT,
+
     ERROR_COUNT,
 };
 

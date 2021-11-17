@@ -1691,6 +1691,10 @@ static uint32_t GetNextBlockScriptFlags(const Consensus::Params &params,
         flags |= SCRIPT_ENFORCE_SIGCHECKS;
     }
 
+    if (IsUpgrade8Enabled(params, pindex)) {
+        flags |= SCRIPT_64_BIT_INTEGERS;
+    }
+
     return flags;
 }
 
@@ -3963,12 +3967,10 @@ static bool ContextualCheckBlock(const CBlock &block, CValidationState &state,
 
     // Enforce rule that the coinbase starts with serialized block height
     if (nHeight >= params.BIP34Height) {
-        CScript expect = CScript() << nHeight;
+        CScript expect = CScript() << ScriptInt::fromIntUnchecked(nHeight);
         if (block.vtx[0]->vin[0].scriptSig.size() < expect.size() ||
-            !std::equal(expect.begin(), expect.end(),
-                        block.vtx[0]->vin[0].scriptSig.begin())) {
-            return state.DoS(100, false, REJECT_INVALID, "bad-cb-height", false,
-                             "block height mismatch in coinbase");
+            !std::equal(expect.begin(), expect.end(), block.vtx[0]->vin[0].scriptSig.begin())) {
+            return state.DoS(100, false, REJECT_INVALID, "bad-cb-height", false, "block height mismatch in coinbase");
         }
     }
 

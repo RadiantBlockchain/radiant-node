@@ -130,26 +130,23 @@ BOOST_AUTO_TEST_CASE(test_evalscript) {
 
     CheckEvalScript({nullsig}, CScript() << pub << OP_CHECKSIG, {vfalse}, 0);
     CheckEvalScript({txsigecdsa}, CScript() << pub << OP_CHECKSIG, {vtrue}, 1);
-    CheckEvalScript({txsigschnorr}, CScript() << pub << OP_CHECKSIG, {vtrue},
-                    1);
+    CheckEvalScript({txsigschnorr}, CScript() << pub << OP_CHECKSIG, {vtrue}, 1);
 
-    CheckEvalScript({nullsig}, CScript() << msg << pub << OP_CHECKDATASIG,
-                    {vfalse}, 0);
-    CheckEvalScript({sigecdsa}, CScript() << msg << pub << OP_CHECKDATASIG,
-                    {vtrue}, 1);
-    CheckEvalScript({sigschnorr}, CScript() << msg << pub << OP_CHECKDATASIG,
-                    {vtrue}, 1);
+    CheckEvalScript({nullsig}, CScript() << msg << pub << OP_CHECKDATASIG, {vfalse}, 0);
+    CheckEvalScript({sigecdsa}, CScript() << msg << pub << OP_CHECKDATASIG, {vtrue}, 1);
+    CheckEvalScript({sigschnorr}, CScript() << msg << pub << OP_CHECKDATASIG, {vtrue}, 1);
 
     // Check all M-of-N OP_CHECKMULTISIGs combinations in all flavours.
-    for (int n = 0; n <= MAX_PUBKEYS_PER_MULTISIG; n++) {
-        for (int m = 0; m <= n; m++) {
+    for (int n = 0; n <= MAX_PUBKEYS_PER_MULTISIG; ++n) {
+        for (int m = 0; m <= n; ++m) {
             // first, generate the spending script
             CScript script;
-            script << m;
-            for (int i = 0; i < n; i++) {
+            script << ScriptInt::fromIntUnchecked(m);
+
+            for (int i = 0; i < n; ++i) {
                 script << pub;
             }
-            script << n << OP_CHECKMULTISIG;
+            script << ScriptInt::fromIntUnchecked(n) << OP_CHECKMULTISIG;
 
             stacktype sigs;
 
@@ -207,7 +204,9 @@ BOOST_AUTO_TEST_CASE(test_evalscript) {
     CheckEvalScript({txsigecdsa}, CScript() << badpub << OP_CHECKSIG, {vfalse},
                     1, {SCRIPT_VERIFY_NONE});
     CheckEvalScript({{}, txsigecdsa},
-                    CScript() << 1 << badpub << badpub << badpub << badpub << 4
+                    CScript() << ScriptInt::fromIntUnchecked(1)
+                              << badpub << badpub << badpub << badpub
+                              << ScriptInt::fromIntUnchecked(4)
                               << OP_CHECKMULTISIG,
                     {vfalse}, 4, {SCRIPT_VERIFY_NONE});
 
@@ -225,14 +224,20 @@ BOOST_AUTO_TEST_CASE(test_evalscript) {
     // (hence, the sigchecks count is unimportant)
     {
         stacktype stack{{1}, txsigschnorr};
-        BOOST_CHECK(!EvalScript(
-            stack, CScript() << 1 << badpub << 1 << OP_CHECKMULTISIG,
+        BOOST_CHECK(!EvalScript(stack,
+            CScript() << ScriptInt::fromIntUnchecked(1)
+                      << badpub
+                      << ScriptInt::fromIntUnchecked(1)
+                      << OP_CHECKMULTISIG,
             SCRIPT_VERIFY_NONE, dummysigchecker));
     }
     {
         stacktype stack{{1}, txsigschnorr};
-        BOOST_CHECK(!EvalScript(
-            stack, CScript() << 1 << badpub << 1 << OP_CHECKMULTISIG,
+        BOOST_CHECK(!EvalScript(stack,
+            CScript() << ScriptInt::fromIntUnchecked(1)
+                      << badpub
+                      << ScriptInt::fromIntUnchecked(1)
+                      << OP_CHECKMULTISIG,
             SCRIPT_ENABLE_SCHNORR_MULTISIG, dummysigchecker));
     }
 
@@ -272,8 +277,8 @@ BOOST_AUTO_TEST_CASE(test_evalscript) {
         stacktype bigstack;
         bigstack.assign(999, {1});
         CScript script;
-        for (int i = 0; i < 200; i++) {
-            script << 998 << OP_ROLL;
+        for (int i = 0; i < 200; ++i) {
+            script << ScriptInt::fromIntUnchecked(998) << OP_ROLL;
         }
         CheckEvalScript(bigstack, script, bigstack, 0);
     }
@@ -282,17 +287,17 @@ BOOST_AUTO_TEST_CASE(test_evalscript) {
     // https://bitslog.com/2017/04/17/new-quadratic-delays-in-bitcoin-scripts/
     {
         CScript script;
-        script << 0;
-        for (int i = 0; i < 100; i++) {
+        script << ScriptInt::fromIntUnchecked(0);
+        for (int i = 0; i < 100; ++i) {
             script << OP_IF;
         }
-        for (int i = 0; i < 9798; i++) {
-            script << 0;
+        for (int i = 0; i < 9798; ++i) {
+            script << ScriptInt::fromIntUnchecked(0);
         }
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 100; ++i) {
             script << OP_ENDIF;
         }
-        script << 1;
+        script << ScriptInt::fromIntUnchecked(1);
         CheckEvalScript({}, script, {vtrue}, 0);
     }
 
@@ -303,28 +308,26 @@ BOOST_AUTO_TEST_CASE(test_evalscript) {
         stacktype stack;
         stack.assign(94, txsigecdsa);
         CScript script;
-        for (int i = 0; i < 94; i++) {
+        for (int i = 0; i < 94; ++i) {
             script << pub << OP_CHECKSIGVERIFY << OP_CODESEPARATOR;
         }
         // (remove last codesep)
         script.pop_back();
         // Push some garbage to lengthen the script.
         valtype bigblob(520);
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < 6; ++i) {
             script << bigblob << bigblob << OP_2DROP;
         }
-        script << 1;
+        script << ScriptInt::fromIntUnchecked(1);
         BOOST_CHECK_EQUAL(script.size(), 9666);
         CheckEvalScript(stack, script, {vtrue}, 94);
     }
 }
 
-void CheckVerifyScript(CScript scriptSig, CScript scriptPubKey, uint32_t flags,
-                       int expected_sigchecks) {
+void CheckVerifyScript(CScript scriptSig, CScript scriptPubKey, uint32_t flags, int expected_sigchecks) {
     ScriptExecutionMetrics metricsRet;
     metricsRet.nSigChecks = 12345 ^ expected_sigchecks;
-    BOOST_CHECK(VerifyScript(scriptSig, scriptPubKey, flags, dummysigchecker,
-                             metricsRet));
+    BOOST_CHECK(VerifyScript(scriptSig, scriptPubKey, flags, dummysigchecker, metricsRet));
     BOOST_CHECK_EQUAL(metricsRet.nSigChecks, expected_sigchecks);
 }
 

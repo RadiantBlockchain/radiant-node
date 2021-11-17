@@ -104,8 +104,7 @@ std::string SighashToStr(uint8_t sighash_type) {
  * pass true for scripts you believe could contain signatures. For example, pass
  * false, or omit the this argument (defaults to false), for scriptPubKeys.
  */
-std::string ScriptToAsmStr(const CScript &script,
-                           const bool fAttemptSighashDecode) {
+std::string ScriptToAsmStr(const CScript &script, bool fAttemptSighashDecode, bool f64BitNums) {
     std::string str;
     opcodetype opcode;
     std::vector<uint8_t> vch;
@@ -120,9 +119,12 @@ std::string ScriptToAsmStr(const CScript &script,
             return str;
         }
 
+        size_t const maxScriptNumSize = f64BitNums ? CScriptNum::MAXIMUM_ELEMENT_SIZE_64_BIT
+                                                   : CScriptNum::MAXIMUM_ELEMENT_SIZE_32_BIT;
+
         if (0 <= opcode && opcode <= OP_PUSHDATA4) {
-            if (vch.size() <= static_cast<std::vector<uint8_t>::size_type>(4)) {
-                str += strprintf("%d", CScriptNum(vch, false).getint());
+            if (vch.size() <= maxScriptNumSize) {
+                str += strprintf("%d", CScriptNum(vch, false, maxScriptNumSize).getint64());
             } else {
                 // the IsUnspendable check makes sure not to try to decode
                 // OP_RETURN data that may match the format of a signature
@@ -175,13 +177,13 @@ std::string EncodeHexTx(const CTransaction &tx, const int serializeFlags) {
     return HexStr(ssTx.begin(), ssTx.end());
 }
 
-UniValue::Object ScriptToUniv(const Config &config, const CScript &script, bool include_address) {
+UniValue::Object ScriptToUniv(const Config &config, const CScript &script, bool include_address, bool f64BitNums) {
     CTxDestination address;
     bool extracted = include_address && ExtractDestination(script, address);
 
     UniValue::Object out;
     out.reserve(3 + extracted);
-    out.emplace_back("asm", ScriptToAsmStr(script));
+    out.emplace_back("asm", ScriptToAsmStr(script, false, f64BitNums));
     out.emplace_back("hex", HexStr(script.begin(), script.end()));
 
     std::vector<std::vector<uint8_t>> solns;
@@ -194,9 +196,10 @@ UniValue::Object ScriptToUniv(const Config &config, const CScript &script, bool 
     return out;
 }
 
-UniValue::Object ScriptPubKeyToUniv(const Config &config, const CScript &scriptPubKey, bool fIncludeHex, bool fIncludeP2SH) {
+UniValue::Object ScriptPubKeyToUniv(const Config &config, const CScript &scriptPubKey, bool fIncludeHex,
+                                    bool fIncludeP2SH, bool f64BitNums) {
     UniValue::Object out;
-    out.emplace_back("asm", ScriptToAsmStr(scriptPubKey));
+    out.emplace_back("asm", ScriptToAsmStr(scriptPubKey, false, f64BitNums));
     if (fIncludeHex) {
         out.emplace_back("hex", HexStr(scriptPubKey.begin(), scriptPubKey.end()));
     }
@@ -231,7 +234,7 @@ UniValue::Object ScriptPubKeyToUniv(const Config &config, const CScript &scriptP
 }
 
 UniValue::Object TxToUniv(const Config &config, const CTransaction &tx, const uint256 &hashBlock, bool include_hex,
-                          int serialize_flags) {
+                          int serialize_flags, bool f64BitNums) {
     bool include_blockhash = !hashBlock.IsNull();
 
     UniValue::Object entry;
@@ -255,7 +258,7 @@ UniValue::Object TxToUniv(const Config &config, const CTransaction &tx, const ui
             in.emplace_back("vout", txin.prevout.GetN());
             UniValue::Object o;
             o.reserve(2);
-            o.emplace_back("asm", ScriptToAsmStr(txin.scriptSig, true));
+            o.emplace_back("asm", ScriptToAsmStr(txin.scriptSig, true, f64BitNums));
             o.emplace_back("hex", HexStr(txin.scriptSig.begin(), txin.scriptSig.end()));
             in.emplace_back("scriptSig", std::move(o));
         }
@@ -271,7 +274,7 @@ UniValue::Object TxToUniv(const Config &config, const CTransaction &tx, const ui
         out.reserve(3);
         out.emplace_back("value", ValueFromAmount(txout.nValue));
         out.emplace_back("n", vout.size());
-        out.emplace_back("scriptPubKey", ScriptPubKeyToUniv(config, txout.scriptPubKey, true));
+        out.emplace_back("scriptPubKey", ScriptPubKeyToUniv(config, txout.scriptPubKey, true, false, f64BitNums));
         vout.emplace_back(std::move(out));
     }
     entry.emplace_back("vout", std::move(vout));

@@ -146,7 +146,8 @@ public:
 
         std::vector<uint8_t> result;
         const bool neg = value < 0;
-        uint64_t absvalue = neg ? -value : value;
+        // NB: -INT64_MIN in 2's complement is UB, so we must guard against it here.
+        uint64_t absvalue = neg && value != std::numeric_limits<int64_t>::min() ? -value : value;
 
         while (absvalue) {
             result.push_back(absvalue & 0xff);

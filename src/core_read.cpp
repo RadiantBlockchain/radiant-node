@@ -75,7 +75,11 @@ CScript ParseScript(const std::string &s) {
              std::all_of(w.begin() + 1, w.end(), ::IsDigit))) {
             // Number
             int64_t n = atoi64(w);
-            result << n;
+            auto res = ScriptInt::fromInt(n);
+            if ( ! res) {
+                throw std::runtime_error("-9223372036854775808 is a forbidden value");
+            }
+            result << *res;
             goto next;
         }
 
@@ -89,9 +93,7 @@ CScript ParseScript(const std::string &s) {
             }
 
             // Raw hex data, inserted NOT pushed onto stack:
-            std::vector<uint8_t> raw =
-                ParseHex(std::string(w.begin() + 2, w.end()));
-
+            std::vector<uint8_t> raw = ParseHex(std::string(w.begin() + 2, w.end()));
             result.insert(result.end(), raw.begin(), raw.end());
             goto next;
         }

@@ -60,6 +60,7 @@ static ScriptErrorDesc script_errors[] = {
     {ScriptError::INPUT_SIGCHECKS, "INPUT_SIGCHECKS"},
     {ScriptError::INVALID_OPERAND_SIZE, "OPERAND_SIZE"},
     {ScriptError::INVALID_NUMBER_RANGE, "INVALID_NUMBER_RANGE"},
+    {ScriptError::INVALID_NUMBER_RANGE_64_BIT, "INVALID_NUMBER_RANGE_64_BIT"},
     {ScriptError::IMPOSSIBLE_ENCODING, "IMPOSSIBLE_ENCODING"},
     {ScriptError::INVALID_SPLIT_RANGE, "SPLIT_RANGE"},
     {ScriptError::INVALID_BIT_COUNT, "INVALID_BIT_COUNT"},
@@ -151,7 +152,7 @@ static void DoTest(const CScript &scriptPubKey, const CScript &scriptSig,
         // Some flags are not purely-restrictive and thus we can't assume
         // anything about what happens when they are flipped. Keep them as-is.
         extra_flags &=
-            ~(SCRIPT_ENABLE_SIGHASH_FORKID | SCRIPT_ENABLE_SCHNORR_MULTISIG);
+            ~(SCRIPT_ENABLE_SIGHASH_FORKID | SCRIPT_ENABLE_SCHNORR_MULTISIG | SCRIPT_64_BIT_INTEGERS);
         uint32_t combined_flags =
             expect ? (flags & ~extra_flags) : (flags | extra_flags);
         // Weed out invalid flag combinations.
@@ -322,7 +323,7 @@ public:
 
     TestBuilder &Num(int num) {
         DoPush();
-        spendTx.vin[0].scriptSig << num;
+        spendTx.vin[0].scriptSig << ScriptInt::fromIntUnchecked(num);
         return *this;
     }
 
@@ -1982,17 +1983,37 @@ BOOST_AUTO_TEST_CASE(script_build) {
             .PushSigSchnorr(keys.key2)
             .SetScriptError(ScriptError::INVALID_BITFIELD_SIZE));
     tests.push_back(
-        TestBuilder(CScript() << OP_1 << -1 << -1 << -1 << -1 << -1
-                              << ToByteVector(keys.pubkey0C) << -1 << 7
+        TestBuilder(CScript() << OP_1
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ToByteVector(keys.pubkey0C)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(7)
                               << OP_CHECKMULTISIG,
                     "CHECKMULTISIG 1-of-7 Schnorr, second-to-last key",
                     newmultisigflags)
             .Push("20")
             .PushSigSchnorr(keys.key0));
     tests.push_back(
-        TestBuilder(CScript() << OP_1 << -1 << -1 << -1 << -1 << -1 << -1 << -1
-                              << -1 << -1 << -1 << ToByteVector(keys.pubkey0C)
-                              << -1 << -1 << 13 << OP_CHECKMULTISIG,
+        TestBuilder(CScript() << OP_1
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ToByteVector(keys.pubkey0C)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(13)
+                              << OP_CHECKMULTISIG,
                     "CHECKMULTISIG 1-of-13 Schnorr, third-to-last key",
                     newmultisigflags)
             .Push("0004")
@@ -2000,12 +2021,15 @@ BOOST_AUTO_TEST_CASE(script_build) {
     tests.push_back(
         TestBuilder(CScript()
                         << OP_OVER << OP_DUP << OP_DUP << OP_2DUP << OP_3DUP
-                        << OP_3DUP << OP_3DUP << OP_3DUP << 20
+                        << OP_3DUP << OP_3DUP << OP_3DUP
+                        << ScriptInt::fromIntUnchecked(20)
                         << ToByteVector(keys.pubkey0C)
                         << ToByteVector(keys.pubkey1C)
                         << ToByteVector(keys.pubkey2C) << OP_OVER << OP_DUP
                         << OP_DUP << OP_2DUP << OP_3DUP << OP_3DUP << OP_3DUP
-                        << OP_3DUP << 20 << OP_CHECKMULTISIG,
+                        << OP_3DUP
+                        << ScriptInt::fromIntUnchecked(20)
+                        << OP_CHECKMULTISIG,
                     "CHECKMULTISIG 20-of-20 Schnorr", newmultisigflags)
             .Push("ffff0f")
             .PushSigSchnorr(keys.key0)
@@ -2014,12 +2038,15 @@ BOOST_AUTO_TEST_CASE(script_build) {
     tests.push_back(
         TestBuilder(
             CScript() << OP_OVER << OP_DUP << OP_DUP << OP_2DUP << OP_3DUP
-                      << OP_3DUP << OP_3DUP << OP_3DUP << 20
+                      << OP_3DUP << OP_3DUP << OP_3DUP
+                      << ScriptInt::fromIntUnchecked(20)
                       << ToByteVector(keys.pubkey0C)
                       << ToByteVector(keys.pubkey1C)
                       << ToByteVector(keys.pubkey2C) << OP_OVER << OP_DUP
                       << OP_DUP << OP_2DUP << OP_3DUP << OP_3DUP << OP_3DUP
-                      << OP_3DUP << 20 << OP_CHECKMULTISIG,
+                      << OP_3DUP
+                      << ScriptInt::fromIntUnchecked(20)
+                      << OP_CHECKMULTISIG,
             "CHECKMULTISIG 20-of-20 Schnorr, checkbits +1", newmultisigflags)
             .Push("000010")
             .PushSigSchnorr(keys.key0)
@@ -2030,7 +2057,9 @@ BOOST_AUTO_TEST_CASE(script_build) {
         TestBuilder(CScript() << OP_1 << ToByteVector(keys.pubkey0C) << OP_DUP
                               << ToByteVector(keys.pubkey1C) << OP_3DUP
                               << OP_3DUP << OP_3DUP << OP_3DUP << OP_3DUP
-                              << OP_3DUP << 21 << OP_CHECKMULTISIG,
+                              << OP_3DUP
+                              << ScriptInt::fromIntUnchecked(21)
+                              << OP_CHECKMULTISIG,
                     "CHECKMULTISIG 1-of-21 Schnorr", newmultisigflags)
             .Push("000010")
             .PushSigSchnorr(keys.key0)
@@ -2039,7 +2068,9 @@ BOOST_AUTO_TEST_CASE(script_build) {
                                           << ToByteVector(keys.pubkey1C)
                                           << OP_DUP << OP_2DUP << OP_3DUP
                                           << OP_3DUP << OP_3DUP << OP_3DUP
-                                          << OP_3DUP << 20 << OP_CHECKMULTISIG,
+                                          << OP_3DUP
+                                          << ScriptInt::fromIntUnchecked(20)
+                                          << OP_CHECKMULTISIG,
                                 "CHECKMULTISIG 1-of-20 Schnorr, first key",
                                 newmultisigflags)
                         .Push("010000")
@@ -2049,7 +2080,8 @@ BOOST_AUTO_TEST_CASE(script_build) {
             CScript() << OP_1 << ToByteVector(keys.pubkey0C)
                       << ToByteVector(keys.pubkey1C) << OP_DUP << OP_2DUP
                       << OP_3DUP << OP_3DUP << OP_3DUP << OP_3DUP << OP_3DUP
-                      << 20 << OP_CHECKMULTISIG,
+                      << ScriptInt::fromIntUnchecked(20)
+                      << OP_CHECKMULTISIG,
             "CHECKMULTISIG 1-of-20 Schnorr, first key, wrong endianness",
             newmultisigflags)
             .Push("000001")
@@ -2059,7 +2091,9 @@ BOOST_AUTO_TEST_CASE(script_build) {
         TestBuilder(
             CScript() << OP_1 << ToByteVector(keys.pubkey0C) << OP_2DUP
                       << OP_2DUP << OP_3DUP << OP_3DUP << OP_3DUP << OP_3DUP
-                      << OP_3DUP << 20 << OP_CHECKMULTISIG,
+                      << OP_3DUP
+                      << ScriptInt::fromIntUnchecked(20)
+                      << OP_CHECKMULTISIG,
             "CHECKMULTISIG 1-of-20 Schnorr, truncating zeros not allowed",
             newmultisigflags)
             .Num(1)
@@ -2069,7 +2103,8 @@ BOOST_AUTO_TEST_CASE(script_build) {
         TestBuilder(CScript()
                         << OP_1 << ToByteVector(keys.pubkey0C) << OP_DUP
                         << OP_2DUP << OP_3DUP << OP_3DUP << OP_3DUP << OP_3DUP
-                        << OP_3DUP << ToByteVector(keys.pubkey1C) << 20
+                        << OP_3DUP << ToByteVector(keys.pubkey1C)
+                        << ScriptInt::fromIntUnchecked(20)
                         << OP_CHECKMULTISIG,
                     "CHECKMULTISIG 1-of-20 Schnorr, last key", newmultisigflags)
             .Push("000008")
@@ -2078,7 +2113,8 @@ BOOST_AUTO_TEST_CASE(script_build) {
         TestBuilder(CScript()
                         << OP_1 << ToByteVector(keys.pubkey0C) << OP_DUP
                         << OP_2DUP << OP_3DUP << OP_3DUP << OP_3DUP << OP_3DUP
-                        << OP_3DUP << ToByteVector(keys.pubkey1C) << 20
+                        << OP_3DUP << ToByteVector(keys.pubkey1C)
+                        << ScriptInt::fromIntUnchecked(20)
                         << OP_CHECKMULTISIG,
                     "CHECKMULTISIG 1-of-20 Schnorr, last key, wrong endianness",
                     newmultisigflags)
@@ -2089,7 +2125,8 @@ BOOST_AUTO_TEST_CASE(script_build) {
                                     << OP_1 << ToByteVector(keys.pubkey0C)
                                     << OP_DUP << OP_2DUP << OP_3DUP << OP_3DUP
                                     << OP_3DUP << OP_3DUP << OP_3DUP
-                                    << ToByteVector(keys.pubkey1C) << 20
+                                    << ToByteVector(keys.pubkey1C)
+                                    << ScriptInt::fromIntUnchecked(20)
                                     << OP_CHECKMULTISIG,
                                 "CHECKMULTISIG 1-of-20 Schnorr, last key, "
                                 "truncating zeros not allowed",
@@ -2189,19 +2226,40 @@ BOOST_AUTO_TEST_CASE(script_build) {
         SCRIPT_VERIFY_INPUT_SIGCHECKS | SCRIPT_VERIFY_P2SH;
     // First, try some important use cases that we want to make sure are
     // supported but that have high density of sigchecks.
-    tests.push_back(TestBuilder(CScript() << 1 << ToByteVector(keys.pubkey0C)
+    tests.push_back(TestBuilder(CScript() << ScriptInt::fromIntUnchecked(1)
+                                          << ToByteVector(keys.pubkey0C)
                                           << ToByteVector(keys.pubkey1C)
-                                          << ToByteVector(keys.pubkey2C) << 3
+                                          << ToByteVector(keys.pubkey2C)
+                                          << ScriptInt::fromIntUnchecked(3)
                                           << OP_CHECKMULTISIG,
                                 "SigChecks on bare CHECKMULTISIG 1-of-3 ECDSA",
                                 sigchecksflags)
                         .Num(0)
                         .PushSigECDSA(keys.key0));
     tests.push_back(
-        TestBuilder(CScript() << 1 << ToByteVector(keys.pubkey0C) << -1 << -1
-                              << -1 << -1 << -1 << -1 << -1 << -1 << -1 << -1
-                              << -1 << -1 << -1 << -1 << -1 << -1 << -1 << -1
-                              << -1 << 20 << OP_CHECKMULTISIG,
+        TestBuilder(CScript() << ScriptInt::fromIntUnchecked(1)
+                              << ToByteVector(keys.pubkey0C)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(-1)
+                              << ScriptInt::fromIntUnchecked(20)
+                              << OP_CHECKMULTISIG,
                     "SigChecks on bare CHECKMULTISIG 1-of-20 Schnorr",
                     sigchecksflags)
             .Push("010000")
@@ -2217,7 +2275,8 @@ BOOST_AUTO_TEST_CASE(script_build) {
     tests.push_back(
         TestBuilder(
             CScript()
-                << 1 << ToByteVector(keys.pubkey0C)
+                << ScriptInt::fromIntUnchecked(1)
+                << ToByteVector(keys.pubkey0C)
                 << ToByteVector(keys.pubkey1C) << ToByteVector(keys.pubkey2C)
                 << ToByteVector(keys.pubkey1C) << ToByteVector(keys.pubkey2C)
                 << ToByteVector(keys.pubkey1C) << ToByteVector(keys.pubkey2C)
@@ -2225,7 +2284,8 @@ BOOST_AUTO_TEST_CASE(script_build) {
                 << ToByteVector(keys.pubkey1C) << ToByteVector(keys.pubkey2C)
                 << ToByteVector(keys.pubkey1C) << ToByteVector(keys.pubkey2C)
                 << ToByteVector(keys.pubkey1C) << ToByteVector(keys.pubkey2C)
-                << 15 << OP_CHECKMULTISIG,
+                << ScriptInt::fromIntUnchecked(15)
+                << OP_CHECKMULTISIG,
             "SigChecks on P2SH CHECKMULTISIG 1-of-15 ECDSA with compressed "
             "keys",
             sigchecksflags, true)
@@ -2234,7 +2294,9 @@ BOOST_AUTO_TEST_CASE(script_build) {
             .PushRedeem());
     tests.push_back(
         TestBuilder(CScript()
-                        << ToByteVector(keys.pubkey0C) << 0 << OP_OVER
+                        << ToByteVector(keys.pubkey0C)
+                        << ScriptInt::fromIntUnchecked(0)
+                        << OP_OVER
                         << OP_CHECKSIG << OP_OVER << OP_CHECKSIG << OP_OVER
                         << OP_CHECKSIG << OP_OVER << OP_CHECKSIG << OP_OVER
                         << OP_CHECKSIG << OP_OVER << OP_CHECKSIG << OP_OVER
@@ -2248,7 +2310,10 @@ BOOST_AUTO_TEST_CASE(script_build) {
             .PushRedeem());
     tests.push_back(
         TestBuilder(CScript()
-                        << 0 << ToByteVector(keys.pubkey0C) << 0 << 0
+                        << ScriptInt::fromIntUnchecked(0)
+                        << ToByteVector(keys.pubkey0C)
+                        << ScriptInt::fromIntUnchecked(0)
+                        << ScriptInt::fromIntUnchecked(0)
                         << OP_2OVER << OP_CHECKDATASIG << OP_2OVER
                         << OP_CHECKDATASIG << OP_2OVER << OP_CHECKDATASIG
                         << OP_2OVER << OP_CHECKDATASIG << OP_2OVER
@@ -2269,9 +2334,13 @@ BOOST_AUTO_TEST_CASE(script_build) {
     tests.push_back(
         TestBuilder(CScript()
                         << OP_DUP << OP_2DUP << OP_3DUP << OP_3DUP << OP_3DUP
-                        << OP_3DUP << 16 << ToByteVector(keys.pubkey0C)
+                        << OP_3DUP
+                        << ScriptInt::fromIntUnchecked(16)
+                        << ToByteVector(keys.pubkey0C)
                         << OP_DUP << OP_2DUP << OP_3DUP << OP_3DUP << OP_3DUP
-                        << OP_3DUP << 16 << OP_CHECKMULTISIG << OP_NOT,
+                        << OP_3DUP
+                        << ScriptInt::fromIntUnchecked(16)
+                        << OP_CHECKMULTISIG << OP_NOT,
                     "Null signatures make no SigChecks (CHECKMULTISIG)",
                     sigchecksflags, true)
             .Num(0)
@@ -2279,10 +2348,13 @@ BOOST_AUTO_TEST_CASE(script_build) {
             .PushRedeem());
 
     // Now some unusual use cases (some are unsupported behaviour)
-    tests.push_back(TestBuilder(CScript() << 1 << ToByteVector(keys.pubkey0C)
+    tests.push_back(TestBuilder(CScript() << ScriptInt::fromIntUnchecked(1)
+                                          << ToByteVector(keys.pubkey0C)
                                           << ToByteVector(keys.pubkey1C)
                                           << ToByteVector(keys.pubkey2C)
-                                          << OP_DUP << 4 << OP_CHECKMULTISIG,
+                                          << OP_DUP
+                                          << ScriptInt::fromIntUnchecked(4)
+                                          << OP_CHECKMULTISIG,
                                 "SigChecks on bare CHECKMULTISIG 1-of-4 ECDSA",
                                 sigchecksflags)
                         .Num(0)
@@ -2291,14 +2363,18 @@ BOOST_AUTO_TEST_CASE(script_build) {
     tests.push_back(
         TestBuilder(
             CScript()
-                << 1 << -1 << ToByteVector(keys.pubkey0C)
+                << ScriptInt::fromIntUnchecked(1)
+                << ScriptInt::fromIntUnchecked(-1)
+                << ToByteVector(keys.pubkey0C)
                 << ToByteVector(keys.pubkey2C) << ToByteVector(keys.pubkey1C)
                 << ToByteVector(keys.pubkey2C) << ToByteVector(keys.pubkey1C)
                 << ToByteVector(keys.pubkey2C) << ToByteVector(keys.pubkey1C)
                 << ToByteVector(keys.pubkey2C) << ToByteVector(keys.pubkey1C)
                 << ToByteVector(keys.pubkey2C) << ToByteVector(keys.pubkey1C)
                 << ToByteVector(keys.pubkey2C) << ToByteVector(keys.pubkey1C)
-                << ToByteVector(keys.pubkey2C) << 15 << OP_CHECKMULTISIG,
+                << ToByteVector(keys.pubkey2C)
+                << ScriptInt::fromIntUnchecked(15)
+                << OP_CHECKMULTISIG,
             "SigChecks on P2SH CHECKMULTISIG 1-of-15 ECDSA with a runt key",
             sigchecksflags, true)
             .Num(0)
@@ -2308,29 +2384,53 @@ BOOST_AUTO_TEST_CASE(script_build) {
     tests.push_back(
         TestBuilder(
             CScript()
-                << 1 << -1 << ToByteVector(keys.pubkey0C)
+                << ScriptInt::fromIntUnchecked(1)
+                << ScriptInt::fromIntUnchecked(-1)
+                << ToByteVector(keys.pubkey0C)
                 << ToByteVector(keys.pubkey2C) << ToByteVector(keys.pubkey1C)
                 << ToByteVector(keys.pubkey2C) << ToByteVector(keys.pubkey1C)
                 << ToByteVector(keys.pubkey2C) << ToByteVector(keys.pubkey1C)
                 << ToByteVector(keys.pubkey2C) << ToByteVector(keys.pubkey1C)
                 << ToByteVector(keys.pubkey2C) << ToByteVector(keys.pubkey1C)
                 << ToByteVector(keys.pubkey2C) << ToByteVector(keys.pubkey1C)
-                << ToByteVector(keys.pubkey2C) << 15 << OP_CHECKMULTISIG,
+                << ToByteVector(keys.pubkey2C)
+                << ScriptInt::fromIntUnchecked(15)
+                << OP_CHECKMULTISIG,
             "SigChecks on P2SH CHECKMULTISIG 1-of-15 Schnorr with a runt key",
             sigchecksflags, true)
             .Push("0200")
             .PushSigSchnorr(keys.key0)
             .PushRedeem());
-    tests.push_back(TestBuilder(CScript() << 0 << -1 << -1 << -1 << -1 << -1
-                                          << -1 << -1 << -1 << -1 << -1 << 10
+    tests.push_back(TestBuilder(CScript() << ScriptInt::fromIntUnchecked(0)
+                                          << ScriptInt::fromIntUnchecked(-1)
+                                          << ScriptInt::fromIntUnchecked(-1)
+                                          << ScriptInt::fromIntUnchecked(-1)
+                                          << ScriptInt::fromIntUnchecked(-1)
+                                          << ScriptInt::fromIntUnchecked(-1)
+                                          << ScriptInt::fromIntUnchecked(-1)
+                                          << ScriptInt::fromIntUnchecked(-1)
+                                          << ScriptInt::fromIntUnchecked(-1)
+                                          << ScriptInt::fromIntUnchecked(-1)
+                                          << ScriptInt::fromIntUnchecked(-1)
+                                          << ScriptInt::fromIntUnchecked(10)
                                           << OP_CHECKMULTISIG,
                                 "Very short P2SH multisig 0-of-10, spent with "
                                 "legacy mode (0 sigchecks)",
                                 sigchecksflags, true)
                         .Num(0)
                         .PushRedeem());
-    tests.push_back(TestBuilder(CScript() << 0 << -1 << -1 << -1 << -1 << -1
-                                          << -1 << -1 << -1 << -1 << -1 << 10
+    tests.push_back(TestBuilder(CScript() << ScriptInt::fromIntUnchecked(0)
+                                          << ScriptInt::fromIntUnchecked(-1)
+                                          << ScriptInt::fromIntUnchecked(-1)
+                                          << ScriptInt::fromIntUnchecked(-1)
+                                          << ScriptInt::fromIntUnchecked(-1)
+                                          << ScriptInt::fromIntUnchecked(-1)
+                                          << ScriptInt::fromIntUnchecked(-1)
+                                          << ScriptInt::fromIntUnchecked(-1)
+                                          << ScriptInt::fromIntUnchecked(-1)
+                                          << ScriptInt::fromIntUnchecked(-1)
+                                          << ScriptInt::fromIntUnchecked(-1)
+                                          << ScriptInt::fromIntUnchecked(10)
                                           << OP_CHECKMULTISIG,
                                 "Very short P2SH multisig 0-of-10, spent with "
                                 "schnorr mode (0 sigchecks)",
@@ -2407,13 +2507,12 @@ BOOST_AUTO_TEST_CASE(script_json_test) {
         std::string scriptSigString = test[pos++].get_str();
         std::string scriptPubKeyString = test[pos++].get_str();
         try {
+            unsigned int scriptflags = ParseScriptFlags(test[pos++].get_str());
             CScript scriptSig = ParseScript(scriptSigString);
             CScript scriptPubKey = ParseScript(scriptPubKeyString);
-            unsigned int scriptflags = ParseScriptFlags(test[pos++].get_str());
             ScriptError scriptError = ParseScriptError(test[pos++].get_str());
 
-            DoTest(scriptPubKey, scriptSig, scriptflags, strTest, scriptError,
-                   nValue);
+            DoTest(scriptPubKey, scriptSig, scriptflags, strTest, scriptError, nValue);
         } catch (std::runtime_error &e) {
             BOOST_TEST_MESSAGE("Script test failed.  scriptSig:  "
                                << scriptSigString
@@ -2700,7 +2799,7 @@ BOOST_AUTO_TEST_CASE(script_combineSigs) {
     CBasicKeyStore keystore;
     std::vector<CKey> keys;
     std::vector<CPubKey> pubkeys;
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 3; ++i) {
         CKey key;
         key.MakeNewKey(i % 2 == 1);
         keys.push_back(key);
@@ -2840,11 +2939,10 @@ BOOST_AUTO_TEST_CASE(script_combineSigs) {
 
 BOOST_AUTO_TEST_CASE(script_standard_push) {
     ScriptError err;
-    for (int i = 0; i < 67000; i++) {
+    for (int i = 0; i < 67000; ++i) {
         CScript script;
-        script << i;
-        BOOST_CHECK_MESSAGE(script.IsPushOnly(),
-                            "Number " << i << " is not pure push.");
+        script << ScriptInt::fromIntUnchecked(i);
+        BOOST_CHECK_MESSAGE(script.IsPushOnly(), "Number " << i << " is not pure push.");
         BOOST_CHECK_MESSAGE(VerifyScript(script, CScript() << OP_1,
                                          SCRIPT_VERIFY_MINIMALDATA,
                                          BaseSignatureChecker(), &err),
@@ -2852,7 +2950,7 @@ BOOST_AUTO_TEST_CASE(script_standard_push) {
         BOOST_CHECK_MESSAGE(err == ScriptError::OK, ScriptErrorString(err));
     }
 
-    for (unsigned int i = 0; i <= MAX_SCRIPT_ELEMENT_SIZE; i++) {
+    for (unsigned int i = 0; i <= MAX_SCRIPT_ELEMENT_SIZE; ++i) {
         std::vector<uint8_t> data(i, '\111');
         CScript script;
         script << data;
@@ -2877,21 +2975,15 @@ BOOST_AUTO_TEST_CASE(script_IsPushOnly_on_invalid_scripts) {
 }
 
 BOOST_AUTO_TEST_CASE(script_GetScriptAsm) {
-    BOOST_CHECK_EQUAL("OP_CHECKLOCKTIMEVERIFY",
-                      ScriptToAsmStr(CScript() << OP_NOP2, true));
-    BOOST_CHECK_EQUAL(
-        "OP_CHECKLOCKTIMEVERIFY",
-        ScriptToAsmStr(CScript() << OP_CHECKLOCKTIMEVERIFY, true));
-    BOOST_CHECK_EQUAL("OP_CHECKLOCKTIMEVERIFY",
-                      ScriptToAsmStr(CScript() << OP_NOP2));
-    BOOST_CHECK_EQUAL("OP_CHECKLOCKTIMEVERIFY",
-                      ScriptToAsmStr(CScript() << OP_CHECKLOCKTIMEVERIFY));
+    BOOST_CHECK_EQUAL("OP_CHECKLOCKTIMEVERIFY", ScriptToAsmStr(CScript() << OP_NOP2, true));
+    BOOST_CHECK_EQUAL("OP_CHECKLOCKTIMEVERIFY", ScriptToAsmStr(CScript() << OP_CHECKLOCKTIMEVERIFY, true));
+    BOOST_CHECK_EQUAL("OP_CHECKLOCKTIMEVERIFY", ScriptToAsmStr(CScript() << OP_NOP2));
+    BOOST_CHECK_EQUAL("OP_CHECKLOCKTIMEVERIFY", ScriptToAsmStr(CScript() << OP_CHECKLOCKTIMEVERIFY));
 
     std::string derSig("304502207fa7a6d1e0ee81132a269ad84e68d695483745cde8b541e"
                        "3bf630749894e342a022100c1f7ab20e13e22fb95281a870f3dcf38"
                        "d782e53023ee313d741ad0cfbc0c5090");
-    std::string pubKey(
-        "03b0da749730dc9b4b1f4a14d6902877a92541f5368778853d9c4a0cb7802dcfb2");
+    std::string pubKey("03b0da749730dc9b4b1f4a14d6902877a92541f5368778853d9c4a0cb7802dcfb2");
     std::vector<uint8_t> vchPubKey = ToByteVector(ParseHex(pubKey));
 
     BOOST_CHECK_EQUAL(
@@ -3124,17 +3216,15 @@ BOOST_AUTO_TEST_CASE(script_FindAndDelete) {
 BOOST_AUTO_TEST_CASE(IsWitnessProgram) {
     // Valid version: [0,16]
     // Valid program_len: [2,40]
-    for (int version = -1; version <= 17; version++) {
+    for (int version = -1; version <= 17; ++version) {
         for (unsigned int program_len = 1; program_len <= 41; program_len++) {
             CScript script;
             std::vector<uint8_t> program(program_len, '\42');
             int parsed_version;
             std::vector<uint8_t> parsed_program;
-            script << version << program;
-            bool result =
-                script.IsWitnessProgram(parsed_version, parsed_program);
-            bool expected = version >= 0 && version <= 16 && program_len >= 2 &&
-                            program_len <= 40;
+            script << ScriptInt::fromIntUnchecked(version) << program;
+            bool result = script.IsWitnessProgram(parsed_version, parsed_program);
+            bool expected = version >= 0 && version <= 16 && program_len >= 2 && program_len <= 40;
             BOOST_CHECK_EQUAL(result, expected);
             if (result) {
                 BOOST_CHECK_EQUAL(version, parsed_version);
@@ -3161,13 +3251,10 @@ BOOST_AUTO_TEST_CASE(IsWitnessProgram) {
 
 BOOST_AUTO_TEST_CASE(script_HasValidOps) {
     // Exercise the HasValidOps functionality
-    CScript script;
     // Normal script
-    script =
-        ScriptFromHex("76a9141234567890abcdefa1a2a3a4a5a6a7a8a9a0aaab88ac");
+    CScript script = ScriptFromHex("76a9141234567890abcdefa1a2a3a4a5a6a7a8a9a0aaab88ac");
     BOOST_CHECK(script.HasValidOps());
-    script =
-        ScriptFromHex("76a914ff34567890abcdefa1a2a3a4a5a6a7a8a9a0aaab88ac");
+    script = ScriptFromHex("76a914ff34567890abcdefa1a2a3a4a5a6a7a8a9a0aaab88ac");
     BOOST_CHECK(script.HasValidOps());
     // Script with INVALIDOPCODE explicit
     script = ScriptFromHex("ff88ac");
@@ -3177,9 +3264,8 @@ BOOST_AUTO_TEST_CASE(script_HasValidOps) {
     BOOST_CHECK(!script.HasValidOps());
 
     // Check all non push opcodes.
-    for (uint8_t opcode = OP_1NEGATE; opcode < FIRST_UNDEFINED_OP_VALUE;
-         opcode++) {
-        script = CScript() << opcode;
+    for (uint8_t opcode = OP_1NEGATE; opcode < FIRST_UNDEFINED_OP_VALUE; ++opcode) {
+        script = CScript() << ScriptInt::fromIntUnchecked(opcode);
         BOOST_CHECK(script.HasValidOps());
     }
 
@@ -3188,11 +3274,9 @@ BOOST_AUTO_TEST_CASE(script_HasValidOps) {
 }
 
 BOOST_AUTO_TEST_CASE(script_can_append_self) {
-    CScript s, d;
-
-    s = ScriptFromHex("00");
+    CScript s = ScriptFromHex("00");
     s += s;
-    d = ScriptFromHex("0000");
+    CScript d = ScriptFromHex("0000");
     BOOST_CHECK(s == d);
 
     // check doubling a script that's large enough to require reallocation
@@ -3200,8 +3284,7 @@ BOOST_AUTO_TEST_CASE(script_can_append_self) {
         "04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6"
         "bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f";
     s = CScript() << ParseHex(hex) << OP_CHECKSIG;
-    d = CScript() << ParseHex(hex) << OP_CHECKSIG << ParseHex(hex)
-                  << OP_CHECKSIG;
+    d = CScript() << ParseHex(hex) << OP_CHECKSIG << ParseHex(hex) << OP_CHECKSIG;
     s += s;
     BOOST_CHECK(s == d);
 }

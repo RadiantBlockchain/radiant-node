@@ -102,6 +102,11 @@ enum {
     // sigcheck limit. It does not control the sigcheck limits in
     // policy/consensus.h .
     SCRIPT_ENFORCE_SIGCHECKS = (1U << 23),
+
+    // Flag that allows us to determine if the script interpreter should allow
+    // 64-bit integer arithmetic and the return of OP_MUL or use the previous
+    // semantics.
+    SCRIPT_64_BIT_INTEGERS = (1U << 24),
 };
 
 #endif // BITCOIN_SCRIPT_SCRIPT_FLAGS_H

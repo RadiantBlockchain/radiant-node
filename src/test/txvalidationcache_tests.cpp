@@ -337,14 +337,14 @@ BOOST_FIXTURE_TEST_CASE(checkinputs_test, TestChain100Setup) {
             0, SigHashType().withForkId(), spend_tx.vout[1].nValue);
         BOOST_CHECK(coinbaseKey.SignECDSA(hash, vchSig));
         vchSig.push_back(uint8_t(SIGHASH_ALL | SIGHASH_FORKID));
-        invalid_with_cltv_tx.vin[0].scriptSig = CScript() << vchSig << 101;
+        invalid_with_cltv_tx.vin[0].scriptSig = CScript() << vchSig << ScriptInt::fromIntUnchecked(101);
 
         ValidateCheckInputsForAllFlags(CTransaction(invalid_with_cltv_tx),
                                        SCRIPT_VERIFY_CHECKLOCKTIMEVERIFY,
                                        SCRIPT_ENABLE_SIGHASH_FORKID, true, 1);
 
         // Make it valid, and check again
-        invalid_with_cltv_tx.vin[0].scriptSig = CScript() << vchSig << 100;
+        invalid_with_cltv_tx.vin[0].scriptSig = CScript() << vchSig << ScriptInt::fromIntUnchecked(100);
         CValidationState state;
 
         CTransaction transaction(invalid_with_cltv_tx);
@@ -375,14 +375,14 @@ BOOST_FIXTURE_TEST_CASE(checkinputs_test, TestChain100Setup) {
             SigHashType().withForkId(), spend_tx.vout[2].nValue);
         BOOST_CHECK(coinbaseKey.SignECDSA(hash, vchSig));
         vchSig.push_back(uint8_t(SIGHASH_ALL | SIGHASH_FORKID));
-        invalid_with_csv_tx.vin[0].scriptSig = CScript() << vchSig << 101;
+        invalid_with_csv_tx.vin[0].scriptSig = CScript() << vchSig << ScriptInt::fromIntUnchecked(101);
 
         ValidateCheckInputsForAllFlags(CTransaction(invalid_with_csv_tx),
                                        SCRIPT_VERIFY_CHECKSEQUENCEVERIFY,
                                        SCRIPT_ENABLE_SIGHASH_FORKID, true, 1);
 
         // Make it valid, and check again
-        invalid_with_csv_tx.vin[0].scriptSig = CScript() << vchSig << 100;
+        invalid_with_csv_tx.vin[0].scriptSig = CScript() << vchSig << ScriptInt::fromIntUnchecked(100);
         CValidationState state;
 
         CTransaction transaction(invalid_with_csv_tx);

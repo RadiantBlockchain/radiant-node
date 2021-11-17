@@ -200,15 +200,13 @@ BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn, double timeLimitSe
     coinbaseTx.vin[0].prevout = COutPoint();
     coinbaseTx.vout.resize(1);
     coinbaseTx.vout[0].scriptPubKey = scriptPubKeyIn;
-    coinbaseTx.vout[0].nValue =
-        nFees + GetBlockSubsidy(nHeight, consensusParams);
-    coinbaseTx.vin[0].scriptSig = CScript() << nHeight << OP_0;
+    coinbaseTx.vout[0].nValue = nFees + GetBlockSubsidy(nHeight, consensusParams);
+    coinbaseTx.vin[0].scriptSig = CScript() << ScriptInt::fromIntUnchecked(nHeight) << OP_0;
 
     // Make sure the coinbase is big enough.
     uint64_t coinbaseSize = ::GetSerializeSize(coinbaseTx, PROTOCOL_VERSION);
     if (coinbaseSize < MIN_TX_SIZE) {
-        coinbaseTx.vin[0].scriptSig
-            << std::vector<uint8_t>(MIN_TX_SIZE - coinbaseSize - 1);
+        coinbaseTx.vin[0].scriptSig << std::vector<uint8_t>(MIN_TX_SIZE - coinbaseSize - 1);
     }
 
     pblocktemplate->entries[0].tx = MakeTransactionRef(coinbaseTx);
@@ -443,7 +441,8 @@ void IncrementExtraNonce(CBlock *pblock, const CBlockIndex *pindexPrev,
     unsigned int nHeight = pindexPrev->nHeight + 1;
     CMutableTransaction txCoinbase(*pblock->vtx[0]);
     txCoinbase.vin[0].scriptSig =
-        (CScript() << nHeight << CScriptNum(nExtraNonce)
+        (CScript() << ScriptInt::fromIntUnchecked(nHeight)
+                   << CScriptNum::fromIntUnchecked(nExtraNonce)
                    << getExcessiveBlockSizeSig(nExcessiveBlockSize)) +
         COINBASE_FLAGS;
 
