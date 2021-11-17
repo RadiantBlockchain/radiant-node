@@ -4,15 +4,15 @@
 
 #include <test/lib/transaction_utils.h>
 
-CMutableTransaction BuildCreditingTransaction(const CScript &scriptPubKey,
-                                              const Amount nValue) {
+CMutableTransaction BuildCreditingTransaction(const CScript &scriptPubKey, const Amount nValue) {
     CMutableTransaction txCredit;
     txCredit.nVersion = 1;
     txCredit.nLockTime = 0;
     txCredit.vin.resize(1);
     txCredit.vout.resize(1);
     txCredit.vin[0].prevout = COutPoint();
-    txCredit.vin[0].scriptSig = CScript() << CScriptNum(0) << CScriptNum(0);
+    //Note: Encoding of CScriptNum(0) is the same as encoding ScriptInt::fromIntUnchecked(0) (1-byte: 0x0)
+    txCredit.vin[0].scriptSig = CScript() << ScriptInt::fromIntUnchecked(0) << ScriptInt::fromIntUnchecked(0);
     txCredit.vin[0].nSequence = CTxIn::SEQUENCE_FINAL;
     txCredit.vout[0].scriptPubKey = scriptPubKey;
     txCredit.vout[0].nValue = nValue;
@@ -20,8 +20,7 @@ CMutableTransaction BuildCreditingTransaction(const CScript &scriptPubKey,
     return txCredit;
 }
 
-CMutableTransaction BuildSpendingTransaction(const CScript &scriptSig,
-                                             const CTransaction &txCredit) {
+CMutableTransaction BuildSpendingTransaction(const CScript &scriptSig, const CTransaction &txCredit) {
     CMutableTransaction txSpend;
     txSpend.nVersion = 1;
     txSpend.nLockTime = 0;

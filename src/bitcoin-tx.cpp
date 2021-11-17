@@ -457,8 +457,7 @@ static void MutateTxAddOutData(CMutableTransaction &tx,
     tx.vout.push_back(txout);
 }
 
-static void MutateTxAddOutScript(CMutableTransaction &tx,
-                                 const std::string &strInput) {
+static void MutateTxAddOutScript(CMutableTransaction &tx, const std::string &strInput) {
     // separate VALUE:SCRIPT[:FLAGS]
     std::vector<std::string> vStrInputParts;
     boost::split(vStrInputParts, strInput, boost::is_any_of(":"));
@@ -476,8 +475,8 @@ static void MutateTxAddOutScript(CMutableTransaction &tx,
     // Extract FLAGS
     bool bScriptHash = false;
     if (vStrInputParts.size() == 3) {
-        std::string flags = vStrInputParts.back();
-        bScriptHash = (flags.find('S') != std::string::npos);
+        std::string flags_str = vStrInputParts.back();
+        bScriptHash = (flags_str.find('S') != std::string::npos);
     }
 
     if (scriptPubKey.size() > MAX_SCRIPT_SIZE) {

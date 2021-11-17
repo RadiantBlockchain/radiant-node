@@ -4,6 +4,7 @@
 
 #include <core_io.h>
 
+#include <script/script_flags.h>
 #include <test/setup_common.h>
 
 #include <boost/test/unit_test.hpp>
@@ -26,19 +27,16 @@ BOOST_AUTO_TEST_CASE(parse_hex_test) {
     }
 }
 
-static void PrintLE(std::ostringstream &testString, size_t bytes,
-                    size_t pushLength) {
+static void PrintLE(std::ostringstream &testString, size_t bytes, size_t pushLength) {
     testString << "0x";
     while (bytes != 0) {
-        testString << std::setfill('0') << std::setw(2) << std::hex
-                   << pushLength % 256;
+        testString << std::setfill('0') << std::setw(2) << std::hex << pushLength % 256;
         pushLength /= 256;
         bytes--;
     }
 }
 
-static std::string TestPushOpcode(size_t pushWidth, size_t pushLength,
-                                  size_t actualLength) {
+static std::string TestPushOpcode(size_t pushWidth, size_t pushLength, size_t actualLength) {
     std::ostringstream testString;
 
     switch (pushWidth) {
@@ -99,51 +97,34 @@ BOOST_AUTO_TEST_CASE(parse_push_test) {
     // minimally encoded intentionally -- nor are they being required to be
     // minimally encoded.
     BOOST_CHECK_NO_THROW(ParseScript("PUSHDATA4 0x02000000 0x0101"));
-    BOOST_CHECK_THROW(ParseScript("PUSHDATA4 0x03000000 0x0101"),
-                      std::runtime_error);
-    BOOST_CHECK_THROW(ParseScript("PUSHDATA4 0x02000000 0x010101"),
-                      std::runtime_error);
-    BOOST_CHECK_THROW(ParseScript("PUSHDATA4 0x020000 0x0101"),
-                      std::runtime_error);
-    BOOST_CHECK_THROW(ParseScript("PUSHDATA4 0x0200000000 0x0101"),
-                      std::runtime_error);
+    BOOST_CHECK_THROW(ParseScript("PUSHDATA4 0x03000000 0x0101"), std::runtime_error);
+    BOOST_CHECK_THROW(ParseScript("PUSHDATA4 0x02000000 0x010101"), std::runtime_error);
+    BOOST_CHECK_THROW(ParseScript("PUSHDATA4 0x020000 0x0101"), std::runtime_error);
+    BOOST_CHECK_THROW(ParseScript("PUSHDATA4 0x0200000000 0x0101"), std::runtime_error);
 
     BOOST_CHECK_NO_THROW(ParseScript("PUSHDATA2 0x0200 0x0101"));
-    BOOST_CHECK_THROW(ParseScript("PUSHDATA2 0x0300 0x0101"),
-                      std::runtime_error);
-    BOOST_CHECK_THROW(ParseScript("PUSHDATA2 0x030000 0x0101"),
-                      std::runtime_error);
+    BOOST_CHECK_THROW(ParseScript("PUSHDATA2 0x0300 0x0101"), std::runtime_error);
+    BOOST_CHECK_THROW(ParseScript("PUSHDATA2 0x030000 0x0101"), std::runtime_error);
     BOOST_CHECK_NO_THROW(ParseScript("PUSHDATA1 0x02 0x0101"));
-    BOOST_CHECK_THROW(ParseScript("PUSHDATA1 0x02 0x010101"),
-                      std::runtime_error);
-    BOOST_CHECK_THROW(ParseScript("PUSHDATA1 0x0200 0x010101"),
-                      std::runtime_error);
+    BOOST_CHECK_THROW(ParseScript("PUSHDATA1 0x02 0x010101"), std::runtime_error);
+    BOOST_CHECK_THROW(ParseScript("PUSHDATA1 0x0200 0x010101"), std::runtime_error);
 
     // Ensure pushdata handling is not using 1's complement
     BOOST_CHECK_NO_THROW(ParseScript(TestPushOpcode(1, 0xC8, 0xC8)));
-    BOOST_CHECK_THROW(ParseScript(TestPushOpcode(1, 0xC8, 0xC9)),
-                      std::runtime_error);
+    BOOST_CHECK_THROW(ParseScript(TestPushOpcode(1, 0xC8, 0xC9)), std::runtime_error);
 
     BOOST_CHECK_NO_THROW(ParseScript(TestPushOpcode(2, 0x8000, 0x8000)));
-    BOOST_CHECK_THROW(ParseScript(TestPushOpcode(2, 0x8000, 0x8001)),
-                      std::runtime_error);
-    BOOST_CHECK_THROW(ParseScript(TestPushOpcode(2, 0x8001, 0x8000)),
-                      std::runtime_error);
-    BOOST_CHECK_THROW(ParseScript(TestPushOpcode(2, 0x80, 0x81)),
-                      std::runtime_error);
-    BOOST_CHECK_THROW(ParseScript(TestPushOpcode(2, 0x80, 0x7F)),
-                      std::runtime_error);
+    BOOST_CHECK_THROW(ParseScript(TestPushOpcode(2, 0x8000, 0x8001)), std::runtime_error);
+    BOOST_CHECK_THROW(ParseScript(TestPushOpcode(2, 0x8001, 0x8000)), std::runtime_error);
+    BOOST_CHECK_THROW(ParseScript(TestPushOpcode(2, 0x80, 0x81)), std::runtime_error);
+    BOOST_CHECK_THROW(ParseScript(TestPushOpcode(2, 0x80, 0x7F)), std::runtime_error);
 
     // Can't build something too long.
     BOOST_CHECK_NO_THROW(ParseScript(TestPushOpcode(4, 0x8000, 0x8000)));
-    BOOST_CHECK_THROW(ParseScript(TestPushOpcode(4, 0x8000, 0x8001)),
-                      std::runtime_error);
-    BOOST_CHECK_THROW(ParseScript(TestPushOpcode(4, 0x8001, 0x8000)),
-                      std::runtime_error);
-    BOOST_CHECK_THROW(ParseScript(TestPushOpcode(4, 0x80, 0x81)),
-                      std::runtime_error);
-    BOOST_CHECK_THROW(ParseScript(TestPushOpcode(4, 0x80, 0x7F)),
-                      std::runtime_error);
+    BOOST_CHECK_THROW(ParseScript(TestPushOpcode(4, 0x8000, 0x8001)), std::runtime_error);
+    BOOST_CHECK_THROW(ParseScript(TestPushOpcode(4, 0x8001, 0x8000)), std::runtime_error);
+    BOOST_CHECK_THROW(ParseScript(TestPushOpcode(4, 0x80, 0x81)), std::runtime_error);
+    BOOST_CHECK_THROW(ParseScript(TestPushOpcode(4, 0x80, 0x7F)), std::runtime_error);
 }
 
 void TestFormatRoundTrip(const std::string &script) {
@@ -159,8 +140,7 @@ BOOST_AUTO_TEST_CASE(format_script_test) {
 BOOST_AUTO_TEST_CASE(parse_hash_str) {
     { //uint160
         uint160 expected, parsed;
-        const uint8_t expectedB[] = {11, 7, 174, 137, 172, 8, 44, 53, 28, 68, 166, 150, 72, 157, 105, 93, 215, 100,
-                                     211, 80};
+        const uint8_t expectedB[] = {11, 7, 174, 137, 172, 8, 44, 53, 28, 68, 166, 150, 72, 157, 105, 93, 215, 100, 211, 80};
         std::memcpy(expected.begin(), expectedB, std::min(size_t(expected.size()), sizeof(expectedB)));
         BOOST_CHECK_MESSAGE(ParseHashStr("50d364d75d699d4896a6441c352c08ac89ae070b", parsed) && parsed == expected,
                             "Parsing hash160 should yield the expected result");

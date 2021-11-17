@@ -70,6 +70,9 @@ static_assert(CHAR_BIT == 8, "8-bit bytes assumed");
 static_assert(std::is_same<uint8_t, unsigned char>::value,
               "uint8_t is an alias of unsigned char");
 
+// Assumption: We assume Two's complement representation for negative numbers.
+static_assert(static_cast<int>(0xffffffff) == -1, "Two's complement representation for negative numbers assumed");
+
 // Some important things we are NOT assuming (non-exhaustive list):
 // * We are NOT assuming a specific value for sizeof(std::size_t).
 // * We are NOT assuming a specific value for std::endian::native.

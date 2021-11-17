@@ -34,18 +34,15 @@ struct TestSubscriber : public CValidationInterface {
         BOOST_CHECK_EQUAL(m_expected_tip, pindexNew->GetBlockHash());
     }
 
-    void
-    BlockConnected(const std::shared_ptr<const CBlock> &block,
-                   const CBlockIndex *pindex,
-                   const std::vector<CTransactionRef> &txnConflicted) override {
+    void BlockConnected(const std::shared_ptr<const CBlock> &block, const CBlockIndex *pindex,
+                        const std::vector<CTransactionRef> &txnConflicted) override {
         BOOST_CHECK_EQUAL(m_expected_tip, block->hashPrevBlock);
         BOOST_CHECK_EQUAL(m_expected_tip, pindex->pprev->GetBlockHash());
 
         m_expected_tip = block->GetHash();
     }
 
-    void
-    BlockDisconnected(const std::shared_ptr<const CBlock> &block) override {
+    void BlockDisconnected(const std::shared_ptr<const CBlock> &block) override {
         BOOST_CHECK_EQUAL(m_expected_tip, block->GetHash());
 
         m_expected_tip = block->hashPrevBlock;
@@ -58,7 +55,7 @@ std::shared_ptr<CBlock> Block(const Config &config,
     static uint64_t time = config.GetChainParams().GenesisBlock().nTime;
 
     CScript pubKey;
-    pubKey << i++ << OP_TRUE;
+    pubKey << ScriptInt::fromIntUnchecked(i++) << OP_TRUE;
 
     auto ptemplate = BlockAssembler(config, g_mempool).CreateNewBlock(pubKey);
     auto pblock = std::make_shared<CBlock>(ptemplate->block);

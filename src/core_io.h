@@ -26,8 +26,7 @@ class uint256;
 
 // core_read.cpp
 CScript ParseScript(const std::string &s);
-std::string ScriptToAsmStr(const CScript &script,
-                           const bool fAttemptSighashDecode = false);
+std::string ScriptToAsmStr(const CScript &script, bool fAttemptSighashDecode = false, bool f64BitNums = false);
 [[nodiscard]] bool DecodeHexTx(CMutableTransaction &tx,
                                const std::string &strHexTx);
 [[nodiscard]] bool DecodeHexBlk(CBlock &, const std::string &strHexBlk);
@@ -60,9 +59,9 @@ std::string FormatScript(const CScript &script);
 std::string EncodeHexTx(const CTransaction &tx, const int serializeFlags = 0);
 std::string SighashToStr(uint8_t sighash_type);
 UniValue::Object ScriptPubKeyToUniv(const Config &config, const CScript &scriptPubKey, bool fIncludeHex,
-                                    bool fIncludeP2SH = false);
-UniValue::Object ScriptToUniv(const Config &config, const CScript &script, bool include_address);
+                                    bool fIncludeP2SH = false, bool f64BitNums = false);
+UniValue::Object ScriptToUniv(const Config &config, const CScript &script, bool include_address, bool f64BitNums = false);
 UniValue::Object TxToUniv(const Config &config, const CTransaction &tx, const uint256 &hashBlock, bool include_hex = true,
-                          int serialize_flags = 0);
+                          int serialize_flags = 0, bool f64BitNums = false);
 
 #endif // BITCOIN_CORE_IO_H

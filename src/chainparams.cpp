@@ -30,10 +30,10 @@ static CBlock CreateGenesisBlock(const char *pszTimestamp,
     txNew.vin.resize(1);
     txNew.vout.resize(1);
     txNew.vin[0].scriptSig =
-        CScript() << 486604799 << CScriptNum(4)
+        CScript() << ScriptInt::fromIntUnchecked(486604799)
+                  << CScriptNum::fromIntUnchecked(4)
                   << std::vector<uint8_t>((const uint8_t *)pszTimestamp,
-                                          (const uint8_t *)pszTimestamp +
-                                              strlen(pszTimestamp));
+                                          (const uint8_t *)pszTimestamp + strlen(pszTimestamp));
     txNew.vout[0].nValue = genesisReward;
     txNew.vout[0].scriptPubKey = genesisOutputScript;
 

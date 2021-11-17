@@ -85,8 +85,7 @@ BOOST_AUTO_TEST_CASE(tx_valid) {
                     break;
                 }
                 COutPoint outpoint = buildOutPoint(vinput);
-                mapprevOutScriptPubKeys[outpoint] =
-                    ParseScript(vinput[2].get_str());
+                mapprevOutScriptPubKeys[outpoint] = ParseScript(vinput[2].get_str());
                 if (vinput.size() >= 4) {
                     mapprevOutValues[outpoint] =
                         vinput[3].get_int64() * SATOSHI;
@@ -187,8 +186,7 @@ BOOST_AUTO_TEST_CASE(tx_invalid) {
                     break;
                 }
                 COutPoint outpoint = buildOutPoint(vinput);
-                mapprevOutScriptPubKeys[outpoint] =
-                    ParseScript(vinput[2].get_str());
+                mapprevOutScriptPubKeys[outpoint] = ParseScript(vinput[2].get_str());
                 if (vinput.size() >= 4) {
                     mapprevOutValues[outpoint] =
                         vinput[3].get_int64() * SATOSHI;
@@ -325,19 +323,15 @@ BOOST_AUTO_TEST_CASE(test_Get) {
     t1.vin[0].prevout = COutPoint(dummyTransactions[0].GetId(), 1);
     t1.vin[0].scriptSig << std::vector<uint8_t>(65, 0);
     t1.vin[1].prevout = COutPoint(dummyTransactions[1].GetId(), 0);
-    t1.vin[1].scriptSig << std::vector<uint8_t>(65, 0)
-                        << std::vector<uint8_t>(33, 4);
+    t1.vin[1].scriptSig << std::vector<uint8_t>(65, 0) << std::vector<uint8_t>(33, 4);
     t1.vin[2].prevout = COutPoint(dummyTransactions[1].GetId(), 1);
-    t1.vin[2].scriptSig << std::vector<uint8_t>(65, 0)
-                        << std::vector<uint8_t>(33, 4);
+    t1.vin[2].scriptSig << std::vector<uint8_t>(65, 0) << std::vector<uint8_t>(33, 4);
     t1.vout.resize(2);
     t1.vout[0].nValue = 90 * CENT;
     t1.vout[0].scriptPubKey << OP_1;
 
-    BOOST_CHECK(AreInputsStandard(CTransaction(t1), coins,
-                                  STANDARD_SCRIPT_VERIFY_FLAGS));
-    BOOST_CHECK_EQUAL(coins.GetValueIn(CTransaction(t1)),
-                      (50 + 21 + 22) * CENT);
+    BOOST_CHECK(AreInputsStandard(CTransaction(t1), coins, STANDARD_SCRIPT_VERIFY_FLAGS));
+    BOOST_CHECK_EQUAL(coins.GetValueIn(CTransaction(t1)), (50 + 21 + 22) * CENT);
 }
 
 static void CreateCreditAndSpend(const CKeyStore &keystore,
@@ -804,13 +798,31 @@ BOOST_AUTO_TEST_CASE(test_IsStandard) {
                              << OP_RETURN << ParseHex("00") << ParseHex("01");
     BOOST_CHECK(IsStandardTx(CTransaction(t), reason));
     // OP_RESERVED *is* considered to be a PUSHDATA type opcode by IsPushOnly()!
-    t.vout[0].scriptPubKey = CScript() << OP_RETURN << OP_RESERVED << -1 << 0
-                                       << ParseHex("01") << 2 << 3 << 4 << 5
-                                       << 6 << 7 << 8 << 9 << 10 << 11 << 12
-                                       << 13 << 14 << 15 << 16;
+    t.vout[0].scriptPubKey = CScript() << OP_RETURN << OP_RESERVED
+                                       << ScriptInt::fromIntUnchecked(-1)
+                                       << ScriptInt::fromIntUnchecked(0)
+                                       << ParseHex("01")
+                                       << ScriptInt::fromIntUnchecked(2)
+                                       << ScriptInt::fromIntUnchecked(3)
+                                       << ScriptInt::fromIntUnchecked(4)
+                                       << ScriptInt::fromIntUnchecked(5)
+                                       << ScriptInt::fromIntUnchecked(6)
+                                       << ScriptInt::fromIntUnchecked(7)
+                                       << ScriptInt::fromIntUnchecked(8)
+                                       << ScriptInt::fromIntUnchecked(9)
+                                       << ScriptInt::fromIntUnchecked(10)
+                                       << ScriptInt::fromIntUnchecked(11)
+                                       << ScriptInt::fromIntUnchecked(12)
+                                       << ScriptInt::fromIntUnchecked(13)
+                                       << ScriptInt::fromIntUnchecked(14)
+                                       << ScriptInt::fromIntUnchecked(15)
+                                       << ScriptInt::fromIntUnchecked(16);
     BOOST_CHECK(IsStandardTx(CTransaction(t), reason));
     t.vout[0].scriptPubKey = CScript()
-                             << OP_RETURN << 0 << ParseHex("01") << 2
+                             << OP_RETURN
+                             << ScriptInt::fromIntUnchecked(0)
+                             << ParseHex("01")
+                             << ScriptInt::fromIntUnchecked(2)
                              << ParseHex("fffffffffffffffffffffffffffffffffffff"
                                          "fffffffffffffffffffffffffffffffffff");
     BOOST_CHECK(IsStandardTx(CTransaction(t), reason));
