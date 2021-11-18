@@ -21,11 +21,13 @@ Users who are running v22.x.x or earlier are strongly urged to upgrade to v23.1.
 
 ## Added functionality
 
-...
+ - A new CLI argument `-bytespersigcheck` has been introducted (conf file: `bytespersigcheck`). It is identical
+to the existing argument `-bytespersigop` (which has been deprecated), and the two arguments are now aliases for
+one other.
 
 ## Deprecated functionality
 
-...
+- The CLI argument `-bytespersigop` (conf file: `bytespersigop`) has been deprecated. Use `-bytespersigcheck` instead.
 
 ## Modified functionality
 

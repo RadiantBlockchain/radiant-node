@@ -64,9 +64,9 @@ static constexpr unsigned int DEFAULT_MAX_MEMPOOL_SIZE_PER_MB = 10;
  */
 static constexpr CFeeRate MEMPOOL_FULL_FEE_INCREMENT(1000 * SATOSHI);
 /**
- * Default for -bytespersigop .
+ * Default for -bytespersigocheck.
  */
-static constexpr unsigned int DEFAULT_BYTES_PER_SIGOP = 50;
+static constexpr unsigned int DEFAULT_BYTES_PER_SIGCHECK = 50;
 /**
  * Min feerate for defining dust. Historically this has been the same as the
  * minRelayTxFee, however changing the dust limit changes which transactions are
@@ -141,22 +141,21 @@ bool AreInputsStandard(const CTransaction &tx, const CCoinsViewCache &mapInputs,
                        uint32_t flags);
 
 extern CFeeRate dustRelayFee;
-extern uint32_t nBytesPerSigOp;
+extern uint32_t nBytesPerSigCheck;
 
 /**
- * Compute the virtual transaction size (size, or more if sigops are too
- * dense).
+ * Compute the virtual transaction size (size, or more if sigchecks is too large).
  */
-int64_t GetVirtualTransactionSize(int64_t nSize, int64_t nSigOpCount,
-                                  unsigned int bytes_per_sigop);
-int64_t GetVirtualTransactionSize(const CTransaction &tx, int64_t nSigOpCount,
-                                  unsigned int bytes_per_sigop);
-int64_t GetVirtualTransactionInputSize(const CTxIn &txin, int64_t nSigOpCount,
-                                       unsigned int bytes_per_sigop);
+int64_t GetVirtualTransactionSize(int64_t nSize, int64_t nSigChecks,
+                                  unsigned int bytes_per_sigcheck);
+int64_t GetVirtualTransactionSize(const CTransaction &tx, int64_t nSigChecks,
+                                  unsigned int bytes_per_sigcheck);
+int64_t GetVirtualTransactionInputSize(const CTxIn &txin, int64_t nSigChecks,
+                                       unsigned int bytes_per_sigcheck);
 
 static inline int64_t GetVirtualTransactionSize(int64_t nSize,
-                                                int64_t nSigOpCount) {
-    return GetVirtualTransactionSize(nSize, nSigOpCount, ::nBytesPerSigOp);
+                                                int64_t nSigChecks) {
+    return GetVirtualTransactionSize(nSize, nSigChecks, ::nBytesPerSigCheck);
 }
 
 #endif // BITCOIN_POLICY_POLICY_H

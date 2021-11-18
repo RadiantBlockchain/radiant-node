@@ -29,10 +29,10 @@ static const bool DEFAULT_PRINTPRIORITY = false;
 struct CBlockTemplateEntry {
     CTransactionRef tx;
     Amount fees;
-    int64_t sigOpCount;
+    int64_t sigChecks;
 
-    CBlockTemplateEntry(CTransactionRef _tx, Amount _fees, int64_t _sigOpCount)
-        : tx(_tx), fees(_fees), sigOpCount(_sigOpCount){};
+    CBlockTemplateEntry(CTransactionRef _tx, Amount _fees, int64_t _sigChecks)
+        : tx(_tx), fees(_fees), sigChecks(_sigChecks){};
 };
 
 struct CBlockTemplate {
@@ -59,7 +59,7 @@ private:
     // Information on the current status of the block
     uint64_t nBlockSize;
     uint64_t nBlockTx;
-    uint64_t nBlockSigOps;
+    uint64_t nBlockSigChecks;
     Amount nFees;
 
     // Chain context for the block
@@ -116,7 +116,7 @@ private:
 
     // helper functions for addTxs()
     /** Test if a new Tx would "fit" in the block */
-    bool TestTx(uint64_t txSize, int64_t txSigOpCount) const;
+    bool TestTx(uint64_t txSize, int64_t txSigChecks) const;
 
     /// Check the transaction for finality, etc before adding to block
     bool CheckTx(const CTransaction &tx) const;

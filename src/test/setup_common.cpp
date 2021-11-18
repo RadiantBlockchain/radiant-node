@@ -215,7 +215,7 @@ CTxMemPoolEntry TestMemPoolEntryHelper::FromTx(const CMutableTransaction &tx) {
 }
 
 CTxMemPoolEntry TestMemPoolEntryHelper::FromTx(const CTransactionRef &tx) {
-    CTxMemPoolEntry ret(tx, nFee, nTime, nHeight, spendsCoinbase, nSigOpCount, LockPoints());
+    CTxMemPoolEntry ret(tx, nFee, nTime, nHeight, spendsCoinbase, nSigChecks, LockPoints());
     ret.SetEntryId(entryId);
     return ret;
 }

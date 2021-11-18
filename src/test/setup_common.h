@@ -131,11 +131,11 @@ struct TestMemPoolEntryHelper {
     int64_t nTime;
     unsigned int nHeight;
     bool spendsCoinbase;
-    unsigned int nSigOpCount;
+    unsigned int nSigChecks;
     uint64_t entryId = 0;
 
     TestMemPoolEntryHelper()
-        : nFee(), nTime(0), nHeight(1), spendsCoinbase(false), nSigOpCount(1) {}
+        : nFee(), nTime(0), nHeight(1), spendsCoinbase(false), nSigChecks(1) {}
 
     CTxMemPoolEntry FromTx(const CMutableTransaction &tx);
     CTxMemPoolEntry FromTx(const CTransactionRef &tx);
@@ -157,8 +157,8 @@ struct TestMemPoolEntryHelper {
         spendsCoinbase = _flag;
         return *this;
     }
-    TestMemPoolEntryHelper &SigOpCount(unsigned int _nSigOpCount) {
-        nSigOpCount = _nSigOpCount;
+    TestMemPoolEntryHelper &SigChecks(unsigned int _nSigChecks) {
+        nSigChecks = _nSigChecks;
         return *this;
     }
     TestMemPoolEntryHelper &EntryId(uint64_t _entryId) {

@@ -112,7 +112,7 @@ BlockAssembler::BlockAssembler(const Config &config, const CTxMemPool &_mempool)
 void BlockAssembler::resetBlock() {
     // Reserve space for coinbase tx.
     nBlockSize = 1000;
-    nBlockSigOps = 100;
+    nBlockSigChecks = 100;
 
     // These counters do not include coinbase tx.
     nBlockTx = 0;
@@ -217,15 +217,15 @@ BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn, double timeLimitSe
             checkValidity ? GetSerializeSize(*pblock, PROTOCOL_VERSION)
                           : nBlockSize; // if not checking validity, skip re-serializing the block and estimate the size
 
-    LogPrintf("CreateNewBlock(): %s: %u txs: %u fees: %ld sigops %d\n",
-              checkValidity ? "total size" : "estimated size", nByteSize, nBlockTx, nFees, nBlockSigOps);
+    LogPrintf("CreateNewBlock(): %s: %u txs: %u fees: %ld sigchecks %d\n",
+              checkValidity ? "total size" : "estimated size", nByteSize, nBlockTx, nFees, nBlockSigChecks);
 
     // Fill in header.
     pblock->hashPrevBlock = pindexPrev->GetBlockHash();
     UpdateTime(pblock, consensusParams, pindexPrev);
     pblock->nBits = GetNextWorkRequired(pindexPrev, pblock, consensusParams);
     pblock->nNonce = 0;
-    pblocktemplate->entries[0].sigOpCount = 0;
+    pblocktemplate->entries[0].sigChecks = 0;
 
     if (checkValidity) {
         CValidationState state;
@@ -258,12 +258,12 @@ BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn, double timeLimitSe
     return std::move(pblocktemplate);
 }
 
-bool BlockAssembler::TestTx(uint64_t txSize, int64_t txSigOpCount) const {
+bool BlockAssembler::TestTx(uint64_t txSize, int64_t txSigChecks) const {
     if (nBlockSize + txSize >= nMaxGeneratedBlockSize) {
         return false;
     }
 
-    if (nBlockSigOps + txSigOpCount >= nMaxGeneratedBlockSigChecks) {
+    if (nBlockSigChecks + txSigChecks >= nMaxGeneratedBlockSigChecks) {
         return false;
     }
 
@@ -272,10 +272,10 @@ bool BlockAssembler::TestTx(uint64_t txSize, int64_t txSigOpCount) const {
 
 void BlockAssembler::AddToBlock(CTxMemPool::txiter iter) {
     pblocktemplate->entries.emplace_back(iter->GetSharedTx(), iter->GetFee(),
-                                         iter->GetSigOpCount());
+                                         iter->GetSigChecks());
     nBlockSize += iter->GetTxSize();
     ++nBlockTx;
-    nBlockSigOps += iter->GetSigOpCount();
+    nBlockSigChecks += iter->GetSigChecks();
     nFees += iter->GetFee();
 
     if (fPrintPriority) {
@@ -380,7 +380,7 @@ void BlockAssembler::addTxs(int64_t nLimitTimePoint) {
         }
 
         // Check whether the tx will exceed the block limits.
-        if (!TestTx(iter->GetTxSize(), iter->GetSigOpCount())) {
+        if (!TestTx(iter->GetTxSize(), iter->GetSigChecks())) {
             ++nConsecutiveFailed;
             if (nConsecutiveFailed > MAX_CONSECUTIVE_FAILURES && nBlockSize > nMaxGeneratedBlockSize - 1000) {
                 // Give up if we're close to full and haven't succeeded in a while.

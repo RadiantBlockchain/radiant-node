@@ -972,10 +972,14 @@ void SetupServerArgs() {
                   CURRENCY_UNIT, FormatMoney(DUST_RELAY_TX_FEE)),
         ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::NODE_RELAY);
 
-    gArgs.AddArg("-bytespersigop=<n>",
-                 strprintf("Equivalent bytes per sigop in transactions for "
+    gArgs.AddArg("-bytespersigcheck=<n>",
+                 strprintf("Equivalent bytes per sigcheck in transactions for "
                            "relay and mining (default: %u)",
-                           DEFAULT_BYTES_PER_SIGOP),
+                           DEFAULT_BYTES_PER_SIGCHECK),
+                 ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::NODE_RELAY);
+    gArgs.AddArg("-bytespersigop=<n>",
+                 strprintf("(Deprecated) Alias for -bytespersigcheck (default: %u)",
+                           DEFAULT_BYTES_PER_SIGCHECK),
                  ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::NODE_RELAY);
     gArgs.AddArg("-datacarriersize=<n>",
                  strprintf("Maximum total size of OP_RETURN output scripts in a single transaction "
@@ -1958,7 +1962,16 @@ bool AppInitParameterInteraction(Config &config) {
             strprintf("acceptnonstdtxn is not currently supported for %s chain",
                       chainparams.NetworkIDString()));
     }
-    nBytesPerSigOp = gArgs.GetArg("-bytespersigop", nBytesPerSigOp);
+
+    // -bytespersigcheck. Note that for legacy reasons we also support -bytespersigop, so
+    // we must treat the two as aliases of each other.
+    if (gArgs.IsArgSet("-bytespersigcheck") && gArgs.IsArgSet("-bytespersigop")) {
+        return InitError("bytespersigcheck and bytespersigop may not both be specified at the same time");
+    } else if (gArgs.IsArgSet("-bytespersigcheck")) {
+        nBytesPerSigCheck = gArgs.GetArg("-bytespersigcheck", nBytesPerSigCheck);
+    } else if (gArgs.IsArgSet("-bytespersigop")) {
+        nBytesPerSigCheck = gArgs.GetArg("-bytespersigop", nBytesPerSigCheck);
+    }
 
     if (!g_wallet_init_interface.ParameterInteraction()) {
         return false;

@@ -3662,7 +3662,7 @@
         <translation>Não manter transações na mempool por mais que &lt;n&gt; horas (padrão: %u)</translation>
     </message>
     <message>
-        <source>Equivalent bytes per sigop in transactions for relay and mining (default: %u)</source>
+        <source>Equivalent bytes per sigcheck in transactions for relay and mining (default: %u)</source>
         <translation>Número mínimo de bytes por assinatura em transações que transmitimos e mineramos (default: %u)</translation>
     </message>
     <message>
