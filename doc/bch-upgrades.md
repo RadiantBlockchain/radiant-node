@@ -60,6 +60,10 @@ Network upgrades
 * **[May 15th 2021](https://upgradespecs.bitcoincashnode.org/2021-05-15-upgrade/)** (*Tachyon*) upgrade implementation completed in v23.0.0:
     * [Unconfirmed transaction chain limit](https://upgradespecs.bitcoincashnode.org/unconfirmed-transaction-chain-limit/) is removed in v23.0.0 ([MR!1130](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/merge_requests/1130)).
     * [Multiple OP_RETURN outputs](https://upgradespecs.bitcoincashnode.org/CHIP-2021-03-12_Multiple_OP_RETURN_for_Bitcoin_Cash/) are allowed in v23.0.0 ([MR!1115](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/merge_requests/1115)).
+* **[May 15th 2022](https://upgradespecs.bitcoincashnode.org/2022-05-15-upgrade/)** (*Upgrade 8*) upgrade implementation completed in v24.0.0:
+    * [CHIP-2021-03: Bigger Script Integers](https://gitlab.com/GeneralProtocols/research/chips/-/blob/master/CHIP-2021-02-Bigger-Script-Integers.md) v1.0 is implemented in v24.0.0 ([MR!1253](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/merge_requests/1253)).
+    * [CHIP-2021-02: Native Introspection Opcodes](https://gitlab.com/GeneralProtocols/research/chips/-/blob/master/CHIP-2021-02-Add-Native-Introspection-Opcodes.md) v1.1.3 is implemented in v24.0.0 ([MR!1208](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/merge_requests/1208)).
+    * [BIP-0069: Lexicographical Indexing of Transaction Inputs and Outputs](https://github.com/bitcoin/bips/blob/master/bip-0069.mediawiki) is implemented in v24.0.0 ([MR!1260](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/merge_requests/1260)).
 
 Other
 -----
