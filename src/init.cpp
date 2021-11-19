@@ -535,8 +535,8 @@ void SetupServerArgs() {
         "-expire",
         strprintf(
             "Limit functionality of this node after the tentative upgrade "
-            "date of May 15, 2022 (date can be set with "
-            "-upgrade8activationtime=<n>). To avoid inadvertently using the "
+            "date of May 15, 2023 (date can be set with "
+            "-upgrade9activationtime=<n>). To avoid inadvertently using the "
             "wrong chain, the RPC interface will be disabled at that time. "
             "(default: %d)", software_outdated::DEFAULT_EXPIRE),
         ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
@@ -931,10 +931,16 @@ void SetupServerArgs() {
         ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::DEBUG_TEST);
     gArgs.AddArg(
         "-upgrade8activationtime=<n>",
-        strprintf("Activation time of the tentative May 2022 Bitcoin Cash Network Upgrade (<n> seconds since epoch, "
+        strprintf("Activation time of the May 2022 Bitcoin Cash Network Upgrade (<n> seconds since epoch, "
                   "default: %d)",
                   defaultChainParams->GetConsensus().upgrade8ActivationTime),
         ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::DEBUG_TEST);
+    gArgs.AddArg(
+        "-upgrade9activationtime=<n>",
+        strprintf("Activation time of the tentative May 2023 Bitcoin Cash Network Upgrade (<n> seconds since epoch, "
+                  "default: %d)",
+                  defaultChainParams->GetConsensus().upgrade9ActivationTime),
+        true, OptionsCategory::DEBUG_TEST);
     gArgs.AddArg(
         "-printtoconsole",
         "Send trace/debug info to console instead of debug.log file (default: "
@@ -2182,9 +2188,9 @@ bool AppInitMain(Config &config, RPCServer &rpcServer,
      * Set up the "software outdated" mechanism.
      */
     if (gArgs.GetBoolArg("-expire", software_outdated::DEFAULT_EXPIRE)) {
-        // The software outdated warning will start to happen 30 days before May 15th, 2022.
-        software_outdated::nTime = gArgs.GetArg("-upgrade8activationtime",
-                                                chainparams.GetConsensus().upgrade8ActivationTime);
+        // The software outdated warning will start to happen 30 days before May 15th, 2023.
+        software_outdated::nTime = gArgs.GetArg("-upgrade9activationtime",
+                                                chainparams.GetConsensus().upgrade9ActivationTime);
         if (software_outdated::nTime > 0) {
             software_outdated::fDisableRPCOnExpiry =
                     gArgs.GetBoolArg("-expirerpc", software_outdated::DEFAULT_EXPIRE_RPC);
