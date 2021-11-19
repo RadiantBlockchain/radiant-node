@@ -24,10 +24,13 @@
 #include <rpc/blockchain.h>
 
 #include <array>
+#include <cassert>
 #include <thread>
 #include <vector>
 
-UniValue CallRPC(const std::string &args)
+UniValue CallRPC(const std::string &strMethod, bool multithreaded = false); // fwd decl to declare default arg.
+
+UniValue CallRPC(const std::string &args, bool multithreaded)
 {
     std::vector<std::string> vArgs;
     boost::split(vArgs, args, boost::is_any_of(" \t"));
@@ -38,7 +41,13 @@ UniValue CallRPC(const std::string &args)
     request.strMethod = strMethod;
     request.params = RPCConvertValues(strMethod, vArgs);
     request.fHelp = false;
-    BOOST_CHECK(tableRPC[strMethod]);
+    if (!multithreaded) {
+        BOOST_CHECK(tableRPC[strMethod]);
+    } else {
+        // In a multi-threaded env, it's not safe to rely on BOOST_CHECK() since that may modify global state
+        // in a potentially unguarded way.  See issue #345. So, instead, we will just trap and abort here.
+        assert(tableRPC[strMethod]);
+    }
     try {
         return tableRPC[strMethod]->call(config, request);
     } catch (const JSONRPCError &error) {
@@ -596,7 +605,7 @@ BOOST_AUTO_TEST_CASE(rpc_submitblock_parallel) {
         threads.emplace_back([&hex = dummy_blocks_hex[i % dummy_blocks_hex.size()], &res = results[i]]{
              for (size_t j = 0; j < n_iters_per_thread; ++j) {
                  // push results -- we do this to avoid doing unsafe BOOST_CHECK_EQUAL in a thread
-                 res.push_back(CallRPC("submitblock " + hex));
+                 res.push_back(CallRPC("submitblock " + hex, true /* multithreaded */));
              }
         });
     }
