@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -36,12 +37,12 @@
 #include <utility>
 
 CTxMemPoolEntry::CTxMemPoolEntry(const CTransactionRef &_tx, const Amount _nFee,
-                                 int64_t _nTime, unsigned int _entryHeight,
+                                 int64_t _nTime,
                                  bool _spendsCoinbase, int64_t _sigChecks,
                                  LockPoints lp)
     : tx(_tx), nFee(_nFee), nTxSize(tx->GetTotalSize()),
       nUsageSize(RecursiveDynamicUsage(tx)), nTime(_nTime),
-      entryHeight(_entryHeight), spendsCoinbase(_spendsCoinbase),
+      spendsCoinbase(_spendsCoinbase),
       sigChecks(_sigChecks), lockPoints(lp) {
 
     feeDelta = Amount::zero();
@@ -1140,8 +1141,8 @@ void DisconnectedBlockTransactions::importMempool(CTxMemPool &pool) {
         txInfo.reserve(pool.mapTx.size());
         for (const CTxMemPoolEntry &e : pool.mapTx.get<entry_id>()) {
             vtx.push_back(e.GetSharedTx());
-            // save entry time, feeDelta, and height for use in updateMempoolForReorg()
-            txInfo.try_emplace(e.GetTx().GetId(), e.GetTime(), e.GetModifiedFee() - e.GetFee(), e.GetHeight());
+            // save entry time and feeDelta for use in updateMempoolForReorg()
+            txInfo.try_emplace(e.GetTx().GetId(), e.GetTime(), e.GetModifiedFee() - e.GetFee());
             // notify all observers of this (possibly temporary) removal
             pool.NotifyEntryRemoved(e.GetSharedTx(), MemPoolRemovalReason::REORG);
         }
@@ -1203,8 +1204,7 @@ void DisconnectedBlockTransactions::updateMempoolForReorg(const Config &config,
                                                  ptxInfo ? ptxInfo->time : GetTime() /* nAcceptTime */,
                                                  true /* bypass_limits */,
                                                  Amount::zero() /* nAbsurdFee */,
-                                                 false /* test_accept */,
-                                                 ptxInfo ? ptxInfo->height : 0 /* heightOverride */);
+                                                 false /* test_accept */);
             if (!ok && hasFeeDelta) {
                 // tx not accepted: undo mapDelta insertion from above
                 LOCK(g_mempool.cs);

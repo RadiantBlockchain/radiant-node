@@ -1,4 +1,5 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
+// Copyright (c) 2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -46,7 +47,6 @@ BOOST_AUTO_TEST_CASE(MempoolMinimumFeeEstimate) {
             mpool.addUnchecked(
                 entry.Fee((j + 1) * DEFAULT_BLOCK_MIN_TX_FEE_PER_KB)
                     .Time(GetTime())
-                    .Height(blocknum)
                     .FromTx(tx));
             CTransactionRef ptx = mpool.get(txid);
             block.push_back(ptx);
@@ -81,7 +81,6 @@ BOOST_AUTO_TEST_CASE(MempoolMinimumFeeEstimate) {
         // DEFAULT_BLOCK_MIN_TX_FEE_PER_KB
         mpool.addUnchecked(entry.Fee((i + 1) * DEFAULT_BLOCK_MIN_TX_FEE_PER_KB)
                                .Time(GetTime())
-                               .Height(blocknum)
                                .FromTx(tx));
     }
 

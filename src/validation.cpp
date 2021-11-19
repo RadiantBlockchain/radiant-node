@@ -1,6 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2018 The Bitcoin Core developers
-// Copyright (c) 2017-2020 The Bitcoin developers
+// Copyright (c) 2017-2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -510,7 +510,7 @@ AcceptToMemoryPoolWorker(const Config &config, CTxMemPool &pool,
                          bool *pfMissingInputs, int64_t nAcceptTime,
                          bool bypass_limits, const Amount nAbsurdFee,
                          std::vector<COutPoint> &coins_to_uncache,
-                         bool test_accept, unsigned heightOverride = 0) EXCLUSIVE_LOCKS_REQUIRED(cs_main) {
+                         bool test_accept) EXCLUSIVE_LOCKS_REQUIRED(cs_main) {
     AssertLockHeld(cs_main);
 
     const Consensus::Params &consensusParams =
@@ -729,8 +729,7 @@ AcceptToMemoryPoolWorker(const Config &config, CTxMemPool &pool,
             return false;
         }
 
-        CTxMemPoolEntry entry(ptx, nFees, nAcceptTime, heightOverride ? heightOverride : ::ChainActive().Height(),
-                              fSpendsCoinbase, nSigChecksStandard, lp);
+        CTxMemPoolEntry entry(ptx, nFees, nAcceptTime, fSpendsCoinbase, nSigChecksStandard, lp);
 
         unsigned int nVirtualSize = entry.GetTxVirtualSize();
 
@@ -869,12 +868,12 @@ AcceptToMemoryPoolWithTime(const Config &config, CTxMemPool &pool,
                            CValidationState &state, const CTransactionRef &tx,
                            bool *pfMissingInputs, int64_t nAcceptTime,
                            bool bypass_limits, const Amount nAbsurdFee,
-                           bool test_accept, unsigned heightOverride) EXCLUSIVE_LOCKS_REQUIRED(cs_main) {
+                           bool test_accept) EXCLUSIVE_LOCKS_REQUIRED(cs_main) {
     AssertLockHeld(cs_main);
     std::vector<COutPoint> coins_to_uncache;
     bool res = AcceptToMemoryPoolWorker(
         config, pool, state, tx, pfMissingInputs, nAcceptTime, bypass_limits,
-        nAbsurdFee, coins_to_uncache, test_accept, heightOverride);
+        nAbsurdFee, coins_to_uncache, test_accept);
     if (!res) {
         for (const COutPoint &outpoint : coins_to_uncache) {
             pcoinsTip->Uncache(outpoint);
