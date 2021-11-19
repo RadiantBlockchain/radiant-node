@@ -166,15 +166,14 @@ static CScript PushAll(const std::vector<valtype> &values) {
 
 bool ProduceSignature(const SigningProvider &provider,
                       const BaseSignatureCreator &creator,
-                      const CScript &fromPubKey, SignatureData &sigdata) {
+                      const CScript &fromPubKey, SignatureData &sigdata, ScriptExecutionContextOpt const& context) {
     if (sigdata.complete) {
         return true;
     }
 
     std::vector<valtype> result;
     txnouttype whichType;
-    bool solved =
-        SignStep(provider, creator, fromPubKey, result, whichType, sigdata);
+    bool solved = SignStep(provider, creator, fromPubKey, result, whichType, sigdata);
     CScript subscript;
 
     if (solved && whichType == TX_SCRIPTHASH) {
@@ -184,19 +183,17 @@ bool ProduceSignature(const SigningProvider &provider,
         subscript = CScript(result[0].begin(), result[0].end());
         sigdata.redeem_script = subscript;
 
-        solved = SignStep(provider, creator, subscript, result, whichType,
-                          sigdata) &&
-                 whichType != TX_SCRIPTHASH;
-        result.push_back(
-            std::vector<uint8_t>(subscript.begin(), subscript.end()));
+        solved = SignStep(provider, creator, subscript, result, whichType, sigdata) &&
+            whichType != TX_SCRIPTHASH;
+        result.push_back(std::vector<uint8_t>(subscript.begin(), subscript.end()));
     }
 
     sigdata.scriptSig = PushAll(result);
 
     // Test solution
-    sigdata.complete =
-        solved && VerifyScript(sigdata.scriptSig, fromPubKey,
-                               STANDARD_SCRIPT_VERIFY_FLAGS, creator.Checker());
+    sigdata.complete = solved &&
+        VerifyScript(sigdata.scriptSig, fromPubKey, STANDARD_SCRIPT_VERIFY_FLAGS, creator.Checker(), context);
+
     return sigdata.complete;
 }
 
@@ -234,10 +231,10 @@ struct Stacks {
 
     Stacks() = delete;
     Stacks(const Stacks &) = delete;
-    explicit Stacks(const SignatureData &data) {
+
+    Stacks(const SignatureData &data, ScriptExecutionContextOpt const& context) {
         if (data.scriptSig.IsPushOnly()) {
-            EvalScript(script, data.scriptSig, SCRIPT_VERIFY_NONE,
-                       BaseSignatureChecker());
+            EvalScript(script, data.scriptSig, SCRIPT_VERIFY_NONE, BaseSignatureChecker(), context);
         }
     }
 };
@@ -245,18 +242,18 @@ struct Stacks {
 
 // Extracts signatures and scripts from incomplete scriptSigs. Please do not
 // extend this, use PSBT instead
-SignatureData DataFromTransaction(const CMutableTransaction &tx,
-                                  unsigned int nIn, const CTxOut &txout) {
+SignatureData DataFromTransaction(const CMutableTransaction &tx, unsigned int nIn, const CTxOut &txout,
+                                  const ScriptExecutionContextOpt &context) {
     SignatureData data;
     assert(tx.vin.size() > nIn);
     data.scriptSig = tx.vin[nIn].scriptSig;
-    Stacks stack(data);
+    Stacks stack(data, context);
 
     // Get signatures
     MutableTransactionSignatureChecker tx_checker(&tx, nIn, txout.nValue);
     SignatureExtractorChecker extractor_checker(data, tx_checker);
-    if (VerifyScript(data.scriptSig, txout.scriptPubKey,
-                     STANDARD_SCRIPT_VERIFY_FLAGS, extractor_checker)) {
+
+    if (VerifyScript(data.scriptSig, txout.scriptPubKey, STANDARD_SCRIPT_VERIFY_FLAGS, extractor_checker, context)) {
         data.complete = true;
         return data;
     }
@@ -322,27 +319,26 @@ void SignatureData::MergeSignatureData(SignatureData sigdata) {
 
 bool SignSignature(const SigningProvider &provider, const CScript &fromPubKey,
                    CMutableTransaction &txTo, unsigned int nIn,
-                   const Amount amount, SigHashType sigHashType) {
+                   const Amount amount, SigHashType sigHashType, ScriptExecutionContextOpt const& context) {
     assert(nIn < txTo.vin.size());
 
     MutableTransactionSignatureCreator creator(&txTo, nIn, amount, sigHashType);
 
     SignatureData sigdata;
-    bool ret = ProduceSignature(provider, creator, fromPubKey, sigdata);
+    bool ret = ProduceSignature(provider, creator, fromPubKey, sigdata, context);
     UpdateInput(txTo.vin.at(nIn), sigdata);
     return ret;
 }
 
 bool SignSignature(const SigningProvider &provider, const CTransaction &txFrom,
                    CMutableTransaction &txTo, unsigned int nIn,
-                   SigHashType sigHashType) {
+                   SigHashType sigHashType, ScriptExecutionContextOpt const& context) {
     assert(nIn < txTo.vin.size());
     CTxIn &txin = txTo.vin[nIn];
     assert(txin.prevout.GetN() < txFrom.vout.size());
     const CTxOut &txout = txFrom.vout[txin.prevout.GetN()];
 
-    return SignSignature(provider, txout.scriptPubKey, txTo, nIn, txout.nValue,
-                         sigHashType);
+    return SignSignature(provider, txout.scriptPubKey, txTo, nIn, txout.nValue, sigHashType, context);
 }
 
 namespace {
@@ -399,14 +395,11 @@ bool LookupHelper(const M &map, const K &key, V &value) {
 
 } // namespace
 
-const BaseSignatureCreator &DUMMY_SIGNATURE_CREATOR =
-    DummySignatureCreator(32, 32);
-const BaseSignatureCreator &DUMMY_MAXIMUM_SIGNATURE_CREATOR =
-    DummySignatureCreator(33, 32);
+const BaseSignatureCreator &DUMMY_SIGNATURE_CREATOR = DummySignatureCreator(32, 32);
+const BaseSignatureCreator &DUMMY_MAXIMUM_SIGNATURE_CREATOR = DummySignatureCreator(33, 32);
 const SigningProvider &DUMMY_SIGNING_PROVIDER = SigningProvider();
 
-bool HidingSigningProvider::GetCScript(const CScriptID &scriptid,
-                                       CScript &script) const {
+bool HidingSigningProvider::GetCScript(const CScriptID &scriptid, CScript &script) const {
     return m_provider->GetCScript(scriptid, script);
 }
 
@@ -430,24 +423,20 @@ bool HidingSigningProvider::GetKeyOrigin(const CKeyID &keyid,
     return m_provider->GetKeyOrigin(keyid, info);
 }
 
-bool FlatSigningProvider::GetCScript(const CScriptID &scriptid,
-                                     CScript &script) const {
+bool FlatSigningProvider::GetCScript(const CScriptID &scriptid, CScript &script) const {
     return LookupHelper(scripts, scriptid, script);
 }
-bool FlatSigningProvider::GetPubKey(const CKeyID &keyid,
-                                    CPubKey &pubkey) const {
+bool FlatSigningProvider::GetPubKey(const CKeyID &keyid, CPubKey &pubkey) const {
     return LookupHelper(pubkeys, keyid, pubkey);
 }
-bool FlatSigningProvider::GetKeyOrigin(const CKeyID &keyid,
-                                       KeyOriginInfo &info) const {
+bool FlatSigningProvider::GetKeyOrigin(const CKeyID &keyid, KeyOriginInfo &info) const {
     return LookupHelper(origins, keyid, info);
 }
 bool FlatSigningProvider::GetKey(const CKeyID &keyid, CKey &key) const {
     return LookupHelper(keys, keyid, key);
 }
 
-FlatSigningProvider Merge(const FlatSigningProvider &a,
-                          const FlatSigningProvider &b) {
+FlatSigningProvider Merge(const FlatSigningProvider &a, const FlatSigningProvider &b) {
     FlatSigningProvider ret;
     ret.scripts = a.scripts;
     ret.scripts.insert(b.scripts.begin(), b.scripts.end());
@@ -458,17 +447,15 @@ FlatSigningProvider Merge(const FlatSigningProvider &a,
     return ret;
 }
 
-bool IsSolvable(const SigningProvider &provider, const CScript &script) {
+bool IsSolvable(const SigningProvider &provider, const CScript &script, ScriptExecutionContextOpt const& context) {
     // This check is to make sure that the script we created can actually be
     // solved for and signed by us if we were to have the private keys. This is
     // just to make sure that the script is valid and that, if found in a
     // transaction, we would still accept and relay that transaction.
     SignatureData sigs;
-    if (ProduceSignature(provider, DUMMY_SIGNATURE_CREATOR, script, sigs)) {
+    if (ProduceSignature(provider, DUMMY_SIGNATURE_CREATOR, script, sigs, context)) {
         // VerifyScript check is just defensive, and should never fail.
-        bool verified =
-            VerifyScript(sigs.scriptSig, script, STANDARD_SCRIPT_VERIFY_FLAGS,
-                         DUMMY_CHECKER);
+        bool verified = VerifyScript(sigs.scriptSig, script, STANDARD_SCRIPT_VERIFY_FLAGS, DUMMY_CHECKER, context);
         assert(verified);
         return true;
     }

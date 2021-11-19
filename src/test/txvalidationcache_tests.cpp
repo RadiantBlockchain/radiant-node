@@ -412,20 +412,24 @@ BOOST_FIXTURE_TEST_CASE(checkinputs_test, TestChain100Setup) {
         // Sign
         {
             SignatureData sigdata;
+
+            auto const context = std::nullopt; // No introspection necessary (p2pk)
+
             BOOST_CHECK(ProduceSignature(
                 keystore,
-                MutableTransactionSignatureCreator(&tx, 0, 11 * CENT,
-                                                   SigHashType().withForkId()),
-                spend_tx.vout[0].scriptPubKey, sigdata));
+                MutableTransactionSignatureCreator(&tx, 0, 11 * CENT, SigHashType().withForkId()),
+                spend_tx.vout[0].scriptPubKey, sigdata, context));
             UpdateInput(tx.vin[0], sigdata);
         }
         {
             SignatureData sigdata;
+
+            auto const context = std::nullopt; // No introspection necessary (simple p2sh that wraps p2pk)
+
             BOOST_CHECK(ProduceSignature(
                 keystore,
-                MutableTransactionSignatureCreator(&tx, 1, 11 * CENT,
-                                                   SigHashType().withForkId()),
-                spend_tx.vout[3].scriptPubKey, sigdata));
+                MutableTransactionSignatureCreator(&tx, 1, 11 * CENT, SigHashType().withForkId()),
+                spend_tx.vout[3].scriptPubKey, sigdata, context));
             UpdateInput(tx.vin[1], sigdata);
         }
 

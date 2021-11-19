@@ -290,7 +290,7 @@ BOOST_FIXTURE_TEST_CASE(dsproof_doublespend_mempool, TestChain100Setup) {
         spend.vout[0].nValue = int64_t(GetRand(1'000)) * CENT;
         spend.vout[0].scriptPubKey = scriptPubKey;
         // Sign:
-        const auto ok = SignSignature(provider, *tx, spend, 0, SigHashType().withForkId());
+        const auto ok = SignSignature(provider, *tx, spend, 0, SigHashType().withForkId(), {} /* context */);
         BOOST_CHECK(ok);
         // Also a tx spending a p2pk cannot have a dsproof
         BOOST_CHECK(!DoubleSpendProof::checkIsProofPossibleForAllInputsOfTx(g_mempool, CTransaction{spend}));
@@ -315,6 +315,7 @@ BOOST_FIXTURE_TEST_CASE(dsproof_doublespend_mempool, TestChain100Setup) {
     // Create 100 double-spend pairs of mature coinbase txn:
     std::vector<CMutableTransaction> spends;
     spends.resize(2 * COINBASE_MATURITY);
+    auto const context = std::nullopt;
     for (size_t i = 0; i < spends.size(); ++i) {
         const auto &cbTxRef = m_coinbase_txns.at(firstTxIdx + i/2);
         spends[i].nVersion = 1;
@@ -325,7 +326,7 @@ BOOST_FIXTURE_TEST_CASE(dsproof_doublespend_mempool, TestChain100Setup) {
         spends[i].vout[0].scriptPubKey = scriptPubKey;
 
         // Sign:
-        const auto ok = SignSignature(provider, *cbTxRef, spends[i], 0, SigHashType().withForkId());
+        const auto ok = SignSignature(provider, *cbTxRef, spends[i], 0, SigHashType().withForkId(), context);
         BOOST_CHECK(ok);
     }
 
@@ -528,10 +529,10 @@ BOOST_FIXTURE_TEST_CASE(dsproof_recursive_search_mempool, TestChain100Setup) {
     g_mempool.clear(); // ensure mempool is clean
     BOOST_CHECK_EQUAL(g_mempool.doubleSpendProofStorage()->size(), 0u);
 
-
     // Create 5 double-spend pairs of mature coinbase txn:
     std::vector<CMutableTransaction> spends;
     spends.resize(2 * 5 /* 5 pairs */);
+    auto const context = std::nullopt;
     for (size_t i = 0; i < spends.size(); ++i) {
         const auto &cbTxRef = m_coinbase_txns.at(firstTxIdx + i/2);
         spends[i].nVersion = 1;
@@ -545,7 +546,7 @@ BOOST_FIXTURE_TEST_CASE(dsproof_recursive_search_mempool, TestChain100Setup) {
         spends[i].vout[1].scriptPubKey = scriptPubKey;
 
         // Sign:
-        const auto ok = SignSignature(provider, *cbTxRef, spends[i], 0, SigHashType().withForkId());
+        const auto ok = SignSignature(provider, *cbTxRef, spends[i], 0, SigHashType().withForkId(), context);
         BOOST_CHECK(ok);
     }
     size_t nokCt = 0, okCt = 0;
@@ -593,7 +594,7 @@ BOOST_FIXTURE_TEST_CASE(dsproof_recursive_search_mempool, TestChain100Setup) {
 
             // Sign:
             for (size_t n = 0; n < tx.vin.size(); ++n) {
-                const auto ok = SignSignature(provider, *parent, tx, n, SigHashType().withForkId());
+                const auto ok = SignSignature(provider, *parent, tx, n, SigHashType().withForkId(), context);
                 BOOST_CHECK(ok);
             }
             l.emplace_back();

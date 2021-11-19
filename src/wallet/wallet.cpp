@@ -1644,10 +1644,12 @@ bool CWallet::DummySignInput(CTxIn &tx_in, const CTxOut &txout,
     const CScript &scriptPubKey = txout.scriptPubKey;
     SignatureData sigdata;
 
-    if (!ProduceSignature(*this,
+    auto const context = std::nullopt; // No introspection necessary here
+
+    if ( ! ProduceSignature(*this,
                           use_max_sig ? DUMMY_MAXIMUM_SIGNATURE_CREATOR
                                       : DUMMY_SIGNATURE_CREATOR,
-                          scriptPubKey, sigdata)) {
+                          scriptPubKey, sigdata, context)) {
         return false;
     }
 
@@ -2557,7 +2559,8 @@ void CWallet::AvailableCoins(interfaces::Chain::Lock &locked_chain,
                 continue;
             }
 
-            bool solvable = IsSolvable(*this, pcoin->tx->vout[i].scriptPubKey);
+            auto const context = std::nullopt; // No introspection for wallet coins & scripts
+            bool solvable = IsSolvable(*this, pcoin->tx->vout[i].scriptPubKey, context);
             bool spendable =
                 ((mine & ISMINE_SPENDABLE) != ISMINE_NO) ||
                 (((mine & ISMINE_WATCH_ONLY) != ISMINE_NO) &&
@@ -2845,10 +2848,12 @@ bool CWallet::SignTransaction(CMutableTransaction &tx) {
         const Amount amount = mi->second.tx->vout[input.prevout.GetN()].nValue;
         SignatureData sigdata;
         SigHashType sigHashType = SigHashType().withForkId();
-        if (!ProduceSignature(*this,
-                              MutableTransactionSignatureCreator(
-                                  &tx, nIn, amount, sigHashType),
-                              scriptPubKey, sigdata)) {
+
+        auto const context = std::nullopt; // No introspection for wallet coins (wallet cannot sign smart contracts)
+
+        if ( ! ProduceSignature(*this,
+                              MutableTransactionSignatureCreator(&tx, nIn, amount, sigHashType),
+                              scriptPubKey, sigdata, context)) {
             return false;
         }
         UpdateInput(input, sigdata);
@@ -3390,11 +3395,12 @@ CreateTransactionResult CWallet::CreateTransaction(
                 const CScript &scriptPubKey = coin.txout.scriptPubKey;
                 SignatureData sigdata;
 
-                if (!ProduceSignature(
+                auto const context = std::nullopt; // No introspection for wallet coins (no smart contracts in wallet)
+
+                if ( ! ProduceSignature(
                         *this,
-                        MutableTransactionSignatureCreator(
-                            &txNew, nIn, coin.txout.nValue, sigHashType),
-                        scriptPubKey, sigdata)) {
+                        MutableTransactionSignatureCreator(&txNew, nIn, coin.txout.nValue, sigHashType),
+                        scriptPubKey, sigdata, context)) {
                     strFailReason = _("Signing transaction failed");
                     return CreateTransactionResult::CT_ERROR;
                 }

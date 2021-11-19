@@ -44,9 +44,10 @@ void test_one_input(std::vector<uint8_t> buffer) {
                                                       txdata};
 
             ScriptError serror;
+            auto const null_context = std::nullopt;
             const bool ret =
                 VerifyScript(tx.vin.at(i).scriptSig, prevout.scriptPubKey,
-                             verify_flags, checker, &serror);
+                             verify_flags, checker, null_context, &serror);
             assert(ret == (serror == ScriptError::OK));
 
             // Verify that removing flags from a passing test or adding flags to
@@ -63,7 +64,7 @@ void test_one_input(std::vector<uint8_t> buffer) {
             ScriptError serror_fuzzed;
             const bool ret_fuzzed =
                 VerifyScript(tx.vin.at(i).scriptSig, prevout.scriptPubKey,
-                             verify_flags, checker, &serror_fuzzed);
+                             verify_flags, checker, null_context, &serror_fuzzed);
             assert(ret_fuzzed == (serror_fuzzed == ScriptError::OK));
 
             assert(ret_fuzzed == ret);

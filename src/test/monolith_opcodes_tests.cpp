@@ -21,26 +21,27 @@ std::array<uint32_t, 3> flagset{{0, STANDARD_SCRIPT_VERIFY_FLAGS}};
 /**
  * General utility functions to check for script passing/failing.
  */
-static void CheckTestResultForAllFlags(const stacktype &original_stack,
-                                       const CScript &script,
-                                       const stacktype &expected) {
+static
+void CheckTestResultForAllFlags(const stacktype &original_stack, const CScript &script, const stacktype &expected) {
     BaseSignatureChecker sigchecker;
+    auto const null_context = std::nullopt;
 
     for (uint32_t flags : flagset) {
         ScriptError err = ScriptError::OK;
         stacktype stack{original_stack};
-        bool r = EvalScript(stack, script, flags, sigchecker, &err);
+        bool r = EvalScript(stack, script, flags, sigchecker, null_context, &err);
         BOOST_CHECK(r);
         BOOST_CHECK(stack == expected);
     }
 }
 
-static void CheckError(uint32_t flags, const stacktype &original_stack,
-                       const CScript &script, ScriptError expected_error) {
+static
+void CheckError(uint32_t flags, const stacktype &original_stack, const CScript &script, ScriptError expected_error) {
     BaseSignatureChecker sigchecker;
     ScriptError err = ScriptError::OK;
     stacktype stack{original_stack};
-    bool r = EvalScript(stack, script, flags, sigchecker, &err);
+    auto const null_context = std::nullopt;
+    bool r = EvalScript(stack, script, flags, sigchecker, null_context, &err);
     BOOST_CHECK(!r);
     BOOST_CHECK(err == expected_error);
 }

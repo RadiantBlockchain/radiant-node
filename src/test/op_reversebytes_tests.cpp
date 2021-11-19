@@ -16,26 +16,24 @@ typedef std::vector<valtype> stacktype;
 
 BOOST_FIXTURE_TEST_SUITE(op_reversebytes_tests, BasicTestingSetup)
 
-static void CheckErrorWithFlags(const uint32_t flags,
-                                const stacktype &original_stack,
-                                const CScript &script,
-                                const ScriptError expected) {
+static
+void CheckErrorWithFlags(const uint32_t flags, const stacktype &original_stack, const CScript &script, const ScriptError expected) {
     BaseSignatureChecker sigchecker;
     ScriptError err = ScriptError::OK;
     stacktype stack{original_stack};
-    bool r = EvalScript(stack, script, flags, sigchecker, &err);
+    auto const null_context = std::nullopt;
+    bool r = EvalScript(stack, script, flags, sigchecker, null_context, &err);
     BOOST_CHECK(!r);
     BOOST_CHECK(err == expected);
 }
 
-static void CheckPassWithFlags(const uint32_t flags,
-                               const stacktype &original_stack,
-                               const CScript &script,
-                               const stacktype &expected) {
+static
+void CheckPassWithFlags(const uint32_t flags, const stacktype &original_stack, const CScript &script, const stacktype &expected) {
     BaseSignatureChecker sigchecker;
     ScriptError err = ScriptError::OK;
     stacktype stack{original_stack};
-    bool r = EvalScript(stack, script, flags, sigchecker, &err);
+    auto const null_context = std::nullopt;
+    bool r = EvalScript(stack, script, flags, sigchecker, null_context, &err);
     BOOST_CHECK(r);
     BOOST_CHECK(err == ScriptError::OK);
     BOOST_CHECK(stack == expected);

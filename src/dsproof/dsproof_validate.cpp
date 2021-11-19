@@ -1,5 +1,6 @@
 // Copyright (C) 2019-2020 Tom Zander <tomz@freedommail.ch>
 // Copyright (C) 2020 Calin Culianu <calin.culianu@gmail.com>
+// Copyright (C) 2021 Fernando Pelliccioni <fpelliccioni@gmail.com>
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -142,7 +143,9 @@ auto DoubleSpendProof::validate(const CTxMemPool &mempool, CTransactionRef spend
     ScriptError error;
     ScriptExecutionMetrics metrics; // dummy
 
-    if (!VerifyScript(inScript, prevOutScript, 0 /*flags*/, checker1, metrics, &error)) {
+    auto const context = std::nullopt; // dsproofs only support P2PKH, so they don't need a real script execution context
+
+    if ( ! VerifyScript(inScript, prevOutScript, 0 /*flags*/, checker1, metrics, context, &error)) {
         LogPrint(BCLog::DSPROOF, "DoubleSpendProof failed validating first tx due to %s\n", ScriptErrorString(error));
         return Invalid;
     }
@@ -153,7 +156,7 @@ auto DoubleSpendProof::validate(const CTxMemPool &mempool, CTransactionRef spend
         inScript << pubkey;
     }
     DSPSignatureChecker checker2(this, m_spender2, amount);
-    if (!VerifyScript(inScript, prevOutScript, 0 /*flags*/, checker2, metrics, &error)) {
+    if ( ! VerifyScript(inScript, prevOutScript, 0 /*flags*/, checker2, metrics, context, &error)) {
         LogPrint(BCLog::DSPROOF, "DoubleSpendProof failed validating second tx due to %s\n", ScriptErrorString(error));
         return Invalid;
     }

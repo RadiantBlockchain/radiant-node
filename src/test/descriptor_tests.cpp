@@ -93,6 +93,8 @@ void Check(const std::string &prv, const std::string &pub, int flags,
         assert(scripts.size() == 1);
     }
 
+    auto const null_context = std::nullopt;
+
     size_t max = (flags & RANGE) ? scripts.size() : 3;
     for (size_t i = 0; i < max; ++i) {
         const auto &ref = scripts[(flags & RANGE) ? i : 0];
@@ -107,8 +109,9 @@ void Check(const std::string &prv, const std::string &pub, int flags,
             for (size_t n = 0; n < spks.size(); ++n) {
                 BOOST_CHECK_EQUAL(ref[n],
                                   HexStr(spks[n].begin(), spks[n].end()));
+
                 BOOST_CHECK_EQUAL(
-                    IsSolvable(Merge(key_provider, script_provider), spks[n]),
+                    IsSolvable(Merge(key_provider, script_provider), spks[n], null_context),
                     (flags & UNSOLVABLE) == 0);
 
                 if (flags & SIGNABLE) {
@@ -118,7 +121,7 @@ void Check(const std::string &prv, const std::string &pub, int flags,
                     BOOST_CHECK_MESSAGE(
                         SignSignature(Merge(keys_priv, script_provider),
                                       spks[n], spend, 0, 1 * COIN,
-                                      SigHashType().withForkId()),
+                                      SigHashType().withForkId(), null_context),
                         prv);
                 }
             }

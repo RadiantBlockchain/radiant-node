@@ -6,6 +6,7 @@
 #include <chainparams.h> // For CChainParams
 #include <checkqueue.h>
 #include <clientversion.h>
+#include <coins.h>
 #include <config.h>
 #include <consensus/tx_check.h>
 #include <consensus/tx_verify.h>
@@ -16,6 +17,7 @@
 #include <policy/policy.h>
 #include <script/script.h>
 #include <script/script_error.h>
+#include <script/script_execution_context.h>
 #include <script/sign.h>
 #include <script/standard.h>
 #include <streams.h>
@@ -36,7 +38,7 @@
 #include <map>
 #include <string>
 
-typedef std::vector<uint8_t> valtype;
+using valtype = std::vector<uint8_t>;
 
 BOOST_FIXTURE_TEST_SUITE(transaction_tests, BasicTestingSetup)
 
@@ -71,6 +73,8 @@ BOOST_AUTO_TEST_CASE(tx_valid) {
 
             std::map<COutPoint, CScript> mapprevOutScriptPubKeys;
             std::map<COutPoint, Amount> mapprevOutValues;
+            CCoinsView dummy;
+            CCoinsViewCache coins(&dummy);
             const UniValue::Array& inputs = test[0].get_array();
             bool fValid = true;
             for (size_t inpIdx = 0; inpIdx < inputs.size(); inpIdx++) {
@@ -85,11 +89,12 @@ BOOST_AUTO_TEST_CASE(tx_valid) {
                     break;
                 }
                 COutPoint outpoint = buildOutPoint(vinput);
-                mapprevOutScriptPubKeys[outpoint] = ParseScript(vinput[2].get_str());
+                const auto& scriptPubKey = mapprevOutScriptPubKeys[outpoint] = ParseScript(vinput[2].get_str());
+                Amount amount = Amount::zero();
                 if (vinput.size() >= 4) {
-                    mapprevOutValues[outpoint] =
-                        vinput[3].get_int64() * SATOSHI;
+                    amount = mapprevOutValues[outpoint] = vinput[3].get_int64() * SATOSHI;
                 }
+                coins.AddCoin(outpoint, Coin(CTxOut(amount, scriptPubKey), 1, false), false);
             }
             if (!fValid) {
                 BOOST_ERROR("Bad test: " << strTest);
@@ -116,6 +121,9 @@ BOOST_AUTO_TEST_CASE(tx_valid) {
                                 strTest);
             BOOST_CHECK(state.IsInvalid());
 
+            // Build native introspection contexts just in case the test has flags that enable this feature
+            const auto contexts = ScriptExecutionContext::createForAllInputs(tx, coins);
+
             PrecomputedTransactionData txdata(tx);
             for (size_t i = 0; i < tx.vin.size(); i++) {
                 if (!mapprevOutScriptPubKeys.count(tx.vin[i].prevout)) {
@@ -129,16 +137,11 @@ BOOST_AUTO_TEST_CASE(tx_valid) {
                 }
 
                 uint32_t verify_flags = ParseScriptFlags(test[2].get_str());
-                BOOST_CHECK_MESSAGE(
-                    VerifyScript(
-                        tx.vin[i].scriptSig,
-                        mapprevOutScriptPubKeys[tx.vin[i].prevout],
-                        verify_flags,
-                        TransactionSignatureChecker(&tx, i, amount, txdata),
-                        &err),
+                BOOST_CHECK_MESSAGE(VerifyScript(tx.vin[i].scriptSig, mapprevOutScriptPubKeys[tx.vin[i].prevout],
+                        verify_flags, TransactionSignatureChecker(&tx, i, amount, txdata),
+                        contexts[i], &err),
                     strTest);
-                BOOST_CHECK_MESSAGE(err == ScriptError::OK,
-                                    ScriptErrorString(err));
+                BOOST_CHECK_MESSAGE(err == ScriptError::OK, ScriptErrorString(err));
             }
         }
     }
@@ -172,6 +175,8 @@ BOOST_AUTO_TEST_CASE(tx_invalid) {
 
             std::map<COutPoint, CScript> mapprevOutScriptPubKeys;
             std::map<COutPoint, Amount> mapprevOutValues;
+            CCoinsView dummy;
+            CCoinsViewCache coins(&dummy);
             const UniValue::Array& inputs = test[0].get_array();
             bool fValid = true;
             for (size_t inpIdx = 0; inpIdx < inputs.size(); inpIdx++) {
@@ -186,11 +191,12 @@ BOOST_AUTO_TEST_CASE(tx_invalid) {
                     break;
                 }
                 COutPoint outpoint = buildOutPoint(vinput);
-                mapprevOutScriptPubKeys[outpoint] = ParseScript(vinput[2].get_str());
+                const auto& scriptPubKey = mapprevOutScriptPubKeys[outpoint] = ParseScript(vinput[2].get_str());
+                Amount amount = Amount::zero();
                 if (vinput.size() >= 4) {
-                    mapprevOutValues[outpoint] =
-                        vinput[3].get_int64() * SATOSHI;
+                    amount = mapprevOutValues[outpoint] = vinput[3].get_int64() * SATOSHI;
                 }
+                coins.AddCoin(outpoint, Coin(CTxOut(amount, scriptPubKey), 1, false), false);
             }
             if (!fValid) {
                 BOOST_ERROR("Bad test: " << strTest);
@@ -205,6 +211,9 @@ BOOST_AUTO_TEST_CASE(tx_invalid) {
             CValidationState state;
             fValid = CheckRegularTransaction(tx, state) && state.IsValid();
 
+            // Build native introspection contexts just in case the test has flags that enable this feature
+            const auto contexts = ScriptExecutionContext::createForAllInputs(tx, coins);
+
             PrecomputedTransactionData txdata(tx);
             for (size_t i = 0; i < tx.vin.size() && fValid; i++) {
                 if (!mapprevOutScriptPubKeys.count(tx.vin[i].prevout)) {
@@ -218,10 +227,9 @@ BOOST_AUTO_TEST_CASE(tx_invalid) {
                 }
 
                 uint32_t verify_flags = ParseScriptFlags(test[2].get_str());
-                fValid = VerifyScript(
-                    tx.vin[i].scriptSig,
+                fValid = VerifyScript(tx.vin[i].scriptSig,
                     mapprevOutScriptPubKeys[tx.vin[i].prevout], verify_flags,
-                    TransactionSignatureChecker(&tx, i, amount, txdata), &err);
+                    TransactionSignatureChecker(&tx, i, amount, txdata), contexts[i], &err);
             }
             BOOST_CHECK_MESSAGE(!fValid, strTest);
             BOOST_CHECK_MESSAGE(err != ScriptError::OK, ScriptErrorString(err));
@@ -362,8 +370,10 @@ static void CreateCreditAndSpend(const CKeyStore &keystore,
     inputm.vout.resize(1);
     inputm.vout[0].nValue = SATOSHI;
     inputm.vout[0].scriptPubKey = CScript();
-    bool ret =
-        SignSignature(keystore, *output, inputm, 0, SigHashType().withForkId());
+
+    auto const context = std::nullopt;
+    bool ret = SignSignature(keystore, *output, inputm, 0, SigHashType().withForkId(), context);
+
     BOOST_CHECK_EQUAL(ret, success);
     CDataStream ssin(SER_NETWORK, PROTOCOL_VERSION);
     ssin << inputm;
@@ -374,16 +384,28 @@ static void CreateCreditAndSpend(const CKeyStore &keystore,
     BOOST_CHECK(input.vout[0] == inputm.vout[0]);
 }
 
-static void CheckWithFlag(const CTransactionRef &output,
-                          const CMutableTransaction &input, int flags,
-                          bool success) {
+static
+void CheckWithFlag(const CTransactionRef &output, const CMutableTransaction &input, int flags, bool success) {
     ScriptError error;
     CTransaction inputi(input);
-    bool ret = VerifyScript(
-        inputi.vin[0].scriptSig, output->vout[0].scriptPubKey,
+
+    // build script execution context for `inputi`
+    BOOST_CHECK(inputi.vin.size() == output->vout.size());
+    CCoinsView dummy;
+    CCoinsViewCache coins(&dummy);
+    for (size_t i = 0; i < inputi.vin.size(); ++i) {
+        coins.AddCoin(inputi.vin[i].prevout, Coin(output->vout.at(i), 1, false), false);
+    }
+    const auto contexts = ScriptExecutionContext::createForAllInputs(inputi, coins);
+    for (const auto& c : contexts) {
+        // Ensure we have all coins
+        BOOST_CHECK(!c.coin().IsSpent());
+    }
+
+    bool ret = VerifyScript(inputi.vin[0].scriptSig, output->vout[0].scriptPubKey,
         flags | SCRIPT_ENABLE_SIGHASH_FORKID,
         TransactionSignatureChecker(&inputi, 0, output->vout[0].nValue),
-        &error);
+        contexts[0], &error);
     BOOST_CHECK_EQUAL(ret, success);
 }
 
@@ -401,12 +423,12 @@ static CScript PushAll(const std::vector<valtype> &values) {
     return result;
 }
 
-static void ReplaceRedeemScript(CScript &script, const CScript &redeemScript) {
+static
+void ReplaceRedeemScript(CScript &script, const CScript &redeemScript, ScriptExecutionContextOpt context = {}) {
     std::vector<valtype> stack;
-    EvalScript(stack, script, SCRIPT_VERIFY_STRICTENC, BaseSignatureChecker());
+    EvalScript(stack, script, SCRIPT_VERIFY_STRICTENC, BaseSignatureChecker(), context);
     BOOST_CHECK(stack.size() > 0);
-    stack.back() =
-        std::vector<uint8_t>(redeemScript.begin(), redeemScript.end());
+    stack.back() = valtype(redeemScript.begin(), redeemScript.end());
     script = PushAll(stack);
 }
 
@@ -434,29 +456,40 @@ BOOST_AUTO_TEST_CASE(test_big_transaction) {
     // create a big transaction of 4500 inputs signed by the same key.
     const static size_t OUTPUT_COUNT = 4500;
     mtx.vout.reserve(OUTPUT_COUNT);
+    mtx.vin.reserve(OUTPUT_COUNT);
+
+    CCoinsView dummy;
+    CCoinsViewCache coins(&dummy);
+
+    constexpr Amount inOutAmt = 1000 * SATOSHI;
 
     for (size_t ij = 0; ij < OUTPUT_COUNT; ij++) {
         size_t i = mtx.vin.size();
         TxId prevId(uint256S("0000000000000000000000000000000000000000000000000"
                              "000000000000100"));
-        COutPoint outpoint(prevId, i);
+        const COutPoint outpoint(prevId, i);
 
-        mtx.vin.resize(mtx.vin.size() + 1);
-        mtx.vin[i].prevout = outpoint;
-        mtx.vin[i].scriptSig = CScript();
+        mtx.vin.emplace_back(outpoint, CScript());
+        coins.AddCoin(outpoint, Coin(CTxOut(inOutAmt, scriptPubKey), 1, false), false);
 
-        mtx.vout.emplace_back(1000 * SATOSHI, CScript() << OP_1);
+        mtx.vout.emplace_back(inOutAmt, CScript() << OP_1);
     }
 
+    auto contexts = ScriptExecutionContext::createForAllInputs(mtx, coins);
+
     // sign all inputs
-    for (size_t i = 0; i < mtx.vin.size(); i++) {
-        bool hashSigned =
-            SignSignature(keystore, scriptPubKey, mtx, i, 1000 * SATOSHI,
-                          sigHashes.at(i % sigHashes.size()));
+    for (size_t i = 0; i < mtx.vin.size(); ++i) {
+        bool hashSigned = SignSignature(keystore, scriptPubKey, mtx, i, inOutAmt,
+                                        sigHashes.at(i % sigHashes.size()), contexts.at(i));
         BOOST_CHECK_MESSAGE(hashSigned, "Failed to sign test transaction");
     }
 
     CTransaction tx(mtx);
+    contexts = ScriptExecutionContext::createForAllInputs(tx, coins); // generate contexts for this constant tx
+    for (const auto& inp : tx.vin) {
+        // ensure all coins present
+        BOOST_CHECK(coins.HaveCoin(inp.prevout));
+    }
 
     // check all inputs concurrently, with the cache
     PrecomputedTransactionData txdata(tx);
@@ -465,21 +498,9 @@ BOOST_AUTO_TEST_CASE(test_big_transaction) {
 
     scriptcheckqueue.StartWorkerThreads(20);
 
-    std::vector<Coin> coins;
-    for (size_t i = 0; i < mtx.vin.size(); i++) {
-        CTxOut out;
-        out.nValue = 1000 * SATOSHI;
-        out.scriptPubKey = scriptPubKey;
-        coins.emplace_back(std::move(out), 1, false);
-    }
-
-    for (size_t i = 0; i < mtx.vin.size(); i++) {
+    for (size_t i = 0; i < tx.vin.size(); ++i) {
         std::vector<CScriptCheck> vChecks;
-        CTxOut &out = coins[tx.vin[i].prevout.GetN()].GetTxOut();
-        CScriptCheck check(out.scriptPubKey, out.nValue, tx, i,
-                           STANDARD_SCRIPT_VERIFY_FLAGS, false, txdata);
-        vChecks.push_back(CScriptCheck());
-        check.swap(vChecks.back());
+        vChecks.emplace_back(contexts.at(i), STANDARD_SCRIPT_VERIFY_FLAGS, false, txdata);
         control.Add(vChecks);
     }
 
@@ -491,14 +512,15 @@ BOOST_AUTO_TEST_CASE(test_big_transaction) {
 
 SignatureData CombineSignatures(const CMutableTransaction &input1,
                                 const CMutableTransaction &input2,
-                                const CTransactionRef tx) {
+                                const CTransactionRef tx, ScriptExecutionContextOpt context = {}) {
     SignatureData sigdata;
     sigdata = DataFromTransaction(input1, 0, tx->vout[0]);
     sigdata.MergeSignatureData(DataFromTransaction(input2, 0, tx->vout[0]));
+
     ProduceSignature(
         DUMMY_SIGNING_PROVIDER,
         MutableTransactionSignatureCreator(&input1, 0, tx->vout[0].nValue),
-        tx->vout[0].scriptPubKey, sigdata);
+        tx->vout[0].scriptPubKey, sigdata, context);
     return sigdata;
 }
 
