@@ -73,6 +73,7 @@ if(ENABLE_PROPERTY_BASED_TESTS)
 endif()
 
 add_boost_unit_tests_to_suite(bitcoin test_bitcoin
+	check_assert.cpp
 	jsonutil.cpp
 	lib/transaction_utils.cpp
 	main.cpp
@@ -178,6 +179,7 @@ add_boost_unit_tests_to_suite(bitcoin test_bitcoin
 		streams_tests.cpp
 		sync_tests.cpp
 		util_threadnames_tests.cpp
+		testlib_tests.cpp
 		timedata_tests.cpp
 		torcontrol_tests.cpp
 		transaction_tests.cpp

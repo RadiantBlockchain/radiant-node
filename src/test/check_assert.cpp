@@ -1,0 +1,180 @@
+// Copyright (c) 2021 The Bitcoin developers
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
+#include <test/check_assert.h>
+
+#include <tinyformat.h> // for strprintf()
+#include <util/defer.h> // for Defer
+
+#include <boost/cstdlib.hpp> // for boost::exit_test_failure
+
+#include <algorithm>
+#include <array>
+#include <atomic>
+#include <cassert>
+#include <chrono>
+#include <csignal>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <stdexcept>
+#include <string>
+#include <thread>
+#include <vector>
+
+#if __has_include(<unistd.h>) && __has_include(<poll.h>) && __has_include(<sys/types.h>) && __has_include(<sys/wait.h>)
+#define UNIX_SUPPORTS_FORK
+#include <poll.h>      // for poll()
+#include <sys/types.h> // for pid_t, etc
+#include <sys/wait.h>  // for waitpid()
+#include <unistd.h>    // for fork(), pipe(), dup2(), etc
+#endif
+
+CheckAssertResult CheckAssert(std::function<void()> func, std::string_view expectMessage) {
+#ifdef UNIX_SUPPORTS_FORK
+    constexpr int exit_status_cannot_dup2 = 120, exit_status_aborted = boost::exit_test_failure;
+    static_assert(exit_status_cannot_dup2 != exit_status_aborted);
+    std::array<int, 2> pipe_stdout{{-1, -1}}, pipe_stderr{{-1, -1}};
+    Defer pipeCloser([&pipe_stdout, &pipe_stderr]{
+        // close all fds on scope end to not leak fds in case we throw, etc
+        for (auto & fds : {&pipe_stdout, &pipe_stderr}) {
+            for (int & fd : *fds) {
+                if (fd > -1) {
+                    ::close(fd);
+                    fd = -1;
+                }
+            }
+        }
+    });
+    auto ChkRet = [](std::string_view call, int ret) {
+        if (ret != 0) {
+            throw std::runtime_error(strprintf("Error from `%s`: %s", std::string{call}, std::strerror(errno)));
+        }
+    };
+    // create 2 pipes (to replace stdout and stderr)
+    ChkRet("pipe", ::pipe(pipe_stdout.data()));
+    ChkRet("pipe", ::pipe(pipe_stderr.data()));
+
+    // fork and run the lambda in the child, checking if it assert()'ed (SIGABRT)
+    // we also capture stdout and stderr from the child via the pipe created above.
+    if (auto pid = ::fork(); pid == -1) {
+        // fork failed
+        ChkRet("fork", pid);
+    } else if (pid == 0) {
+        // child
+        const int fd_stdout = fileno(stdout); // should be 1
+        const int fd_stderr = fileno(stderr); // should be 2
+        if (fd_stdout < 0 || fd_stderr < 0
+                // make our pipe_stdout writing end be the new stdout
+                || ::dup2(pipe_stdout[1], fd_stdout) != fd_stdout
+                // make our pipe_stderr writing end be the new stderr
+                || ::dup2(pipe_stderr[1], fd_stderr) != fd_stderr) {
+            std::_Exit(exit_status_cannot_dup2);
+        }
+        ::close(pipe_stdout[0]); ::close(pipe_stderr[0]); // close reading end in subprocess
+        pipe_stderr[0] = pipe_stderr[0] = -1;
+        try {
+            // lastly, call the function
+            func();
+        } catch (...) {}
+        // this should not be reached if the above resulted in an assert()
+        std::_Exit(0);
+    } else {
+        // parent
+        Defer pidKiller([&pid]{
+            // kill & reap child process if it hasn't already been reaped
+            if (pid > 0) {
+                ::kill(pid, SIGKILL);
+                int status;
+                pid = ::waitpid(pid, &status, 0) == pid ? -1 : pid;
+            }
+        });
+        ::close(pipe_stdout[1]); ::close(pipe_stderr[1]); // close writing end in parent process
+        pipe_stderr[1] = pipe_stderr[1] = -1;
+
+        std::string pipeData;
+        int hadError = 0, status = 0;
+        {
+            // set up subordinate thread to read pipe (stdout and stderr from child are combined into pipeData buffer)
+            std::atomic_bool stopFlag = false;
+            std::thread pipeReaderThr([&]{
+                std::vector<pollfd> fds;
+                for (int fd : {pipe_stdout[0], pipe_stderr[0]}) {
+                    auto &p = fds.emplace_back();
+                    p.fd = fd;
+                    p.events = POLLIN;
+                }
+
+                while (!stopFlag) {
+                    if (fds.empty()) return; // all file descriptors are closed, just return early
+                    for (auto &p : fds) p.revents = 0; // reset pollfd state
+
+                    const int r = ::poll(fds.data(), fds.size(), 10 /* msec */);
+                    if (r > 0) {
+                        auto do_read = [&pipeData](const pollfd &pfd) { // returns true if fd closed
+                            if (!(pfd.revents & POLLIN)) return false;
+                            std::array<char, 256> buf;
+
+                            if (const auto nread = ::read(pfd.fd, buf.data(), buf.size()); nread > 0) {
+                                pipeData.append(buf.data(), nread);
+                            } else if (nread == 0 || (nread < 0 && errno != EAGAIN && errno != EINTR)) {
+                                // file closed (all done) or error
+                                return true;
+                            }
+                            return false;
+                        };
+                        // some fds are ready, read from pipe(s) that are ready
+                        // if do_read() returns false, erase the element from the vector
+                        fds.erase(std::remove_if(fds.begin(), fds.end(), do_read), fds.end());
+                    } else if (r < 0) {
+                        // some error
+                        if (errno == EAGAIN || errno == EINTR) {
+                            // try again
+                            continue;
+                        }
+                        hadError = errno;
+                        return;
+                    }
+                }
+            });
+            Defer threadJoiner([&] {
+                stopFlag = true;
+                if (pipeReaderThr.joinable()) pipeReaderThr.join();
+            }); // just in case the below throws
+
+            const int ret = ::waitpid(pid, &status, 0);
+            ChkRet("waitpid", ret == pid ? 0 : -1);
+            pid = -1; // indicate pid is gone so that pidKiller above is a no-op
+
+            using namespace std::chrono_literals;
+            std::this_thread::sleep_for(10ms); // wait to read data
+        }
+        // at this point the pipe reader thread is stopped
+
+        if (hadError != 0) {
+            throw std::runtime_error(strprintf("Failed to read from pipe to subordinate process: %s",
+                                               std::strerror(hadError)));
+        }
+
+        if (WIFEXITED(status) && WEXITSTATUS(status) == exit_status_cannot_dup2) {
+            // special case, subordinate process cannot dup2()
+            throw std::runtime_error("Low-level error: failed to dup2() stdout/stderr");
+        }
+
+        // we expect the subordinate process to have exited with a SIGABRT
+        // however, if the boost execution monitor is running, no SIGABRT
+        // will have been sent for an assert() failure, instead the
+        // exit status will be 201.
+        if ((WIFSIGNALED(status) && WTERMSIG(status) == SIGABRT)
+                || (WIFEXITED(status) && WEXITSTATUS(status) == exit_status_aborted)) {
+            if (expectMessage.empty() || pipeData.find(expectMessage) != pipeData.npos) {
+                return CheckAssertResult::AssertEncountered;
+            }
+            return CheckAssertResult::AssertEncounteredWrongMessage;
+        }
+        return CheckAssertResult::NoAssertEncountered;
+    }
+#endif
+    return CheckAssertResult::Unsupported;
+}
