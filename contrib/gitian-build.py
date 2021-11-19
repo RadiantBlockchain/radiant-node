@@ -15,25 +15,34 @@ if os.name == 'posix':
     BOLD = ('\033[0m', '\033[1m')
     RED = ('\033[0m', '\033[0;31m')
 
+is_mac = sys.platform == 'darwin'
+
 
 def setup():
     global args, workdir
-    programs = ['ruby', 'git', 'apt-cacher-ng', 'make', 'wget']
-    if args.kvm:
-        programs += ['python-vm-builder', 'qemu-kvm', 'qemu-utils']
-    elif args.docker:
-        dockers = ['docker.io', 'docker-ce']
-        for i in dockers:
-            return_code = subprocess.call(
-                ['sudo', 'apt-get', 'install', '-qq', i])
-            if return_code == 0:
-                break
-        if return_code != 0:
-            print('Cannot find any way to install docker', file=sys.stderr)
-            exit(1)
+    if not is_mac:
+        programs = ['ruby', 'git', 'apt-cacher-ng', 'make', 'wget']
+        if args.kvm:
+            programs += ['python-vm-builder', 'qemu-kvm', 'qemu-utils']
+        elif args.docker:
+            dockers = ['docker.io', 'docker-ce']
+            for i in dockers:
+                return_code = subprocess.call(
+                    ['sudo', 'apt-get', 'install', '-qq', i])
+                if return_code == 0:
+                    break
+            if return_code != 0:
+                print('Cannot find any way to install docker', file=sys.stderr)
+                exit(1)
+        else:
+            programs += ['lxc', 'debootstrap']
+        subprocess.check_call(['sudo', 'apt-get', 'install', '-qq'] + programs)
     else:
-        programs += ['lxc', 'debootstrap']
-    subprocess.check_call(['sudo', 'apt-get', 'install', '-qq'] + programs)
+        if args.docker:
+            print("Warning: macOS support is experimental and requires docker be already installed", file=sys.stderr)
+        else:
+            sys.exit("macOS support only works in --docker mode")
+
     if not os.path.isdir('gitian-builder'):
         subprocess.check_call(
             ['git', 'clone', 'https://github.com/devrandom/gitian-builder.git'])
@@ -240,7 +249,7 @@ def main():
     args = parser.parse_args()
     workdir = os.getcwd()
 
-    args.is_bionic = b'bionic' in subprocess.check_output(
+    args.is_bionic = not is_mac and b'bionic' in subprocess.check_output(
         ['lsb_release', '-cs'])
 
     if args.kvm and args.docker:
