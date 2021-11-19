@@ -17,9 +17,9 @@ More independent Gitian builders are needed, which is why this guide exists.
 It is preferred you follow these steps yourself instead of using someone else's
 VM image to avoid 'contaminating' the build.
 
-If you are running Debian or Ubuntu, see
-[Running Gitian with Docker on Ubuntu/Debian](./gitian-building/gitian-building-docker.md)
-for a relitively straightforward setup and build process.
+If you are running Debian, Ubuntu or Mac, see
+[Running Gitian with Docker](./gitian-building/gitian-building-docker.md)
+for a relatively straightforward setup and build process.
 
 The instructions below use the automated script [gitian-build.py](../contrib/gitian-build.py)
 which only works in Debian/Ubuntu. For manual steps and instructions for fully

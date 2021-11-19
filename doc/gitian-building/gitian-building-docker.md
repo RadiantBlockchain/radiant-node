@@ -1,27 +1,33 @@
-# Running Gitian with Docker on Ubuntu/Debian
-This is a streamlined guide for running Gitian builds with Docker on Ubuntu or
-Debian hardware.  The following steps have been tested on Ubuntu 18.04.05.
-Similar, if not the same steps should work on other versions of Ubuntu and
-Debian.
+# Running Gitian with Docker
+This is a streamlined guide for running Gitian builds with Docker on Ubuntu,
+Debian or Mac hardware.
 
 # Setup
 Ensure you have Docker installed.  See https://docs.docker.com/get-docker/ for
 installation instructions.
 
-Make sure to go through the Linux post-install walkthrough, especially the
+If you're using Linux, make sure to go through the Linux post-install
+walkthrough, especially the
 [Manage Docker as a non-root user](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user)
 section, to avoid having to use `sudo` all the time.
 
-Prepare a workspace directory (e.g. `~/bchn-gitian`) and `cd` into it.  You'll
+## Prepare a build workspace
+Create a workspace directory (e.g. `~/bchn-gitian`) and `cd` into it.  You'll
 only need to run through this setup once so long as you retain the workspace.
 
-```bash
-# Install dependencies
-sudo apt install curl git
+## Install dependencies
+You'll need `git` and `curl` installed.  If on Linux, just do `sudo apt install
+curl git`.
 
+## Gitian setup
+```bash
 # Fetch the `gitian-build.py` script
 git clone https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node.git
 cp bitcoin-cash-node/contrib/gitian-build.py .
+
+# If you are on a MacOS host, you will need the MacOS-capable fork
+# of gitian-builder, if on Linux, you can skip this step.
+git clone -b macos_support_no_debian_cache https://github.com/cculianu/gitian-builder.git  
 
 # Run the initial Gitian setup
 ./gitian-build.py --docker --setup
