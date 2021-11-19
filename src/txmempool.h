@@ -145,9 +145,6 @@ public:
         return dspIdPtr ? *dspIdPtr : staticNull;
     }
     void SetDspId(const DspId &dspId) { dspIdPtr = dspId; }
-
-    //! Index in mempool's vTxHashes
-    mutable size_t vTxHashesIdx = 0;
 };
 
 // --- Helpers for modifying CTxMemPool::mapTx, which is a boost multi_index.
@@ -383,8 +380,6 @@ public:
     indexed_transaction_set mapTx GUARDED_BY(cs);
 
     using txiter = indexed_transaction_set::nth_index<0>::type::const_iterator;
-    //! All tx hashes/entries in mapTx, in random order
-    std::vector<std::pair<TxHash, txiter>> vTxHashes;
 
     struct CompareIteratorByEntryId {
         bool operator()(const txiter &a, const txiter &b) const {
@@ -570,6 +565,21 @@ public:
     /** Returns an iterator to the given txid, if found */
     std::optional<txiter> GetIter(const TxId &txid) const
         EXCLUSIVE_LOCKS_REQUIRED(cs);
+
+    /**
+     *  Allow external code to iterate over a particular index. By default the `entry_id` index
+     *  is returned (topological ordering).
+     *
+     *  Available index tags: `void` (for the untagged 0th txid index), `modified_feerate`, `entry_id`.
+     */
+    template <typename IndexTag = entry_id>
+    const auto & GetIndex() const EXCLUSIVE_LOCKS_REQUIRED(cs) {
+        if constexpr (std::is_same_v<IndexTag, void>) {
+            return mapTx.get<0>();
+        } else {
+            return mapTx.get<IndexTag>();
+        }
+    }
 
     /**
      * Translate a set of txids into a set of pool iterators to avoid repeated
