@@ -131,15 +131,13 @@ ReadStatus PartiallyDownloadedBlock::InitData(
     std::vector<bool> have_txn(txns_available.size());
     {
         LOCK(pool->cs);
-        const std::vector<std::pair<TxHash, CTxMemPool::txiter>> &vTxHashes =
-            pool->vTxHashes;
-        for (auto txHash : vTxHashes) {
-            uint64_t shortid = cmpctblock.GetShortID(txHash.first);
+        for (auto &entry : pool->GetIndex()) {
+            uint64_t shortid = cmpctblock.GetShortID(entry.GetTx().GetHash());
             std::unordered_map<uint64_t, uint32_t>::iterator idit =
                 shorttxids.find(shortid);
             if (idit != shorttxids.end()) {
                 if (!have_txn[idit->second]) {
-                    txns_available[idit->second] = txHash.second->GetSharedTx();
+                    txns_available[idit->second] = entry.GetSharedTx();
                     have_txn[idit->second] = true;
                     mempool_count++;
                 } else {

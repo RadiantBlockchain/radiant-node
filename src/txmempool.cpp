@@ -202,9 +202,6 @@ void CTxMemPool::addUnchecked(CTxMemPoolEntry &&entry) {
 
     nTransactionsUpdated++;
     totalTxSize += entry.GetTxSize();
-
-    vTxHashes.emplace_back(tx.GetHash(), newit);
-    newit->vTxHashesIdx = vTxHashes.size() - 1;
 }
 
 void CTxMemPool::removeUnchecked(txiter it, MemPoolRemovalReason reason) {
@@ -216,17 +213,6 @@ void CTxMemPool::removeUnchecked(txiter it, MemPoolRemovalReason reason) {
     }
     for (const CTxIn &txin : it->GetTx().vin) {
         mapNextTx.erase(txin.prevout);
-    }
-
-    if (vTxHashes.size() > 1) {
-        vTxHashes[it->vTxHashesIdx] = std::move(vTxHashes.back());
-        vTxHashes[it->vTxHashesIdx].second->vTxHashesIdx = it->vTxHashesIdx;
-        vTxHashes.pop_back();
-        if (vTxHashes.size() * 2 < vTxHashes.capacity()) {
-            vTxHashes.shrink_to_fit();
-        }
-    } else {
-        vTxHashes.clear();
     }
 
     totalTxSize -= it->GetTxSize();
@@ -357,7 +343,6 @@ void CTxMemPool::_clear(bool clearDspOrphans /*= true*/) {
     mapLinks.clear();
     mapTx.clear();
     mapNextTx.clear();
-    vTxHashes.clear();
     totalTxSize = 0;
     cachedInnerUsage = 0;
     lastRollingFeeUpdate = GetTime();
@@ -663,7 +648,7 @@ size_t CTxMemPool::DynamicMemoryUsage() const {
            memusage::DynamicUsage(mapNextTx) +
            memusage::DynamicUsage(mapDeltas) +
            memusage::DynamicUsage(mapLinks) +
-           memusage::DynamicUsage(vTxHashes) + cachedInnerUsage;
+           cachedInnerUsage;
 }
 
 void CTxMemPool::RemoveStaged(const setEntries &stage, MemPoolRemovalReason reason) {
