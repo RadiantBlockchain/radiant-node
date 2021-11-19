@@ -23,8 +23,16 @@
 #include <thread>
 #include <vector>
 
-#if __has_include(<unistd.h>) && __has_include(<poll.h>) && __has_include(<sys/types.h>) && __has_include(<sys/wait.h>)
-#define UNIX_SUPPORTS_FORK
+// If compiling with address or thread sanitizers, this facility doesn't work quite right due to code that ASAN/TSAN
+// inserts, which interferes with our ability to trap the assert firing in the subprocess.
+#if defined(__has_feature)
+#  if __has_feature(address_sanitizer) || __has_feature(thread_sanitizer)
+#    define SKIP_SANITIZER_NOT_SUPPORTED
+#  endif
+#endif
+#if !defined(SKIP_SANITIZER_NOT_SUPPORTED) && \
+    __has_include(<unistd.h>) && __has_include(<poll.h>) && __has_include(<sys/types.h>) && __has_include(<sys/wait.h>)
+#define IS_SUPPORTED
 #include <poll.h>      // for poll()
 #include <sys/types.h> // for pid_t, etc
 #include <sys/wait.h>  // for waitpid()
@@ -32,7 +40,7 @@
 #endif
 
 CheckAssertResult CheckAssert(std::function<void()> func, std::string_view expectMessage) {
-#ifdef UNIX_SUPPORTS_FORK
+#ifdef IS_SUPPORTED
     constexpr int exit_status_cannot_dup2 = 120, exit_status_aborted = boost::exit_test_failure;
     static_assert(exit_status_cannot_dup2 != exit_status_aborted);
     std::array<int, 2> pipe_stdout{{-1, -1}}, pipe_stderr{{-1, -1}};

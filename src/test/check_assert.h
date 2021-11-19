@@ -21,7 +21,9 @@ enum class CheckAssertResult {
  * @pre func() must not modify the filesystem or database if called (such as writing blocks to disk).
  *      If it does do so, the behavior of this function is undefined.
  * @return One of the CheckAssertResult values above. If called on non-Unix, will return
- *         CheckAssertResult::Unsupported.
+ *         CheckAssertResult::Unsupported. Note also that address and/or thread sanitizers are not
+ *         supported with this facility, and if the app is compiled with either of these enabled,
+ *         CheckAssertResult::Unsupported will be returned in these cases as well.
  * @exception std::runtime_error on low-level system error (cannot fork(), cannot pipe(), etc)
  */
 [[nodiscard]]
