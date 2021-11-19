@@ -83,6 +83,12 @@ enum class ScriptError {
     /* Operands checks Bigger Integers (64-bit) */
     INVALID_NUMBER_RANGE_64_BIT,
 
+    /* Native Introspection */
+    CONTEXT_NOT_PRESENT,
+    LIMITED_CONTEXT_NO_SIBLING_INFO,
+    INVALID_TX_INPUT_INDEX,
+    INVALID_TX_OUTPUT_INDEX,
+
     ERROR_COUNT,
 };
 

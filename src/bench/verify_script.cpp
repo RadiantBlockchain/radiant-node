@@ -14,6 +14,7 @@
 #include <script/interpreter.h>
 #include <script/script.h>
 #include <script/script_error.h>
+#include <script/script_execution_context.h>
 #include <script/standard.h>
 #include <streams.h>
 #include <tinyformat.h>
@@ -38,8 +39,8 @@ static void VerifyNestedIfScript(benchmark::State &state) {
         auto stack_copy = stack;
         ScriptExecutionMetrics metrics = {};
         ScriptError error;
-        bool ret = EvalScript(stack_copy, script, 0, BaseSignatureChecker(),
-                              metrics, &error);
+        auto const null_context = std::nullopt;
+        bool ret = EvalScript(stack_copy, script, 0, BaseSignatureChecker(), metrics, null_context, &error);
         assert(ret);
     }
 }
@@ -89,12 +90,15 @@ static void VerifyBlockScripts(bool reallyCheckSigs,
 
     const auto &coins = coinsCache; // get a const reference to be safe
     std::vector<const Coin *> coinsVec; // coins being spent laid out in block input order
+    std::vector<std::vector<ScriptExecutionContext>> contexts; // script execution contexts for each tx
+    contexts.reserve(block.vtx.size());
     for (const auto &tx : block.vtx) {
         if (tx->IsCoinBase()) continue;
+        contexts.push_back(ScriptExecutionContext::createForAllInputs(*tx, coinsCache));
         for (auto &inp : tx->vin) {
             auto &coin = coins.AccessCoin(inp.prevout);
             assert(!coin.IsSpent());
-            coinsVec.emplace_back(&coin);
+            coinsVec.push_back(&coin);
         }
     }
 
@@ -116,14 +120,15 @@ static void VerifyBlockScripts(bool reallyCheckSigs,
                 assert(coinsVecIdx < coinsVec.size());
                 auto &coin = *coinsVec[coinsVecIdx];
                 bool ok{};
+                const auto &context = contexts[txdataVecIdx][inputNum];
                 ScriptError serror;
                 if (reallyCheckSigs) {
                     assert(txdataVecIdx < txdataVec.size());
                     const auto &txdata = txdataVec[txdataVecIdx];
                     const TransactionSignatureChecker checker(tx.get(), inputNum, coin.GetTxOut().nValue, txdata);
-                    ok = VerifyScript(inp.scriptSig, coin.GetTxOut().scriptPubKey, flags, checker, &serror);
+                    ok = VerifyScript(inp.scriptSig, coin.GetTxOut().scriptPubKey, flags, checker, context, &serror);
                 } else {
-                    ok = VerifyScript(inp.scriptSig, coin.GetTxOut().scriptPubKey, flags, fakeChecker, &serror);
+                    ok = VerifyScript(inp.scriptSig, coin.GetTxOut().scriptPubKey, flags, fakeChecker, context, &serror);
                 }
                 if (!ok) {
                     throw std::runtime_error(

@@ -9,6 +9,7 @@
 bool FillPSBT(const CWallet *pwallet, PartiallySignedTransaction &psbtx,
               SigHashType sighash_type, bool sign, bool bip32derivs) {
     LOCK(pwallet->cs_wallet);
+    const auto context = std::nullopt; // no native introspection for wallet scripts (no smart contracts in wallet)
     // Get all of the previous transactions
     bool complete = true;
     for (size_t i = 0; i < psbtx.tx->vin.size(); ++i) {
@@ -47,7 +48,7 @@ bool FillPSBT(const CWallet *pwallet, PartiallySignedTransaction &psbtx,
 
         complete &=
             SignPSBTInput(HidingSigningProvider(pwallet, !sign, !bip32derivs),
-                          psbtx, i, sighash_type);
+                          psbtx, i, sighash_type, context);
     }
 
     // Fill in the bip32 keypaths and redeemscripts for the outputs so that
@@ -60,10 +61,9 @@ bool FillPSBT(const CWallet *pwallet, PartiallySignedTransaction &psbtx,
         SignatureData sigdata;
         psbt_out.FillSignatureData(sigdata);
 
-        MutableTransactionSignatureCreator creator(
-            &*psbtx.tx, 0, out.nValue, SigHashType().withForkId());
-        ProduceSignature(HidingSigningProvider(pwallet, true, !bip32derivs),
-                         creator, out.scriptPubKey, sigdata);
+        MutableTransactionSignatureCreator creator(&*psbtx.tx, 0, out.nValue, SigHashType().withForkId());
+
+        ProduceSignature(HidingSigningProvider(pwallet, true, !bip32derivs), creator, out.scriptPubKey, sigdata, context);
         psbt_out.FromSignatureData(sigdata);
     }
     return complete;

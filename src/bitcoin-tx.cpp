@@ -18,6 +18,7 @@
 #include <policy/policy.h>
 #include <primitives/transaction.h>
 #include <script/script.h>
+#include <script/script_execution_context.h>
 #include <script/sign.h>
 #include <util/moneystr.h>
 #include <util/strencodings.h>
@@ -684,10 +685,12 @@ static void MutateTxSign(CMutableTransaction &tx, const std::string &flagStr) {
 
     const CKeyStore &keystore = tempKeystore;
 
+    const auto contexts = ScriptExecutionContext::createForAllInputs(mergedTx, view);
+
     // Sign what we can:
     for (size_t i = 0; i < mergedTx.vin.size(); i++) {
         CTxIn &txin = mergedTx.vin[i];
-        const Coin &coin = view.AccessCoin(txin.prevout);
+        const Coin &coin = contexts[i].coin(i);  // this coin ultimately came from `view`
         if (coin.IsSpent()) {
             continue;
         }
@@ -695,15 +698,14 @@ static void MutateTxSign(CMutableTransaction &tx, const std::string &flagStr) {
         const CScript &prevPubKey = coin.GetTxOut().scriptPubKey;
         const Amount amount = coin.GetTxOut().nValue;
 
-        SignatureData sigdata =
-            DataFromTransaction(mergedTx, i, coin.GetTxOut());
+        SignatureData sigdata = DataFromTransaction(mergedTx, i, coin.GetTxOut(), contexts[i]);
+
         // Only sign SIGHASH_SINGLE if there's a corresponding output:
         if ((sigHashType.getBaseType() != BaseSigHashType::SINGLE) ||
             (i < mergedTx.vout.size())) {
             ProduceSignature(keystore,
-                             MutableTransactionSignatureCreator(
-                                 &mergedTx, i, amount, sigHashType),
-                             prevPubKey, sigdata);
+                             MutableTransactionSignatureCreator(&mergedTx, i, amount, sigHashType),
+                             prevPubKey, sigdata, contexts[i]);
         }
 
         UpdateInput(txin, sigdata);

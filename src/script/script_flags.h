@@ -107,6 +107,9 @@ enum {
     // 64-bit integer arithmetic and the return of OP_MUL or use the previous
     // semantics.
     SCRIPT_64_BIT_INTEGERS = (1U << 24),
+
+    // Native Introspection opcodes.
+    SCRIPT_NATIVE_INTROSPECTION = (1U << 25),
 };
 
 #endif // BITCOIN_SCRIPT_SCRIPT_FLAGS_H

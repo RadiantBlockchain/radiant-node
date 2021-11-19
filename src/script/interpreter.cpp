@@ -164,7 +164,7 @@ public:
 
 bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                 uint32_t flags, const BaseSignatureChecker &checker,
-                ScriptExecutionMetrics &metrics, ScriptError *serror) {
+                ScriptExecutionMetrics &metrics, ScriptExecutionContextOpt const& context, ScriptError *serror) {
     static auto const bnZero = CScriptNum::fromIntUnchecked(0);
     static const valtype vchFalse(0);
     static const valtype vchTrue(1, 1);
@@ -182,6 +182,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
     }
     int nOpCount = 0;
     bool const fRequireMinimal = (flags & SCRIPT_VERIFY_MINIMALDATA) != 0;
+    bool const nativeIntrospection = (flags & SCRIPT_NATIVE_INTROSPECTION) != 0;
     bool const integers64Bit = (flags & SCRIPT_64_BIT_INTEGERS) != 0;
 
     size_t const maxIntegerSize = integers64Bit ?
@@ -328,7 +329,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                         // CHECKSEQUENCEVERIFY behaves as a NOP.
                         auto res = nSequence.safeBitwiseAnd(CTxIn::SEQUENCE_LOCKTIME_DISABLE_FLAG);
                         if ( ! res) {
-                            // Defensive programming: It is impossible for the following error to be 
+                            // Defensive programming: It is impossible for the following error to be
                             // returned unless the current possible values of the operands change.
                             return set_error(serror, ScriptError::INVALID_NUMBER_RANGE_64_BIT);
                         }
@@ -1350,6 +1351,176 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                         }
                     } break;
 
+                    // Native Introspection opcodes (Nullary)
+                    case OP_INPUTINDEX:
+                    case OP_ACTIVEBYTECODE:
+                    case OP_TXVERSION:
+                    case OP_TXINPUTCOUNT:
+                    case OP_TXOUTPUTCOUNT:
+                    case OP_TXLOCKTIME: {
+                        if ( ! nativeIntrospection) {
+                            return set_error(serror, ScriptError::BAD_OPCODE);
+                        }
+                        if ( ! context) {
+                            return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
+                        }
+
+                        switch (opcode) {
+                            //  Operations
+                            case OP_INPUTINDEX: {
+                                auto const bn = CScriptNum::fromInt(context->inputIndex()).value();
+                                stack.push_back(bn.getvch());
+                            } break;
+                            case OP_ACTIVEBYTECODE: {
+                                // Subset of script starting at the most recent code separator (if any)
+                                // or the entire script if no code separators are present.
+                                if (size_t(script.end() - pbegincodehash) > MAX_SCRIPT_ELEMENT_SIZE) {
+                                    return set_error(serror, ScriptError::PUSH_SIZE);
+                                }
+                                stack.emplace_back(pbegincodehash, script.end());
+                            } break;
+                            case OP_TXVERSION: {
+                                auto const bn = CScriptNum::fromInt(context->tx().nVersion()).value();
+                                stack.push_back(bn.getvch());
+                            } break;
+                            case OP_TXINPUTCOUNT: {
+                                auto const bn = CScriptNum::fromInt(context->tx().vin().size()).value();
+                                stack.push_back(bn.getvch());
+                            } break;
+                            case OP_TXOUTPUTCOUNT: {
+                                auto const bn = CScriptNum::fromInt(context->tx().vout().size()).value();
+                                stack.push_back(bn.getvch());
+                            } break;
+                            case OP_TXLOCKTIME: {
+                                auto const bn = CScriptNum::fromInt(context->tx().nLockTime()).value();
+                                stack.push_back(bn.getvch());
+                            } break;
+                            default: {
+                                assert(!"invalid opcode");
+                                break;
+                            }
+                        }
+                    } break; // end of Native Introspection opcodes (Nullary)
+
+                    // Native Introspection opcodes (Unary)
+                    case OP_UTXOVALUE:
+                    case OP_UTXOBYTECODE:
+                    case OP_OUTPOINTTXHASH:
+                    case OP_OUTPOINTINDEX:
+                    case OP_INPUTBYTECODE:
+                    case OP_INPUTSEQUENCENUMBER:
+                    case OP_OUTPUTVALUE:
+                    case OP_OUTPUTBYTECODE: {
+
+                        if ( ! nativeIntrospection) {
+                            return set_error(serror, ScriptError::BAD_OPCODE);
+                        }
+                        if ( ! context) {
+                            return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
+                        }
+
+                        // (in -- out)
+                        if (stack.size() < 1) {
+                            return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
+                        }
+                        auto const index = CScriptNum(stacktop(-1), fRequireMinimal, maxIntegerSize).getint64();
+                        popstack(stack); // consume element
+
+                        switch (opcode) {
+                            case OP_UTXOVALUE: {
+                                if (index < 0 || uint64_t(index) >= context->tx().vin().size()) {
+                                    return set_error(serror, ScriptError::INVALID_TX_INPUT_INDEX);
+                                }
+                                if (context->isLimited() && uint64_t(index) != context->inputIndex()) {
+                                    // This branch can only happen in tests or other non-consensus code
+                                    // that calls the VM without all the *other* inputs' coins.
+                                    return set_error(serror, ScriptError::LIMITED_CONTEXT_NO_SIBLING_INFO);
+                                }
+                                auto const bn = CScriptNum::fromInt(context->coinAmount(index) / SATOSHI).value();
+                                stack.push_back(bn.getvch());
+                            } break;
+
+                            case OP_UTXOBYTECODE: {
+                                if (index < 0 || uint64_t(index) >= context->tx().vin().size()) {
+                                    return set_error(serror, ScriptError::INVALID_TX_INPUT_INDEX);
+                                }
+                                if (context->isLimited() && uint64_t(index) != context->inputIndex()) {
+                                    // This branch can only happen in tests or other non-consensus code
+                                    // that calls the VM without all the *other* inputs' coins.
+                                    return set_error(serror, ScriptError::LIMITED_CONTEXT_NO_SIBLING_INFO);
+                                }
+                                auto const& utxoScript = context->coinScriptPubKey(index);
+                                if (utxoScript.size() > MAX_SCRIPT_ELEMENT_SIZE) {
+                                    return set_error(serror, ScriptError::PUSH_SIZE);
+                                }
+                                stack.emplace_back(utxoScript.begin(), utxoScript.end());
+                            } break;
+
+                            case OP_OUTPOINTTXHASH: {
+                                if (index < 0 || uint64_t(index) >= context->tx().vin().size()) {
+                                    return set_error(serror, ScriptError::INVALID_TX_INPUT_INDEX);
+                                }
+                                auto const& input = context->tx().vin()[index];
+                                auto const& txid = input.prevout.GetTxId();
+                                static_assert(TxId::size() <= MAX_SCRIPT_ELEMENT_SIZE);
+                                stack.emplace_back(txid.begin(), txid.end());
+                            } break;
+
+                            case OP_OUTPOINTINDEX: {
+                                if (index < 0 || uint64_t(index) >= context->tx().vin().size()) {
+                                    return set_error(serror, ScriptError::INVALID_TX_INPUT_INDEX);
+                                }
+                                auto const& input = context->tx().vin()[index];
+                                auto const bn = CScriptNum::fromInt(input.prevout.GetN()).value();
+                                stack.push_back(bn.getvch());
+                            } break;
+
+                            case OP_INPUTBYTECODE: {
+                                if (index < 0 || uint64_t(index) >= context->tx().vin().size()) {
+                                    return set_error(serror, ScriptError::INVALID_TX_INPUT_INDEX);
+                                }
+                                auto const& inputScript = context->scriptSig(index);
+                                if (inputScript.size() > MAX_SCRIPT_ELEMENT_SIZE) {
+                                    return set_error(serror, ScriptError::PUSH_SIZE);
+                                }
+                                stack.emplace_back(inputScript.begin(), inputScript.end());
+                            } break;
+
+                            case OP_INPUTSEQUENCENUMBER: {
+                                if (index < 0 || uint64_t(index) >= context->tx().vin().size()) {
+                                    return set_error(serror, ScriptError::INVALID_TX_INPUT_INDEX);
+                                }
+                                auto const& input = context->tx().vin()[index];
+                                auto const bn = CScriptNum::fromInt(input.nSequence).value();
+                                stack.push_back(bn.getvch());
+                            } break;
+
+                            case OP_OUTPUTVALUE: {
+                                if (index < 0 || uint64_t(index) >= context->tx().vout().size()) {
+                                    return set_error(serror, ScriptError::INVALID_TX_OUTPUT_INDEX);
+                                }
+                                auto const& output = context->tx().vout()[index];
+                                auto const bn = CScriptNum::fromInt(output.nValue / SATOSHI).value();
+                                stack.push_back(bn.getvch());
+                            } break;
+
+                            case OP_OUTPUTBYTECODE: {
+                                if (index < 0 || uint64_t(index) >= context->tx().vout().size()) {
+                                    return set_error(serror, ScriptError::INVALID_TX_OUTPUT_INDEX);
+                                }
+                                auto const& outputScript = context->tx().vout()[index].scriptPubKey;
+                                if (outputScript.size() > MAX_SCRIPT_ELEMENT_SIZE) {
+                                    return set_error(serror, ScriptError::PUSH_SIZE);
+                                }
+                                stack.emplace_back(outputScript.begin(), outputScript.end());
+                            } break;
+                            default: {
+                                assert(!"invalid opcode");
+                                break;
+                            }
+                        }
+                    } break; // end of Native Introspection opcodes (Unary)
+
                     default:
                         return set_error(serror, ScriptError::BAD_OPCODE);
                 }
@@ -1737,9 +1908,8 @@ bool GenericTransactionSignatureChecker<T>::CheckSequence(const CScriptNum &nSeq
 template class GenericTransactionSignatureChecker<CTransaction>;
 template class GenericTransactionSignatureChecker<CMutableTransaction>;
 
-bool VerifyScript(const CScript &scriptSig, const CScript &scriptPubKey,
-                  uint32_t flags, const BaseSignatureChecker &checker,
-                  ScriptExecutionMetrics &metricsOut, ScriptError *serror) {
+bool VerifyScript(const CScript &scriptSig, const CScript &scriptPubKey, uint32_t flags, const BaseSignatureChecker &checker,
+                  ScriptExecutionMetrics &metricsOut, ScriptExecutionContextOpt const& context, ScriptError *serror) {
     set_error(serror, ScriptError::UNKNOWN);
 
     // If FORKID is enabled, we also ensure strict encoding.
@@ -1754,14 +1924,14 @@ bool VerifyScript(const CScript &scriptSig, const CScript &scriptPubKey,
     ScriptExecutionMetrics metrics = {};
 
     std::vector<valtype> stack, stackCopy;
-    if (!EvalScript(stack, scriptSig, flags, checker, metrics, serror)) {
+    if ( ! EvalScript(stack, scriptSig, flags, checker, metrics, context, serror)) {
         // serror is set
         return false;
     }
     if (flags & SCRIPT_VERIFY_P2SH) {
         stackCopy = stack;
     }
-    if (!EvalScript(stack, scriptPubKey, flags, checker, metrics, serror)) {
+    if ( ! EvalScript(stack, scriptPubKey, flags, checker, metrics, context, serror)) {
         // serror is set
         return false;
     }
@@ -1801,7 +1971,7 @@ bool VerifyScript(const CScript &scriptSig, const CScript &scriptPubKey,
             return set_success(serror);
         }
 
-        if (!EvalScript(stack, pubKey2, flags, checker, metrics, serror)) {
+        if ( ! EvalScript(stack, pubKey2, flags, checker, metrics, context, serror)) {
             // serror is set
             return false;
         }

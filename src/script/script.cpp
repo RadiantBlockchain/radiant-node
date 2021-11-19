@@ -257,6 +257,41 @@ const char *GetOpName(opcodetype opcode) {
         case OP_NOP10:
             return "OP_NOP10";
 
+        // Native Introspection opcodes
+        case OP_INPUTINDEX:
+            return "OP_INPUTINDEX";
+        case OP_ACTIVEBYTECODE:
+            return "OP_ACTIVEBYTECODE";
+        case OP_TXVERSION:
+            return "OP_TXVERSION";
+        case OP_TXINPUTCOUNT:
+            return "OP_TXINPUTCOUNT";
+        case OP_TXOUTPUTCOUNT:
+            return "OP_TXOUTPUTCOUNT";
+        case OP_TXLOCKTIME:
+            return "OP_TXLOCKTIME";
+
+        case OP_UTXOVALUE:
+            return "OP_UTXOVALUE";
+        case OP_UTXOBYTECODE:
+            return "OP_UTXOBYTECODE";
+        case OP_OUTPOINTTXHASH:
+            return "OP_OUTPOINTTXHASH";
+        case OP_OUTPOINTINDEX:
+            return "OP_OUTPOINTINDEX";
+        case OP_INPUTBYTECODE:
+            return "OP_INPUTBYTECODE";
+        case OP_INPUTSEQUENCENUMBER:
+            return "OP_INPUTSEQUENCENUMBER";
+        case OP_OUTPUTVALUE:
+            return "OP_OUTPUTVALUE";
+        case OP_OUTPUTBYTECODE:
+            return "OP_OUTPUTBYTECODE";
+        case OP_RESERVED3:
+            return "OP_RESERVED3";
+        case OP_RESERVED4:
+            return "OP_RESERVED4";
+
         default:
             return "OP_UNKNOWN";
     }

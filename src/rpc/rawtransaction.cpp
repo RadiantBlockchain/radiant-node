@@ -762,17 +762,27 @@ static UniValue combinerawtransaction(const Config &,
             view.AccessCoin(txin.prevout);
         }
 
+        // pre-load all the coins for the other txns too (for context info below)
+        for (size_t i = 1; i < txVariants.size(); ++i) {
+            const auto &txv = txVariants[i];
+            for (const CTxIn &txin : txv.vin) {
+                // Load entries from viewChain into view; can fail.
+                view.AccessCoin(txin.prevout);
+            }
+        }
+
         // switch back to avoid locking mempool for too long
         view.SetBackend(viewDummy);
     }
 
-    // Use CTransaction for the constant parts of the
-    // transaction to avoid rehashing.
-    const CTransaction txConst(mergedTx);
+    // Assumption: Below code does NOT push_back new inputs to mergedTx.
+    const auto contexts = ScriptExecutionContext::createForAllInputs(mergedTx, view);
+    assert(contexts.size() == mergedTx.vin.size());
+
     // Sign what we can:
     for (size_t i = 0; i < mergedTx.vin.size(); i++) {
         CTxIn &txin = mergedTx.vin[i];
-        const Coin &coin = view.AccessCoin(txin.prevout);
+        const Coin &coin = contexts[i].coin(i); // this coin came from "view" above
         if (coin.IsSpent()) {
             throw JSONRPCError(RPC_VERIFY_ERROR,
                                "Input not found or already spent");
@@ -784,13 +794,15 @@ static UniValue combinerawtransaction(const Config &,
         // ... and merge in other signatures:
         for (const CMutableTransaction &txv : txVariants) {
             if (txv.vin.size() > i) {
-                sigdata.MergeSignatureData(DataFromTransaction(txv, i, txout));
+                const auto txvContexts = ScriptExecutionContext::createForAllInputs(txv, view);
+                sigdata.MergeSignatureData(DataFromTransaction(txv, i, txout, txvContexts[i]));
             }
         }
+
         ProduceSignature(
             DUMMY_SIGNING_PROVIDER,
             MutableTransactionSignatureCreator(&mergedTx, i, txout.nValue),
-            txout.scriptPubKey, sigdata);
+            txout.scriptPubKey, sigdata, contexts[i]);
 
         UpdateInput(txin, sigdata);
     }
@@ -893,10 +905,12 @@ UniValue::Object SignTransaction(interfaces::Chain &, CMutableTransaction &mtx, 
     // Use CTransaction for the constant parts of the transaction to avoid
     // rehashing.
     const CTransaction txConst(mtx);
+    // Assumption: Below code does NOT push_back new inputs to mtx.
+    const auto contexts = ScriptExecutionContext::createForAllInputs(mtx, view);
     // Sign what we can:
     for (size_t i = 0; i < mtx.vin.size(); i++) {
         CTxIn &txin = mtx.vin[i];
-        const Coin &coin = view.AccessCoin(txin.prevout);
+        const Coin &coin = contexts[i].coin(i); // this coin ultimately comes from "view" above
         if (coin.IsSpent()) {
             vErrors.emplace_back(TxInErrorToJSON(txin, "Input not found or already spent"));
             continue;
@@ -905,22 +919,20 @@ UniValue::Object SignTransaction(interfaces::Chain &, CMutableTransaction &mtx, 
         const CScript &prevPubKey = coin.GetTxOut().scriptPubKey;
         const Amount amount = coin.GetTxOut().nValue;
 
-        SignatureData sigdata = DataFromTransaction(mtx, i, coin.GetTxOut());
+        SignatureData sigdata = DataFromTransaction(mtx, i, coin.GetTxOut(), contexts[i]);
+
         // Only sign SIGHASH_SINGLE if there's a corresponding output:
         if ((sigHashType.getBaseType() != BaseSigHashType::SINGLE) ||
             (i < mtx.vout.size())) {
             ProduceSignature(*keystore,
-                             MutableTransactionSignatureCreator(&mtx, i, amount,
-                                                                sigHashType),
-                             prevPubKey, sigdata);
+                             MutableTransactionSignatureCreator(&mtx, i, amount, sigHashType),
+                             prevPubKey, sigdata, contexts[i]);
         }
 
         UpdateInput(txin, sigdata);
 
         ScriptError serror = ScriptError::OK;
-        if (!VerifyScript(
-                txin.scriptSig, prevPubKey, STANDARD_SCRIPT_VERIFY_FLAGS,
-                TransactionSignatureChecker(&txConst, i, amount), &serror)) {
+        if ( ! VerifyScript(txin.scriptSig, prevPubKey, STANDARD_SCRIPT_VERIFY_FLAGS, TransactionSignatureChecker(&txConst, i, amount), contexts[i], &serror)) {
             if (serror == ScriptError::INVALID_STACK_OPERATION) {
                 // Unable to sign input and verification failed (possible
                 // attempt to partially sign).
@@ -1572,9 +1584,11 @@ static UniValue finalizepsbt(const Config &,
     //   that created this PartiallySignedTransaction did not understand them),
     //   this will combine them into a final script.
     bool complete = true;
+    // Assumption: Below code does NOT push_back new inputs to psbtx.tx.
+    const auto contexts = ScriptExecutionContext::createForAllInputs(*psbtx.tx, psbtx.inputs);
     for (size_t i = 0; i < psbtx.tx->vin.size(); ++i) {
         complete &=
-            SignPSBTInput(DUMMY_SIGNING_PROVIDER, psbtx, i, SigHashType());
+            SignPSBTInput(DUMMY_SIGNING_PROVIDER, psbtx, i, SigHashType(), contexts[i]);
     }
 
     UniValue::Object result;

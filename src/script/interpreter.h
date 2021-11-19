@@ -10,6 +10,7 @@
 #include <primitives/transaction.h>
 #include <script/script_error.h>
 #include <script/script_flags.h>
+#include <script/script_execution_context.h>
 #include <script/script_metrics.h>
 #include <script/sighashtype.h>
 
@@ -21,6 +22,8 @@ class CPubKey;
 class CScript;
 class CTransaction;
 class uint256;
+
+using StackT = std::vector<std::vector<uint8_t>>;
 
 template <class T>
 uint256 SignatureHash(const CScript &scriptCode, const T &txTo,
@@ -78,20 +81,18 @@ public:
     bool CheckSequence(const CScriptNum &nSequence) const final override;
 };
 
-using TransactionSignatureChecker =
-    GenericTransactionSignatureChecker<CTransaction>;
-using MutableTransactionSignatureChecker =
-    GenericTransactionSignatureChecker<CMutableTransaction>;
+using TransactionSignatureChecker = GenericTransactionSignatureChecker<CTransaction>;
+using MutableTransactionSignatureChecker = GenericTransactionSignatureChecker<CMutableTransaction>;
 
-bool EvalScript(std::vector<std::vector<uint8_t>> &stack, const CScript &script,
+bool EvalScript(StackT& stack, const CScript &script,
                 uint32_t flags, const BaseSignatureChecker &checker,
-                ScriptExecutionMetrics &metrics, ScriptError *error = nullptr);
-static inline bool EvalScript(std::vector<std::vector<uint8_t>> &stack,
-                              const CScript &script, uint32_t flags,
-                              const BaseSignatureChecker &checker,
-                              ScriptError *error = nullptr) {
+                ScriptExecutionMetrics &metrics, ScriptExecutionContextOpt const& context, ScriptError *error = nullptr);
+
+static inline
+bool EvalScript(StackT& stack, const CScript &script, uint32_t flags,
+                const BaseSignatureChecker &checker, ScriptExecutionContextOpt const& context, ScriptError *error = nullptr) {
     ScriptExecutionMetrics dummymetrics;
-    return EvalScript(stack, script, flags, checker, dummymetrics, error);
+    return EvalScript(stack, script, flags, checker, dummymetrics, context, error);
 }
 
 /**
@@ -100,17 +101,14 @@ static inline bool EvalScript(std::vector<std::vector<uint8_t>> &stack,
  * Upon success, metrics will hold the accumulated script metrics.
  * (upon failure, the results should not be relied on)
  */
-bool VerifyScript(const CScript &scriptSig, const CScript &scriptPubKey,
-                  uint32_t flags, const BaseSignatureChecker &checker,
-                  ScriptExecutionMetrics &metricsOut,
-                  ScriptError *serror = nullptr);
-static inline bool VerifyScript(const CScript &scriptSig,
-                                const CScript &scriptPubKey, uint32_t flags,
-                                const BaseSignatureChecker &checker,
-                                ScriptError *serror = nullptr) {
+bool VerifyScript(const CScript &scriptSig, const CScript &scriptPubKey, uint32_t flags, const BaseSignatureChecker &checker,
+                  ScriptExecutionMetrics &metricsOut, ScriptExecutionContextOpt const& context, ScriptError *serror = nullptr);
+
+static inline
+bool VerifyScript(const CScript &scriptSig, const CScript &scriptPubKey, uint32_t flags, const BaseSignatureChecker &checker,
+                  ScriptExecutionContextOpt const& context, ScriptError *serror = nullptr) {
     ScriptExecutionMetrics dummymetrics;
-    return VerifyScript(scriptSig, scriptPubKey, flags, checker, dummymetrics,
-                        serror);
+    return VerifyScript(scriptSig, scriptPubKey, flags, checker, dummymetrics, context, serror);
 }
 
 int FindAndDelete(CScript &script, const CScript &b);

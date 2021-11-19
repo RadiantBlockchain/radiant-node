@@ -442,6 +442,7 @@ add_library(script
 	script/ismine.cpp
 	script/script.cpp
 	script/script_error.cpp
+	script/script_execution_context.cpp
 	script/sigencoding.cpp
 	script/sign.cpp
 	script/standard.cpp

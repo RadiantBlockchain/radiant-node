@@ -37,22 +37,24 @@ struct KeyData {
     }
 };
 
-static void CheckError(uint32_t flags, const stacktype &original_stack,
-                       const CScript &script, ScriptError expected) {
+static
+void CheckError(uint32_t flags, const stacktype &original_stack, const CScript &script, ScriptError expected) {
     BaseSignatureChecker sigchecker;
     ScriptError err = ScriptError::OK;
     stacktype stack{original_stack};
-    bool r = EvalScript(stack, script, flags, sigchecker, &err);
+    auto const null_context = std::nullopt;
+    bool r = EvalScript(stack, script, flags, sigchecker, null_context, &err);
     BOOST_CHECK(!r);
     BOOST_CHECK(err == expected);
 }
 
-static void CheckPass(uint32_t flags, const stacktype &original_stack,
-                      const CScript &script, const stacktype &expected) {
+static
+void CheckPass(uint32_t flags, const stacktype &original_stack, const CScript &script, const stacktype &expected) {
     BaseSignatureChecker sigchecker;
     ScriptError err = ScriptError::OK;
     stacktype stack{original_stack};
-    bool r = EvalScript(stack, script, flags, sigchecker, &err);
+    auto const null_context = std::nullopt;
+    bool r = EvalScript(stack, script, flags, sigchecker, null_context, &err);
     BOOST_CHECK(r);
     BOOST_CHECK(err == ScriptError::OK);
     BOOST_CHECK(stack == expected);

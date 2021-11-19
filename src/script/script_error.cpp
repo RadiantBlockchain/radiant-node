@@ -105,6 +105,17 @@ const char *ScriptErrorString(const ScriptError serror) {
             return "Signature must use SIGHASH_FORKID";
         case ScriptError::SIGCHECKS_LIMIT_EXCEEDED:
             return "Validation resources exceeded (SigChecks)";
+
+        // Native introspection errors
+        case ScriptError::CONTEXT_NOT_PRESENT:
+            return "Script execution context lacks introspection data";
+        case ScriptError::LIMITED_CONTEXT_NO_SIBLING_INFO:
+            return "Script execution context is limited and lacks sibling utxo data";
+        case ScriptError::INVALID_TX_INPUT_INDEX:
+            return "The specified transaction input index is out of range";
+        case ScriptError::INVALID_TX_OUTPUT_INDEX:
+            return "The specified transaction output index is out of range";
+
         case ScriptError::UNKNOWN:
         case ScriptError::ERROR_COUNT:
         default:

@@ -20,6 +20,7 @@
 #include <fs.h>
 #include <protocol.h> // For CMessageHeader::MessageMagic
 #include <script/script_error.h>
+#include <script/script_execution_context.h>
 #include <script/script_metrics.h>
 #include <sync.h>
 #include <versionbits.h>
@@ -614,32 +615,24 @@ bool CheckSequenceLocks(const CTxMemPool &pool, const CTransaction &tx,
  */
 class CScriptCheck {
 private:
-    CScript scriptPubKey;
-    Amount amount;
-    const CTransaction *ptxTo;
-    unsigned int nIn;
-    uint32_t nFlags;
-    bool cacheStore;
-    ScriptError error;
-    ScriptExecutionMetrics metrics;
-    PrecomputedTransactionData txdata;
-    TxSigCheckLimiter *pTxLimitSigChecks;
-    CheckInputsLimiter *pBlockLimitSigChecks;
+    ScriptExecutionContextOpt context;
+    uint32_t nFlags{};
+    bool cacheStore{};
+    ScriptError error{ScriptError::UNKNOWN};
+    ScriptExecutionMetrics metrics{};
+    PrecomputedTransactionData txdata{};
+    TxSigCheckLimiter *pTxLimitSigChecks{};
+    CheckInputsLimiter *pBlockLimitSigChecks{};
 
 public:
-    CScriptCheck()
-        : amount(), ptxTo(nullptr), nIn(0), nFlags(0), cacheStore(false),
-          error(ScriptError::UNKNOWN), txdata(), pTxLimitSigChecks(nullptr),
-          pBlockLimitSigChecks(nullptr) {}
+    CScriptCheck() = default;
 
-    CScriptCheck(const CScript &scriptPubKeyIn, const Amount amountIn,
-                 const CTransaction &txToIn, unsigned int nInIn,
+    CScriptCheck(const ScriptExecutionContext &contextIn,
                  uint32_t nFlagsIn, bool cacheIn,
                  const PrecomputedTransactionData &txdataIn,
                  TxSigCheckLimiter *pTxLimitSigChecksIn = nullptr,
                  CheckInputsLimiter *pBlockLimitSigChecksIn = nullptr)
-        : scriptPubKey(scriptPubKeyIn), amount(amountIn), ptxTo(&txToIn),
-          nIn(nInIn), nFlags(nFlagsIn), cacheStore(cacheIn),
+        : context(contextIn), nFlags(nFlagsIn), cacheStore(cacheIn),
           error(ScriptError::UNKNOWN), txdata(txdataIn),
           pTxLimitSigChecks(pTxLimitSigChecksIn),
           pBlockLimitSigChecks(pBlockLimitSigChecksIn) {}
@@ -647,10 +640,7 @@ public:
     bool operator()();
 
     void swap(CScriptCheck &check) {
-        scriptPubKey.swap(check.scriptPubKey);
-        std::swap(ptxTo, check.ptxTo);
-        std::swap(amount, check.amount);
-        std::swap(nIn, check.nIn);
+        context.swap(check.context);
         std::swap(nFlags, check.nFlags);
         std::swap(cacheStore, check.cacheStore);
         std::swap(error, check.error);

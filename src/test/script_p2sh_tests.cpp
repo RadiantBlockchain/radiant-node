@@ -40,12 +40,11 @@ static bool Verify(const CScript &scriptSig, const CScript &scriptPubKey,
     txTo.vin[0].scriptSig = scriptSig;
     txTo.vout[0].nValue = SATOSHI;
 
-    return VerifyScript(
-        scriptSig, scriptPubKey,
-        (fStrict ? SCRIPT_VERIFY_P2SH : SCRIPT_VERIFY_NONE) |
-            SCRIPT_ENABLE_SIGHASH_FORKID,
+    auto const null_context = std::nullopt; //It is Ok to have a null context here.
+    return VerifyScript(scriptSig, scriptPubKey,
+        (fStrict ? SCRIPT_VERIFY_P2SH : SCRIPT_VERIFY_NONE) | SCRIPT_ENABLE_SIGHASH_FORKID,
         MutableTransactionSignatureChecker(&txTo, 0, txFrom.vout[0].nValue),
-        &err);
+        null_context, &err);
 }
 
 BOOST_FIXTURE_TEST_SUITE(script_p2sh_tests, BasicTestingSetup)
@@ -101,10 +100,11 @@ BOOST_AUTO_TEST_CASE(sign) {
                             strprintf("IsMine %d", i));
     }
 
+    auto const null_context = std::nullopt;
     for (int i = 0; i < 8; i++) {
         BOOST_CHECK_MESSAGE(SignSignature(keystore, CTransaction(txFrom),
                                           txTo[i], 0,
-                                          SigHashType().withForkId()),
+                                          SigHashType().withForkId(), null_context),
                             strprintf("SignSignature %d", i));
     }
 
@@ -118,8 +118,9 @@ BOOST_AUTO_TEST_CASE(sign) {
             CScript sigSave = txTo[i].vin[0].scriptSig;
             txTo[i].vin[0].scriptSig = txTo[j].vin[0].scriptSig;
             const CTxOut &output = txFrom.vout[txTo[i].vin[0].prevout.GetN()];
+            const CTransaction tx2(txTo[i]);
             bool sigOK = CScriptCheck(
-                output.scriptPubKey, output.nValue, CTransaction(txTo[i]), 0,
+                ScriptExecutionContext(0, output.scriptPubKey, output.nValue, tx2),
                 SCRIPT_VERIFY_P2SH | SCRIPT_VERIFY_STRICTENC |
                     SCRIPT_ENABLE_SIGHASH_FORKID,
                 false, txdata)();
@@ -209,10 +210,12 @@ BOOST_AUTO_TEST_CASE(set) {
         BOOST_CHECK_MESSAGE(IsMine(keystore, txFrom.vout[i].scriptPubKey),
                             strprintf("IsMine %d", i));
     }
+
+    auto const null_context = std::nullopt;
     for (int i = 0; i < 4; i++) {
         BOOST_CHECK_MESSAGE(SignSignature(keystore, CTransaction(txFrom),
                                           txTo[i], 0,
-                                          SigHashType().withForkId()),
+                                          SigHashType().withForkId(), null_context),
                             strprintf("SignSignature %d", i));
         BOOST_CHECK_MESSAGE(IsStandardTx(CTransaction(txTo[i]), reason), strprintf("txTo[%d].IsStandard", i));
     }
@@ -395,12 +398,13 @@ BOOST_AUTO_TEST_CASE(AreInputsStandard) {
         txTo.vin[i].prevout = COutPoint(txFrom.GetId(), i);
     }
 
+    auto const null_context = std::nullopt; //It is Ok to have a null context here.
     BOOST_CHECK(SignSignature(keystore, CTransaction(txFrom), txTo, 0,
-                              SigHashType().withForkId()));
+                              SigHashType().withForkId(), null_context));
     BOOST_CHECK(SignSignature(keystore, CTransaction(txFrom), txTo, 1,
-                              SigHashType().withForkId()));
+                              SigHashType().withForkId(), null_context));
     BOOST_CHECK(SignSignature(keystore, CTransaction(txFrom), txTo, 2,
-                              SigHashType().withForkId()));
+                              SigHashType().withForkId(), null_context));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

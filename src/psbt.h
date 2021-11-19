@@ -8,6 +8,7 @@
 #include <attributes.h>
 #include <primitives/transaction.h>
 #include <pubkey.h>
+#include <script/script_execution_context.h>
 #include <script/sign.h>
 
 #include <optional>
@@ -478,6 +479,6 @@ bool PSBTInputSigned(PSBTInput &input);
  */
 bool SignPSBTInput(const SigningProvider &provider,
                    PartiallySignedTransaction &psbt, int index,
-                   SigHashType sighash = SigHashType());
+                   SigHashType sighash = SigHashType(), const ScriptExecutionContextOpt &context = {});
 
 #endif // BITCOIN_PSBT_H

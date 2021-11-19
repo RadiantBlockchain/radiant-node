@@ -39,6 +39,7 @@ EXPECTED_CIRCULAR_DEPENDENCIES=(
     "chainparams -> protocol -> config -> chainparams"
     "config -> policy/policy -> validation -> config"
     "config -> policy/policy -> validation -> protocol -> config"
+    "psbt -> script/script_execution_context -> psbt"
 )
 
 EXIT_CODE=0

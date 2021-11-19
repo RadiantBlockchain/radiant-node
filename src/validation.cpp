@@ -1240,11 +1240,14 @@ void UpdateCoins(CCoinsViewCache &view, const CTransaction &tx, int nHeight) {
 }
 
 bool CScriptCheck::operator()() {
-    const CScript &scriptSig = ptxTo->vin[nIn].scriptSig;
-    if (!VerifyScript(scriptSig, scriptPubKey, nFlags,
-                      CachingTransactionSignatureChecker(ptxTo, nIn, amount,
-                                                         cacheStore, txdata),
-                      metrics, &error)) {
+    assert(bool(context));
+    assert(bool(context->tx().constantTx()));
+
+    if ( ! VerifyScript(context->scriptSig(), context->coinScriptPubKey(), nFlags,
+                        CachingTransactionSignatureChecker(context->tx().constantTx(),
+                                                           context->inputIndex(), context->coinAmount(),
+                                                           cacheStore, txdata),
+                        metrics, context, &error)) {
         return false;
     }
     if ((pTxLimitSigChecks &&
@@ -1267,7 +1270,7 @@ int GetSpendHeight(const CCoinsViewCache &inputs) {
 }
 
 bool CheckInputs(const CTransaction &tx, CValidationState &state,
-                 const CCoinsViewCache &inputs, bool fScriptChecks,
+                 const CCoinsViewCache &view, bool fScriptChecks,
                  const uint32_t flags, bool sigCacheStore,
                  bool scriptCacheStore,
                  const PrecomputedTransactionData &txdata, int &nSigChecksOut,
@@ -1307,21 +1310,19 @@ bool CheckInputs(const CTransaction &tx, CValidationState &state,
 
     int nSigChecksTotal = 0;
 
-    for (size_t i = 0; i < tx.vin.size(); i++) {
-        const COutPoint &prevout = tx.vin[i].prevout;
-        const Coin &coin = inputs.AccessCoin(prevout);
-        assert(!coin.IsSpent());
+    auto contextVec = ScriptExecutionContext::createForAllInputs(tx, view);
+
+    for (size_t i = 0; i < tx.vin.size(); ++i) {
+        assert(!contextVec[i].coin().IsSpent());
 
         // We very carefully only pass in things to CScriptCheck which are
         // clearly committed to by tx's hash. This provides a sanity
         // check that our caching is not introducing consensus failures through
         // additional data in, eg, the coins being spent being checked as a part
         // of CScriptCheck.
-        const CScript &scriptPubKey = coin.GetTxOut().scriptPubKey;
-        const Amount amount = coin.GetTxOut().nValue;
 
         // Verify signature
-        CScriptCheck check(scriptPubKey, amount, tx, i, flags, sigCacheStore,
+        CScriptCheck check(contextVec[i], flags, sigCacheStore,
                            txdata, &txLimitSigChecks, pBlockLimitSigChecks);
         if (pvChecks) {
             pvChecks->push_back(std::move(check));
@@ -1338,8 +1339,7 @@ bool CheckInputs(const CTransaction &tx, CValidationState &state,
                 // script verification check. If so, don't trigger DoS
                 // protection to avoid splitting the network on the basis of
                 // relay policy disagreements.
-                CScriptCheck check2(scriptPubKey, amount, tx, i, mandatoryFlags,
-                                    sigCacheStore, txdata);
+                CScriptCheck check2(contextVec[i], mandatoryFlags, sigCacheStore, txdata);
                 if (check2()) {
                     return state.Invalid(
                         false, REJECT_NONSTANDARD,
@@ -1692,6 +1692,7 @@ static uint32_t GetNextBlockScriptFlags(const Consensus::Params &params,
 
     if (IsUpgrade8Enabled(params, pindex)) {
         flags |= SCRIPT_64_BIT_INTEGERS;
+        flags |= SCRIPT_NATIVE_INTROSPECTION;
     }
 
     return flags;

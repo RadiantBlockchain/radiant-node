@@ -217,19 +217,19 @@ void SerializeHDKeypaths(Stream &s,
 /** Produce a script signature using a generic signature creator. */
 bool ProduceSignature(const SigningProvider &provider,
                       const BaseSignatureCreator &creator,
-                      const CScript &scriptPubKey, SignatureData &sigdata);
+                      const CScript &scriptPubKey, SignatureData &sigdata, ScriptExecutionContextOpt const& context);
 
 /** Produce a script signature for a transaction. */
 bool SignSignature(const SigningProvider &provider, const CScript &fromPubKey,
                    CMutableTransaction &txTo, unsigned int nIn,
-                   const Amount amount, SigHashType sigHashType);
+                   const Amount amount, SigHashType sigHashType, ScriptExecutionContextOpt const& context);
 bool SignSignature(const SigningProvider &provider, const CTransaction &txFrom,
                    CMutableTransaction &txTo, unsigned int nIn,
-                   SigHashType sigHashType);
+                   SigHashType sigHashType, ScriptExecutionContextOpt const& context);
 
 /** Extract signature data from a transaction input, and insert it. */
 SignatureData DataFromTransaction(const CMutableTransaction &tx,
-                                  unsigned int nIn, const CTxOut &txout);
+                                  unsigned int nIn, const CTxOut &txout, const ScriptExecutionContextOpt &context = {});
 void UpdateInput(CTxIn &input, const SignatureData &data);
 
 /**
@@ -238,6 +238,6 @@ void UpdateInput(CTxIn &input, const SignatureData &data);
  * keystore is used to look up public keys and redeemscripts by hash.
  * Solvability is unrelated to whether we consider this output to be ours.
  */
-bool IsSolvable(const SigningProvider &provider, const CScript &script);
+bool IsSolvable(const SigningProvider &provider, const CScript &script, ScriptExecutionContextOpt const& context);
 
 #endif // BITCOIN_SCRIPT_SIGN_H

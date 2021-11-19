@@ -99,9 +99,9 @@ static void CCheckQueue_RealData32MB(bool cacheSigs, benchmark::State &state) {
                 const CTxOut &prevTxOut = it->second->vout[txin.prevout.GetN()];
                 const CScript &scriptPubKey = prevTxOut.scriptPubKey;
                 const Amount &amount = prevTxOut.nValue;
-
+                const ScriptExecutionContext context(nIn, scriptPubKey, amount, *tx);
                 // Verify signature
-                vChecksThisTx.emplace_back(scriptPubKey, amount, *tx, nIn, MANDATORY_SCRIPT_VERIFY_FLAGS,
+                vChecksThisTx.emplace_back(context, MANDATORY_SCRIPT_VERIFY_FLAGS,
                                            cacheSigs /* whether to store results in cache */,
                                            txdata, &highLimitPerTx, &highLimitPerBlock);
             }

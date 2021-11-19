@@ -367,4 +367,42 @@ struct PrecomputedTransactionData {
     template <class T> explicit PrecomputedTransactionData(const T &tx);
 };
 
+/// A class that wraps a pointer to either a CTransaction or a
+/// CMutableTransaction and presents a uniform view of the minimal
+/// intersection of both classes' exposed data.
+///
+/// This is used by the native introspection code to make it possible for
+/// mutable txs as well constant txs to be treated uniformly for the purposes
+/// of the native introspection opcodes.
+///
+/// Contract is: The wrapped tx or mtx pointer must have a lifetime at least
+///              as long as an instance of this class.
+class CTransactionView {
+    const CTransaction *tx{};
+    const CMutableTransaction *mtx{};
+public:
+    CTransactionView(const CTransaction &txIn) noexcept : tx(&txIn) {}
+    CTransactionView(const CMutableTransaction &mtxIn) noexcept : mtx(&mtxIn) {}
+
+    bool isMutableTx() const noexcept { return mtx; }
+
+    const std::vector<CTxIn> &vin() const noexcept { return mtx ? mtx->vin : tx->vin; }
+    const std::vector<CTxOut> &vout() const noexcept { return mtx ? mtx->vout : tx->vout; }
+    const int32_t &nVersion() const noexcept { return mtx ? mtx->nVersion : tx->nVersion; }
+    const uint32_t &nLockTime() const noexcept { return mtx ? mtx->nLockTime : tx->nLockTime; }
+
+    TxId GetId() const { return mtx ? mtx->GetId() : tx->GetId(); }
+    TxHash GetHash() const { return mtx ? mtx->GetHash() : tx->GetHash(); }
+
+    bool operator==(const CTransactionView &o) const noexcept {
+        return isMutableTx() == o.isMutableTx() && (mtx ? *mtx == *o.mtx : *tx == *o.tx);
+    }
+    bool operator!=(const CTransactionView &o) const noexcept { return !operator==(o); }
+
+    /// Get a pointer to the underlying constant transaction, if such a thing exists.
+    /// This is used by the validation engine which is always passed a CTransaction.
+    /// Returned pointer will be nullptr if this->isMutableTx()
+    const CTransaction *constantTx() const { return tx; }
+};
+
 #endif // BITCOIN_PRIMITIVES_TRANSACTION_H
