@@ -1,4 +1,5 @@
 // Copyright (c) 2011-2016 The Bitcoin Core developers
+// Copyright (c) 2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -9,14 +10,13 @@
 #include <list>
 #include <vector>
 
-static void AddTx(const CTransactionRef &tx, const Amount &nFee, CTxMemPool &pool) 
+static void AddTx(const CTransactionRef &tx, const Amount &nFee, CTxMemPool &pool)
     EXCLUSIVE_LOCKS_REQUIRED(cs_main, pool.cs) {
     int64_t nTime = 0;
-    unsigned int nHeight = 1;
     bool spendsCoinbase = false;
     unsigned int nSigChecks = 1;
     LockPoints lp;
-    pool.addUnchecked(CTxMemPoolEntry(tx, nFee, nTime, nHeight, spendsCoinbase, nSigChecks, lp));
+    pool.addUnchecked(CTxMemPoolEntry(tx, nFee, nTime, spendsCoinbase, nSigChecks, lp));
 }
 
 // Right now this is only testing eviction performance in an extremely small

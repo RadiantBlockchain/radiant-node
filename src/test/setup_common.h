@@ -1,4 +1,5 @@
 // Copyright (c) 2015-2016 The Bitcoin Core developers
+// Copyright (c) 2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -129,13 +130,12 @@ struct TestMemPoolEntryHelper {
     // Default values
     Amount nFee;
     int64_t nTime;
-    unsigned int nHeight;
     bool spendsCoinbase;
     unsigned int nSigChecks;
     uint64_t entryId = 0;
 
     TestMemPoolEntryHelper()
-        : nFee(), nTime(0), nHeight(1), spendsCoinbase(false), nSigChecks(1) {}
+        : nFee(), nTime(0), spendsCoinbase(false), nSigChecks(1) {}
 
     CTxMemPoolEntry FromTx(const CMutableTransaction &tx);
     CTxMemPoolEntry FromTx(const CTransactionRef &tx);
@@ -147,10 +147,6 @@ struct TestMemPoolEntryHelper {
     }
     TestMemPoolEntryHelper &Time(int64_t _time) {
         nTime = _time;
-        return *this;
-    }
-    TestMemPoolEntryHelper &Height(unsigned int _height) {
-        nHeight = _height;
         return *this;
     }
     TestMemPoolEntryHelper &SpendsCoinbase(bool _flag) {

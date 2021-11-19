@@ -87,8 +87,6 @@ class CTxMemPoolEntry {
     const size_t nUsageSize;
     //! Local time when entering the mempool
     const int64_t nTime;
-    //! Chain height when entering the mempool
-    const unsigned int entryHeight;
     //! keep track of transactions that spend a coinbase
     const bool spendsCoinbase;
     //! Total sigchecks
@@ -107,7 +105,7 @@ class CTxMemPoolEntry {
 
 public:
     CTxMemPoolEntry(const CTransactionRef &_tx, const Amount _nFee,
-                    int64_t _nTime, unsigned int _entryHeight,
+                    int64_t _nTime,
                     bool spendsCoinbase, int64_t _sigChecks, LockPoints lp);
 
     uint64_t GetEntryId() const { return entryId; }
@@ -123,7 +121,6 @@ public:
     size_t GetTxVirtualSize() const;
 
     int64_t GetTime() const { return nTime; }
-    unsigned int GetHeight() const { return entryHeight; }
     int64_t GetSigChecks() const { return sigChecks; }
     Amount GetModifiedFee() const { return nFee + feeDelta; }
     CFeeRate GetModifiedFeeRate() const { return CFeeRate(GetModifiedFee(), GetTxVirtualSize()); }
@@ -763,9 +760,8 @@ private:
     struct TxInfo {
         const int64_t time;
         const Amount feeDelta;
-        const unsigned height;
-        TxInfo(int64_t time_, Amount feeDelta_, unsigned height_) noexcept
-            : time(time_), feeDelta(feeDelta_), height(height_) {}
+        TxInfo(int64_t time_, Amount feeDelta_) noexcept
+            : time(time_), feeDelta(feeDelta_) {}
     };
 
     using TxInfoMap = std::unordered_map<TxId, TxInfo, SaltedTxIdHasher>;

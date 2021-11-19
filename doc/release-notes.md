@@ -41,7 +41,10 @@ one other.
 
 ...
 
-## Low-level RPC changes
+The `getmempoolentry` RPC call, the verbose modes of the
+`getrawmempool`/`getmempoolancestors`/`getmempooldescendants` RPC calls, and the
+JSON mode of the mempool REST call no longer include the `height` field. This
+used to indicate the block height upon mempool acceptance. However, it was not guaranteed to be accurate after a node restart or reorg, thus limiting its usefulness.  Since it has been marked as deprecated for some time, it has been removed in the interests of efficiency.
 
 ...
 
