@@ -46,7 +46,13 @@ The `getmempoolentry` RPC call, the verbose modes of the
 JSON mode of the mempool REST call no longer include the `height` field. This
 used to indicate the block height upon mempool acceptance. However, it was not guaranteed to be accurate after a node restart or reorg, thus limiting its usefulness.  Since it has been marked as deprecated for some time, it has been removed in the interests of efficiency.
 
-...
+- The `fundrawtransaction`, `sendmany`, `sendtoaddress` and `walletcreatefundedpsbt` RPCs now support an
+  `include_unsafe` option that, when `true`, allows using "unsafe inputs" to fund the transaction.  The term
+  "unsafe inputs" is a synonym for unconfirmed inputs not originating from the wallet.  Note that the resulting
+  transaction may become invalid if one of the "unsafe" inputs disappears due to a double-spend. This is a very
+  unlikely scenario, however, on account of the strong zero-conf properties of the BCH network.  However, if that
+  happens, the transaction must be funded with different inputs and republished. Closes issue #331; backport of
+  Core#21359.
 
 ## User interface changes
 

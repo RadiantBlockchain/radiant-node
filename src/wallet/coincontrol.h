@@ -16,6 +16,8 @@ public:
     CTxDestination destChange;
     //! Override the default change type if set, ignored if destChange is set
     std::optional<OutputType> m_change_type;
+    //! If false, only safe (confirmed) inputs will be used
+    bool m_include_unsafe_inputs = DEFAULT_INCLUDE_UNSAFE_INPUTS;
     //! If false, allows unselected inputs, but requires all selected inputs be
     //! used
     bool fAllowOtherInputs;

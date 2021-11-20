@@ -424,7 +424,7 @@ static UniValue sendtoaddress(const Config &config,
     }
 
     if (request.fHelp || request.params.size() < 2 ||
-        request.params.size() > 6) {
+        request.params.size() > 7) {
         throw std::runtime_error(
             RPCHelpMan{"sendtoaddress",
                 "\nSend an amount to a given address." +
@@ -447,6 +447,12 @@ static UniValue sendtoaddress(const Config &config,
                         "which can produce transactions with slightly better privacy and "
                         "smaller transaction sizes. Values other than 0 or 1 are reserved"
                         "for future algorithms."},
+                    {"include_unsafe", RPCArg::Type::BOOL, /* opt */ true, /* default_val */ RPCArg::Default(DEFAULT_INCLUDE_UNSAFE_INPUTS),
+                     "Include inputs that are not safe to spend (unconfirmed transactions from outside keys).\n"
+                     "Warning: the resulting transaction may become invalid if one of the unsafe inputs "
+                     "disappears.\n"
+                     "If that happens, you will need to fund the transaction with different inputs and "
+                     "republish it."},
                 }}
                 .ToString() +
             "\nResult:\n"
@@ -507,6 +513,10 @@ static UniValue sendtoaddress(const Config &config,
             throw JSONRPCError(RPC_TYPE_ERROR, "Unsupported coin selection algorithm");
         }
         coinsel = static_cast<CoinSelectionHint>(c);
+    }
+
+    if (!request.params[6].isNull()) {
+        coinControl.m_include_unsafe_inputs = request.params[6].get_bool();
     }
 
     EnsureWalletIsUnlocked(pwallet);
@@ -927,7 +937,7 @@ static UniValue sendmany(const Config &config, const JSONRPCRequest &request) {
     }
 
     if (request.fHelp || request.params.size() < 2 ||
-        request.params.size() > 5) {
+        request.params.size() > 7) {
         throw std::runtime_error(
             RPCHelpMan{"sendmany",
                 "\nSend multiple times. Amounts are double-precision floating point numbers." +
@@ -949,6 +959,20 @@ static UniValue sendmany(const Config &config, const JSONRPCRequest &request) {
                             {"address", RPCArg::Type::STR, /* opt */ true, /* default_val */ "", "Subtract fee from this address"},
                         },
                     },
+                    {"coinsel", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "0",
+                     "Which coin selection algorithm to use. A value of 1 will use a faster algorithm "
+                     "suitable for stress tests or use with large wallets. "
+                     "This algorithm is likely to produce larger transactions on average."
+                     "0 is a slower algorithm using BNB and a knapsack solver, but"
+                     "which can produce transactions with slightly better privacy and "
+                     "smaller transaction sizes. Values other than 0 or 1 are reserved"
+                     "for future algorithms."},
+                    {"include_unsafe", RPCArg::Type::BOOL, /* opt */ true, /* default_val */ RPCArg::Default(DEFAULT_INCLUDE_UNSAFE_INPUTS),
+                     "Include inputs that are not safe to spend (unconfirmed transactions from outside keys).\n"
+                     "Warning: the resulting transaction may become invalid if one of the unsafe inputs "
+                     "disappears.\n"
+                     "If that happens, you will need to fund the transaction with different inputs and "
+                     "republish it."},
                 }}
                 .ToString() +
              "\nResult:\n"
@@ -1074,10 +1098,24 @@ static UniValue sendmany(const Config &config, const JSONRPCRequest &request) {
     std::string strFailReason;
     CTransactionRef tx;
     CCoinControl coinControl;
+    CoinSelectionHint coinsel(CoinSelectionHint::Default);
+
+    if (!request.params[5].isNull()) {
+        const int c = (request.params[5].get_int());
+        if (!IsValidCoinSelectionHint(c)) {
+            throw JSONRPCError(RPC_TYPE_ERROR, "Unsupported coin selection algorithm");
+        }
+        coinsel = static_cast<CoinSelectionHint>(c);
+    }
+
+    if (!request.params[6].isNull()) {
+        coinControl.m_include_unsafe_inputs = request.params[6].get_bool();
+    }
+
     bool fCreated =
         pwallet->CreateTransaction(*locked_chain, vecSend, tx, keyChange,
                                    nFeeRequired, nChangePosRet, strFailReason,
-                                   coinControl) == CreateTransactionResult::CT_OK;
+                                   coinControl, true /* sign */, coinsel) == CreateTransactionResult::CT_OK;
     if (!fCreated) {
         throw JSONRPCError(RPC_WALLET_INSUFFICIENT_FUNDS, strFailReason);
     }
@@ -3340,6 +3378,7 @@ void FundTransaction(CWallet *const pwallet, CMutableTransaction &tx,
             RPCTypeCheckObjStrict(
                 options_obj,
                 {
+                    {"include_unsafe", UniValue::MBOOL|UniValue::VNULL},
                     {"changeAddress", UniValue::VSTR|UniValue::VNULL},
                     {"changePosition", UniValue::VNUM|UniValue::VNULL},
                     {"includeWatching", UniValue::MBOOL|UniValue::VNULL},
@@ -3371,6 +3410,10 @@ void FundTransaction(CWallet *const pwallet, CMutableTransaction &tx,
 
             if (auto lockUnspentsUV = options_obj.locate("lockUnspents")) {
                 lockUnspents = lockUnspentsUV->get_bool();
+            }
+
+            if (auto includeUnsafeUV = options_obj.locate("include_unsafe")) {
+                coinControl.m_include_unsafe_inputs = includeUnsafeUV->get_bool();
             }
 
             if (auto feeRateUV = options_obj.locate("feeRate")) {
@@ -3452,6 +3495,12 @@ static UniValue fundrawtransaction(const Config &config,
                     {"hexstring", RPCArg::Type::STR_HEX, /* opt */ false, /* default_val */ "", "The hex string of the raw transaction"},
                     {"options", RPCArg::Type::OBJ, /* opt */ true, /* default_val */ "", "for backward compatibility: passing in a true instead of an object will result in {\"includeWatching\":true}",
                         {
+                            {"include_unsafe", RPCArg::Type::BOOL, /* opt */ true, /* default_val */ RPCArg::Default(DEFAULT_INCLUDE_UNSAFE_INPUTS),
+                             "Include inputs that are not safe to spend (unconfirmed transactions from outside keys).\n"
+                             "Warning: the resulting transaction may become invalid if one of the unsafe inputs "
+                             "disappears.\n"
+                             "If that happens, you will need to fund the transaction with different inputs and "
+                             "republish it."},
                             {"changeAddress", RPCArg::Type::STR, /* opt */ true, /* default_val */ "pool address", "The Bitcoin Cash address to receive the change"},
                             {"changePosition", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "random", "The index of the change output"},
                             {"includeWatching", RPCArg::Type::BOOL, /* opt */ true, /* default_val */ "false", "Also select inputs which are watch only"},
@@ -4317,6 +4366,12 @@ static UniValue walletcreatefundedpsbt(const Config &config,
                             "                             Allows this transaction to be replaced by a transaction with higher fees. If provided, it is an error if explicit sequence numbers are incompatible."},
                     {"options", RPCArg::Type::OBJ, /* opt */ true, /* default_val */ "", "",
                         {
+                            {"include_unsafe", RPCArg::Type::BOOL, /* opt */ true, /* default_val */ RPCArg::Default(DEFAULT_INCLUDE_UNSAFE_INPUTS),
+                             "Include inputs that are not safe to spend (unconfirmed transactions from outside keys).\n"
+                             "Warning: the resulting transaction may become invalid if one of the unsafe inputs "
+                             "disappears.\n"
+                             "If that happens, you will need to fund the transaction with different inputs and "
+                             "republish it."},
                             {"changeAddress", RPCArg::Type::STR_HEX, /* opt */ true, /* default_val */ "pool address", "The Bitcoin Cash address to receive the change"},
                             {"changePosition", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "random", "The index of the change output"},
                             {"includeWatching", RPCArg::Type::BOOL, /* opt */ true, /* default_val */ "false", "Also select inputs which are watch only"},
@@ -4419,8 +4474,8 @@ static const ContextFreeRPCCommand commands[] = {
     { "wallet",             "loadwallet",                   loadwallet,                   {"filename"} },
     { "wallet",             "lockunspent",                  lockunspent,                  {"unlock","transactions"} },
     { "wallet",             "rescanblockchain",             rescanblockchain,             {"start_height", "stop_height"} },
-    { "wallet",             "sendmany",                     sendmany,                     {"dummy","amounts","minconf","comment","subtractfeefrom"} },
-    { "wallet",             "sendtoaddress",                sendtoaddress,                {"address","amount","comment","comment_to","subtractfeefromamount","coinsel"} },
+    { "wallet",             "sendmany",                     sendmany,                     {"dummy","amounts","minconf","comment","subtractfeefrom", "coinsel", "include_unsafe"} },
+    { "wallet",             "sendtoaddress",                sendtoaddress,                {"address","amount","comment","comment_to","subtractfeefromamount","coinsel", "include_unsafe"} },
     { "wallet",             "sethdseed",                    sethdseed,                    {"newkeypool","seed"} },
     { "wallet",             "setlabel",                     setlabel,                     {"address","label"} },
     { "wallet",             "settxfee",                     settxfee,                     {"amount"} },

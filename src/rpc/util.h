@@ -7,6 +7,7 @@
 #define BITCOIN_RPC_UTIL_H
 
 #include <script/standard.h> // For CTxDestination
+#include <univalue.h> // For UniValue::Object, UniValue::stringify
 
 #include <string>
 #include <vector>
@@ -129,6 +130,10 @@ struct RPCArg {
      * implicitly_required is set for arguments in an array, which are neither optional nor required.
      */
     std::string ToDescriptionString(bool implicitly_required = false) const;
+
+    //! Helper for constructing the default_val member: Convert any C++ basic type that is
+    //! UniValue-compatible to a string.
+    static std::string Default(const UniValue &uv) { return UniValue::stringify(uv); }
 };
 
 struct RPCResult {

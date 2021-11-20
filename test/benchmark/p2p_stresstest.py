@@ -132,13 +132,19 @@ class StressTest(BitcoinTestFramework):
                     print("Node {:2d}\ttx {:5d}\tat {:3.3f} sec\t({:3.0f} tx/sec)".format(node,
                                                                                           i, time.time() - t, (i / (time.time() - t))))
                 add = addresses[i % len(addresses)]
+                fallback_send_method = lambda: self.nodes[node].sendtoaddress(add, value, '', '', False)
+                # We test both sendtoaddress and sendmany (both should support the coinsel as the 6th arg)
+                if i % count == 0:
+                    send_method = lambda: self.nodes[node].sendtoaddress(add, value, '', '', False, 1)
+                else:
+                    send_method = lambda: self.nodes[node].sendmany('', {add: value}, '', '', False, 1)
                 try:
-                    self.nodes[node].sendtoaddress(add, value, '', '', False, 1)
+                    send_method()
                 except http.client.CannotSendRequest:
-                    self.nodes[node].sendtoaddress(add, value, '', '', False, 1)
+                    send_method()  # Try again
                 except JSONRPCException:
                     print("Warning: this bitcoind appears to not support the 'fast' argument for sendtoaddress")
-                    self.nodes[node].sendtoaddress(add, value, '', '', False)
+                    fallback_send_method()
                 except BaseException:
                     print("Node {} had a fatal error on tx {}:".format(node, i))
                     traceback.print_exc()
