@@ -12,21 +12,31 @@ Bitcoin Cash Node Release Process
 2. Verify tests passed
     - Any known issues or limitations should be documented in release notes
     - Known bugs should have tickets
-    - Run `arc lint --everything` and check there is no linter error
+    - Run `arc lint $(find contrib/)` and check there is no linter error
+    - Run `arc lint *.md $(find doc/)` from top level folder and check there
+      are no new linter error (except a suggestion to fix 'reenable' spelling
+      in an URL in `doc/bch-upgrades.md`, a suggestion which should be ignored.
+    - Run `arc lint` on any Markdown or other text documents within `src/`
+      and `depends/` which are not from third-party sources.
+      "Our" documents within `src/` and `depends/` should all be clean.
+      NOTE: We do not run `arc lint` on the other source files anymore.
     - Ensure that bitcoind and bitcoin-qt run with no issue on all supported
       platforms.
       Manually test bitcoin-qt by sending some transactions and navigating
       through the menus.
 
 3. Update the documents / code which needs to be updated every release
-    - Check that [release-notes.md](release-notes.md) is complete, and fill in
-      any missing items.
-    - Update [bips.md](bips.md) to account for changes since the last release.
+    - Update [bips.md](bips.md) and [bch-upgrades.md](bch-upgrades.md) to account
+      for changes since the last release.
     - (major releases) Update [`BLOCK_CHAIN_SIZE`](../src/qt/intro.cpp) to the
       current size plus some overhead.
     - Update seeds as per [contrib/seeds/README.md](../contrib/seeds/README.md).
     - Update [`src/chainparams.cpp`](../src/chainparams.cpp) m_assumed_blockchain_size
       and m_assumed_chain_state_size with the current size plus some overhead.
+    - Update the chain parameters (see `contrib/devtools/chainparams/README.md`)
+    - Run the refresh procedure for documents that are automatically generated
+    - Check that [release-notes.md](release-notes.md) is complete, and fill in
+      any missing items.
 
 4. Add git tag for release
     a. Create the tag: `git tag vM.m.r` (M = major version, m = minor version,
