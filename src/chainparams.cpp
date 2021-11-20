@@ -173,8 +173,8 @@ public:
         netMagic[3] = 0xe8;
         nDefaultPort = 8333;
         nPruneAfterHeight = 100000;
-        m_assumed_blockchain_size = 200;
-        m_assumed_chain_state_size = 3;
+        m_assumed_blockchain_size = 240;
+        m_assumed_chain_state_size = 5;
 
         genesis = CreateGenesisBlock(1231006505, 2083236893, 0x1d00ffff, 1,
                                      50 * COIN);
@@ -699,7 +699,7 @@ public:
         assert(consensus.nDefaultGeneratedBlockSize <= consensus.nDefaultExcessiveBlockSize);
 
         // ScaleNet has no hard-coded anchor block because will be expected to
-        // reorg back down to height 10,000, before ASERT activated.
+        // reorg back down to height 10,000 periodically.
         consensus.asertAnchorParams.reset();
 
         diskMagic[0] = 0xba;
@@ -712,8 +712,8 @@ public:
         netMagic[3] = 0xa2;
         nDefaultPort = 38333;
         nPruneAfterHeight = 10000;
-        m_assumed_blockchain_size = 100;
-        m_assumed_chain_state_size = 10;
+        m_assumed_blockchain_size = 200;
+        m_assumed_chain_state_size = 20;
 
         genesis = CreateGenesisBlock(1598282438, -1567304284, 0x1d00ffff, 1, 50 * COIN);
         consensus.hashGenesisBlock = genesis.GetHash();
