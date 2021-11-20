@@ -41,7 +41,13 @@ Users who are running v22.x.x or earlier are strongly urged to upgrade to v23.1.
 
 ## Low-level RPC changes
 
-...
+- The `fundrawtransaction`, `sendmany`, `sendtoaddress` and `walletcreatefundedpsbt` RPCs now support an
+  `include_unsafe` option that, when `true`, allows using "unsafe inputs" to fund the transaction.  The term
+  "unsafe inputs" is a synonym for unconfirmed inputs not originating from the wallet.  Note that the resulting
+  transaction may become invalid if one of the "unsafe" inputs disappears due to a double-spend. This is a very
+  unlikely scenario, however, on account of the strong zero-conf properties of the BCH network.  However, if that
+  happens, the transaction must be funded with different inputs and republished. Closes issue #331; backport of
+  Core#21359.
 
 ## User interface changes
 

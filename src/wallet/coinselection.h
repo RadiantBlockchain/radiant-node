@@ -78,7 +78,10 @@ public:
 };
 
 struct CoinEligibilityFilter {
+    /** Minimum number of confirmations for outputs that we sent to ourselves.
+     *  We may use unconfirmed UTXOs sent from ourselves, e.g. change outputs. */
     const int conf_mine;
+    /** Minimum number of confirmations for outputs received from a different wallet. */
     const int conf_theirs;
 
     CoinEligibilityFilter(int conf_mine_, int conf_theirs_)

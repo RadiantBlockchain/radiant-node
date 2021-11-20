@@ -44,6 +44,40 @@ class RawTransactionsTest(BitcoinTestFramework):
         connect_nodes_bi(self.nodes[0], self.nodes[2])
         connect_nodes_bi(self.nodes[0], self.nodes[3])
 
+    def test_include_unsafe(self):
+        self.log.info("Test fundrawtxn with unsafe inputs")
+
+        self.nodes[0].createwallet("unsafe")
+        wallet = self.nodes[0].get_wallet_rpc("unsafe")
+
+        # We receive unconfirmed funds from external keys (unsafe outputs).
+        addr = wallet.getnewaddress()
+        txid1 = self.nodes[2].sendtoaddress(addr, 6)
+        txid2 = self.nodes[2].sendtoaddress(addr, 4)
+        self.sync_all()
+        vout1 = find_vout_for_address(wallet, txid1, addr)
+        vout2 = find_vout_for_address(wallet, txid2, addr)
+
+        # Unsafe inputs are ignored by default.
+        rawtx = wallet.createrawtransaction([], [{self.nodes[2].getnewaddress(): 5}])
+        assert_raises_rpc_error(-4, "Insufficient funds", wallet.fundrawtransaction, rawtx)
+
+        # But we can opt-in to use them for funding.
+        fundedtx = wallet.fundrawtransaction(rawtx, {"include_unsafe": True})
+        tx_dec = wallet.decoderawtransaction(fundedtx['hex'])
+        assert any([txin['txid'] == txid1 and txin['vout'] == vout1 for txin in tx_dec['vin']])
+        signedtx = wallet.signrawtransactionwithwallet(fundedtx['hex'])
+        wallet.sendrawtransaction(signedtx['hex'])
+
+        # And we can also use them once they're confirmed.
+        wallet.generate(1)
+        rawtx = wallet.createrawtransaction([], [{self.nodes[2].getnewaddress(): 3}])
+        fundedtx = wallet.fundrawtransaction(rawtx, {"include_unsafe": True})
+        tx_dec = wallet.decoderawtransaction(fundedtx['hex'])
+        assert any([txin['txid'] == txid2 and txin['vout'] == vout2 for txin in tx_dec['vin']])
+        signedtx = wallet.signrawtransactionwithwallet(fundedtx['hex'])
+        wallet.sendrawtransaction(signedtx['hex'])
+
     def run_test(self):
         min_relay_tx_fee = self.nodes[0].getnetworkinfo()['relayfee']
         # This test is not meant to test fee estimation and we'd like
@@ -792,6 +826,8 @@ class RawTransactionsTest(BitcoinTestFramework):
 
         # the total subtracted from the outputs is equal to the fee
         assert_equal(share[0] + share[2] + share[3], result[0]['fee'])
+
+        self.test_include_unsafe()
 
 
 if __name__ == '__main__':

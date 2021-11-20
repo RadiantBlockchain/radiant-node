@@ -94,6 +94,8 @@ static constexpr bool DEFAULT_DISABLE_WALLET = false;
 static constexpr bool DEFAULT_USE_BIP69 = true;
 //! Default for -allowlegacyp2sh
 static constexpr bool DEFAULT_ALLOW_LEGACY_P2SH = false;
+//! Default for the RPC option "include_unsafe"
+static constexpr bool DEFAULT_INCLUDE_UNSAFE_INPUTS = false;
 
 class CChainParams;
 class CCoinControl;

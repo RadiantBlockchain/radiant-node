@@ -2448,7 +2448,9 @@ Amount CWallet::GetAvailableBalance(const CCoinControl *coinControl) const {
 
     Amount balance = Amount::zero();
     std::vector<COutput> vCoins;
-    AvailableCoins(*locked_chain, vCoins, true, coinControl);
+    AvailableCoins(*locked_chain, vCoins,
+                   coinControl ? !coinControl->m_include_unsafe_inputs : !DEFAULT_INCLUDE_UNSAFE_INPUTS /* fOnlySafe */,
+                   coinControl);
     for (const COutput &out : vCoins) {
         if (out.fSpendable) {
             balance += out.tx->tx->vout[out.i].nValue;
@@ -2819,7 +2821,11 @@ bool CWallet::SelectCoins(const std::vector<COutput> &vAvailableCoins,
         (m_spend_zero_conf_change &&
          SelectCoinsMinConf(nTargetValue - nValueFromPresetInputs,
                             CoinEligibilityFilter(0, 1), groups, setCoinsRet,
-                            nValueRet, coin_selection_params, bnb_used));
+                            nValueRet, coin_selection_params, bnb_used)) ||
+        (m_spend_zero_conf_change && coin_control.m_include_unsafe_inputs &&
+         SelectCoinsMinConf(nTargetValue - nValueFromPresetInputs,
+                            CoinEligibilityFilter(0 /* conf_mine */, 0 /* conf_theirs */),
+                            groups, setCoinsRet, nValueRet, coin_selection_params, bnb_used));
 
     // Because SelectCoinsMinConf clears the setCoinsRet, we now add the
     // possible inputs to the coinset.
@@ -3053,17 +3059,18 @@ CreateTransactionResult CWallet::CreateTransaction(
         LOCK(cs_wallet);
 
         std::vector<COutput> vAvailableCoins;
+        const bool fOnlySafe = !coinControl.m_include_unsafe_inputs;
         // 'FastReserced' is planned to be a future fast algorithm, so we will
         // make it as fast as we can here to ease the upgrade transition
         if (coinsel == CoinSelectionHint::Fast || coinsel == CoinSelectionHint::FastReserved) {
-            AvailableCoins(*locked_chain, vAvailableCoins, true, &coinControl,
+            AvailableCoins(*locked_chain, vAvailableCoins, fOnlySafe, &coinControl,
                 SATOSHI,   // nMinimumAmount
                 MAX_MONEY, // nMaximumAmount
                 10 * nValue, // nMinimumSumAmount
                 0, 0, 9999999,
                 GetMinimumFeeRate(*this, coinControl, g_mempool));
         } else if (coinsel == CoinSelectionHint::Default) {
-            AvailableCoins(*locked_chain, vAvailableCoins, true, &coinControl);
+            AvailableCoins(*locked_chain, vAvailableCoins, fOnlySafe, &coinControl);
         } else {
             strFailReason = _("Invalid coin selection hint");
             return CreateTransactionResult::CT_INVALID_PARAMETER;
