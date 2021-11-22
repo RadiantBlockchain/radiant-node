@@ -25,7 +25,9 @@
 
 // If compiling with address or thread sanitizers, this facility doesn't work quite right due to code that ASAN/TSAN
 // inserts, which interferes with our ability to trap the assert firing in the subprocess.
-#if defined(__has_feature)
+#if defined(__SANITIZE_THREAD__) || defined(__SANITIZE_ADDRESS__)
+#  define SKIP_SANITIZER_NOT_SUPPORTED
+#elif defined(__has_feature)
 #  if __has_feature(address_sanitizer) || __has_feature(thread_sanitizer)
 #    define SKIP_SANITIZER_NOT_SUPPORTED
 #  endif
