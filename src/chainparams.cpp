@@ -277,6 +277,7 @@ public:
 
                 // Upgrade 7 ("tachyon") era (actual activation block was 688094)
                 {699484, BlockHash::fromHex("0000000000000000030192242425926218184a609a63efee615b7586d7f3972b")},
+                {714881, BlockHash::fromHex("000000000000000004cd628ee64c058183e780bc31143ff00680ea8af51fa0ff")},
             }};
 
         // Data as of block
@@ -454,6 +455,8 @@ public:
                 // Upgrade 7 ("tachyon") era (actual activation block was in the past significantly before this)
                 {1459354, BlockHash::fromHex(
                               "00000000499a0384fe7f46f4e5470271804df474b19229aee839ea898d5d07e2")},
+                {1472870, BlockHash::fromHex(
+                              "00000000000000b013f75c2cf5e357b5f95af715c2829b0686ee53663101a6e0")},
 
             }};
 
@@ -606,6 +609,7 @@ public:
 
                 // Upgrade 7 ("tachyon") era (actual activation block was in the past significantly before this)
                 {54700, BlockHash::fromHex("00000000009af4379d87f17d0f172ee4769b48839a5a3a3e81d69da4322518b8")},
+                {68117, BlockHash::fromHex("0000000000a2c2fc11a3b72adbd10a3f02a1f8745da55a85321523043639829a")},
             }};
 
         // Data as of block
