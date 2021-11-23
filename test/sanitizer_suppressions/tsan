@@ -14,3 +14,10 @@ deadlock:src/qt/test/*
 # External libraries
 deadlock:libdb
 race:libzmq
+
+# the thread leak is fixed in leveldb version 1.21
+# https://github.com/google/leveldb/commit/73d5834eceee8efa9a8ccfec77dc096a9e8ba18a
+thread:src/leveldb/util/env_posix.cc
+# the data race is fixed in leveldb version 1.23
+# https://github.com/google/leveldb/commit/60db170a43a373d734c5b9f19693d36c75251c39
+race:src/leveldb/util/env_posix.cc
