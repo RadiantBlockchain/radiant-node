@@ -339,7 +339,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
                     ["-upgrade8activationtime={}".format(TIMESTAMP_IN_THE_PAST)])
             if len(self.options.extra_bitcoind_args):
                 self.nodes[i].extend_default_args(
-                        self.options.extra_bitcoind_args.split(","))
+                    self.options.extra_bitcoind_args.split(","))
 
     def start_node(self, i, *args, **kwargs):
         """Start a bitcoind"""

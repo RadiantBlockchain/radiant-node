@@ -206,7 +206,7 @@ class NativeIntrospectionTest(BitcoinTestFramework):
 
         def calc_value_minus_fee(value, nOuts=1):
             assert nOuts > 0
-            return value - 500 - ((nOuts-1) * 38)
+            return value - 500 - ((nOuts - 1) * 38)
 
         def create_fund_and_spend_tx(scriptsigextra, redeemextra,
                                      *, nIns=1, nOuts=1, nSpendOuts=1, nVersion=None, nLockTime=None, multisig=True,
@@ -505,10 +505,10 @@ class NativeIntrospectionTest(BitcoinTestFramework):
         # OP_TXLOCKTIME (current_height - 10)
         current_height = node.getblockchaininfo()["blocks"]
         assert current_height > 10
-        ssextra = [CScriptNum(current_height-10)]
+        ssextra = [CScriptNum(current_height - 10)]
         rsextra = [OP_TXLOCKTIME, OP_EQUALVERIFY]
-        tx0, tx = create_fund_and_spend_tx(ssextra, rsextra, nLockTime=current_height-10)
-        assert_equal(tx.nLockTime, current_height-10)
+        tx0, tx = create_fund_and_spend_tx(ssextra, rsextra, nLockTime=current_height - 10)
+        assert_equal(tx.nLockTime, current_height - 10)
         node.p2p.send_txs_and_test([tx0, tx], node)
         mempool += [tx0.hash, tx.hash]
         spendable_txns.insert(0, tx)  # recycle the txn's output
@@ -749,7 +749,7 @@ class NativeIntrospectionTest(BitcoinTestFramework):
         nIns = len(sequenceNums)
         ssextra = [seq for seq in sequenceNums]
         rsextra = []
-        for whichInp in range(nIns-1, -1, -1):
+        for whichInp in range(nIns - 1, -1, -1):
             rsextra += [whichInp, OP_INPUTSEQUENCENUMBER, OP_EQUALVERIFY]
         tx0, tx = create_fund_and_spend_tx(ssextra, rsextra, nIns=nIns, sequenceNums=sequenceNums)
         for whichInp in range(nIns):
@@ -764,7 +764,7 @@ class NativeIntrospectionTest(BitcoinTestFramework):
         nIns = len(sequenceNums)
         ssextra = [seq for seq in sequenceNums]
         rsextra = []
-        for whichInp in range(nIns-1, -1, -1):
+        for whichInp in range(nIns - 1, -1, -1):
             rsextra += [whichInp, OP_INPUTSEQUENCENUMBER, OP_EQUALVERIFY]
         rsextra += [nIns, OP_INPUTSEQUENCENUMBER, OP_DROP]  # Out-of-range
         tx0, tx = create_fund_and_spend_tx(ssextra, rsextra, nIns=nIns, sequenceNums=sequenceNums)
@@ -781,7 +781,7 @@ class NativeIntrospectionTest(BitcoinTestFramework):
         nIns = len(sequenceNums)
         ssextra = [seq for seq in sequenceNums]
         rsextra = []
-        for whichInp in range(nIns-1, -1, -1):
+        for whichInp in range(nIns - 1, -1, -1):
             rsextra += [whichInp, OP_INPUTSEQUENCENUMBER, OP_EQUALVERIFY]
         rsextra += [-nIns, OP_INPUTSEQUENCENUMBER, OP_DROP]  # Out-of-range, negative
         tx0, tx = create_fund_and_spend_tx(ssextra, rsextra, nIns=nIns, sequenceNums=sequenceNums)
@@ -797,7 +797,7 @@ class NativeIntrospectionTest(BitcoinTestFramework):
         nOuts = 20
         ssextra = []
         rsextra = []
-        for whichOut in range(nOuts-1, -1, -1):
+        for whichOut in range(nOuts - 1, -1, -1):
             rsextra += [whichOut, OP_OUTPUTVALUE, OP_EQUALVERIFY]
         tx0, tx = create_fund_and_spend_tx(ssextra, rsextra, nOuts=nOuts, pushOutputValues=True)
         assert len(ssextra) == nOuts
@@ -812,7 +812,7 @@ class NativeIntrospectionTest(BitcoinTestFramework):
         nOuts = 20
         ssextra = []
         rsextra = []
-        for whichOut in range(nOuts-1, -1, -1):
+        for whichOut in range(nOuts - 1, -1, -1):
             rsextra += [whichOut, OP_OUTPUTVALUE, OP_EQUALVERIFY]
         rsextra += [nOuts, OP_OUTPUTVALUE, OP_DROP]  # Out-of-range
         tx0, tx = create_fund_and_spend_tx(ssextra, rsextra, nOuts=nOuts, pushOutputValues=True)
@@ -829,7 +829,7 @@ class NativeIntrospectionTest(BitcoinTestFramework):
         nOuts = 20
         ssextra = []
         rsextra = []
-        for whichOut in range(nOuts-1, -1, -1):
+        for whichOut in range(nOuts - 1, -1, -1):
             rsextra += [whichOut, OP_OUTPUTVALUE, OP_EQUALVERIFY]
         rsextra += [-1, OP_OUTPUTVALUE, OP_DROP]  # Out-of-range (negative)
         tx0, tx = create_fund_and_spend_tx(ssextra, rsextra, nOuts=nOuts, pushOutputValues=True)
@@ -846,7 +846,7 @@ class NativeIntrospectionTest(BitcoinTestFramework):
         nOuts = 20
         ssextra = []
         rsextra = []
-        for whichOut in range(nOuts-1, -1, -1):
+        for whichOut in range(nOuts - 1, -1, -1):
             rsextra += [whichOut, OP_OUTPUTBYTECODE, OP_EQUALVERIFY]
         tx0, tx = create_fund_and_spend_tx(ssextra, rsextra, nOuts=nOuts, pushOutputScriptPubKeys=True)
         assert len(ssextra) == nOuts
@@ -861,7 +861,7 @@ class NativeIntrospectionTest(BitcoinTestFramework):
         nOuts = 20
         ssextra = []
         rsextra = []
-        for whichOut in range(nOuts-1, -1, -1):
+        for whichOut in range(nOuts - 1, -1, -1):
             rsextra += [whichOut, OP_OUTPUTBYTECODE, OP_EQUALVERIFY]
         rsextra += [nOuts, OP_OUTPUTBYTECODE, OP_DROP]  # Out-of-range
         tx0, tx = create_fund_and_spend_tx(ssextra, rsextra, nOuts=nOuts, pushOutputScriptPubKeys=True)
@@ -873,7 +873,6 @@ class NativeIntrospectionTest(BitcoinTestFramework):
         mempool += [tx0.hash]
         assert_equal(node.getrawmempool(), mempool)
         self.reconnect_p2p()  # we lost the connection from above bad tx, reconnect
-
 
         # --------------------------------------------------------------------
         # Mine the mempool and ensure that all txns made it into a block

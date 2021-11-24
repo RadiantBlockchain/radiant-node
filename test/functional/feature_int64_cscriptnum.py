@@ -60,6 +60,7 @@ IMPOSSIBLE_ENCODING_ERROR = 'mandatory-script-verify-flag-failed (The requested 
 # OP_PICK if the index is out of bounds
 INVALID_STACK_OPERATION = 'mandatory-script-verify-flag-failed (Operation not valid with the current stack size)'
 
+
 class Int64CScriptNum(BitcoinTestFramework):
 
     def set_test_params(self):
@@ -431,7 +432,7 @@ class Int64CScriptNum(BitcoinTestFramework):
         assert_equal(node.getrawmempool(), mempool)
 
         # OP_BIN2NUM - {BIN 2^63-1 padded with 8 extra bytes of zeroes} should succeed
-        ssextra = [CScriptNum.encode(CScriptNum(int(2**63 - 1)))[1:] + bytes.fromhex('00')*8]
+        ssextra = [CScriptNum.encode(CScriptNum(int(2**63 - 1)))[1:] + bytes.fromhex('00') * 8]
         rsextra = [OP_BIN2NUM, bytes.fromhex('ffffffffffffff7f'), OP_EQUALVERIFY]
         tx0, tx = create_fund_and_spend_tx(ssextra, rsextra)
         node.p2p.send_txs_and_test([tx0, tx], node)

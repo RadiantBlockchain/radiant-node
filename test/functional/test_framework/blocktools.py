@@ -103,18 +103,19 @@ def create_coinbase(height, pubkey=None):
     coinbase.calc_sha256()
     return coinbase
 
-# BU version
-# Create a coinbase transaction, assuming no miner fees.
-# If pubkey is passed in, the coinbase output will be a P2PK output;
-# otherwise an anyone-can-spend output.
-def bu_create_coinbase(height, pubkey = None, scriptPubKey = None):
+
+def bu_create_coinbase(height, pubkey=None, scriptPubKey=None):
+    """BU Version:
+       Create a coinbase transaction, assuming no miner fees.
+       If pubkey is passed in, the coinbase output will be a P2PK output;
+       otherwise an anyone-can-spend output."""
     assert not (pubkey and scriptPubKey), "cannot both have pubkey and custom scriptPubKey"
     coinbase = CTransaction()
     coinbase.vin.append(CTxIn(COutPoint(0, 0xffffffff),
-                ser_string(serialize_script_num(height)), 0xffffffff))
+                              ser_string(serialize_script_num(height)), 0xffffffff))
     coinbaseoutput = CTxOut()
     coinbaseoutput.nValue = 50 * COIN
-    halvings = int(height/150) # regtest
+    halvings = int(height / 150)  # regtest
     coinbaseoutput.nValue >>= halvings
     if pubkey is not None:
         coinbaseoutput.scriptPubKey = CScript([pubkey, OP_CHECKSIG])
@@ -122,7 +123,7 @@ def bu_create_coinbase(height, pubkey = None, scriptPubKey = None):
         if scriptPubKey is None:
             scriptPubKey = CScript([OP_NOP])
         coinbaseoutput.scriptPubKey = CScript(scriptPubKey)
-    coinbase.vout = [ coinbaseoutput ]
+    coinbase.vout = [coinbaseoutput]
 
     # Make sure the coinbase is at least 100 bytes
     coinbase_size = len(coinbase.serialize())
@@ -131,6 +132,7 @@ def bu_create_coinbase(height, pubkey = None, scriptPubKey = None):
 
     coinbase.calc_sha256()
     return coinbase
+
 
 def create_tx_with_script(prevtx, n, script_sig=b"",
                           amount=1, script_pub_key=CScript()):

@@ -18,6 +18,7 @@ from test_framework.util import (
 
 ADDRESS = "tcp://127.0.0.1:28332"
 
+
 class ZMQSubscriber:
     def __init__(self, socket, topic):
         self.sequence = 0
@@ -149,13 +150,13 @@ class ZMQTest (BitcoinTestFramework):
                 amt = txout.nValue
         assert amt is not None
         amt /= 1e8
-        assert amt > fee*2
+        assert amt > fee * 2
         self.log.info(f"Spending {amt} from {payment_txid}:{vout}, fee: {fee}")
         ds_txs = [None, None]
         addr = self.nodes[0].getnewaddress()
         ds_txs[0] = create_raw_transaction(self.nodes[0], payment_txid, addr, amt - fee, vout)
         self.log.info("Signed tx 0")
-        ds_txs[1] = create_raw_transaction(self.nodes[0], payment_txid, addr, amt - fee*2, vout)
+        ds_txs[1] = create_raw_transaction(self.nodes[0], payment_txid, addr, amt - fee * 2, vout)
         self.log.info("Signed tx 1 (conflicting tx)")
 
         # Broadcast the two tx's via the other node

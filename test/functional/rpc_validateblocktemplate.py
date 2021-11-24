@@ -35,7 +35,7 @@ from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import assert_raises_rpc_error
 
 
-PADDED_ANY_SPEND = b'\x61'*50  # add a bunch of OP_NOPs to make sure this tx is long enough
+PADDED_ANY_SPEND = b'\x61' * 50  # add a bunch of OP_NOPs to make sure this tx is long enough
 
 
 def create_transaction(prevtx, n, sig, value, out=PADDED_ANY_SPEND):
@@ -78,8 +78,8 @@ class ValidateblocktemplateTest(BitcoinTestFramework):
     def set_test_params(self):
         self.setup_clean_chain = True
         self.num_nodes = 2
-        #self.extra_args = [["-debug=all"],
-        #                   ["-debug=all"]]
+        # self.extra_args = [["-debug=all"],
+        #                    ["-debug=all"]]
         # Need a bit of extra time when running with the thread sanitizer
         self.rpc_timeout = 120
 
@@ -90,8 +90,8 @@ class ValidateblocktemplateTest(BitcoinTestFramework):
         # Generate enough blocks to trigger certain block votes and activate BIP65 (version 4 blocks)
         amt = 1352 - self.nodes[0].getblockcount()
         for i in range(int(amt / 100)):
-           self.nodes[0].generate(100)
-           self.sync_all()
+            self.nodes[0].generate(100)
+            self.sync_all()
 
         self.nodes[0].generate(1352 - self.nodes[0].getblockcount())
         self.sync_all()
@@ -190,7 +190,7 @@ class ValidateblocktemplateTest(BitcoinTestFramework):
         prev_block = block
         # out_value is less than 50BTC because regtest halvings happen every 150 blocks, and is in Satoshis
         out_value = block.vtx[0].vout[0].nValue
-        tx1 = create_transaction(prev_block.vtx[0], 0, b'\x61'*50 + b'\x51', [int(out_value / 2), int(out_value / 2)])
+        tx1 = create_transaction(prev_block.vtx[0], 0, b'\x61' * 50 + b'\x51', [int(out_value / 2), int(out_value / 2)])
         height = self.nodes[0].getblockcount()
         tip = self.nodes[0].getblockhash(height)
         coinbase = bu_create_coinbase(height + 1)
@@ -206,7 +206,7 @@ class ValidateblocktemplateTest(BitcoinTestFramework):
 
         self.log.info("checking: double coinbase")
         coinbase_key = ECKey()
-        #coinbase_key.set_secretbytes(b"horsebattery")
+        # coinbase_key.set_secretbytes(b"horsebattery")
         coinbase_key.set(b"horsbatt" * 4, True)
         coinbase_pubkey = coinbase_key.get_pubkey()
 
@@ -318,7 +318,7 @@ class ValidateblocktemplateTest(BitcoinTestFramework):
         next_time = next_time + 600
 
         coinbase_key = ECKey()
-        #coinbase_key.set_secretbytes(b"horsebattery")
+        # coinbase_key.set_secretbytes(b"horsebattery")
         coinbase_key.set(b"horsbatt" * 4, True)
         coinbase_pubkey = coinbase_key.get_pubkey()
         #coinbase3 = bu_create_coinbase(height + 1, coinbase_pubkey)

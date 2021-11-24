@@ -69,7 +69,7 @@ class MempoolPackagesAdditionalTest(BitcoinTestFramework):
         # Pre-tachyon: If we used all 50, we would exceed descendant limit in this loop!
         # Now: We may loop as much as we like until funds are exhausted (no ancestor limit).
         fanout_txid = [''] * 50
-        fanout_sent_values = [0,] * 50
+        fanout_sent_values = [0, ] * 50
         for i in range(49):
             (fanout_txid[i], fanout_sent_values[i]) = self.chain_transaction(
                 self.nodes[0], txid, i, sent_value, fee, 1)
@@ -96,6 +96,7 @@ class MempoolPackagesAdditionalTest(BitcoinTestFramework):
         # TODO: more tests
 
         # end issue 225 tests
+
 
 if __name__ == '__main__':
     MempoolPackagesAdditionalTest().main()

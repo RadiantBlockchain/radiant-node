@@ -274,7 +274,7 @@ class DoubleSpendProofTest(BitcoinTestFramework):
         self.sync_all()
         pubkey2 = self.nodes[0].getaddressinfo(
             self.nodes[0].getnewaddress())['pubkey']
-        p2sh = self.nodes[0].addmultisigaddress(1, [pubkey2,], "")['address']
+        p2sh = self.nodes[0].addmultisigaddress(1, [pubkey2, ], "")['address']
         fundingtxid = self.nodes[0].sendtoaddress(p2sh, 49)
         vout = find_output(self.nodes[0], fundingtxid, Decimal('49'))
         self.sync_all()

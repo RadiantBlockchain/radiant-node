@@ -71,7 +71,7 @@ class GBTCheckValidityAndIgnoreCacheTest(BitcoinTestFramework):
             amt = amts[n]
             for i in range(n_tx):
                 amt = amt - fee
-                self.log.info("Node {}: sending {} {}/{}".format(n, amt, i+1, n_tx))
+                self.log.info("Node {}: sending {} {}/{}".format(n, amt, i + 1, n_tx))
                 node.sendtoaddress(addr, amt)
             amts[n] = amt
 

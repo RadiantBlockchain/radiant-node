@@ -142,7 +142,13 @@ class DecodeScriptTest(BitcoinTestFramework):
         #
         # lock until block 500,000
         rpc_result = self.nodes[0].decodescript('63' + push_public_key + 'ad670320a107b17568' + push_public_key + 'ac')
-        assert_equal('OP_IF ' + public_key + ' OP_CHECKSIGVERIFY OP_ELSE 500000 OP_CHECKLOCKTIMEVERIFY OP_DROP OP_ENDIF ' + public_key + ' OP_CHECKSIG', rpc_result['asm'])
+        assert_equal(
+            'OP_IF ' +
+            public_key +
+            ' OP_CHECKSIGVERIFY OP_ELSE 500000 OP_CHECKLOCKTIMEVERIFY OP_DROP OP_ENDIF ' +
+            public_key +
+            ' OP_CHECKSIG',
+            rpc_result['asm'])
         assert 'reqSigs' not in rpc_result
         assert_equal('nonstandard', rpc_result['type'])
         assert 'addresses' not in rpc_result

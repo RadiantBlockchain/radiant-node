@@ -65,8 +65,8 @@ LEGACY_MAX_BLOCK_SIZE = ONE_MEGABYTE
 
 # Default setting for maximum allowed size for a block, in bytes
 _excessive_size_match = re.search(
-            r'DEFAULT_EXCESSIVE_BLOCK_SIZE = (.+);',
-            _consensus_h_contents)
+    r'DEFAULT_EXCESSIVE_BLOCK_SIZE = (.+);',
+    _consensus_h_contents)
 if _excessive_size_match is None:
     import sys
     print("DEFAULT_EXCESSIVE_BLOCK_SIZE not found in consensus.h")
