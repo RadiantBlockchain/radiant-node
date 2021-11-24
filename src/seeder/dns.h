@@ -13,7 +13,8 @@ constexpr int MAX_QUERY_NAME_LENGTH = 255;
 // Max size of the null-terminated buffer parse_name() writes to.
 constexpr int MAX_QUERY_NAME_BUFFER_LENGTH = MAX_QUERY_NAME_LENGTH + 1;
 
-struct addr_t {
+/// Encapsulates either an IPv4 or IPv6 address, depending on whether member .v == 4 or .v == 6
+struct AddrGeneric {
     int v;
     union {
         uint8_t v4[4];
@@ -28,7 +29,7 @@ struct dns_opt_t {
     const char *host;
     const char *ns;
     const char *mbox;
-    uint32_t (*cb)(void *opt, const char *requested_hostname, addr_t *addr,
+    uint32_t (*cb)(void *opt, const char *requested_hostname, AddrGeneric *addr,
                    uint32_t max, uint32_t ipv4, uint32_t ipv6);
     // stats
     uint64_t nRequests;

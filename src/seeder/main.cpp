@@ -205,14 +205,14 @@ extern "C" void *ThreadCrawler(void *data) {
 }
 
 uint32_t GetIPList(void *thread, const char *requestedHostname,
-                   addr_t *addr, uint32_t max, uint32_t ipv4,
+                   AddrGeneric *addr, uint32_t max, uint32_t ipv4,
                    uint32_t ipv6);
 
 class CDnsThread {
 public:
     struct FlagSpecificData {
         int nIPv4 = 0, nIPv6 = 0;
-        std::vector<addr_t> cache;
+        std::vector<AddrGeneric> cache;
         std::time_t cacheTime = 0;
         unsigned int cacheHits = 0;
     };
@@ -249,13 +249,13 @@ public:
                 struct in_addr addr;
                 struct in6_addr addr6;
                 if (ip.GetInAddr(&addr)) {
-                    addr_t a;
+                    AddrGeneric a;
                     a.v = 4;
                     std::memcpy(&a.data.v4, &addr, 4);
                     thisflag.cache.push_back(a);
                     thisflag.nIPv4++;
                 } else if (ip.GetIn6Addr(&addr6)) {
-                    addr_t a;
+                    AddrGeneric a;
                     a.v = 6;
                     std::memcpy(&a.data.v6, &addr6, 16);
                     thisflag.cache.push_back(a);
@@ -282,7 +282,7 @@ public:
     void run() { dnsserver(&dns_opt); }
 };
 
-uint32_t GetIPList(void *data, const char *requestedHostname, addr_t *addr,
+uint32_t GetIPList(void *data, const char *requestedHostname, AddrGeneric *addr,
                    uint32_t max, uint32_t ipv4, uint32_t ipv6) {
     CDnsThread *thread = (CDnsThread *)data;
 
