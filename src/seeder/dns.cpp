@@ -203,7 +203,7 @@ error:
 
 static int write_record_a(uint8_t **outpos, const uint8_t *outend,
                           const char *name, int offset, dns_class cls, int ttl,
-                          const addr_t *ip) {
+                          const AddrGeneric *ip) {
     if (ip->v != 4) {
         return -6;
     }
@@ -232,7 +232,7 @@ error:
 
 static int write_record_aaaa(uint8_t **outpos, const uint8_t *outend,
                              const char *name, int offset, dns_class cls,
-                             int ttl, const addr_t *ip) {
+                             int ttl, const AddrGeneric *ip) {
     if (ip->v != 6) {
         return -6;
     }
@@ -519,7 +519,7 @@ static ssize_t dnshandle(dns_opt_t *opt, const uint8_t *inbuf, size_t insize,
         // A/AAAA records
         if ((typ == TYPE_A || typ == TYPE_AAAA || typ == QTYPE_ANY) &&
             (cls == CLASS_IN || cls == QCLASS_ANY)) {
-            addr_t addr[32];
+            AddrGeneric addr[32];
             int naddr = opt->cb((void *)opt, name, addr, 32,
                                 typ == TYPE_A || typ == QTYPE_ANY,
                                 typ == TYPE_AAAA || typ == QTYPE_ANY);
