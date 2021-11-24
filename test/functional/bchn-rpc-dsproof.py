@@ -199,7 +199,7 @@ class DoubleSpendProofRPCTest(BitcoinTestFramework):
         paths[1].insert(0, transaction_2inputs_id)
 
         # add 1 more grandchild tx for good measure
-        e_tx = create_raw_transaction(self.nodes[0], transaction_2inputs_id, self.nodes[0].getnewaddress(), 24.95*2, 0)
+        e_tx = create_raw_transaction(self.nodes[0], transaction_2inputs_id, self.nodes[0].getnewaddress(), 24.95 * 2, 0)
         e_txid = self.nodes[0].sendrawtransaction(e_tx)
         paths_shorter = deepcopy(paths)
         paths[0].insert(0, e_txid)  # leaf tx of both possible paths

@@ -294,6 +294,7 @@ def main(args_in):
                     continue
     return 1 if errors else 0
 
+
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         sys.exit(doctest.testmod())

@@ -108,8 +108,8 @@ class BlockSigChecksTest(BitcoinTestFramework):
         self.num_nodes = 1
         self.block_heights = {}
         self.extra_args = [['-acceptnonstdtxn=1',
-            "-excessiveblocksize={}".format(EXCESSIVEBLOCKSIZE),
-            "-blockmaxsize={}".format(MAXGENERATEDBLOCKSIZE)]]
+                            "-excessiveblocksize={}".format(EXCESSIVEBLOCKSIZE),
+                            "-blockmaxsize={}".format(MAXGENERATEDBLOCKSIZE)]]
 
     def getbestblock(self, node):
         """Get the best block. Register its height so we can use build_block."""
@@ -221,7 +221,6 @@ class BlockSigChecksTest(BitcoinTestFramework):
             tx.vout = [CTxOut(0, CScript([OP_RETURN]))]
             tx.rehash()
             submittxes_2.append(tx)
-
 
         node.p2p.send_txs_and_test(submittxes_1, node)
 

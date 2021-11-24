@@ -52,7 +52,7 @@ class ABC_CmdLine_Test (BitcoinTestFramework):
         # Check for EB correctness in the subver string
         self.check_subversion(r"/Bitcoin Cash Node:.*\(EB"
                               + str(DEFAULT_MAX_GENERATED_BLOCK_SIZE // ONE_MEGABYTE)
-                              + r"\.0; .*\)/" )
+                              + r"\.0; .*\)/")
 
         self.log.info("  Attempt to set below legacy limit of 1MB - try {} bytes".format(
             LEGACY_MAX_BLOCK_SIZE))

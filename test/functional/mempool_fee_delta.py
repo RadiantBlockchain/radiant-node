@@ -78,5 +78,6 @@ class MempoolFeeDeltaTest(BitcoinTestFramework):
         assert_equal(tx1_modifiedfee, tx1_postreorgfee)
         assert_equal(tx2_modifiedfee, tx2_postreorgfee)
 
+
 if __name__ == '__main__':
     MempoolFeeDeltaTest().main()

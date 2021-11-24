@@ -25,14 +25,14 @@ from .messages import (
 
 MAX_SCRIPT_ELEMENT_SIZE = 520
 
-OPCODE_NAMES = {} # type: Dict[CScriptOp, str]
+OPCODE_NAMES = {}  # type: Dict[CScriptOp, str]
 
 
 def hash160(s):
     return hashlib.new('ripemd160', sha256(s)).digest()
 
 
-_opcode_instances = [] # type: List[CScriptOp]
+_opcode_instances = []  # type: List[CScriptOp]
 
 
 class CScriptOp(int):
@@ -394,6 +394,7 @@ OPCODE_NAMES.update({
     OP_OUTPUTVALUE: 'OP_OUTPUTVALUE',
     OP_OUTPUTBYTECODE: 'OP_OUTPUTBYTECODE',
 })
+
 
 class CScriptInvalidError(Exception):
     """Base class for CScript exceptions"""

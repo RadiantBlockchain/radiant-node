@@ -58,7 +58,7 @@ MSG_TX = 1
 MSG_BLOCK = 2
 MSG_CMPCTBLOCK = 4
 MSG_TYPE_MASK = 0xffffffff >> 2
-MSG_DSPROOF = 0x94a0 # Temporary type id
+MSG_DSPROOF = 0x94a0  # Temporary type id
 
 # Serialization/deserialization tools
 
@@ -687,8 +687,10 @@ class CDSProofSpender:
 
     def __repr__(self):
         return "spender1txVersion={} spender1outSequence={} spender1lockTime={} spender1hashPrevOutputs={:064x} spender1hashSequence={:064x} spender1hashOutputs={:064x} spender1pushData={}".format(
-            self.txVersion, self.outSequence, self.lockTime, self.hashPrevOutputs, self.hashSequence, self.hashOutputs, self.pushDataToHex(self.pushData)
+            self.txVersion, self.outSequence, self.lockTime, self.hashPrevOutputs, self.hashSequence, self.hashOutputs, self.pushDataToHex(
+                self.pushData)
         )
+
 
 class PrefilledTransaction:
     __slots__ = ("index", "tx")
@@ -1171,6 +1173,7 @@ class msg_block:
 
     def __repr__(self):
         return "msg_block(block={})".format(repr(self.block))
+
 
 class msg_dsproof:
     __slots__ = ("dsproof",)
