@@ -15,6 +15,7 @@
 #include <random.h>
 #include <scheduler.h>
 
+#include <atomic>
 #include <type_traits>
 
 /**
@@ -85,6 +86,25 @@ struct BasicTestingSetup {
 
 private:
     const fs::path m_path_root;
+};
+
+/**
+ * @brief Helper mixin for struct BasicTestingSetupWithDeadlockExceptions
+ */
+struct EnableDeadlockExceptionsMixin {
+    EnableDeadlockExceptionsMixin() noexcept;
+    ~EnableDeadlockExceptionsMixin();
+protected:
+    static std::atomic_bool saved_g_debug_lockorder_abort;
+    static std::atomic_int instance_ctr;
+};
+
+/**
+ * @brief Testing setup whereby if we are compiled in Debug mode, will also make deadlock
+ * detection throw exceptions (rather than abort() the app).
+ */
+struct BasicTestingSetupWithDeadlockExceptions : BasicTestingSetup, EnableDeadlockExceptionsMixin {
+    using BasicTestingSetup::BasicTestingSetup;
 };
 
 /**
