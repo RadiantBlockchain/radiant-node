@@ -28,6 +28,7 @@
 #include <script/scriptcache.h>
 #include <script/sigcache.h>
 #include <streams.h>
+#include <sync.h>
 #include <txdb.h>
 #include <txmempool.h>
 #include <ui_interface.h>
@@ -79,6 +80,27 @@ fs::path BasicTestingSetup::SetDataDir(const std::string &name) {
     fs::create_directories(ret);
     gArgs.ForceSetArg("-datadir", ret.string());
     return ret;
+}
+
+;
+/* static */ std::atomic_bool EnableDeadlockExceptionsMixin::saved_g_debug_lockorder_abort{false};
+/* static */ std::atomic_int EnableDeadlockExceptionsMixin::instance_ctr{0};
+
+EnableDeadlockExceptionsMixin::EnableDeadlockExceptionsMixin() noexcept {
+#ifdef DEBUG_LOCKORDER
+    if (instance_ctr++ == 0) {
+        saved_g_debug_lockorder_abort = g_debug_lockorder_abort;
+        g_debug_lockorder_abort = false;
+    }
+#endif
+}
+
+EnableDeadlockExceptionsMixin::~EnableDeadlockExceptionsMixin() {
+#ifdef DEBUG_LOCKORDER
+    if (--instance_ctr == 0) {
+        g_debug_lockorder_abort = saved_g_debug_lockorder_abort.load();
+    }
+#endif
 }
 
 TestingSetup::TestingSetup(const std::string &chainName)
