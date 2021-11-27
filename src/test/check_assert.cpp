@@ -33,8 +33,10 @@
 #  endif
 #endif
 #if !defined(SKIP_SANITIZER_NOT_SUPPORTED) && \
-    __has_include(<unistd.h>) && __has_include(<poll.h>) && __has_include(<sys/types.h>) && __has_include(<sys/wait.h>)
+    __has_include(<unistd.h>) && __has_include(<poll.h>) && __has_include(<sys/types.h>) && \
+    __has_include(<sys/wait.h>) && __has_include(<fcntl.h>)
 #define IS_SUPPORTED
+#include <fcntl.h>     // for fcntl()
 #include <poll.h>      // for poll()
 #include <sys/types.h> // for pid_t, etc
 #include <sys/wait.h>  // for waitpid()
@@ -82,10 +84,15 @@ CheckAssertResult CheckAssert(std::function<void()> func, std::string_view expec
                 || ::dup2(pipe_stderr[1], fd_stderr) != fd_stderr) {
             std::_Exit(exit_status_cannot_dup2);
         }
-        ::close(pipe_stdout[0]); ::close(pipe_stderr[0]); // close reading end in subprocess
+        // close reading ends in subprocess (they are open in parent process and should be closed here)
+        ::close(pipe_stdout[0]); ::close(pipe_stderr[0]);
         pipe_stderr[0] = pipe_stderr[0] = -1;
+        // disable stdout and stderr buffering for this operation since we are capturing
+        // the output in the parent process and want to get it as soon as it occurs.
+        std::setvbuf(stdout, nullptr, _IONBF, 0);
+        std::setvbuf(stderr, nullptr, _IONBF, 0);
+        // lastly, call the function
         try {
-            // lastly, call the function
             func();
         } catch (...) {}
         // this should not be reached if the above resulted in an assert()
@@ -109,6 +116,23 @@ CheckAssertResult CheckAssert(std::function<void()> func, std::string_view expec
             // set up subordinate thread to read pipe (stdout and stderr from child are combined into pipeData buffer)
             std::atomic_bool stopFlag = false;
             std::thread pipeReaderThr([&]{
+                Defer readRemainingData([&]{
+                    // before the thread exits, we want to read any remaining
+                    // straggling data from the pipes in non-blocking mode
+                    for (const int fd : {pipe_stdout[0], pipe_stderr[0]}) {
+                        if (const int flags = ::fcntl(fd, F_GETFL, nullptr); flags != -1) {
+                            if (::fcntl(fd, F_SETFL, flags | O_NONBLOCK) != -1) { // set non-blocking reads
+                                Defer restoreFlags([&]{ ::fcntl(fd, F_SETFL, flags); }); // restore flags on scope end
+                                std::array<char, 256> buf;
+                                int nread;
+                                // keep draining fd in non-blocking mode until no data is left
+                                while ((nread = ::read(fd, buf.data(), buf.size())) > 0) {
+                                    pipeData.append(buf.data(), nread);
+                                }
+                            }
+                        }
+                    }
+                });
                 std::vector<pollfd> fds;
                 for (int fd : {pipe_stdout[0], pipe_stderr[0]}) {
                     auto &p = fds.emplace_back();
@@ -124,7 +148,7 @@ CheckAssertResult CheckAssert(std::function<void()> func, std::string_view expec
                     if (r > 0) {
                         auto do_read = [&pipeData](const pollfd &pfd) { // returns true if fd closed
                             if (!(pfd.revents & POLLIN)) return false;
-                            std::array<char, 256> buf;
+                            std::array<char, 1024> buf;
 
                             if (const auto nread = ::read(pfd.fd, buf.data(), buf.size()); nread > 0) {
                                 pipeData.append(buf.data(), nread);

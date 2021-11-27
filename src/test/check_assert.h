@@ -38,6 +38,8 @@ CheckAssertResult CheckAssert(std::function<void()> func, std::string_view expec
                                "Unsupported platform for assert() check: \"" BOOST_STRINGIZE(stmt) "\""); \
             break; \
         } \
+        BOOST_WARN_MESSAGE(res != CheckAssertResult::AssertEncounteredWrongMessage, \
+                           "Assert trapped, but the message does not match: " BOOST_STRINGIZE(expectMessage)); \
         BOOST_CHECK_MESSAGE(res == CheckAssertResult::AssertEncountered, \
                             "Failed to trap the appropriate assert for: \"" BOOST_STRINGIZE(stmt) "\""); \
     } while (0)
