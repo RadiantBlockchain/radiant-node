@@ -4341,10 +4341,8 @@ Hinweis: Da die Gebühr auf einer pro Byte Basis berechnet wird, würde eine Geb
     </message>
     <message>
       <location line="+4"/>
-      <source>The specified config file %s does not exist
-</source>
-      <translation>Die angegebene Konfigurationsdatei %s existiert nicht
-</translation>
+      <source>The specified config file %s does not exist</source>
+      <translation>Die angegebene Konfigurationsdatei %s existiert nicht</translation>
     </message>
     <message>
       <location line="+1"/>

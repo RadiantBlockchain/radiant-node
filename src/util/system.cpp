@@ -1035,7 +1035,15 @@ bool ArgsManager::ReadConfigFiles(std::string &error,
         m_config_sections.clear();
     }
 
-    const std::string confPath = GetArg("-conf", BITCOIN_CONF_FILENAME);
+    // Error out if the conf file is specified but it doesn't exist
+    const fs::path config_file_path = GetConfigFile(gArgs.GetArg("-conf", BITCOIN_CONF_FILENAME));
+    if (!fs::exists(config_file_path) && IsArgSet("-conf")) {
+        error = strprintf(_("The specified config file %s does not exist"),
+                          config_file_path.string());
+        return false;
+    }
+
+    const std::string confPath = config_file_path.string();
     fs::ifstream stream(GetConfigFile(confPath));
 
     // ok to not have a config file
