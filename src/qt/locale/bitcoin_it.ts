@@ -4342,10 +4342,8 @@ Nota:  Siccome la commissione è calcolata in base ai byte, una commissione di &
     </message>
     <message>
       <location line="+4"/>
-      <source>The specified config file %s does not exist
-</source>
-      <translation>Il file di configurazione specificato %s non esiste
-</translation>
+      <source>The specified config file %s does not exist</source>
+      <translation>Il file di configurazione specificato %s non esiste</translation>
     </message>
     <message>
       <location line="+1"/>

@@ -4326,8 +4326,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of &quot;100 satos
     </message>
     <message>
       <location line="+4"/>
-      <source>The specified config file %s does not exist
-</source>
+      <source>The specified config file %s does not exist</source>
       <translation type="unfinished"/>
     </message>
     <message>

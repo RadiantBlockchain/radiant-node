@@ -170,7 +170,7 @@ QT_TRANSLATE_NOOP("bitcoin-cash-node", "Specified index directory \"%s\" does no
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Specify data directory"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "Starting network threads..."),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "The source code is available from %s."),
-QT_TRANSLATE_NOOP("bitcoin-cash-node", "The specified config file %s does not exist\n"),
+QT_TRANSLATE_NOOP("bitcoin-cash-node", "The specified config file %s does not exist"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "The transaction amount is too small to pay the fee"),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "The wallet will avoid paying less than the minimum relay fee."),
 QT_TRANSLATE_NOOP("bitcoin-cash-node", "This is the minimum transaction fee you pay on every transaction."),

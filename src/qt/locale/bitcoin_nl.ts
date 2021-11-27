@@ -4341,10 +4341,8 @@ Opmerking: Aangezien de kosten worden berekend op basis van bytes, levert een ta
     </message>
     <message>
       <location line="+4"/>
-      <source>The specified config file %s does not exist
-</source>
-      <translation>Het opgegeven configuratiebestand %s bestaat niet
-</translation>
+      <source>The specified config file %s does not exist</source>
+      <translation>Het opgegeven configuratiebestand %s bestaat niet</translation>
     </message>
     <message>
       <location line="+1"/>

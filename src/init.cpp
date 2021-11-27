@@ -2105,8 +2105,11 @@ bool AppInitMain(Config &config, RPCServer &rpcServer,
         LogPrintf("Config file: %s\n", config_file_path.string());
     } else if (gArgs.IsArgSet("-conf")) {
         // Warn if no conf file exists at path provided by user
+        // Note: This branch left in place for safety. It cannot
+        //       normally be taken because earlier in AppInit()
+        //       we error-out in this case.
         InitWarning(
-            strprintf(_("The specified config file %s does not exist\n"),
+            strprintf(_("The specified config file %s does not exist"),
                       config_file_path.string()));
     } else {
         // Not categorizing as "Warning" because it's the default behavior

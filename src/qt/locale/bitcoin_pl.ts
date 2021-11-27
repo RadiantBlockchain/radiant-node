@@ -4367,10 +4367,8 @@ Uwaga: Ponieważ opłata jest obliczana wedle bajtów, opłata &quot;100 satoshi
     </message>
     <message>
       <location line="+4"/>
-      <source>The specified config file %s does not exist
-</source>
-      <translation>Określony plik konfiguracyjny %s nie istnieje
-</translation>
+      <source>The specified config file %s does not exist</source>
+      <translation>Określony plik konfiguracyjny %s nie istnieje</translation>
     </message>
     <message>
       <location line="+1"/>
