@@ -8,9 +8,9 @@ Tests that the getblocktemplatelight background 'cleaner' thread indeed
 cleans expired data from the gbt/ directory.
 """
 
-import glob
 import os
 import threading
+import time
 
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import assert_equal, assert_raises_rpc_error, wait_until, assert_blocktemplate_equal
@@ -83,21 +83,29 @@ class GBTLightBGCleanerTest(BitcoinTestFramework):
         self.log.info("trash_dir: {}".format(trash_dir))
 
         gbtl = []
-        seen_jobs_in_gbt_dir = set()
-        seen_jobs_in_trash_dir = set()
+        job_ids = set()
+        trashed_ids = set()
+        removed_ids = set()
         stop_flag = threading.Event()
+
+        def check_jobs():
+            for j in set(job_ids):
+                if not os.path.exists(path_for_job(j)):
+                    if os.path.exists(trash_path_for_job(j)):
+                        if not j in trashed_ids:
+                            self.log.info(f'found trashed job {j}')
+                            trashed_ids.add(j)
+                    else:
+                        if not j in removed_ids:
+                            self.log.info(f'found removed job {j}')
+                            removed_ids.add(j)
 
         def poll_thread():
             """This thread is necessary to scan the gbt_dir and trash_dir and not miss any files.
             It is a workaround to very slow gitlab CI (especially on aarch64)."""
-            nonlocal seen_jobs_in_trash_dir, seen_jobs_in_gbt_dir
             while not stop_flag.wait(0.100):  # poll every 100ms
-                trashed_jobs = set(os.path.basename(x) for x in glob.glob(trash_path_for_job("*")))
-                gbt_dir_jobs = set(os.path.basename(x) for x in glob.glob(path_for_job("*")))
-                seen_jobs_in_trash_dir |= trashed_jobs
-                seen_jobs_in_gbt_dir |= gbt_dir_jobs
+                check_jobs()
 
-        # start the poller thread -- this is necessary to work around CI bugs brought on by slowness on aarch64
         pthr = threading.Thread(target=poll_thread, daemon=True)
         pthr.start()
 
@@ -107,7 +115,13 @@ class GBTLightBGCleanerTest(BitcoinTestFramework):
             n_iters = self._cache_size * 3  # intentionally overfill past cache size
             assert n_iters
             for _ in range(n_iters):
-                gbtl.append(node.getblocktemplatelight({}, txs_tmp))
+                tstart = time.time()
+                gbtl_res = node.getblocktemplatelight({}, txs_tmp)
+                telapsed = time.time() - tstart
+                jid = gbtl_res['job_id']
+                self.log.info(f'getblocktemplatelight returned job {jid} in {telapsed:.2f} seconds')
+                job_ids.add(jid)
+                gbtl.append(gbtl_res)
                 txs_tmp += txs
         finally:
             # Ensure subordinate poller thread is stopped, joined
@@ -116,39 +130,16 @@ class GBTLightBGCleanerTest(BitcoinTestFramework):
 
         assert os.path.isdir(gbt_dir)
         assert os.path.isdir(trash_dir)
-
-        job_ids = {x['job_id'] for x in gbtl}
-
         assert len(job_ids) == n_iters
 
-        # constrain the set now to the jobs we expect just in case there is monkey business
-        # with the gbt dir or trash dir having gotten extra files above, somehow.
-        seen_jobs_in_trash_dir &= job_ids
-        seen_jobs_in_gbt_dir &= job_ids
-
-        # Note: due to a possible race condition in the case of this test executing slowly,
-        # the job_id file may be gone now and moved to trash -- so also check the set `seen_jobs_in_gbt_dir`
-        assert all(os.path.exists(path_for_job(x)) or x in seen_jobs_in_gbt_dir
-                   for x in job_ids)
-
-        trashed_ids = set() | seen_jobs_in_trash_dir
-        removed_ids = set() | {x for x in seen_jobs_in_trash_dir
-                               if not os.path.exists(path_for_job(x))}
-
         def predicate():
-            for j in job_ids:
-                if os.path.exists(trash_path_for_job(j)):
-                    trashed_ids.add(j)
-                elif not os.path.exists(path_for_job(j)):
-                    removed_ids.add(j)
+            check_jobs()
             return job_ids == removed_ids
 
         wait_until(predicate, timeout=self._store_time * 2)
 
         assert_equal(job_ids, removed_ids)
-        assert_equal(job_ids, trashed_ids)
-
-        assert len(trashed_ids) > 0
+        assert_equal(0, len(os.listdir(trash_dir)))
 
         # grab ids for jobs that are no longer in the in-memory LRU cache  -- they should all raise now that their
         # job data was deleted from disk.
