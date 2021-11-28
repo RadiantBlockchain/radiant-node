@@ -43,6 +43,16 @@
 #include <unistd.h>    // for fork(), pipe(), dup2(), etc
 #endif
 
+#if defined(__GNUC__) && (__GNUC__ > 11 || (__GNUC__ == 11 && __GNUC_MINOR__ >= 1))
+// GCC version 11.1 and later incorrectly warn of a maybe uninitialized usage
+// of std::array, so we disable the warning.
+// See https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/issues/351
+// See https://godbolt.org/z/vWYxTh4eo
+// See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=101831
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
+
 CheckAssertResult CheckAssert(std::function<void()> func, std::string_view expectMessage) {
 #ifdef IS_SUPPORTED
     constexpr int exit_status_cannot_dup2 = 120, exit_status_aborted = boost::exit_test_failure;
@@ -212,3 +222,7 @@ CheckAssertResult CheckAssert(std::function<void()> func, std::string_view expec
 #endif
     return CheckAssertResult::Unsupported;
 }
+
+#if defined(__GNUC__) && (__GNUC__ > 11 || (__GNUC__ == 11 && __GNUC_MINOR__ >= 1))
+#pragma GCC diagnostic pop
+#endif
