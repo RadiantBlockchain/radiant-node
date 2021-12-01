@@ -607,11 +607,11 @@ static inline Wrapper<Formatter, T &> Using(T &&t) {
 
 /** Serialization wrapper class for integers in VarInt format. */
 template <VarIntMode Mode = VarIntMode::DEFAULT> struct VarIntFormatter {
-    template <typename Stream, typename I> void Ser(Stream &s, I v) {
+    template <typename Stream, typename I> static void Ser(Stream &s, I v) {
         WriteVarInt<Stream, Mode, typename std::remove_cv<I>::type>(s, v);
     }
 
-    template <typename Stream, typename I> void Unser(Stream &s, I &v) {
+    template <typename Stream, typename I> static void Unser(Stream &s, I &v) {
         v = ReadVarInt<Stream, Mode, typename std::remove_cv<I>::type>(s);
     }
 };

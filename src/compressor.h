@@ -40,7 +40,8 @@ struct ScriptCompression {
      */
     static const unsigned int nSpecialScripts = 6;
 
-    template <typename Stream> void Ser(Stream &s, const CScript &script) {
+    template <typename Stream>
+    static void Ser(Stream &s, const CScript &script) {
         std::vector<uint8_t> compr;
         if (CompressScript(script, compr)) {
             s << MakeSpan(compr);
@@ -51,7 +52,7 @@ struct ScriptCompression {
         s << MakeSpan(script);
     }
 
-    template <typename Stream> void Unser(Stream &s, CScript &script) {
+    template <typename Stream> static void Unser(Stream &s, CScript &script) {
         unsigned int nSize = 0;
         s >> VARINT(nSize);
         if (nSize < nSpecialScripts) {
@@ -73,10 +74,11 @@ struct ScriptCompression {
 };
 
 struct AmountCompression {
-    template <typename Stream, typename I> void Ser(Stream &s, I val) {
+    template <typename Stream, typename I> static void Ser(Stream &s, I val) {
         s << VARINT(CompressAmount(val));
     }
-    template <typename Stream, typename I> void Unser(Stream &s, I &val) {
+    template <typename Stream, typename I>
+    static void Unser(Stream &s, I &val) {
         uint64_t v;
         s >> VARINT(v);
         val = DecompressAmount(v);
