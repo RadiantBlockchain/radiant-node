@@ -25,10 +25,10 @@
 #include <utility>
 #include <vector>
 
-static const uint64_t MAX_SIZE = 0x02000000;
+static constexpr uint64_t MAX_SIZE = 0x02000000;
 
 /** Maximum amount of memory (in bytes) to allocate at once when deserializing vectors. */
-static const unsigned int MAX_VECTOR_ALLOCATE = 5000000;
+static constexpr unsigned int MAX_VECTOR_ALLOCATE = 5000000;
 
 /**
  * Dummy data type to identify deserializing constructors.
@@ -192,10 +192,9 @@ template <typename X> const X &ReadWriteAsHelper(const X &x) {
 }
 
 #define READWRITE(...) (::SerReadWriteMany(s, ser_action, __VA_ARGS__))
-#define READWRITEAS(type, obj)                                                 \
-    (::SerReadWriteMany(s, ser_action, ReadWriteAsHelper<type>(obj)))
-#define SER_READ(obj, code) ::SerRead(s, ser_action, obj, [&](Stream &s, typename std::remove_const<Type>::type &obj) { code; })
-#define SER_WRITE(obj, code) ::SerWrite(s, ser_action, obj, [&](Stream &s, const Type &obj) { code; })
+#define READWRITEAS(type, obj) (::SerReadWriteMany(s, ser_action, ReadWriteAsHelper<type>(obj)))
+#define SER_READ(obj, code) do { if constexpr (ser_action.ForRead()) { code; } } while (0)
+#define SER_WRITE(obj, code) do { if constexpr (!ser_action.ForRead()) { code; } } while (0)
 
 /**
  * Implement three methods for serializable objects. These are actually wrappers
@@ -1071,10 +1070,10 @@ void Unserialize(Stream &is, std::shared_ptr<const T> &p) {
  * Support for ADD_SERIALIZE_METHODS and READWRITE macro
  */
 struct CSerActionSerialize {
-    constexpr bool ForRead() const { return false; }
+    static constexpr bool ForRead() { return false; }
 };
 struct CSerActionUnserialize {
-    constexpr bool ForRead() const { return true; }
+    static constexpr bool ForRead() { return true; }
 };
 
 /**
@@ -1140,22 +1139,6 @@ inline void SerReadWriteMany(Stream &s, CSerActionUnserialize ser_action,
                              Args &&... args) {
     ::UnserializeMany(s, args...);
 }
-
-template <typename Stream, typename Type, typename Fn>
-inline void SerRead(Stream &s, CSerActionSerialize ser_action, Type &&, Fn &&) {}
-
-template <typename Stream, typename Type, typename Fn>
-inline void SerRead(Stream &s, CSerActionUnserialize ser_action, Type &&obj, Fn &&fn) {
-    fn(s, std::forward<Type>(obj));
-}
-
-template <typename Stream, typename Type, typename Fn>
-inline void SerWrite(Stream &s, CSerActionSerialize ser_action, Type &&obj, Fn &&fn) {
-    fn(s, std::forward<Type>(obj));
-}
-
-template <typename Stream, typename Type, typename Fn>
-inline void SerWrite(Stream &s, CSerActionUnserialize ser_action, Type &&, Fn &&) {}
 
 template <typename I> inline void WriteVarInt(CSizeComputer &s, I n) {
     s.seek(GetSizeOfVarInt<I>(n));
