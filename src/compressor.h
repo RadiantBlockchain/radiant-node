@@ -74,11 +74,10 @@ struct ScriptCompression {
 };
 
 struct AmountCompression {
-    template <typename Stream, typename I> static void Ser(Stream &s, I val) {
+    template <typename Stream> static void Ser(Stream &s, Amount val) {
         s << VARINT(CompressAmount(val));
     }
-    template <typename Stream, typename I>
-    static void Unser(Stream &s, I &val) {
+    template <typename Stream> static void Unser(Stream &s, Amount &val) {
         uint64_t v;
         s >> VARINT(v);
         val = DecompressAmount(v);
