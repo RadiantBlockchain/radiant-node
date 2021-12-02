@@ -51,14 +51,9 @@ private:
     friend class CAddrMan;
 
 public:
-    ADD_SERIALIZE_METHODS;
-
-    template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream &s, Operation ser_action) {
-        READWRITEAS(CAddress, *this);
-        READWRITE(source);
-        READWRITE(nLastSuccess);
-        READWRITE(nAttempts);
+    SERIALIZE_METHODS(CAddrInfo, obj) {
+        READWRITEAS(CAddress, obj);
+        READWRITE(obj.source, obj.nLastSuccess, obj.nAttempts);
     }
 
     CAddrInfo(const CAddress &addrIn, const CNetAddr &addrSource)
@@ -322,7 +317,7 @@ public:
      * and supports changes to the ADDRMAN_ parameters without breaking the
      * on-disk structure.
      *
-     * We don't use ADD_SERIALIZE_METHODS since the serialization and
+     * We don't use SERIALIZE_METHODS since the serialization and
      * deserialization code has very little in common.
      */
     template <typename Stream> void Serialize(Stream &s) const {
