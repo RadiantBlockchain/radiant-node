@@ -620,9 +620,8 @@ template <VarIntMode Mode> struct VarIntFormatter {
     }
 };
 
-template <int Bytes> struct CustomUintFormatter {
-    static_assert(Bytes > 0 && Bytes <= 8,
-                  "CustomUintFormatter Bytes out of range");
+template <unsigned Bytes> struct CustomUintFormatter {
+    static_assert(Bytes <= 8, "CustomUintFormatter Bytes out of range");
     static constexpr uint64_t MAX = 0xffffffffffffffff >> (8 * (8 - Bytes));
 
     template <typename Stream, typename I> void Ser(Stream &s, I v) {
@@ -678,6 +677,8 @@ public:
 /** Formatter for integers in CompactSize format. */
 struct CompactSizeFormatter {
     template <typename Stream, typename I> void Unser(Stream &s, I &v) {
+        static_assert(std::is_unsigned_v<I>,
+                      "CompactSize only supported for unsigned integers");
         uint64_t n = ReadCompactSize<Stream>(s);
         if (n < std::numeric_limits<I>::min() ||
             n > std::numeric_limits<I>::max()) {
