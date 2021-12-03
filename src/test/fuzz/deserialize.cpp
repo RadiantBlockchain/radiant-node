@@ -161,7 +161,7 @@ void test_one_input(std::vector<uint8_t> buffer) {
     }
 #elif TXOUTCOMPRESSOR_DESERIALIZE
     CTxOut to;
-    CTxOutCompressor toc(to);
+    auto toc = Using<TxOutCompression>(to);
     try {
         ds >> toc;
     } catch (const std::ios_base::failure &e) {

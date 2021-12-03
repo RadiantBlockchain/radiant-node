@@ -207,6 +207,30 @@ template <typename X> const X &ReadWriteAsHelper(const X &x) {
     }
 
 /**
+ * Implement the Ser and Unser methods needed for implementing a formatter (see Using below).
+ *
+ * Both Ser and Unser are delegated to a single static method SerializationOps, which is polymorphic
+ * in the serialized/deserialized type (allowing it to be const when serializing, and non-const when
+ * deserializing).
+ *
+ * Example use:
+ *   struct FooFormatter {
+ *     FORMATTER_METHODS(Class, obj) { READWRITE(obj.val1, VARINT(obj.val2)); }
+ *   }
+ *   would define a class FooFormatter that defines a serialization of Class objects consisting
+ *   of serializing its val1 member using the default serialization, and its val2 member using
+ *   VARINT serialization. That FooFormatter can then be used in statements like
+ *   READWRITE(Using<FooFormatter>(obj.bla)).
+ */
+#define FORMATTER_METHODS(cls, obj) \
+    template<typename Stream> \
+    static void Ser(Stream& s, const cls& obj) { SerializationOps(obj, s, CSerActionSerialize()); } \
+    template<typename Stream> \
+    static void Unser(Stream& s, cls& obj) { SerializationOps(obj, s, CSerActionUnserialize()); } \
+    template<typename Stream, typename Type, typename Operation> \
+    static inline void SerializationOps(Type& obj, Stream& s, Operation ser_action) \
+
+/**
  * Implement the Serialize and Unserialize methods by delegating to a single templated
  * static method that takes the to-be-(de)serialized object as a parameter. This approach
  * has the advantage that the constness of the object becomes a template parameter, and
@@ -218,17 +242,15 @@ template <typename X> const X &ReadWriteAsHelper(const X &x) {
     void Serialize(Stream& s) const                                                 \
     {                                                                               \
         static_assert(std::is_same<const cls&, decltype(*this)>::value, "Serialize type mismatch"); \
-        SerializationOps(*this, s, CSerActionSerialize());                          \
+        Ser(s, *this);                                                              \
     }                                                                               \
     template<typename Stream>                                                       \
     void Unserialize(Stream& s)                                                     \
     {                                                                               \
         static_assert(std::is_same<cls&, decltype(*this)>::value, "Unserialize type mismatch"); \
-        SerializationOps(*this, s, CSerActionUnserialize());                        \
+        Unser(s, *this);                                                            \
     }                                                                               \
-    template<typename Stream, typename Type, typename Operation>                    \
-    static inline void SerializationOps(Type& obj, Stream& s, Operation ser_action) \
-
+    FORMATTER_METHODS(cls, obj)
 
 #ifndef CHAR_EQUALS_INT8
 // TODO Get rid of bare char
@@ -585,11 +607,11 @@ static inline Wrapper<Formatter, T &> Using(T &&t) {
 
 /** Serialization wrapper class for integers in VarInt format. */
 template <VarIntMode Mode = VarIntMode::DEFAULT> struct VarIntFormatter {
-    template <typename Stream, typename I> void Ser(Stream &s, I v) {
+    template <typename Stream, typename I> static void Ser(Stream &s, I v) {
         WriteVarInt<Stream, Mode, typename std::remove_cv<I>::type>(s, v);
     }
 
-    template <typename Stream, typename I> void Unser(Stream &s, I &v) {
+    template <typename Stream, typename I> static void Unser(Stream &s, I &v) {
         v = ReadVarInt<Stream, Mode, typename std::remove_cv<I>::type>(s);
     }
 };
