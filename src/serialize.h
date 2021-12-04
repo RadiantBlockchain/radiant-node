@@ -606,7 +606,7 @@ static inline Wrapper<Formatter, T &> Using(T &&t) {
 
 #define VARINT_MODE(obj, mode) Using<VarIntFormatter<mode>>(obj)
 #define VARINT(obj) Using<VarIntFormatter<VarIntMode::DEFAULT>>(obj)
-#define COMPACTSIZE(obj) CCompactSize(REF(obj))
+#define COMPACTSIZE(obj) Using<CompactSizeFormatter>(obj)
 #define LIMITED_STRING(obj, n) LimitedString<n>(REF(obj))
 
 /** Serialization wrapper class for integers in VarInt format. */
@@ -617,6 +617,28 @@ template <VarIntMode Mode> struct VarIntFormatter {
 
     template <typename Stream, typename I> static void Unser(Stream &s, I &v) {
         v = ReadVarInt<Stream, Mode, typename std::remove_cv<I>::type>(s);
+    }
+};
+
+template <unsigned Bytes> struct CustomUintFormatter {
+    static_assert(Bytes <= 8, "CustomUintFormatter Bytes out of range");
+    static constexpr uint64_t MAX = 0xffffffffffffffff >> (8 * (8 - Bytes));
+
+    template <typename Stream, typename I> void Ser(Stream &s, I v) {
+        if (v < 0 || v > MAX)
+            throw std::ios_base::failure(
+                "CustomUintFormatter value out of range");
+        uint64_t raw = htole64(v);
+        s.write((const char *)&raw, Bytes);
+    }
+
+    template <typename Stream, typename I> void Unser(Stream &s, I &v) {
+        static_assert(std::numeric_limits<I>::max() >= MAX &&
+                          std::numeric_limits<I>::min() <= 0,
+                      "CustomUintFormatter type too small");
+        uint64_t raw = 0;
+        s.read((char *)&raw, Bytes);
+        v = le64toh(raw);
     }
 };
 
@@ -652,19 +674,27 @@ public:
     }
 };
 
-class CCompactSize {
-protected:
-    uint64_t &n;
-
-public:
-    explicit CCompactSize(uint64_t &nIn) : n(nIn) {}
-
-    template <typename Stream> void Serialize(Stream &s) const {
-        WriteCompactSize<Stream>(s, n);
+/** Formatter for integers in CompactSize format. */
+struct CompactSizeFormatter {
+    template <typename Stream, typename I> void Unser(Stream &s, I &v) {
+        static_assert(std::is_unsigned_v<I>,
+                      "CompactSize only supported for unsigned integers");
+        uint64_t n = ReadCompactSize<Stream>(s);
+        if (n < std::numeric_limits<I>::min() ||
+            n > std::numeric_limits<I>::max()) {
+            throw std::ios_base::failure("CompactSize exceeds limit of type");
+        }
+        v = n;
     }
 
-    template <typename Stream> void Unserialize(Stream &s) {
-        n = ReadCompactSize<Stream>(s);
+    template <typename Stream, typename I> void Ser(Stream &s, I v) {
+        static_assert(std::is_unsigned<I>::value,
+                      "CompactSize only supported for unsigned integers");
+        static_assert(std::numeric_limits<I>::max() <=
+                          std::numeric_limits<uint64_t>::max(),
+                      "CompactSize only supports 64-bit integers and below");
+
+        WriteCompactSize<Stream>(s, v);
     }
 };
 
