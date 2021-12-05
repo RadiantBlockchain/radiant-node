@@ -25,10 +25,10 @@
 #include <utility>
 #include <vector>
 
-static const uint64_t MAX_SIZE = 0x02000000;
+static constexpr uint64_t MAX_SIZE = 0x02000000;
 
 /** Maximum amount of memory (in bytes) to allocate at once when deserializing vectors. */
-static const unsigned int MAX_VECTOR_ALLOCATE = 5000000;
+static constexpr unsigned int MAX_VECTOR_ALLOCATE = 5000000;
 
 /**
  * Dummy data type to identify deserializing constructors.
@@ -192,8 +192,9 @@ template <typename X> const X &ReadWriteAsHelper(const X &x) {
 }
 
 #define READWRITE(...) (::SerReadWriteMany(s, ser_action, __VA_ARGS__))
-#define READWRITEAS(type, obj)                                                 \
-    (::SerReadWriteMany(s, ser_action, ReadWriteAsHelper<type>(obj)))
+#define READWRITEAS(type, obj) (::SerReadWriteMany(s, ser_action, ReadWriteAsHelper<type>(obj)))
+#define SER_READ(obj, code) do { if constexpr (ser_action.ForRead()) { code; } } while (0)
+#define SER_WRITE(obj, code) do { if constexpr (!ser_action.ForRead()) { code; } } while (0)
 
 /**
  * Implement three methods for serializable objects. These are actually wrappers
@@ -620,7 +621,16 @@ template <VarIntMode Mode> struct VarIntFormatter {
     }
 };
 
-template <unsigned Bytes> struct CustomUintFormatter {
+/** Serialization wrapper class for custom integers and enums.
+ *
+ * It permits specifying the serialized size (1 to 8 bytes) and endianness.
+ *
+ * Use the big endian mode for values that are stored in memory in native
+ * byte order, but serialized in big endian notation. This is only intended
+ * to implement serializers that are compatible with existing formats, and
+ * its use is not recommended for new data structures.
+ */
+template <unsigned Bytes, bool BigEndian = false> struct CustomUintFormatter {
     static_assert(Bytes <= 8, "CustomUintFormatter Bytes out of range");
     static constexpr uint64_t MAX = 0xffffffffffffffff >> (8 * (8 - Bytes));
 
@@ -628,51 +638,31 @@ template <unsigned Bytes> struct CustomUintFormatter {
         if (v < 0 || v > MAX)
             throw std::ios_base::failure(
                 "CustomUintFormatter value out of range");
-        uint64_t raw = htole64(v);
-        s.write((const char *)&raw, Bytes);
+        if constexpr (BigEndian) {
+            const uint64_t raw = htobe64(v);
+            s.write(reinterpret_cast<const char *>(&raw) + 8 - Bytes, Bytes);
+        } else {
+            const uint64_t raw = htole64(v);
+            s.write(reinterpret_cast<const char *>(&raw), Bytes);
+        }
     }
 
     template <typename Stream, typename I> void Unser(Stream &s, I &v) {
-        static_assert(std::numeric_limits<I>::max() >= MAX &&
-                          std::numeric_limits<I>::min() <= 0,
-                      "CustomUintFormatter type too small");
+        using U = typename std::conditional<std::is_enum<I>::value, std::underlying_type<I>, std::common_type<I>>::type::type;
+        static_assert(std::numeric_limits<U>::max() >= MAX && std::numeric_limits<U>::min() <= 0, "Assigned type too small");
         uint64_t raw = 0;
-        s.read((char *)&raw, Bytes);
-        v = le64toh(raw);
+        if constexpr (BigEndian) {
+            s.read(reinterpret_cast<char *>(&raw) + 8 - Bytes, Bytes);
+            v = static_cast<I>(be64toh(raw));
+        } else {
+            s.read(reinterpret_cast<char *>(&raw), Bytes);
+            v = static_cast<I>(le64toh(raw));
+        }
     }
 };
 
-/** Serialization wrapper class for big-endian integers.
- *
- * Use this wrapper around integer types that are stored in memory in native
- * byte order, but serialized in big endian notation. This is only intended
- * to implement serializers that are compatible with existing formats, and
- * its use is not recommended for new data structures.
- *
- * Only 16-bit types are supported for now.
- */
-template <typename I> class BigEndian {
-protected:
-    I &m_val;
-
-public:
-    explicit BigEndian(I &val) : m_val(val) {
-        static_assert(std::is_unsigned<I>::value,
-                      "BigEndian type must be unsigned integer");
-        static_assert(sizeof(I) == 2 && std::numeric_limits<I>::min() == 0 &&
-                          std::numeric_limits<I>::max() ==
-                              std::numeric_limits<uint16_t>::max(),
-                      "Unsupported BigEndian size");
-    }
-
-    template <typename Stream> void Serialize(Stream &s) const {
-        ser_writedata16be(s, m_val);
-    }
-
-    template <typename Stream> void Unserialize(Stream &s) {
-        m_val = ser_readdata16be(s);
-    }
-};
+template <unsigned Bytes>
+using BigEndianFormatter = CustomUintFormatter<Bytes, true>;
 
 /** Formatter for integers in CompactSize format. */
 struct CompactSizeFormatter {
@@ -723,10 +713,6 @@ public:
         }
     }
 };
-
-template <typename I> BigEndian<I> WrapBigEndian(I &n) {
-    return BigEndian<I>(n);
-}
 
 /** Formatter to serialize/deserialize vector elements using another formatter
  *
@@ -1093,10 +1079,10 @@ void Unserialize(Stream &is, std::shared_ptr<const T> &p) {
  * Support for ADD_SERIALIZE_METHODS and READWRITE macro
  */
 struct CSerActionSerialize {
-    constexpr bool ForRead() const { return false; }
+    static constexpr bool ForRead() { return false; }
 };
 struct CSerActionUnserialize {
-    constexpr bool ForRead() const { return true; }
+    static constexpr bool ForRead() { return true; }
 };
 
 /**

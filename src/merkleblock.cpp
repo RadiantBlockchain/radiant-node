@@ -9,6 +9,22 @@
 #include <hash.h>
 #include <util/strencodings.h>
 
+std::vector<unsigned char> BitsToBytes(const std::vector<bool> &bits) {
+    std::vector<unsigned char> ret((bits.size() + 7) / 8);
+    for (unsigned int p = 0; p < bits.size(); p++) {
+        ret[p / 8] |= unsigned(bits[p]) << (p % 8);
+    }
+    return ret;
+}
+
+std::vector<bool> BytesToBits(const std::vector<unsigned char> &bytes) {
+    std::vector<bool> ret(bytes.size() * 8);
+    for (unsigned int p = 0; p < ret.size(); p++) {
+        ret[p] = (bytes[p / 8] & (1U << (p % 8))) != 0;
+    }
+    return ret;
+}
+
 CMerkleBlock::CMerkleBlock(const CBlock &block, CBloomFilter *filter,
                            const std::set<TxId> *txids) {
     header = block.GetBlockHeader();
