@@ -43,22 +43,6 @@ static constexpr unsigned int MAX_VECTOR_ALLOCATE = 5000000;
 struct deserialize_type {};
 constexpr deserialize_type deserialize{};
 
-/**
- * Used to bypass the rule against non-const reference to temporary
- * where it makes sense with wrappers.
- */
-template <typename T> inline T &REF(const T &val) {
-    return const_cast<T &>(val);
-}
-
-/**
- * Used to acquire a non-const pointer "this" to generate bodies of const
- * serialization operations from a template
- */
-template <typename T> inline T *NCONST_PTR(const T *val) {
-    return const_cast<T *>(val);
-}
-
 //! Safely convert odd char pointer types to standard ones.
 inline char *CharCast(char *c) {
     return c;
@@ -195,20 +179,6 @@ template <typename X> const X &ReadWriteAsHelper(const X &x) {
 #define READWRITEAS(type, obj) (::SerReadWriteMany(s, ser_action, ReadWriteAsHelper<type>(obj)))
 #define SER_READ(obj, code) do { if constexpr (ser_action.ForRead()) { code; } } while (0)
 #define SER_WRITE(obj, code) do { if constexpr (!ser_action.ForRead()) { code; } } while (0)
-
-/**
- * Implement three methods for serializable objects. These are actually wrappers
- * over "SerializationOp" template, which implements the body of each class'
- * serialization code. Adding "ADD_SERIALIZE_METHODS" in the body of the class
- * causes these wrappers to be added as members.
- */
-#define ADD_SERIALIZE_METHODS                                                  \
-    template <typename Stream> void Serialize(Stream &s) const {               \
-        NCONST_PTR(this)->SerializationOp(s, CSerActionSerialize());           \
-    }                                                                          \
-    template <typename Stream> void Unserialize(Stream &s) {                   \
-        SerializationOp(s, CSerActionUnserialize());                           \
-    }
 
 /**
  * Implement the Ser and Unser methods needed for implementing a formatter (see Using below).
@@ -608,7 +578,7 @@ static inline Wrapper<Formatter, T &> Using(T &&t) {
 #define VARINT_MODE(obj, mode) Using<VarIntFormatter<mode>>(obj)
 #define VARINT(obj) Using<VarIntFormatter<VarIntMode::DEFAULT>>(obj)
 #define COMPACTSIZE(obj) Using<CompactSizeFormatter>(obj)
-#define LIMITED_STRING(obj, n) LimitedString<n>(REF(obj))
+#define LIMITED_STRING(obj, n) Using<LimitedStringFormatter<n>>(obj)
 
 /** Serialization wrapper class for integers in VarInt format. */
 template <VarIntMode Mode> struct VarIntFormatter {
@@ -688,30 +658,19 @@ struct CompactSizeFormatter {
     }
 };
 
-template <size_t Limit> class LimitedString {
-protected:
-    std::string &string;
-
-public:
-    explicit LimitedString(std::string &_string) : string(_string) {}
-
-    template <typename Stream> void Unserialize(Stream &s) {
+template <size_t Limit> struct LimitedStringFormatter {
+    template <typename Stream>
+    static void Unser(Stream &s, std::string &v) {
         size_t size = ReadCompactSize(s);
         if (size > Limit) {
             throw std::ios_base::failure("String length limit exceeded");
         }
-        string.resize(size);
-        if (size != 0) {
-            s.read((char *)string.data(), size);
-        }
+        v.resize(size);
+        if (size != 0) s.read(reinterpret_cast<char *>(v.data()), size);
     }
 
-    template <typename Stream> void Serialize(Stream &s) const {
-        WriteCompactSize(s, string.size());
-        if (!string.empty()) {
-            s.write((char *)string.data(), string.size());
-        }
-    }
+    template <typename Stream>
+    static void Ser(Stream &s, const std::string &v) { s << v; }
 };
 
 /** Formatter to serialize/deserialize vector elements using another formatter
@@ -1076,7 +1035,7 @@ void Unserialize(Stream &is, std::shared_ptr<const T> &p) {
 }
 
 /**
- * Support for ADD_SERIALIZE_METHODS and READWRITE macro
+ * Support for SERIALIZE_METHODS and READWRITE macro.
  */
 struct CSerActionSerialize {
     static constexpr bool ForRead() { return false; }

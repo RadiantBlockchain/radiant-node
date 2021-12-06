@@ -70,14 +70,11 @@ public:
     int nVersion;
 
     CHDChain() { SetNull(); }
-    ADD_SERIALIZE_METHODS;
-    template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream &s, Operation ser_action) {
-        READWRITE(this->nVersion);
-        READWRITE(nExternalChainCounter);
-        READWRITE(seed_id);
-        if (this->nVersion >= VERSION_HD_CHAIN_SPLIT) {
-            READWRITE(nInternalChainCounter);
+
+    SERIALIZE_METHODS(CHDChain, obj) {
+        READWRITE(obj.nVersion, obj.nExternalChainCounter, obj.seed_id);
+        if (obj.nVersion >= VERSION_HD_CHAIN_SPLIT) {
+            READWRITE(obj.nInternalChainCounter);
         }
     }
 
@@ -108,15 +105,10 @@ public:
         nCreateTime = nCreateTime_;
     }
 
-    ADD_SERIALIZE_METHODS;
-
-    template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream &s, Operation ser_action) {
-        READWRITE(this->nVersion);
-        READWRITE(nCreateTime);
-        if (this->nVersion >= VERSION_WITH_HDDATA) {
-            READWRITE(hdKeypath);
-            READWRITE(hd_seed_id);
+    SERIALIZE_METHODS(CKeyMetadata, obj) {
+        READWRITE(obj.nVersion, obj.nCreateTime);
+        if (obj.nVersion >= VERSION_WITH_HDDATA) {
+            READWRITE(obj.hdKeypath, obj.hd_seed_id);
         }
     }
 
