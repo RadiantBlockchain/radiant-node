@@ -96,31 +96,28 @@ public:
     const Spender & spender1() const { return m_spender1; }
     const Spender & spender2() const { return m_spender2; }
 
-    // old fashioned serialization.
-    ADD_SERIALIZE_METHODS
-    template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action) {
-        READWRITE(m_outPoint);
+    // new fashioned serialization.
+    SERIALIZE_METHODS(DoubleSpendProof, obj) {
+        READWRITE(obj.m_outPoint);
 
-        READWRITE(m_spender1.txVersion);
-        READWRITE(m_spender1.outSequence);
-        READWRITE(m_spender1.lockTime);
-        READWRITE(m_spender1.hashPrevOutputs);
-        READWRITE(m_spender1.hashSequence);
-        READWRITE(m_spender1.hashOutputs);
-        READWRITE(m_spender1.pushData);
+        READWRITE(obj.m_spender1.txVersion);
+        READWRITE(obj.m_spender1.outSequence);
+        READWRITE(obj.m_spender1.lockTime);
+        READWRITE(obj.m_spender1.hashPrevOutputs);
+        READWRITE(obj.m_spender1.hashSequence);
+        READWRITE(obj.m_spender1.hashOutputs);
+        READWRITE(obj.m_spender1.pushData);
 
-        READWRITE(m_spender2.txVersion);
-        READWRITE(m_spender2.outSequence);
-        READWRITE(m_spender2.lockTime);
-        READWRITE(m_spender2.hashPrevOutputs);
-        READWRITE(m_spender2.hashSequence);
-        READWRITE(m_spender2.hashOutputs);
-        READWRITE(m_spender2.pushData);
+        READWRITE(obj.m_spender2.txVersion);
+        READWRITE(obj.m_spender2.outSequence);
+        READWRITE(obj.m_spender2.lockTime);
+        READWRITE(obj.m_spender2.hashPrevOutputs);
+        READWRITE(obj.m_spender2.hashSequence);
+        READWRITE(obj.m_spender2.hashOutputs);
+        READWRITE(obj.m_spender2.pushData);
 
         // Calculate and save hash (only necessary to do if we are deserializing)
-        if (ser_action.ForRead())
-            setHash();
+        SER_READ(obj, obj.setHash());
     }
 
 

@@ -301,16 +301,13 @@ public:
 
     void SetTx(CTransactionRef arg) { tx = std::move(arg); }
 
-    ADD_SERIALIZE_METHODS;
-
-    template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream &s, Operation ser_action) {
+    SERIALIZE_METHODS(CMerkleTx, obj) {
         // For compatibility with older versions.
         std::vector<uint256> vMerkleBranch;
-        READWRITE(tx);
-        READWRITE(hashBlock);
+        READWRITE(obj.tx);
+        READWRITE(obj.hashBlock);
         READWRITE(vMerkleBranch);
-        READWRITE(nIndex);
+        READWRITE(obj.nIndex);
     }
 
     void SetMerkleBranch(const BlockHash &block_hash, int posInBlock);
@@ -649,18 +646,15 @@ public:
 
     explicit CWalletKey(int64_t nExpires = 0);
 
-    ADD_SERIALIZE_METHODS;
-
-    template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream &s, Operation ser_action) {
+    SERIALIZE_METHODS(CWalletKey, obj) {
         int nVersion = s.GetVersion();
         if (!(s.GetType() & SER_GETHASH)) {
             READWRITE(nVersion);
         }
-        READWRITE(vchPrivKey);
-        READWRITE(nTimeCreated);
-        READWRITE(nTimeExpires);
-        READWRITE(LIMITED_STRING(strComment, 65536));
+        READWRITE(obj.vchPrivKey);
+        READWRITE(obj.nTimeCreated);
+        READWRITE(obj.nTimeExpires);
+        READWRITE(LIMITED_STRING(obj.strComment, 65536));
     }
 };
 

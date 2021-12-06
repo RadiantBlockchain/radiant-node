@@ -54,14 +54,7 @@ public:
         weight = weight * f + (1.0 - f);
     }
 
-    ADD_SERIALIZE_METHODS;
-
-    template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream &s, Operation ser_action) {
-        READWRITE(weight);
-        READWRITE(count);
-        READWRITE(reliability);
-    }
+    SERIALIZE_METHODS(CAddrStat, obj) { READWRITE(obj.weight, obj.count, obj.reliability); }
 
     friend class CAddrInfo;
 };
@@ -204,46 +197,33 @@ public:
 
     friend class CAddrDb;
 
-    ADD_SERIALIZE_METHODS;
-
-    template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream &s, Operation ser_action) {
+    SERIALIZE_METHODS(CAddrInfo, obj) {
         uint8_t version = 5;
-        READWRITE(version);
-        READWRITE(ip);
-        READWRITE(services);
-        READWRITE(lastTry);
-        uint8_t tried = ourLastTry != 0;
+        READWRITE(version, obj.ip, obj.services, obj.lastTry);
+        uint8_t tried = obj.ourLastTry != 0;
         READWRITE(tried);
         if (!tried) {
             return;
         }
 
-        READWRITE(ourLastTry);
-        READWRITE(ignoreTill);
-        READWRITE(stat2H);
-        READWRITE(stat8H);
-        READWRITE(stat1D);
-        READWRITE(stat1W);
+        READWRITE(obj.ourLastTry, obj.ignoreTill, obj.stat2H, obj.stat8H, obj.stat1D, obj.stat1W);
         if (version >= 1) {
-            READWRITE(stat1M);
-        } else if (!ser_action.ForRead()) {
-            *((CAddrStat *)(&stat1M)) = stat1W;
+            READWRITE(obj.stat1M);
+        } else {
+            SER_WRITE(obj, const_cast<CAddrStat &>(obj.stat1M) = obj.stat1W);
         }
-        READWRITE(total);
-        READWRITE(success);
-        READWRITE(clientVersion);
+        READWRITE(obj.total, obj.success, obj.clientVersion);
         if (version >= 2) {
-            READWRITE(clientSubVersion);
+            READWRITE(obj.clientSubVersion);
         }
         if (version >= 3) {
-            READWRITE(blocks);
+            READWRITE(obj.blocks);
         }
         if (version >= 4) {
-            READWRITE(ourLastSuccess);
+            READWRITE(obj.ourLastSuccess);
         }
         if (version >= 5) {
-            READWRITE(lastAddressRequest);
+            READWRITE(obj.lastAddressRequest);
         }
     }
 };
