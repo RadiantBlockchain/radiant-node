@@ -1,4 +1,5 @@
-ColumnLimit:          132
+ColumnLimit:          120
+AlwaysBreakTemplateDeclarations: Yes
 IndentWidth:          4
 TabWidth:             4
 AccessModifierOffset: -4
