@@ -270,7 +270,7 @@ public:
     constexpr
     bool operator==(int64_t x) const noexcept { return value_ == x; }
 
-   constexpr
+    constexpr
     bool operator!=(int64_t x) const noexcept { return value_ != x; }
 
     constexpr
@@ -295,7 +295,7 @@ public:
         return operator!=(x.value_);
     }
 
-   constexpr
+    constexpr
     bool operator<=(Derived const& x) const noexcept {
         return operator<=(x.value_);
     }
