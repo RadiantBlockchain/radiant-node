@@ -52,6 +52,13 @@ macro(add_functional_test_check TARGET COMMENT)
 	else()
 		set(exclude_arg "--exclude=${EXCLUDE_FUNCTIONAL_TESTS}")
 	endif()
+	set(listDepends "")
+	list(APPEND listDepends "bitcoind"
+	                        "bitcoin-cli"
+	                        ${CMAKE_CURRENT_BINARY_DIR}/functional/test_runner.py)
+	if(BUILD_BITCOIN_WALLET)
+	    list(APPEND listDepends "bitcoin-wallet")
+	endif()
 	add_test_custom_target(${TARGET}
 		TEST_COMMAND
 			"${Python_EXECUTABLE}"
@@ -61,9 +68,7 @@ macro(add_functional_test_check TARGET COMMENT)
 		CUSTOM_TARGET_ARGS
 			COMMENT "${COMMENT}"
 			DEPENDS
-				bitcoind
-				bitcoin-cli
-				${CMAKE_CURRENT_BINARY_DIR}/functional/test_runner.py
+			        ${listDepends}
 			USES_TERMINAL
 			VERBATIM
 	)
