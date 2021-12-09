@@ -1,6 +1,11 @@
 # Allow to easily build native executable.
 # Useful for cross compilation.
 
+# define how DEPFILEs are treated
+if(${CMAKE_VERSION} VERSION_GREATER "3.19")
+  cmake_policy(SET CMP0116 OLD)
+endif()
+
 if(NOT DEFINED __IS_NATIVE_BUILD)
 	# Check if we are in a native build or not.
 	set(__IS_NATIVE_BUILD 0 CACHE INTERNAL "Indicate if this is a native build")
