@@ -31,6 +31,7 @@ TESTS
 	lint-yaml.sh
 	lint-shell-locale.sh
 	lint-includes.sh
+	lint-include-guards.sh
 	lint-unicode.sh
 )
 

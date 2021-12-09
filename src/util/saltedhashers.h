@@ -70,4 +70,4 @@ struct ByteVectorHash : SaltedHasherBase {
     size_t operator()(const std::vector<uint8_t> &input) const noexcept;
 };
 
-#endif
+#endif // BITCOIN_UTIL_SALTEDHASHERS_H

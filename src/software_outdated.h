@@ -62,4 +62,4 @@ std::string GetRPCDisabledString();
 
 } // namespace software_outdated
 
-#endif
+#endif // BITCOIN_SOFTWARE_OUTDATED_H
