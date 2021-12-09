@@ -131,7 +131,7 @@ Commonly used lingo when reviewing a MR
   with it"
 
 
-### Use of labels, commit tags and "WIP"
+### Use of labels, commit tags and "Draft"
 
 **Labels**
 
@@ -156,24 +156,24 @@ These tags have no special meaning to GitLab (at least not yet) and are simply f
 human consumption at this stage.They are not well standardized, but below you will
 find a section documenting some better known commit tags.
 
-**WIP**
+**Draft**
 
-When a merge requested is prefixed by "WIP:", GitLab blocks merging of the MR.
+When a merge requested is prefixed by "Draft:", GitLab blocks merging of the MR.
 
-People who submit or work on a merge request should set the "WIP" prefix as long
+People who submit or work on a merge request should set the "Draft" prefix as long
 as they know the MR will still receive extensive revision and is not yet in a state
 ready for merge review.
 
-"WIP" is a signal to others that they need not yet review an MR or issue - it is
+"Draft" is a signal to others that they need not yet review an MR or issue - it is
 not ready for review yet.
 
 If you have worked an issue/MR and feel it is now ready for further processing
-(review and line-up for merging) then please remove the "WIP:" prefix.
+(review and line-up for merging) then please remove the "Draft:" prefix.
 The issue/MR will attract intention soon, but you can also invite others for
 review explicitly either through assignment or letting them know via comments or
 on developer chat channels.
 
-Occasionally, developers may ask for review of WIP items in the understanding that
+Occasionally, developers may ask for review of Draft items in the understanding that
 such review is preliminary and intended to gather input for revision which is believed
 to be needed still.
 
