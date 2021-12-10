@@ -1,0 +1,60 @@
+---
+version: "2"
+checks:
+  argument-count:
+    enabled: true
+    config:
+      threshold: 8
+  complex-logic:
+    enabled: false
+  file-lines:
+    enabled: false
+  method-complexity:
+    enabled: false
+  method-count:
+    enabled: false
+  method-lines:
+    enabled: false
+  nested-control-flow:
+    enabled: false
+  return-statements:
+    enabled: false
+  similar-code:
+    enabled: false
+  identical-code:
+    enabled: true
+
+plugins:
+  csslint:
+    enabled: false
+  coffeelint:
+    enabled: false
+  duplication:
+    enabled: true
+    config:
+      languages:
+        - python
+        - php
+  eslint:
+    enabled: false
+  fixme:
+    enabled: true
+  rubocop:
+    enabled: false
+  shellcheck:
+    enabled: true
+  markdownlint:
+    enabled: false
+  semgrep:
+    enabled: false
+
+exclude_patterns:
+  - arcanist/
+  - build/
+  - cmake/
+  - contrib/linearize/
+  - contrib/testgen/
+  - doc/release-notes/
+  - src/leveldb/
+  - src/secp256k1/
+  - test/functional/
