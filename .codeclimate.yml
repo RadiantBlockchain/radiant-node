@@ -44,11 +44,12 @@ plugins:
   shellcheck:
     enabled: true
   markdownlint:
-    enabled: false
+    enabled: true
   semgrep:
     enabled: false
 
 exclude_patterns:
+  - .gitlab/issue_templates/
   - arcanist/
   - build/
   - cmake/
