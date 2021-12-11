@@ -2,6 +2,22 @@
 
 project(bench_bitcoin)
 
+add_custom_command(
+  OUTPUT
+    ${CMAKE_CURRENT_BINARY_DIR}/data/block413567.cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/data/block556034.cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/data/coins_spent_413567.cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/data/coins_spent_556034.cpp
+  COMMAND
+    ${CMAKE_CURRENT_SOURCE_DIR}/data/convert-raw-files.py ${CMAKE_CURRENT_SOURCE_DIR}/data ${CMAKE_CURRENT_BINARY_DIR}/data
+  DEPENDS
+    ${CMAKE_CURRENT_SOURCE_DIR}/data/block413567.raw.bz2
+    ${CMAKE_CURRENT_SOURCE_DIR}/data/block556034.raw.bz2
+    ${CMAKE_CURRENT_SOURCE_DIR}/data/coins_spent_413567.raw.bz2
+    ${CMAKE_CURRENT_SOURCE_DIR}/data/coins_spent_556034.raw.bz2
+    ${CMAKE_CURRENT_SOURCE_DIR}/data/convert-raw-files.py
+)
+
 add_executable(bench_bitcoin
 	EXCLUDE_FROM_ALL
 	banman.cpp
@@ -17,10 +33,10 @@ add_executable(bench_bitcoin
 	checkqueue.cpp
 	crypto_aes.cpp
 	crypto_hash.cpp
-	data/block413567.cpp
-	data/block556034.cpp
-	data/coins_spent_413567.cpp
-	data/coins_spent_556034.cpp
+	${CMAKE_CURRENT_BINARY_DIR}/data/block413567.cpp
+	${CMAKE_CURRENT_BINARY_DIR}/data/block556034.cpp
+	${CMAKE_CURRENT_BINARY_DIR}/data/coins_spent_413567.cpp
+	${CMAKE_CURRENT_BINARY_DIR}/data/coins_spent_556034.cpp
 	dsproof.cpp
 	duplicate_inputs.cpp
 	examples.cpp

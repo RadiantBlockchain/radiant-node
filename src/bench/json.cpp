@@ -48,22 +48,22 @@ static void JSONReadWriteBlock(const std::vector<uint8_t> &data, unsigned int pr
 }
 
 static void JSONReadBlock_1MB(benchmark::State &state) {
-    JSONReadWriteBlock(benchmark::data::block413567, 0, false, state);
+    JSONReadWriteBlock(benchmark::data::Get_block413567(), 0, false, state);
 }
 static void JSONReadBlock_32MB(benchmark::State &state) {
-    JSONReadWriteBlock(benchmark::data::block556034, 0, false, state);
+    JSONReadWriteBlock(benchmark::data::Get_block556034(), 0, false, state);
 }
 static void JSONWriteBlock_1MB(benchmark::State &state) {
-    JSONReadWriteBlock(benchmark::data::block413567, 0, true, state);
+    JSONReadWriteBlock(benchmark::data::Get_block413567(), 0, true, state);
 }
 static void JSONWriteBlock_32MB(benchmark::State &state) {
-    JSONReadWriteBlock(benchmark::data::block556034, 0, true, state);
+    JSONReadWriteBlock(benchmark::data::Get_block556034(), 0, true, state);
 }
 static void JSONWritePrettyBlock_1MB(benchmark::State &state) {
-    JSONReadWriteBlock(benchmark::data::block413567, 4, true, state);
+    JSONReadWriteBlock(benchmark::data::Get_block413567(), 4, true, state);
 }
 static void JSONWritePrettyBlock_32MB(benchmark::State &state) {
-    JSONReadWriteBlock(benchmark::data::block556034, 4, true, state);
+    JSONReadWriteBlock(benchmark::data::Get_block556034(), 4, true, state);
 }
 
 BENCHMARK(JSONReadBlock_1MB, 18);

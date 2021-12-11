@@ -37,10 +37,10 @@ static void RPCBlockVerbose(const std::vector<uint8_t> &data, benchmark::State &
 }
 
 static void RPCBlockVerbose_1MB(benchmark::State &state) {
-    RPCBlockVerbose(benchmark::data::block413567, state);
+    RPCBlockVerbose(benchmark::data::Get_block413567(), state);
 }
 static void RPCBlockVerbose_32MB(benchmark::State &state) {
-    RPCBlockVerbose(benchmark::data::block556034, state);
+    RPCBlockVerbose(benchmark::data::Get_block556034(), state);
 }
 
 BENCHMARK(RPCBlockVerbose_1MB, 23);

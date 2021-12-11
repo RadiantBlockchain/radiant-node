@@ -68,7 +68,7 @@ static void CCheckQueue_RealData32MB(bool cacheSigs, benchmark::State &state) {
     static constexpr size_t nSameBlockCoinsExpected = 157783;
     const CBlock block = []{
         CBlock ret;
-        VectorReader(SER_NETWORK, PROTOCOL_VERSION, benchmark::data::block556034 /* 32MB block */, 0) >> ret;
+        VectorReader(SER_NETWORK, PROTOCOL_VERSION, benchmark::data::Get_block556034() /* 32MB block */, 0) >> ret;
         return ret;
     }();
 

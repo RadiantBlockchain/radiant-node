@@ -10,13 +10,12 @@ Preparation
 Install [Homebrew](https://brew.sh), and install dependencies:
 
 ```
-brew install berkeley-db boost cmake git-lfs libevent librsvg miniupnpc ninja openssl protobuf python qrencode qt5 zeromq help2man
+brew install berkeley-db boost cmake libevent librsvg miniupnpc ninja openssl protobuf python qrencode qt5 zeromq help2man
 ```
 
 You can do without the `miniupnpc`, `zeromq`, and `help2man` packages, then you
 just need to respectively pass `-DENABLE_UPNP=OFF`, `-DBUILD_BITCOIN_ZMQ=OFF`,
-or `-DENABLE_MAN=OFF` on the `cmake` command line. You can also do without the
-`git-lfs` package, if you don't intend to run the benchmark tool.
+or `-DENABLE_MAN=OFF` on the `cmake` command line.
 
 You can do without the `librsvg`, `qrencode` and `qt5` packages, if you don't
 intend to build the GUI.
