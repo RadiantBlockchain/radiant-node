@@ -1,0 +1,2 @@
+# Markdownlint configuration, used by codeclimate's markdownlint plugin for code quality display in Gitlab
+style ".mdl_style.rb"
