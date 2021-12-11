@@ -20,6 +20,11 @@ struct PSBTInput;
 ///
 /// NOTE: In all cases below, the referenced transaction, `tx`, must remain valid throughout this
 /// object's lifetime!
+#if defined(__GNUG__) && !defined(__clang__)
+  // silence this warning for g++ only - known compiler bug, see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=102801 and https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80635
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif // defined(__GNUG__) && !defined(__clang__)
 class ScriptExecutionContext {
     unsigned nIn{}; ///< the input number being evaluated. This is an index into shared->tx.vin
     bool limited{}; ///< if true, we lack a valid "Coin" for anything but shared->inputCoins[nIn]
@@ -123,5 +128,8 @@ public:
     /// The transaction associated with this script evaluation context.
     const CTransactionView & tx() const { return shared->tx; }
 };
+#if defined(__GNUG__) && !defined(__clang__)
+  #pragma GCC diagnostic pop
+#endif // defined(__GNUG__) && !defined(__clang__)
 
 using ScriptExecutionContextOpt = std::optional<ScriptExecutionContext>;
