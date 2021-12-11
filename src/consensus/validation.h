@@ -3,8 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_CONSENSUS_VALIDATION_H
-#define BITCOIN_CONSENSUS_VALIDATION_H
+#pragma once
 
 #include <dsproof/dspid.h>
 
@@ -95,5 +94,3 @@ public:
     DspId GetDspId() const { return dspIdPtr ? *dspIdPtr : DspId{}; }
     void SetDspId(const DspId &dspId) { dspIdPtr = dspId; }
 };
-
-#endif // BITCOIN_CONSENSUS_VALIDATION_H

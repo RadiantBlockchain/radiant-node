@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_UTIL_SALTEDHASHERS_H
-#define BITCOIN_UTIL_SALTEDHASHERS_H
+#pragma once
 
 #include <crypto/siphash.h>
 #include <primitives/transaction.h>
@@ -69,5 +68,3 @@ struct ByteVectorHash : SaltedHasherBase {
     ByteVectorHash() noexcept {} // circumvent some libstdc++-11 bugs on Debian unstable
     size_t operator()(const std::vector<uint8_t> &input) const noexcept;
 };
-
-#endif // BITCOIN_UTIL_SALTEDHASHERS_H

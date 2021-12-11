@@ -3,8 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_INTERFACES_NODE_H
-#define BITCOIN_INTERFACES_NODE_H
+#pragma once
 
 #include <addrdb.h>     // For BanTables
 #include <amount.h>     // For Amount
@@ -271,5 +270,3 @@ public:
 std::unique_ptr<Node> MakeNode();
 
 } // namespace interfaces
-
-#endif // BITCOIN_INTERFACES_NODE_H

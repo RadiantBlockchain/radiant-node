@@ -3,8 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_CHAINPARAMS_H
-#define BITCOIN_CHAINPARAMS_H
+#pragma once
 
 #include <chainparamsbase.h>
 #include <consensus/params.h>
@@ -161,5 +160,3 @@ const CChainParams &Params();
  * @throws std::runtime_error when the chain is not supported.
  */
 void SelectParams(const std::string &chain);
-
-#endif // BITCOIN_CHAINPARAMS_H

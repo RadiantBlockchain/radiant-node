@@ -14,8 +14,7 @@
  * - Double-clicking selects the whole string as one word if it's all
  * alphanumeric.
  */
-#ifndef BITCOIN_BASE58_H
-#define BITCOIN_BASE58_H
+#pragma once
 
 #include <attributes.h>
 
@@ -64,5 +63,3 @@ std::string EncodeBase58Check(const std::vector<uint8_t> &vchIn);
  */
 [[nodiscard]] bool DecodeBase58Check(const std::string &str,
                                      std::vector<uint8_t> &vchRet);
-
-#endif // BITCOIN_BASE58_H

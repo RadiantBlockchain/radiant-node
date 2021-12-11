@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_RPC_BLOCKCHAIN_H
-#define BITCOIN_RPC_BLOCKCHAIN_H
+#pragma once
 
 #include <univalue.h>
 #include <vector>
@@ -45,5 +44,3 @@ UniValue::Object blockheaderToJSON(const CBlockIndex *tip, const CBlockIndex *bl
 
 /** Used by getblockstats to get feerates at different percentiles by weight  */
 void CalculatePercentilesBySize(Amount result[NUM_GETBLOCKSTATS_PERCENTILES], std::vector<std::pair<Amount, int64_t>>& scores, int64_t total_size);
-
-#endif // BITCOIN_RPC_BLOCKCHAIN_H

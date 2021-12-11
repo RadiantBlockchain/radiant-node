@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_FS_H
-#define BITCOIN_FS_H
+#pragma once
 
 #include <cstdio>
 #include <string>
@@ -40,5 +39,3 @@ private:
 
 std::string get_filesystem_error_message(const fs::filesystem_error &e);
 }; // namespace fsbridge
-
-#endif // BITCOIN_FS_H

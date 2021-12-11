@@ -3,8 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_TXDB_H
-#define BITCOIN_TXDB_H
+#pragma once
 
 #include <blockfileinfo.h>
 #include <coins.h>
@@ -108,5 +107,3 @@ public:
         const Consensus::Params &params,
         std::function<CBlockIndex *(const BlockHash &)> insertBlockIndex);
 };
-
-#endif // BITCOIN_TXDB_H

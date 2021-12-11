@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_PSBT_H
-#define BITCOIN_PSBT_H
+#pragma once
 
 #include <attributes.h>
 #include <primitives/transaction.h>
@@ -480,5 +479,3 @@ bool PSBTInputSigned(PSBTInput &input);
 bool SignPSBTInput(const SigningProvider &provider,
                    PartiallySignedTransaction &psbt, int index,
                    SigHashType sighash = SigHashType(), const ScriptExecutionContextOpt &context = {});
-
-#endif // BITCOIN_PSBT_H

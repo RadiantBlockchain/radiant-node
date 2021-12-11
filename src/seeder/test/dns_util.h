@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_SEEDER_TEST_DNS_UTIL_H
-#define BITCOIN_SEEDER_TEST_DNS_UTIL_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -38,5 +37,3 @@ CreateDNSQuestionNameField(const std::string &queryName) {
 
     return nameField;
 }
-
-#endif // BITCOIN_SEEDER_TEST_DNS_UTIL_H

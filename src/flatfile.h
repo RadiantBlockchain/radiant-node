@@ -3,8 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_FLATFILE_H
-#define BITCOIN_FLATFILE_H
+#pragma once
 
 #include <fs.h>
 #include <serialize.h>
@@ -90,5 +89,3 @@ public:
      */
     bool Flush(const FlatFilePos &pos, bool finalize = false);
 };
-
-#endif // BITCOIN_FLATFILE_H

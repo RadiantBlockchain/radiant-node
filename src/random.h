@@ -3,8 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_RANDOM_H
-#define BITCOIN_RANDOM_H
+#pragma once
 
 #include <crypto/chacha20.h>
 #include <crypto/common.h>
@@ -260,5 +259,3 @@ bool Random_SanityCheck();
  * needed if it is not called.
  */
 void RandomInit();
-
-#endif // BITCOIN_RANDOM_H

@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_BLOOM_H
-#define BITCOIN_BLOOM_H
+#pragma once
 
 #include <serialize.h>
 #include <uint256.h>
@@ -152,5 +151,3 @@ private:
     uint32_t nTweak;
     int nHashFuncs;
 };
-
-#endif // BITCOIN_BLOOM_H

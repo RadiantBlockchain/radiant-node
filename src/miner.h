@@ -3,8 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_MINER_H
-#define BITCOIN_MINER_H
+#pragma once
 
 #include <primitives/block.h>
 #include <txmempool.h>
@@ -128,4 +127,3 @@ void IncrementExtraNonce(CBlock *pblock, const CBlockIndex *pindexPrev,
                          unsigned int &nExtraNonce);
 int64_t UpdateTime(CBlockHeader *pblock, const Consensus::Params &params,
                    const CBlockIndex *pindexPrev);
-#endif // BITCOIN_MINER_H

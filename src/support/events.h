@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_SUPPORT_EVENTS_H
-#define BITCOIN_SUPPORT_EVENTS_H
+#pragma once
 
 #include <ios>
 #include <memory>
@@ -57,5 +56,3 @@ obtain_evhttp_connection_base(struct event_base *base, const std::string &host,
     }
     return result;
 }
-
-#endif // BITCOIN_SUPPORT_EVENTS_H

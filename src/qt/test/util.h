@@ -1,5 +1,4 @@
-#ifndef BITCOIN_QT_TEST_UTIL_H
-#define BITCOIN_QT_TEST_UTIL_H
+#pragma once
 
 class QString;
 
@@ -10,5 +9,3 @@ class QString;
  * @param msec - Number of milliseconds to pause before triggering the callback.
  */
 void ConfirmMessage(QString *text = nullptr, int msec = 0);
-
-#endif // BITCOIN_QT_TEST_UTIL_H

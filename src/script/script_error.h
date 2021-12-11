@@ -3,8 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_SCRIPT_SCRIPT_ERROR_H
-#define BITCOIN_SCRIPT_SCRIPT_ERROR_H
+#pragma once
 
 enum class ScriptError {
     OK = 0,
@@ -113,5 +112,3 @@ inline bool set_error(ScriptError *ret, const ScriptError serror) {
 }
 
 } // namespace
-
-#endif // BITCOIN_SCRIPT_SCRIPT_ERROR_H

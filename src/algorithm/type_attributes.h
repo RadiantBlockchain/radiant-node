@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_ALGORITHM_TYPE_ATTRIBUTES_H_
-#define BITCOIN_ALGORITHM_TYPE_ATTRIBUTES_H_
+#pragma once
 
 #include <iterator>
 
@@ -14,5 +13,3 @@ template <typename C>
 using SizeType = typename C::size_type;
 
 } // namespace attr
-
-#endif // BITCOIN_ALGORITHM_TYPE_ATTRIBUTES_H_

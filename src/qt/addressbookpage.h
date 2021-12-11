@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_ADDRESSBOOKPAGE_H
-#define BITCOIN_QT_ADDRESSBOOKPAGE_H
+#pragma once
 
 #include <QDialog>
 
@@ -84,5 +83,3 @@ private Q_SLOTS:
 Q_SIGNALS:
     void sendCoins(QString addr);
 };
-
-#endif // BITCOIN_QT_ADDRESSBOOKPAGE_H

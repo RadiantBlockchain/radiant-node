@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_UTIL_DEFER_H
-#define BITCOIN_UTIL_DEFER_H
+#pragma once
 
 #include <utility>
 
@@ -14,6 +13,3 @@ struct Defer {
     Defer(Func && f) : func(std::move(f)) {}
     ~Defer() { func(); }
 };
-
-
-#endif // BITCOIN_UTIL_DEFER_H

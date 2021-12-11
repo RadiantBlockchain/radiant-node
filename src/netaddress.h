@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_NETADDRESS_H
-#define BITCOIN_NETADDRESS_H
+#pragma once
 
 #if defined(HAVE_CONFIG_H)
 #include <config/bitcoin-config.h>
@@ -205,5 +204,3 @@ struct SaltedSubNetHasher : SaltedHasherBase {
     SaltedSubNetHasher() noexcept {} // circumvent some libstdc++-11 bugs on Debian unstable
     size_t operator()(const CSubNet  &) const;
 };
-
-#endif // BITCOIN_NETADDRESS_H

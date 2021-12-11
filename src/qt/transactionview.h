@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_TRANSACTIONVIEW_H
-#define BITCOIN_QT_TRANSACTIONVIEW_H
+#pragma once
 
 #include <qt/guiutil.h>
 #include <uint256.h>
@@ -119,5 +118,3 @@ public Q_SLOTS:
     void focusTransaction(const QModelIndex &);
     void focusTransaction(const uint256 &txid);
 };
-
-#endif // BITCOIN_QT_TRANSACTIONVIEW_H

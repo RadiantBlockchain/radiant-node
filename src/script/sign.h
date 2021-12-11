@@ -3,8 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_SCRIPT_SIGN_H
-#define BITCOIN_SCRIPT_SIGN_H
+#pragma once
 
 #include <hash.h>
 #include <pubkey.h>
@@ -239,5 +238,3 @@ void UpdateInput(CTxIn &input, const SignatureData &data);
  * Solvability is unrelated to whether we consider this output to be ours.
  */
 bool IsSolvable(const SigningProvider &provider, const CScript &script, ScriptExecutionContextOpt const& context);
-
-#endif // BITCOIN_SCRIPT_SIGN_H

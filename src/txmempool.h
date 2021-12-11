@@ -4,8 +4,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_TXMEMPOOL_H
-#define BITCOIN_TXMEMPOOL_H
+#pragma once
 
 #include <amount.h>
 #include <coins.h>
@@ -872,5 +871,3 @@ public:
      */
     void updateMempoolForReorg(const Config &config, bool fAddToMempool);
 };
-
-#endif // BITCOIN_TXMEMPOOL_H

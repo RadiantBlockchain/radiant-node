@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_CORE_MEMUSAGE_H
-#define BITCOIN_CORE_MEMUSAGE_H
+#pragma once
 
 #include <memusage.h>
 #include <primitives/block.h>
@@ -58,5 +57,3 @@ template <typename X>
 inline size_t RecursiveDynamicUsage(const std::shared_ptr<X> &p) {
     return p ? memusage::DynamicUsage(p) + RecursiveDynamicUsage(*p) : 0;
 }
-
-#endif // BITCOIN_CORE_MEMUSAGE_H

@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_ALGORITHM_ERASE_IF_H_
-#define BITCOIN_ALGORITHM_ERASE_IF_H_
+#pragma once
 
 #include <iterator>
 
@@ -29,5 +28,3 @@ attr::SizeType<C> erase_if(C& c, P pred) {
 }
 
 } // namespace algo
-
-#endif // BITCOIN_ALGORITHM_ERASE_IF_H_

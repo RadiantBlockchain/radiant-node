@@ -3,8 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_NET_PROCESSING_H
-#define BITCOIN_NET_PROCESSING_H
+#pragma once
 
 #include <consensus/params.h>
 #include <net.h>
@@ -176,5 +175,3 @@ void EraseOrphansFor(NodeId peer);
 unsigned int LimitOrphanTxSize(unsigned int nMaxOrphans);
 void UpdateLastBlockAnnounceTime(NodeId node, int64_t time_in_seconds);
 } // namespace internal
-
-#endif // BITCOIN_NET_PROCESSING_H

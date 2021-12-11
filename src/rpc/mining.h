@@ -3,8 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_RPC_MINING_H
-#define BITCOIN_RPC_MINING_H
+#pragma once
 
 #include <gbtlight.h>
 #include <primitives/transaction.h>
@@ -52,4 +51,3 @@ void LoadTxsFromFile(const JobId &jobId, CBlock &block);
  *             calling this function.   */
 void CacheAndSaveTxsToFile(const JobId &jobId, const std::vector<CTransactionRef> *pvtx);
 }
-#endif // BITCOIN_RPC_MINING_H

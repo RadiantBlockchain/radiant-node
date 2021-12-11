@@ -3,8 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_EXTVERSION_H
-#define BITCOIN_EXTVERSION_H
+#pragma once
 
 #include <serialize.h>
 #include <streams.h>
@@ -183,5 +182,3 @@ public:
 };
 
 } // namespace extversion
-
-#endif // BITCOIN_EXTVERSION_H

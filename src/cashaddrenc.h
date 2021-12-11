@@ -1,8 +1,7 @@
 // Copyright (c) 2017-2019 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
-#ifndef BITCOIN_CASHADDRENC_H
-#define BITCOIN_CASHADDRENC_H
+#pragma once
 
 #include <script/standard.h>
 
@@ -29,4 +28,3 @@ CashAddrContent DecodeCashAddrContent(const std::string &addr,
 CTxDestination DecodeCashAddrDestination(const CashAddrContent &content);
 
 std::vector<uint8_t> PackCashAddrContent(const CashAddrContent &content);
-#endif // BITCOIN_CASHADDRENC_H

@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_CONSENSUS_ACTIVATION_H
-#define BITCOIN_CONSENSUS_ACTIVATION_H
+#pragma once
 
 #include <cstdint>
 
@@ -44,5 +43,3 @@ bool IsAxionEnabled(const Consensus::Params &params,
 
 /** Check if tentative May 15th, 2022 protocol upgrade has activated. */
 bool IsUpgrade8Enabled(const Consensus::Params &params, const CBlockIndex *pindexPrev);
-
-#endif // BITCOIN_CONSENSUS_ACTIVATION_H

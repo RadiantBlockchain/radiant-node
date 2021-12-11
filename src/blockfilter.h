@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_BLOCKFILTER_H
-#define BITCOIN_BLOCKFILTER_H
+#pragma once
 
 #include <primitives/block.h>
 #include <primitives/blockhash.h>
@@ -154,5 +153,3 @@ public:
         m_filter = GCSFilter(params, std::move(encoded_filter));
     }
 };
-
-#endif // BITCOIN_BLOCKFILTER_H

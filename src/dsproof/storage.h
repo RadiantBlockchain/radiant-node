@@ -2,8 +2,7 @@
 // Copyright (C) 2020-2021 Calin Culianu <calin.culianu@gmail.com>
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
-#ifndef BITCOIN_DSPROOF_STORAGE_H
-#define BITCOIN_DSPROOF_STORAGE_H
+#pragma once
 
 #include <bloom.h>
 #include <dsproof/dsproof.h>
@@ -164,5 +163,3 @@ private:
     //! if number of orphans is above threshold, will delete old orphans
     void checkOrphanLimit(const DspId &dontDeleteHash) EXCLUSIVE_LOCKS_REQUIRED(m_lock);
 };
-
-#endif // BITCOIN_DSPROOF_STORAGE_H

@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_SEEDER_DB_H
-#define BITCOIN_SEEDER_DB_H
+#pragma once
 
 #include <chainparams.h>
 #include <netbase.h>
@@ -434,5 +433,3 @@ public:
         GetIPs_(ips, requestedFlags, max, nets);
     }
 };
-
-#endif // BITCOIN_SEEDER_DB_H

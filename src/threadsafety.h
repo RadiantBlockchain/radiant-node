@@ -3,8 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_THREADSAFETY_H
-#define BITCOIN_THREADSAFETY_H
+#pragma once
 
 #ifdef __clang__
 // TL;DR Add GUARDED_BY(mutex) to member variables. The others are rarely
@@ -68,5 +67,3 @@ struct SCOPED_LOCKABLE LockAnnotation {
     explicit LockAnnotation(Mutex &mutex) EXCLUSIVE_LOCK_FUNCTION(mutex) {}
     ~LockAnnotation() UNLOCK_FUNCTION() {}
 };
-
-#endif // BITCOIN_THREADSAFETY_H

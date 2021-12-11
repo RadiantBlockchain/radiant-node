@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_PAYMENTSERVER_H
-#define BITCOIN_QT_PAYMENTSERVER_H
+#pragma once
 
 // This class handles payment requests from clicking on
 // bitcoincash: URIs
@@ -162,5 +161,3 @@ private:
     QNetworkAccessManager *netManager;
 #endif
 };
-
-#endif // BITCOIN_QT_PAYMENTSERVER_H

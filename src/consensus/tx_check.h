@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_CONSENSUS_TX_CHECK_H
-#define BITCOIN_CONSENSUS_TX_CHECK_H
+#pragma once
 
 /**
  * Context-independent transaction checking code that can be called outside the
@@ -22,5 +21,3 @@ class CValidationState;
 
 bool CheckRegularTransaction(const CTransaction &tx, CValidationState &state);
 bool CheckCoinbase(const CTransaction &tx, CValidationState &state);
-
-#endif // BITCOIN_CONSENSUS_TX_CHECK_H

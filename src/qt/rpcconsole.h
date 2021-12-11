@@ -3,8 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_RPCCONSOLE_H
-#define BITCOIN_QT_RPCCONSOLE_H
+#pragma once
 
 #include <qt/guiutil.h>
 #include <qt/peertablemodel.h>
@@ -181,5 +180,3 @@ private:
 private Q_SLOTS:
     void updateAlerts(const QString &warnings);
 };
-
-#endif // BITCOIN_QT_RPCCONSOLE_H

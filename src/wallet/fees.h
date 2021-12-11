@@ -4,8 +4,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_WALLET_FEES_H
-#define BITCOIN_WALLET_FEES_H
+#pragma once
 
 #include <amount.h>
 #include <feerate.h>
@@ -40,5 +39,3 @@ CFeeRate GetRequiredFeeRate(const CWallet &wallet);
 CFeeRate GetMinimumFeeRate(const CWallet &wallet,
                            const CCoinControl &coin_control,
                            const CTxMemPool &pool);
-
-#endif // BITCOIN_WALLET_FEES_H

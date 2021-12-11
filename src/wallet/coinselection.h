@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_WALLET_COINSELECTION_H
-#define BITCOIN_WALLET_COINSELECTION_H
+#pragma once
 
 #include <amount.h>
 #include <primitives/transaction.h>
@@ -117,5 +116,3 @@ bool SelectCoinsBnB(std::vector<OutputGroup> &utxo_pool,
 // Original coin selection algorithm as a fallback
 bool KnapsackSolver(const Amount nTargetValue, std::vector<OutputGroup> &groups,
                     std::set<CInputCoin> &setCoinsRet, Amount &nValueRet);
-
-#endif // BITCOIN_WALLET_COINSELECTION_H

@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_SCRIPT_SCRIPT_EXECUTION_CONTEXT_H
-#define BITCOIN_SCRIPT_SCRIPT_EXECUTION_CONTEXT_H
+#pragma once
 
 #include <coins.h>
 #include <primitives/transaction.h>
@@ -126,5 +125,3 @@ public:
 };
 
 using ScriptExecutionContextOpt = std::optional<ScriptExecutionContext>;
-
-#endif // BITCOIN_SCRIPT_SCRIPT_EXECUTION_CONTEXT_H

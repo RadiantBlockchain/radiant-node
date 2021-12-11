@@ -3,8 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_SERIALIZE_H
-#define BITCOIN_SERIALIZE_H
+#pragma once
 
 #include <compat/endian.h>
 #include <prevector.h>
@@ -1126,5 +1125,3 @@ size_t GetSerializeSizeMany(int nVersion, const T &... t) {
     SerializeMany(sc, t...);
     return sc.size();
 }
-
-#endif // BITCOIN_SERIALIZE_H

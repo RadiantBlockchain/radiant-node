@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_SEEDER_BITCOIN_H
-#define BITCOIN_SEEDER_BITCOIN_H
+#pragma once
 
 #include <chainparams.h>
 #include <compat.h>
@@ -76,5 +75,3 @@ public:
 
 bool TestNode(const CService &cip, int &ban, int &client, std::string &clientSV,
               int &blocks, std::vector<CAddress> *vAddr, ServiceFlags &services);
-
-#endif // BITCOIN_SEEDER_BITCOIN_H

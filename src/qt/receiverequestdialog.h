@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_RECEIVEREQUESTDIALOG_H
-#define BITCOIN_QT_RECEIVEREQUESTDIALOG_H
+#pragma once
 
 #include <qt/walletmodel.h>
 
@@ -65,5 +64,3 @@ private:
     WalletModel *model;
     SendCoinsRecipient info;
 };
-
-#endif // BITCOIN_QT_RECEIVEREQUESTDIALOG_H

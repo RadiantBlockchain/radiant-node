@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_UTIL_BIT_CAST_H
-#define BITCOIN_UTIL_BIT_CAST_H
+#pragma once
 
 #include <cstring>
 #include <type_traits>
@@ -30,5 +29,3 @@ To> bit_cast(const From &src) noexcept
 
 template <class To, class From>
 To bit_cast_unsafe(const From &src) { return bit_cast<To, From, true>(src); }
-
-#endif // BITCOIN_UTIL_BIT_CAST_H

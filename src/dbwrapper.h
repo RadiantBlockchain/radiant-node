@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_DBWRAPPER_H
-#define BITCOIN_DBWRAPPER_H
+#pragma once
 
 #include <clientversion.h>
 #include <fs.h>
@@ -336,5 +335,3 @@ public:
         pdb->CompactRange(&slKey1, &slKey2);
     }
 };
-
-#endif // BITCOIN_DBWRAPPER_H

@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_BLOCKINDEXWORKCOMPARATOR_H
-#define BITCOIN_BLOCKINDEXWORKCOMPARATOR_H
+#pragma once
 
 // TODO: Split chain.h apart and only include CBlockIndex
 #include <chain.h>
@@ -39,5 +38,3 @@ struct CBlockIndexWorkComparator {
         return false;
     }
 };
-
-#endif // BITCOIN_BLOCKINDEXWORKCOMPARATOR_H

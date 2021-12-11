@@ -3,8 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_ADDRDB_H
-#define BITCOIN_ADDRDB_H
+#pragma once
 
 #include <fs.h>
 #include <netaddress.h>
@@ -141,5 +140,3 @@ public:
     bool Write(const BanTables &banSet);
     bool Read(BanTables &banSet);
 };
-
-#endif // BITCOIN_ADDRDB_H

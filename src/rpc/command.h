@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_RPC_COMMAND_H
-#define BITCOIN_RPC_COMMAND_H
+#pragma once
 
 #include <univalue.h>
 
@@ -58,5 +57,3 @@ public:
 
     UniValue Execute(const JSONRPCRequest &request) const final;
 };
-
-#endif // BITCOIN_RPC_COMMAND_H

@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_WALLET_WALLETUTIL_H
-#define BITCOIN_WALLET_WALLETUTIL_H
+#pragma once
 
 #include <fs.h>
 
@@ -33,5 +32,3 @@ public:
     //! Return whether the wallet exists.
     bool Exists() const;
 };
-
-#endif // BITCOIN_WALLET_WALLETUTIL_H

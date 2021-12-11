@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_COINCONTROLDIALOG_H
-#define BITCOIN_QT_COINCONTROLDIALOG_H
+#pragma once
 
 #include <amount.h>
 
@@ -110,5 +109,3 @@ private Q_SLOTS:
     void buttonSelectAllClicked();
     void updateLabelLocked();
 };
-
-#endif // BITCOIN_QT_COINCONTROLDIALOG_H

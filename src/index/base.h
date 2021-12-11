@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_INDEX_BASE_H
-#define BITCOIN_INDEX_BASE_H
+#pragma once
 
 #include <dbwrapper.h>
 #include <primitives/block.h>
@@ -109,5 +108,3 @@ public:
     /// Stops the instance from staying in sync with blockchain updates.
     void Stop();
 };
-
-#endif // BITCOIN_INDEX_BASE_H

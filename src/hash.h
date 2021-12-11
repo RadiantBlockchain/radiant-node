@@ -3,8 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_HASH_H
-#define BITCOIN_HASH_H
+#pragma once
 
 #include <crypto/common.h>
 #include <crypto/ripemd160.h>
@@ -247,5 +246,3 @@ uint64_t SerializeSipHash(const T &obj, uint64_t k0, uint64_t k1,
     ss << obj;
     return ss.GetHash();
 }
-
-#endif // BITCOIN_HASH_H

@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_OPTIONSDIALOG_H
-#define BITCOIN_QT_OPTIONSDIALOG_H
+#pragma once
 
 #include <QDialog>
 #include <QValidator>
@@ -72,5 +71,3 @@ private:
     OptionsModel *model;
     QDataWidgetMapper *mapper;
 };
-
-#endif // BITCOIN_QT_OPTIONSDIALOG_H

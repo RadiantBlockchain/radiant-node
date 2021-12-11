@@ -4,8 +4,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_PUBKEY_H
-#define BITCOIN_PUBKEY_H
+#pragma once
 
 #include <hash.h>
 #include <serialize.h>
@@ -241,5 +240,3 @@ public:
     ECCVerifyHandle();
     ~ECCVerifyHandle();
 };
-
-#endif // BITCOIN_PUBKEY_H

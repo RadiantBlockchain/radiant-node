@@ -5,8 +5,7 @@
 
 // Compile-time verification of assumptions we make.
 
-#ifndef BITCOIN_COMPAT_ASSUMPTIONS_H
-#define BITCOIN_COMPAT_ASSUMPTIONS_H
+#pragma once
 
 #include <climits>
 #include <cstdint>
@@ -80,5 +79,3 @@ static_assert(static_cast<int>(0xffffffff) == -1, "Two's complement representati
 // * We are NOT assuming a specific value for std::locale("").name().
 // * We are NOT assuming a specific value for
 // std::numeric_limits<char>::is_signed.
-
-#endif // BITCOIN_COMPAT_ASSUMPTIONS_H
