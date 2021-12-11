@@ -40,12 +40,6 @@ In order to run the test suite (recommended), you will need to have Python 3:
 pkg install python3
 ```
 
-In order to run the benchmark tool, you will need to have `git-lfs` installed:
-
-```bash
-pkg install git-lfs
-```
-
 To run the ZeroMQ tests:
 
 ```bash

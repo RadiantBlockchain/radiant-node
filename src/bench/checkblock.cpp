@@ -51,16 +51,16 @@ static void DeserializeAndCheckBlockTest(const std::vector<uint8_t> &data, bench
 }
 
 static void DeserializeBlockTest_1MB(benchmark::State &state) {
-    DeserializeBlockTest(benchmark::data::block413567, state);
+    DeserializeBlockTest(benchmark::data::Get_block413567(), state);
 }
 static void DeserializeBlockTest_32MB(benchmark::State &state) {
-    DeserializeBlockTest(benchmark::data::block556034, state);
+    DeserializeBlockTest(benchmark::data::Get_block556034(), state);
 }
 static void DeserializeAndCheckBlockTest_1MB(benchmark::State &state) {
-    DeserializeAndCheckBlockTest(benchmark::data::block413567, state);
+    DeserializeAndCheckBlockTest(benchmark::data::Get_block413567(), state);
 }
 static void DeserializeAndCheckBlockTest_32MB(benchmark::State &state) {
-    DeserializeAndCheckBlockTest(benchmark::data::block556034, state);
+    DeserializeAndCheckBlockTest(benchmark::data::Get_block556034(), state);
 }
 
 BENCHMARK(DeserializeBlockTest_1MB, 160);

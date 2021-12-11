@@ -1,3 +1,1 @@
 src/clientversion.cpp export-subst
-src/bench/data/*.raw filter=lfs diff=lfs merge=lfs -text
-src/bench/data/*.cpp filter=lfs diff=lfs merge=lfs -text

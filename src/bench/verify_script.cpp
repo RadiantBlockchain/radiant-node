@@ -151,23 +151,23 @@ static const uint32_t flags_556034 = flags_413567 | SCRIPT_VERIFY_CHECKSEQUENCEV
 
 // pure bench of just the script VM (sigchecks are trivially always skipped)
 static void VerifyScripts_Block413567(benchmark::State &state) {
-    VerifyBlockScripts(false, flags_413567, benchmark::data::block413567, benchmark::data::coins_spent_413567, state);
+    VerifyBlockScripts(false, flags_413567, benchmark::data::Get_block413567(), benchmark::data::Get_coins_spent_413567(), state);
 }
 
 // pure bench of just the script VM (sigchecks are trivially always skipped)
 static void VerifyScripts_Block556034(benchmark::State &state) {
-    VerifyBlockScripts(false, flags_556034, benchmark::data::block556034, benchmark::data::coins_spent_556034, state);
+    VerifyBlockScripts(false, flags_556034, benchmark::data::Get_block556034(), benchmark::data::Get_coins_spent_556034(), state);
 }
 
 // bench of the script VM *with* signature checking. The cost is usually dominated by libsecp256k1 here
 static void VerifyScripts_SigsChecks_Block413567(benchmark::State &state) {
-    VerifyBlockScripts(true, flags_413567, benchmark::data::block413567, benchmark::data::coins_spent_413567, state);
+    VerifyBlockScripts(true, flags_413567, benchmark::data::Get_block413567(), benchmark::data::Get_coins_spent_413567(), state);
 }
 
 // bench of the script VM *with* signature checking. The cost is usually dominated by libsecp256k1 here
 // Block 556034 is a very big block (this is very very slow).
 static void VerifyScripts_SigsChecks_Block556034(benchmark::State &state) {
-    VerifyBlockScripts(true, flags_556034, benchmark::data::block556034, benchmark::data::coins_spent_556034, state);
+    VerifyBlockScripts(true, flags_556034, benchmark::data::Get_block556034(), benchmark::data::Get_coins_spent_556034(), state);
 }
 
 BENCHMARK(VerifyNestedIfScript, 100);

@@ -7,7 +7,7 @@ Instructions for alpine 3.13
 Minimal dependencies:
 
 ```sh
-    apk add git boost-dev cmake libevent-dev openssl-dev build-base py-pip db-dev miniupnpc-dev zeromq-dev help2man bash git-lfs
+    apk add git boost-dev cmake libevent-dev openssl-dev build-base py-pip db-dev miniupnpc-dev zeromq-dev help2man bash
     pip install ninja
 ```
 
@@ -16,8 +16,7 @@ the build system, hence the need for installing it with `pip`
 
 You can do without the `db-dev`, `miniupnpc-dev`, `zeromq-dev`, and `help2man & bash` packages, then you
 just need to respectively pass `-DBUILD_BITCOIN_WALLET=OFF`, `-DENABLE_UPNP=OFF`, `-DBUILD_BITCOIN_ZMQ=OFF`,
-or `-DENABLE_MAN=OFF` on the `cmake` command line. You can also do without the
-`git-lfs` package, if you don't intend to run the benchmark tool.
+or `-DENABLE_MAN=OFF` on the `cmake` command line.
 
 If you want to build the GUI client `bitcoin-qt` Qt 5 is necessary.
 To build with Qt 5 you need the following packages installed:

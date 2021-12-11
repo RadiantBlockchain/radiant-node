@@ -232,10 +232,6 @@ as a Merge Request.
 
     - [Coverage](doc/coverage.md)
 
-    To run benchmarks, see the "LFS dependency" section in:
-
-    - [Benchmarking](doc/benchmarking.md)
-
 
 Working with The Bitcoin Cash Node Repository
 ---------------------------------------------
