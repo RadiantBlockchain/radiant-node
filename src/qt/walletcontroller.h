@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_WALLETCONTROLLER_H
-#define BITCOIN_QT_WALLETCONTROLLER_H
+#pragma once
 
 #include <qt/walletmodel.h>
 #include <sync.h>
@@ -57,5 +56,3 @@ private:
     std::vector<WalletModel *> m_wallets;
     std::unique_ptr<interfaces::Handler> m_handler_load_wallet;
 };
-
-#endif // BITCOIN_QT_WALLETCONTROLLER_H

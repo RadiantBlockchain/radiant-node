@@ -3,8 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_CORE_IO_H
-#define BITCOIN_CORE_IO_H
+#pragma once
 
 #include <attributes.h>
 #include <script/sighashtype.h>
@@ -63,5 +62,3 @@ UniValue::Object ScriptPubKeyToUniv(const Config &config, const CScript &scriptP
 UniValue::Object ScriptToUniv(const Config &config, const CScript &script, bool include_address, bool f64BitNums = false);
 UniValue::Object TxToUniv(const Config &config, const CTransaction &tx, const uint256 &hashBlock, bool include_hex = true,
                           int serialize_flags = 0, bool f64BitNums = false);
-
-#endif // BITCOIN_CORE_IO_H

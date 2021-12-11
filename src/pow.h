@@ -4,8 +4,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_POW_H
-#define BITCOIN_POW_H
+#pragma once
 
 #include <arith_uint256.h>
 
@@ -65,5 +64,3 @@ void ResetASERTAnchorBlockCache() noexcept;
  * For testing purposes - get the current ASERT cache block.
  */
 const CBlockIndex *GetASERTAnchorBlockCache() noexcept;
-
-#endif // BITCOIN_POW_H

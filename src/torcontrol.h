@@ -5,8 +5,7 @@
 /**
  * Functionality for communicating with Tor.
  */
-#ifndef BITCOIN_TORCONTROL_H
-#define BITCOIN_TORCONTROL_H
+#pragma once
 
 #include <scheduler.h>
 
@@ -16,5 +15,3 @@ static const bool DEFAULT_LISTEN_ONION = true;
 void StartTorControl();
 void InterruptTorControl();
 void StopTorControl();
-
-#endif // BITCOIN_TORCONTROL_H

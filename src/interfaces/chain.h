@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_INTERFACES_CHAIN_H
-#define BITCOIN_INTERFACES_CHAIN_H
+#pragma once
 
 #include <cstdint>
 #include <memory>
@@ -166,5 +165,3 @@ std::unique_ptr<ChainClient>
 MakeWalletClient(Chain &chain, std::vector<std::string> wallet_filenames);
 
 } // namespace interfaces
-
-#endif // BITCOIN_INTERFACES_CHAIN_H

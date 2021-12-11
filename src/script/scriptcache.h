@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_SCRIPT_SCRIPTCACHE_H
-#define BITCOIN_SCRIPT_SCRIPTCACHE_H
+#pragma once
 
 #include <array>
 #include <cstdint>
@@ -55,5 +54,3 @@ bool IsKeyInScriptCache(ScriptCacheKey key, bool erase, int &nSigChecksOut);
  * Add an entry in the cache.
  */
 void AddKeyInScriptCache(ScriptCacheKey key, int nSigChecks);
-
-#endif // BITCOIN_SCRIPT_SCRIPTCACHE_H

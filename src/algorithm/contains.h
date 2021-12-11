@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_ALGORITHM_CONTAINS_H_
-#define BITCOIN_ALGORITHM_CONTAINS_H_
+#pragma once
 
 #include <iterator>
 
@@ -17,5 +16,3 @@ bool contains(C const& c, K const& x) {
 }
 
 } // namespace algo
-
-#endif // BITCOIN_ALGORITHM_CONTAINS_H_

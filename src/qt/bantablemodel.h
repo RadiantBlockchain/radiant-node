@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_BANTABLEMODEL_H
-#define BITCOIN_QT_BANTABLEMODEL_H
+#pragma once
 
 #include <net.h>
 
@@ -74,5 +73,3 @@ private:
     QStringList columns;
     std::unique_ptr<BanTablePriv> priv;
 };
-
-#endif // BITCOIN_QT_BANTABLEMODEL_H

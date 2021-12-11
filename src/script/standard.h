@@ -4,8 +4,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_SCRIPT_STANDARD_H
-#define BITCOIN_SCRIPT_STANDARD_H
+#pragma once
 
 #include <amount.h>
 #include <pubkey.h>
@@ -123,5 +122,3 @@ CScript GetScriptForRawPubKey(const CPubKey &pubkey);
 
 /** Generate a multisig script. */
 CScript GetScriptForMultisig(int nRequired, const std::vector<CPubKey> &keys);
-
-#endif // BITCOIN_SCRIPT_STANDARD_H

@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_LIMITEDMAP_H
-#define BITCOIN_LIMITEDMAP_H
+#pragma once
 
 #include <cassert>
 #include <map>
@@ -96,5 +95,3 @@ public:
         return nMaxSize;
     }
 };
-
-#endif // BITCOIN_LIMITEDMAP_H

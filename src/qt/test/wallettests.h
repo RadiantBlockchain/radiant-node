@@ -1,5 +1,4 @@
-#ifndef BITCOIN_QT_TEST_WALLETTESTS_H
-#define BITCOIN_QT_TEST_WALLETTESTS_H
+#pragma once
 
 #include <QObject>
 #include <QTest>
@@ -10,5 +9,3 @@ class WalletTests : public QObject {
 private Q_SLOTS:
     void walletTests();
 };
-
-#endif // BITCOIN_QT_TEST_WALLETTESTS_H

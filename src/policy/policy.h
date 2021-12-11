@@ -3,8 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_POLICY_POLICY_H
-#define BITCOIN_POLICY_POLICY_H
+#pragma once
 
 #include <consensus/consensus.h>
 #include <feerate.h>
@@ -157,5 +156,3 @@ static inline int64_t GetVirtualTransactionSize(int64_t nSize,
                                                 int64_t nSigChecks) {
     return GetVirtualTransactionSize(nSize, nSigChecks, ::nBytesPerSigCheck);
 }
-
-#endif // BITCOIN_POLICY_POLICY_H

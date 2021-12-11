@@ -7,8 +7,7 @@
  * Server/client environment: argument handling, config file parsing,
  * thread wrappers, startup time
  */
-#ifndef BITCOIN_UTIL_SYSTEM_H
-#define BITCOIN_UTIL_SYSTEM_H
+#pragma once
 
 #if defined(HAVE_CONFIG_H)
 #include <config/bitcoin-config.h>
@@ -419,5 +418,3 @@ private:
 #endif
 
 } // namespace util
-
-#endif // BITCOIN_UTIL_SYSTEM_H

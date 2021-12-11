@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_HTTPRPC_H
-#define BITCOIN_HTTPRPC_H
+#pragma once
 
 #include <httpserver.h>
 #include <rpc/server.h>
@@ -59,5 +58,3 @@ void InterruptREST();
  * Precondition; HTTP and RPC has been stopped.
  */
 void StopREST();
-
-#endif // BITCOIN_HTTPRPC_H

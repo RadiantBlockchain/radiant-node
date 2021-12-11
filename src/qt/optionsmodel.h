@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_OPTIONSMODEL_H
-#define BITCOIN_QT_OPTIONSMODEL_H
+#pragma once
 
 #include <amount.h>
 
@@ -117,5 +116,3 @@ Q_SIGNALS:
     void coinControlFeaturesChanged(bool);
     void hideTrayIconChanged(bool);
 };
-
-#endif // BITCOIN_QT_OPTIONSMODEL_H

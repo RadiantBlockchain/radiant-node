@@ -3,8 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_PRIMITIVES_BLOCK_H
-#define BITCOIN_PRIMITIVES_BLOCK_H
+#pragma once
 
 #include <primitives/blockhash.h>
 #include <primitives/transaction.h>
@@ -116,5 +115,3 @@ struct CBlockLocator {
 
     bool IsNull() const { return vHave.empty(); }
 };
-
-#endif // BITCOIN_PRIMITIVES_BLOCK_H

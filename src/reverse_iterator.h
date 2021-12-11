@@ -1,7 +1,6 @@
 // Taken from https://gist.github.com/arvidsson/7231973
 
-#ifndef BITCOIN_REVERSE_ITERATOR_HPP
-#define BITCOIN_REVERSE_ITERATOR_HPP
+#pragma once
 
 /**
  * Template used for reverse iteration in C++11 range-based for loops.
@@ -25,5 +24,3 @@ public:
 template <typename T> reverse_range<T> reverse_iterate(T &x) {
     return reverse_range<T>(x);
 }
-
-#endif // BITCOIN_REVERSE_ITERATOR_HPP

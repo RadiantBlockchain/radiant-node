@@ -2,8 +2,7 @@
 // Copyright (C) 2020-2021 Calin Culianu <calin.culianu@gmail.com>
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
-#ifndef BITCOIN_DSPROOF_DSPID_H
-#define BITCOIN_DSPROOF_DSPID_H
+#pragma once
 
 #include <uint256.h>
 
@@ -107,6 +106,3 @@ public:
     // used by tests
     std::size_t memUsage() const { return sizeof(*this) + (p ? sizeof(*p) : 0); }
 };
-
-
-#endif // BITCOIN_DSPROOF_DSPID_H

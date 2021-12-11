@@ -1,5 +1,4 @@
-#ifndef BITCOIN_QT_TEST_ADDRESSBOOKTESTS_H
-#define BITCOIN_QT_TEST_ADDRESSBOOKTESTS_H
+#pragma once
 
 #include <QObject>
 #include <QTest>
@@ -10,5 +9,3 @@ class AddressBookTests : public QObject {
 private Q_SLOTS:
     void addressBookTests();
 };
-
-#endif // BITCOIN_QT_TEST_ADDRESSBOOKTESTS_H

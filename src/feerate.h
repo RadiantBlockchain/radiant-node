@@ -4,8 +4,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_FEERATE_H
-#define BITCOIN_FEERATE_H
+#pragma once
 
 #include <amount.h>
 #include <serialize.h>
@@ -86,5 +85,3 @@ public:
 
     SERIALIZE_METHODS(CFeeRate, obj) { READWRITE(obj.nSatoshisPerK); }
 };
-
-#endif // BITCOIN_FEERATE_H

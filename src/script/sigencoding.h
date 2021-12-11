@@ -4,8 +4,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_SCRIPT_SIGENCODING_H
-#define BITCOIN_SCRIPT_SIGENCODING_H
+#pragma once
 
 #include <script/script_error.h>
 #include <script/sighashtype.h>
@@ -66,5 +65,3 @@ bool CheckTransactionSchnorrSignatureEncoding(const valtype &vchSig,
  */
 bool CheckPubKeyEncoding(const valtype &vchPubKey, uint32_t flags,
                          ScriptError *serror);
-
-#endif // BITCOIN_SCRIPT_SIGENCODING_H

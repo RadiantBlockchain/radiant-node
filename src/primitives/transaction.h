@@ -4,8 +4,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_PRIMITIVES_TRANSACTION_H
-#define BITCOIN_PRIMITIVES_TRANSACTION_H
+#pragma once
 
 #include <amount.h>
 #include <feerate.h>
@@ -385,5 +384,3 @@ public:
     /// Returned pointer will be nullptr if this->isMutableTx()
     const CTransaction *constantTx() const { return tx; }
 };
-
-#endif // BITCOIN_PRIMITIVES_TRANSACTION_H

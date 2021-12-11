@@ -3,8 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_KEY_IO_H
-#define BITCOIN_KEY_IO_H
+#pragma once
 
 #include <key.h>
 #include <pubkey.h>
@@ -32,5 +31,3 @@ std::string EncodeLegacyAddr(const CTxDestination &dest,
                              const CChainParams &params);
 CTxDestination DecodeLegacyAddr(const std::string &str,
                                 const CChainParams &params);
-
-#endif // BITCOIN_KEY_IO_H

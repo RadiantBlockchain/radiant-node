@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_CRYPTO_SHA1_H
-#define BITCOIN_CRYPTO_SHA1_H
+#pragma once
 
 #include <cstdint>
 #include <cstdlib>
@@ -23,5 +22,3 @@ public:
     void Finalize(uint8_t hash[OUTPUT_SIZE]);
     CSHA1 &Reset();
 };
-
-#endif // BITCOIN_CRYPTO_SHA1_H

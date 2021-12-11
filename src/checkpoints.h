@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_CHECKPOINTS_H
-#define BITCOIN_CHECKPOINTS_H
+#pragma once
 
 class CBlockIndex;
 struct BlockHash;
@@ -23,5 +22,3 @@ bool CheckBlock(const CCheckpointData &data, int nHeight,
 CBlockIndex *GetLastCheckpoint(const CCheckpointData &data);
 
 } // namespace Checkpoints
-
-#endif // BITCOIN_CHECKPOINTS_H

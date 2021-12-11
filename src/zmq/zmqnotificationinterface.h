@@ -3,8 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_ZMQ_ZMQNOTIFICATIONINTERFACE_H
-#define BITCOIN_ZMQ_ZMQNOTIFICATIONINTERFACE_H
+#pragma once
 
 #include <validationinterface.h>
 
@@ -47,5 +46,3 @@ private:
 };
 
 extern CZMQNotificationInterface *g_zmq_notification_interface;
-
-#endif // BITCOIN_ZMQ_ZMQNOTIFICATIONINTERFACE_H

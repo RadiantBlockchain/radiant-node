@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_BLOCKVALIDITY_H
-#define BITCOIN_BLOCKVALIDITY_H
+#pragma once
 
 #include <cstdint>
 
@@ -46,5 +45,3 @@ enum class BlockValidity : uint32_t {
      */
     SCRIPTS = 5,
 };
-
-#endif // BITCOIN_BLOCKVALIDITY_H

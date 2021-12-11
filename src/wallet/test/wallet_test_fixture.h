@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_WALLET_TEST_WALLET_TEST_FIXTURE_H
-#define BITCOIN_WALLET_TEST_WALLET_TEST_FIXTURE_H
+#pragma once
 
 #include <interfaces/chain.h>
 #include <interfaces/wallet.h>
@@ -24,5 +23,3 @@ struct WalletTestingSetup : public TestingSetup {
     std::unique_ptr<interfaces::Chain> m_chain = interfaces::MakeChain();
     CWallet m_wallet;
 };
-
-#endif // BITCOIN_WALLET_TEST_WALLET_TEST_FIXTURE_H

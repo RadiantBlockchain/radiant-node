@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_INTERFACES_WALLET_H
-#define BITCOIN_INTERFACES_WALLET_H
+#pragma once
 
 #include <amount.h>                 // For Amount
 #include <primitives/transaction.h> // For CTxOut
@@ -362,5 +361,3 @@ struct WalletTxOut {
 std::unique_ptr<Wallet> MakeWallet(const std::shared_ptr<CWallet> &wallet);
 
 } // namespace interfaces
-
-#endif // BITCOIN_INTERFACES_WALLET_H

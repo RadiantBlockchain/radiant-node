@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_NET_PERMISSIONS_H
-#define BITCOIN_NET_PERMISSIONS_H
+#pragma once
 
 #include <netaddress.h>
 
@@ -58,5 +57,3 @@ public:
                          std::string &error);
     CSubNet m_subnet;
 };
-
-#endif // BITCOIN_NET_PERMISSIONS_H

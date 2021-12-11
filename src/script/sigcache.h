@@ -3,8 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_SCRIPT_SIGCACHE_H
-#define BITCOIN_SCRIPT_SIGCACHE_H
+#pragma once
 
 #include <script/interpreter.h>
 
@@ -62,5 +61,3 @@ public:
 };
 
 void InitSignatureCache();
-
-#endif // BITCOIN_SCRIPT_SIGCACHE_H

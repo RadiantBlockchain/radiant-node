@@ -3,8 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_SPAN_H
-#define BITCOIN_SPAN_H
+#pragma once
 
 #include <algorithm>
 #include <cassert>
@@ -122,5 +121,3 @@ constexpr auto MakeSpan(V &v) {
     using ContainerValueType = typename std::remove_pointer_t<decltype(std::declval<V>().data())>;
     return Span<ContainerValueType>(v.data(), v.size());
 }
-
-#endif // BITCOIN_SPAN_H

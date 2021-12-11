@@ -2,8 +2,7 @@
 // Copyright (c) 2009-2017 The Bitcoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
-#ifndef BITCOIN_BANMAN_H
-#define BITCOIN_BANMAN_H
+#pragma once
 
 #include <addrdb.h>
 #include <bloom.h>
@@ -114,5 +113,3 @@ private:
 };
 
 extern std::unique_ptr<BanMan> g_banman;
-
-#endif // BITCOIN_BANMAN_H

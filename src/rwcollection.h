@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_RWCOLLECTION_H
-#define BITCOIN_RWCOLLECTION_H
+#pragma once
 
 #include <threadsafety.h>
 
@@ -84,5 +83,3 @@ public:
                          collection);
     }
 };
-
-#endif // BITCOIN_RWCOLLECTION_H

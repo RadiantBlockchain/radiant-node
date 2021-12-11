@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_GUIUTIL_H
-#define BITCOIN_QT_GUIUTIL_H
+#pragma once
 
 #include <amount.h>
 #include <fs.h>
@@ -302,5 +301,3 @@ private:
  */
 int TextWidth(const QFontMetrics &fm, const QString &text);
 } // namespace GUIUtil
-
-#endif // BITCOIN_QT_GUIUTIL_H

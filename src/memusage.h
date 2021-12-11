@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_MEMUSAGE_H
-#define BITCOIN_MEMUSAGE_H
+#pragma once
 
 #include <indirectmap.h>
 #include <prevector.h>
@@ -152,5 +151,3 @@ inline size_t DynamicUsage(const std::unordered_map<X, Y, Hasher, Eq, A> &m) {
            MallocUsage(sizeof(void *) * m.bucket_count());
 }
 } // namespace memusage
-
-#endif // BITCOIN_MEMUSAGE_H

@@ -3,8 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_COINS_H
-#define BITCOIN_COINS_H
+#pragma once
 
 #include <compressor.h>
 #include <memusage.h>
@@ -289,5 +288,3 @@ void AddCoins(CCoinsViewCache &cache, const CTransaction &tx, int nHeight,
 //! which is not found in the cache, it can cause up to MAX_OUTPUTS_PER_BLOCK
 //! lookups to database, so it should be used with care.
 const Coin &AccessByTxid(const CCoinsViewCache &cache, const TxId &txid);
-
-#endif // BITCOIN_COINS_H

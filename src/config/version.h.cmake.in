@@ -2,12 +2,9 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_CONFIG_VERSION_H
-#define BITCOIN_CONFIG_VERSION_H
+#pragma once
 
 #define CLIENT_VERSION_MAJOR ${CLIENT_VERSION_MAJOR}
 #define CLIENT_VERSION_MINOR ${CLIENT_VERSION_MINOR}
 #define CLIENT_VERSION_REVISION ${CLIENT_VERSION_REVISION}
 #cmakedefine01 CLIENT_VERSION_IS_RELEASE
-
-#endif // BITCOIN_CONFIG_VERSION_H

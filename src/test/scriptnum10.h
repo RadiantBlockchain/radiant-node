@@ -3,8 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_TEST_SCRIPTNUM10_H
-#define BITCOIN_TEST_SCRIPTNUM10_H
+#pragma once
 
 #include <algorithm>
 #include <cassert>
@@ -192,5 +191,3 @@ private:
 
     int64_t m_value;
 };
-
-#endif // BITCOIN_TEST_SCRIPTNUM10_H

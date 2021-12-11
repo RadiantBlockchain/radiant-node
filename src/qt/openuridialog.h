@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_OPENURIDIALOG_H
-#define BITCOIN_QT_OPENURIDIALOG_H
+#pragma once
 
 #include <QDialog>
 
@@ -32,5 +31,3 @@ private:
     Ui::OpenURIDialog *ui;
     const QString uriScheme;
 };
-
-#endif // BITCOIN_QT_OPENURIDIALOG_H

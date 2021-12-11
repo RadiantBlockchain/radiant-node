@@ -4,8 +4,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_NET_H
-#define BITCOIN_NET_H
+#pragma once
 
 #include <addrdb.h>
 #include <addrman.h>
@@ -913,4 +912,3 @@ int64_t PoissonNextSend(int64_t now, int average_interval_ms);
 
 std::string getSubVersionEB(uint64_t MaxBlockSize);
 std::string userAgent(const Config &config);
-#endif // BITCOIN_NET_H

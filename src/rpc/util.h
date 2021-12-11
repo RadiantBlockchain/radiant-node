@@ -3,8 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_RPC_UTIL_H
-#define BITCOIN_RPC_UTIL_H
+#pragma once
 
 #include <script/standard.h> // For CTxDestination
 #include <univalue.h> // For UniValue::Object, UniValue::stringify
@@ -202,5 +201,3 @@ private:
     const RPCResults m_results;
     const RPCExamples m_examples;
 };
-
-#endif // BITCOIN_RPC_UTIL_H

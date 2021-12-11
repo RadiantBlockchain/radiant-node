@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_TEST_UTIL_H
-#define BITCOIN_TEST_UTIL_H
+#pragma once
 
 #include <memory>
 
@@ -20,5 +19,3 @@ CTxIn MineBlock(const Config &config, const CScript &coinbase_scriptPubKey);
 /** Prepare a block to be mined */
 std::shared_ptr<CBlock> PrepareBlock(const Config &config,
                                      const CScript &coinbase_scriptPubKey);
-
-#endif // BITCOIN_TEST_UTIL_H

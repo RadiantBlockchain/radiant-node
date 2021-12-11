@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_BLOCKSTATUS_H
-#define BITCOIN_BLOCKSTATUS_H
+#pragma once
 
 #include <blockvalidity.h>
 #include <serialize.h>
@@ -119,5 +118,3 @@ public:
         return !(a == b);
     }
 };
-
-#endif // BITCOIN_BLOCKSTATUS_H

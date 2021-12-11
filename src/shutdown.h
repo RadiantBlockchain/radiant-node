@@ -3,11 +3,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_SHUTDOWN_H
-#define BITCOIN_SHUTDOWN_H
+#pragma once
 
 void StartShutdown();
 void AbortShutdown();
 bool ShutdownRequested();
-
-#endif // BITCOIN_SHUTDOWN_H

@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_PEERTABLEMODEL_H
-#define BITCOIN_QT_PEERTABLEMODEL_H
+#pragma once
 
 #include <net.h>
 #include <net_processing.h> // For CNodeStateStats
@@ -90,5 +89,3 @@ private:
     std::unique_ptr<PeerTablePriv> priv;
     QTimer *timer;
 };
-
-#endif // BITCOIN_QT_PEERTABLEMODEL_H

@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_TEST_CHECK_ASSERT_H
-#define BITCOIN_TEST_CHECK_ASSERT_H
+#pragma once
 
 #include <boost/test/unit_test.hpp>
 
@@ -43,5 +42,3 @@ CheckAssertResult CheckAssert(std::function<void()> func, std::string_view expec
         BOOST_CHECK_MESSAGE(res == CheckAssertResult::AssertEncountered, \
                             "Failed to trap the appropriate assert for: \"" BOOST_STRINGIZE(stmt) "\""); \
     } while (0)
-
-#endif // BITCOIN_TEST_CHECK_ASSERT_H

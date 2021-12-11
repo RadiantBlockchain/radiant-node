@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_SEEDER_DNS_H
-#define BITCOIN_SEEDER_DNS_H 1
+#pragma once
 
 #include <cstddef>
 #include <cstdint>
@@ -55,5 +54,3 @@ int write_name(uint8_t **outpos, const uint8_t *outend, const char *name,
                int offset);
 
 int dnsserver(dns_opt_t *opt);
-
-#endif // BITCOIN_SEEDER_DNS_H

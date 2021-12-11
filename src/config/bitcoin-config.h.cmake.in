@@ -1,7 +1,6 @@
 // Copyright (c) 2017-2021 The Bitcoin developers
 
-#ifndef BITCOIN_CONFIG_BITCOIN_CONFIG_H
-#define BITCOIN_CONFIG_BITCOIN_CONFIG_H
+#pragma once
 
 #define PACKAGE_NAME "${PACKAGE_NAME}"
 
@@ -76,5 +75,3 @@
 
 /* Define if QtDBus support should be enabled */
 #cmakedefine USE_DBUS 1
-
-#endif // BITCOIN_BITCOIN_CONFIG_H

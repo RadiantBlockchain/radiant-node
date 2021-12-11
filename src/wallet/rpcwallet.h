@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_WALLET_RPCWALLET_H
-#define BITCOIN_WALLET_RPCWALLET_H
+#pragma once
 
 #include <script/sighashtype.h>
 
@@ -35,5 +34,3 @@ bool EnsureWalletIsAvailable(CWallet *, bool avoidException);
 UniValue signrawtransactionwithwallet(const Config &config,
                                       const JSONRPCRequest &request);
 UniValue getaddressinfo(const Config &config, const JSONRPCRequest &request);
-
-#endif // BITCOIN_WALLET_RPCWALLET_H

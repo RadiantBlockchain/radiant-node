@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_PREVECTOR_H
-#define BITCOIN_PREVECTOR_H
+#pragma once
 
 #include <algorithm>
 #include <cassert>
@@ -615,5 +614,3 @@ public:
 
     const value_type *data() const { return item_ptr(0); }
 };
-
-#endif // BITCOIN_PREVECTOR_H

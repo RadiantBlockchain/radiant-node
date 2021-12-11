@@ -2,8 +2,7 @@
 // Copyright (C) 2020-2021 Calin Culianu <calin.culianu@gmail.com>
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
-#ifndef BITCOIN_DSPROOF_DSPROOF_H
-#define BITCOIN_DSPROOF_DSPROOF_H
+#pragma once
 
 #include <chain.h> // for cs_main
 #include <dsproof/dspid.h>
@@ -157,5 +156,3 @@ private:
     //! Used by IsEnabled() and SetEnabled() static methods; default is: enabled (true)
     static bool s_enabled;
 };
-
-#endif // BITCOIN_DSPROOF_DSPROOF_H

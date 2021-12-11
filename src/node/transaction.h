@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_NODE_TRANSACTION_H
-#define BITCOIN_NODE_TRANSACTION_H
+#pragma once
 
 #include <primitives/transaction.h>
 
@@ -13,5 +12,3 @@ struct TxId;
 /** Broadcast a transaction */
 TxId BroadcastTransaction(const Config &config, CTransactionRef tx,
                           bool allowhighfees = false);
-
-#endif // BITCOIN_NODE_TRANSACTION_H

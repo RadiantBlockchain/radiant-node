@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_ASKPASSPHRASEDIALOG_H
-#define BITCOIN_QT_ASKPASSPHRASEDIALOG_H
+#pragma once
 
 #include <QDialog>
 
@@ -49,5 +48,3 @@ protected:
     bool event(QEvent *event) override;
     bool eventFilter(QObject *object, QEvent *event) override;
 };
-
-#endif // BITCOIN_QT_ASKPASSPHRASEDIALOG_H

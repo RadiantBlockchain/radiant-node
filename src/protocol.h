@@ -7,8 +7,7 @@
 #error This header can only be compiled as C++.
 #endif
 
-#ifndef BITCOIN_PROTOCOL_H
-#define BITCOIN_PROTOCOL_H
+#pragma once
 
 #include <netaddress.h>
 #include <serialize.h>
@@ -459,5 +458,3 @@ public:
     uint32_t type;
     uint256 hash;
 };
-
-#endif // BITCOIN_PROTOCOL_H

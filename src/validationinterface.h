@@ -3,8 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_VALIDATIONINTERFACE_H
-#define BITCOIN_VALIDATIONINTERFACE_H
+#pragma once
 
 #include <dsproof/dspid.h>
 #include <net_nodeid.h>
@@ -254,5 +253,3 @@ public:
 };
 
 CMainSignals &GetMainSignals();
-
-#endif // BITCOIN_VALIDATIONINTERFACE_H

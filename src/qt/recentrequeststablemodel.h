@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_RECENTREQUESTSTABLEMODEL_H
-#define BITCOIN_QT_RECENTREQUESTSTABLEMODEL_H
+#pragma once
 
 #include <qt/guiutil.h>
 #include <qt/walletmodel.h>
@@ -99,5 +98,3 @@ private:
      * optionsModel reference available. */
     QString getAmountTitle();
 };
-
-#endif // BITCOIN_QT_RECENTREQUESTSTABLEMODEL_H

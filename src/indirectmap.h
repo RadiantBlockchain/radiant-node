@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_INDIRECTMAP_H
-#define BITCOIN_INDIRECTMAP_H
+#pragma once
 
 #include <map>
 #include <utility>
@@ -68,5 +67,3 @@ public:
     const_iterator cbegin() const { return m.cbegin(); }
     const_iterator cend() const { return m.cend(); }
 };
-
-#endif // BITCOIN_INDIRECTMAP_H

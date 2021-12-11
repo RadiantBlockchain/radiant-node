@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_GBTLIGHT_H
-#define BITCOIN_GBTLIGHT_H
+#pragma once
 
 #include <fs.h>
 #include <uint256.h>
@@ -38,5 +37,3 @@ extern const char * const DEFAULT_JOB_DATA_SUBDIR; /**< = "gbt" */
 extern const int64_t DEFAULT_JOB_DATA_EXPIRY_SECS; /**< = 3600 */
 extern const std::string tmpExt; /** = ".tmp" */
 }
-
-#endif // BITCOIN_GBTLIGHT_H
