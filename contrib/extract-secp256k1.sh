@@ -10,12 +10,12 @@ fi
 
 WORKDIR=$(mktemp -d)
 function cleanup {
-    echo Deleting workdir ${WORKDIR}
+    echo "Deleting workdir ${WORKDIR}"
     rm -rf "${WORKDIR}"
 }
 trap cleanup EXIT
 
-echo Using workdir ${WORKDIR}
+echo "Using workdir ${WORKDIR}"
 
 # Find the source repository's location.
 pushd "$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
@@ -42,7 +42,7 @@ popd
 git clone "file://${WORKDIR}" secp256k1
 
 pushd secp256k1
-git remote add github https://github.com/Bitcoin-ABC/secp256k1.git
+git remote add github 'https://github.com/Bitcoin-ABC/secp256k1.git'
 git pull github master --rebase
 git gc --prune=now
 

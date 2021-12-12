@@ -5,7 +5,7 @@ export LC_ALL=C
 set -euo pipefail
 
 SCRIPT_PATH="$(dirname "$0")"
-ORIGINAL_PWD=$(pwd)
+ORIGINAL_PWD="$(pwd)"
 TOPLEVEL="$(cd "${SCRIPT_PATH}"; git rev-parse --show-toplevel)"
 OAUTH_TOKEN_PATH="${PWD}/.github-oauth-token"
 RELEASE_NOTES_DIR="${TOPLEVEL}/doc/release-notes"
@@ -29,9 +29,9 @@ TAG=""
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
-case $1 in
+case "$1" in
   -a|--assets-dir)
-    ASSET_DIR=$(cd $2; pwd)
+    ASSET_DIR=$(cd "$2"; pwd)
     shift # shift past argument
     shift # shift past value
     ;;
@@ -100,7 +100,7 @@ GIT_REPO="https://${OAUTH_TOKEN}@github.com/bitcoin-cash-node/bitcoin-cash-node.
 git fetch "${GIT_REPO}" tag "${TAG}" || (echo "Error: Remote does not have tag '${TAG}'." && exit 20)
 cd "${ORIGINAL_PWD}"
 
-VERSION=$(echo "${TAG}" | cut -c 2-)
+VERSION=$(cut -c 2- <<< "${TAG}")
 
 # Collect list of assets (binaries) to upload
 if [ -z "${ASSET_DIR}" ]; then
@@ -163,7 +163,7 @@ else
   echo "Creating draft release..."
   echo "Requesting '${URL}'..."
   RESPONSE=$(curl -X POST -H "Content-Type: application/json" -H "Authorization: token ${OAUTH_TOKEN}" -d "${POST_DATA}" "${URL}")
-  RELEASE_ID=$(echo "${RESPONSE}" | jq '.id')
+  RELEASE_ID=$(jq '.id' <<< "${RESPONSE}")
   UPLOAD_URL="https://uploads.github.com/repos/bitcoin-cash-node/bitcoin-cash-node/releases/${RELEASE_ID}/assets"
 
   echo "Uploading assets..."
