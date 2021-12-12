@@ -20,8 +20,8 @@ search_and_report_if_found() {
     PATTERN="$1"
     PATTERN_FOUND_MESSAGE="$2"
     shift 2
-    OUTPUT=$(git grep -E "$PATTERN" -- $@)
-    if [[ ${OUTPUT} != "" ]]; then
+    OUTPUT="$(git grep -E "$PATTERN" -- "$@")"
+    if [[ "${OUTPUT}" != "" ]]; then
         echo "$PATTERN_FOUND_MESSAGE"
         echo
         echo "${OUTPUT}"
@@ -43,4 +43,4 @@ search_and_report_if_found "std::filesystem" \
 search_and_report_if_found "std::variant" \
    "Use of std::variant detected. This is a problem on OSX 10.14 (gitian build). Use boost::variant instead." \
    "*.cpp" "*.h"
-exit ${EXIT_CODE}
+exit "${EXIT_CODE}"

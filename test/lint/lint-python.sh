@@ -85,25 +85,30 @@ enabled=(
 if ! command -v flake8 > /dev/null; then
     echo "Skipping Python linting since flake8 is not installed."
     exit 0
-elif PYTHONWARNINGS="ignore" flake8 --version | grep -q "Python 2"; then
+elif PYTHONWARNINGS="ignore" flake8 --version | grep -Fq "Python 2"; then
     echo "Skipping Python linting since flake8 is running under Python 2. Install the Python 3 version of flake8."
     exit 0
 fi
 
 EXIT_CODE=0
 
-if ! PYTHONWARNINGS="ignore" flake8 --ignore=B,C,E,F,I,N,W --select=$(IFS=","; echo "${enabled[*]}") $(
+OLDIFS=$IFS
+IFS=$'\n'
+file_list=($(
     if [[ $# == 0 ]]; then
         git ls-files "*.py"
     else
         echo "$@"
     fi
-); then
+));
+if ! PYTHONWARNINGS="ignore" flake8 --ignore=B,C,E,F,I,N,W --select="$(IFS=","; echo "${enabled[*]}")" "${file_list[@]}"; then
     EXIT_CODE=1
 fi
 
 # Ignore tests of framework, see issue #215
-if ! mypy --ignore-missing-imports $(git ls-files "test/functional/*.py" | grep -v "test_framework/tests"); then
+file_list=($(git ls-files "test/functional/*.py" | grep -Fv "test_framework/tests"))
+IFS=$OLDIFS
+if ! mypy --ignore-missing-imports "${file_list[@]}"; then
     EXIT_CODE=1
 fi
 

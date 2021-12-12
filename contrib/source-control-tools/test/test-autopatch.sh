@@ -8,7 +8,7 @@ export LC_ALL=C.UTF-8
 set -euxo pipefail
 
 TOPLEVEL=$(git rev-parse --show-toplevel)
-CURRENT_DIR=$(dirname $(readlink -f "$0"))
+CURRENT_DIR=$(dirname "$(readlink -f "$0")")
 TEST_PATCH="${CURRENT_DIR}/test-commit.patch"
 : "${REMOTE:=origin}"
 : "${MASTER_BRANCH:=master}"

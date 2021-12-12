@@ -23,7 +23,7 @@ echo "%sudo ALL=NOPASSWD: /usr/bin/lxc-execute" >> /etc/sudoers.d/gitian-lxc
 	echo 'export LXC_BRIDGE=lxcbr0'
 	echo 'export GITIAN_HOST_IP=10.0.3.1'
 	echo 'export LXC_GUEST_IP=10.0.3.5'
-} >> /home/${BUILDUSER}/.profile
+} >> "/home/${BUILDUSER}/.profile"
 
 # Setup bridge
 echo 'USE_LXC_BRIDGE="true"' > /etc/default/lxc-net
@@ -36,25 +36,25 @@ echo 'USE_LXC_BRIDGE="true"' > /etc/default/lxc-net
 service lxc-net restart
 
 # chdir into build user home directory
-cd /home/${BUILDUSER}/
+cd "/home/${BUILDUSER}/"
 
 ## Install vm-builder
-wget http://archive.ubuntu.com/ubuntu/pool/universe/v/vm-builder/vm-builder_0.12.4+bzr494.orig.tar.gz
-echo "76cbf8c52c391160b2641e7120dbade5afded713afaa6032f733a261f13e6a8e  vm-builder_0.12.4+bzr494.orig.tar.gz" | sha256sum -c
+wget "http://archive.ubuntu.com/ubuntu/pool/universe/v/vm-builder/vm-builder_0.12.4+bzr494.orig.tar.gz"
+sha256sum -c <<< "76cbf8c52c391160b2641e7120dbade5afded713afaa6032f733a261f13e6a8e  vm-builder_0.12.4+bzr494.orig.tar.gz"
 # (verification -- must return OK)
-tar -zxvf vm-builder_0.12.4+bzr494.orig.tar.gz
+tar -zxvf "vm-builder_0.12.4+bzr494.orig.tar.gz"
 cd vm-builder-0.12.4+bzr494
 sudo python setup.py install
 cd ..
 
 ## Install Gitian
-git clone https://github.com/devrandom/gitian-builder.git
+git clone "https://github.com/devrandom/gitian-builder.git"
 cd gitian-builder
 
 git config --global user.email "vagrant@vagrant.com"
 git config --global user.name "vagrant"
 
-chown -R ${BUILDUSER}:${BUILDUSER} /home/${BUILDUSER}  
+chown -R "${BUILDUSER}:${BUILDUSER}" "/home/${BUILDUSER}"
 
 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 echo "!!! Provisioning Complete !!!!"

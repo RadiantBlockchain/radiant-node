@@ -110,7 +110,7 @@ LINT_OUTPUT=$(arc lint --never-apply-patches)
 LINT_EXIT_CODE=$?
 # If there is more than one line of output, then lint advice lines are likely present.
 # We treat these as errors because code generators should always produce lint-free code.
-LINT_NUM_LINES=$(echo ${LINT_OUTPUT} | wc -l)
+LINT_NUM_LINES=$(wc -l <<< "${LINT_OUTPUT}")
 if [ "${LINT_EXIT_CODE}" -ne 0 ] || [ "${LINT_NUM_LINES}" -gt 1 ]; then
   echo "Error: The linter found issues with the automated commit. Correct the issue in the code generator and try again."
   exit 20

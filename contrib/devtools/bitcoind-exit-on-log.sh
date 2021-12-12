@@ -81,7 +81,7 @@ fi
 touch "${LOG_FILE}"
 
 # Launch bitcoind using custom parameters
-read -a BITCOIND_PARAMS <<< "${BITCOIND_PARAMS}"
+read -ar BITCOIND_PARAMS <<< "${BITCOIND_PARAMS}"
 START_TIME=$(date +%s)
 if [ "${#BITCOIND_PARAMS[@]}" -gt 0 ]; then
   "${BITCOIND}" "${BITCOIND_PARAMS[@]}" &
