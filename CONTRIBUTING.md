@@ -232,6 +232,8 @@ as a Merge Request.
 
     - [Coverage](doc/coverage.md)
 
+    To run benchmarks, see [Benchmarking](doc/benchmarking.md).
+
 
 Working with The Bitcoin Cash Node Repository
 ---------------------------------------------
