@@ -40,8 +40,6 @@ from test_framework.util import (
     assert_equal,
     assert_raises_rpc_error,
     connect_nodes,
-    sync_blocks,
-    sync_mempools,
 )
 
 

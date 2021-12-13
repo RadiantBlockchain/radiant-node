@@ -14,8 +14,6 @@ from test_framework.util import (
     assert_raises_rpc_error,
     connect_nodes_bi,
     count_bytes,
-    sync_blocks,
-    sync_mempools,
     wait_until,
 )
 

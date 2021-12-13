@@ -13,7 +13,6 @@ from test_framework.mininode import (
     P2PInterface,
 )
 from test_framework.test_framework import BitcoinTestFramework
-from test_framework.util import sync_blocks, sync_mempools
 
 
 def hashToHex(hash):

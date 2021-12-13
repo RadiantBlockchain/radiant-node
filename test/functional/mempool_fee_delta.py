@@ -9,8 +9,6 @@ from decimal import Decimal, getcontext
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import (
     assert_equal,
-    sync_blocks,
-    sync_mempools,
     connect_nodes,
     disconnect_nodes
 )

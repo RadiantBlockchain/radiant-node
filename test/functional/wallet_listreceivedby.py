@@ -11,7 +11,6 @@ from test_framework.util import (
     assert_array_result,
     assert_equal,
     assert_raises_rpc_error,
-    sync_blocks,
 )
 
 

@@ -9,7 +9,6 @@ from test_framework.util import (
     assert_equal,
     connect_nodes,
     disconnect_nodes,
-    sync_blocks,
 )
 
 

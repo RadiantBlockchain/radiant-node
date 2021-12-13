@@ -34,10 +34,7 @@ from test_framework.script import (
     OP_TRUE,
 )
 from test_framework.test_framework import BitcoinTestFramework
-from test_framework.util import (
-    assert_raises_rpc_error,
-    sync_blocks,
-)
+from test_framework.util import assert_raises_rpc_error
 
 TEST_TIME = int(time.time())
 

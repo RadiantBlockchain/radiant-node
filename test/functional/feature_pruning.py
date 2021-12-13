@@ -21,7 +21,6 @@ from test_framework.util import (
     assert_raises_rpc_error,
     connect_nodes,
     disconnect_nodes,
-    sync_blocks,
     wait_until,
 )
 

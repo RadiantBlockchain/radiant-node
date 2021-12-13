@@ -47,7 +47,7 @@ from test_framework.mininode import (
 from test_framework.script import CScript, OP_TRUE
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.txtools import pad_tx
-from test_framework.util import assert_equal, sync_blocks, wait_until
+from test_framework.util import assert_equal, wait_until
 
 # TestP2PConn: A peer we use to send messages to bitcoind, and store responses.
 

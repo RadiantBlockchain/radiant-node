@@ -13,7 +13,6 @@ import contextlib
 import threading
 
 from test_framework.test_framework import BitcoinTestFramework
-from test_framework.util import sync_mempools
 from decimal import Decimal
 
 

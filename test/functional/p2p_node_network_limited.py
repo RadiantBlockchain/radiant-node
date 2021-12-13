@@ -25,7 +25,6 @@ from test_framework.util import (
     assert_equal,
     connect_nodes_bi,
     disconnect_nodes,
-    sync_blocks,
     wait_until,
 )
 
