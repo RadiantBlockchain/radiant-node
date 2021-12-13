@@ -13,7 +13,6 @@ import contextlib
 import threading
 
 from test_framework.test_framework import BitcoinTestFramework
-from test_framework.util import sync_mempools
 from decimal import Decimal
 
 
@@ -83,7 +82,7 @@ class GBTCheckValidityAndIgnoreCacheTest(BitcoinTestFramework):
             t.join()
 
         try:
-            sync_mempools(self.nodes, timeout=5)
+            self.sync_mempools(self.nodes, timeout=5)
         except AssertionError:
             """ We desire to synch the mempools, but it's not required for test success """
 

@@ -15,7 +15,7 @@ from typing import Tuple, List
 from test_framework.messages import ser_uint256
 from test_framework.mininode import P2PInterface
 from test_framework.test_framework import BitcoinTestFramework
-from test_framework.util import sync_mempools, wait_until
+from test_framework.util import wait_until
 
 
 class TXBroadcastIntervalTest(BitcoinTestFramework):
@@ -39,7 +39,7 @@ class TXBroadcastIntervalTest(BitcoinTestFramework):
         dest_addr = node.getnewaddress() if dest_addr is None else dest_addr
         txid = node.sendtoaddress(dest_addr, Decimal(amount))
         t0 = time.time()
-        sync_mempools(self.nodes, timeout=timeout)
+        self.sync_mempools(self.nodes, timeout=timeout)
         timeout -= time.time() - t0
         wait_until(
             lambda: all(txid in p2p.seen_invs for p2p in p2ps),

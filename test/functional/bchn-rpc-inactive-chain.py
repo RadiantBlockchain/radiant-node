@@ -25,7 +25,6 @@ from test_framework.util import (
     assert_raises_rpc_error,
     connect_nodes,
     disconnect_nodes,
-    sync_blocks,
 )
 
 
@@ -52,7 +51,7 @@ class RPCInactiveChain(BitcoinTestFramework):
         addr1 = self.nodes[1].get_deterministic_priv_key().address
 
         # Note: we already start with a common chain of length 200 from the framework
-        sync_blocks(self.nodes)
+        self.sync_blocks()
 
         info0 = self.nodes[0].getblockchaininfo()
         info1 = self.nodes[1].getblockchaininfo()
@@ -84,7 +83,7 @@ class RPCInactiveChain(BitcoinTestFramework):
             # Due to the reorg penalty or in case shorter chain has more work,
             # we must force reorg to longer.
             node.invalidateblock(shorter[0])
-        sync_blocks(self.nodes)
+        self.sync_blocks()
         info0 = self.nodes[0].getblockchaininfo()
         info1 = self.nodes[1].getblockchaininfo()
         assert_equal(info0['bestblockhash'], info1['bestblockhash'])
