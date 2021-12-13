@@ -62,21 +62,27 @@ static void CCheckQueueSpeedPrevectorJob(benchmark::State &state) {
 }
 
 static void CCheckQueue_RealData32MB(bool cacheSigs, benchmark::State &state) {
-    // This block happens to have txs where there are 166944 txins, and of those 157783 spend from the
-    // same block, so it is a good candidate for this benchmark since we *have* the prevout coins already
-    // and can do real sigchecks, without a need for a UTXO set for this block.
-    static constexpr size_t nSameBlockCoinsExpected = 157783;
+    // This 32MB block has 166943 non-coinbase txins
     const CBlock block = []{
         CBlock ret;
         VectorReader(SER_NETWORK, PROTOCOL_VERSION, benchmark::data::Get_block556034() /* 32MB block */, 0) >> ret;
         return ret;
     }();
+    CCoinsView dummy;
+    CCoinsViewCache coinsCache(&dummy);
+    {
+        // build our coins cache from the 166943 coins we have in the embedded coin data.
+        std::map<COutPoint, Coin> coinsMap;
+        CDataStream(benchmark::data::Get_coins_spent_556034(), SER_NETWORK, PROTOCOL_VERSION) >> coinsMap;
+        for (const auto & [out, coin] : coinsMap)
+            coinsCache.AddCoin(out, coin, false);
+    }
+    constexpr size_t nCoinsSpentInBlock = 166943;
+    assert(coinsCache.GetCacheSize() == nCoinsSpentInBlock);
 
     // Step 1: Setup everything -- read all the block tx's and create a CScriptCheck "work" unit for each
-    //         of the inputs for which we have the coin (there should be 157783 of these for this block).
+    //         of the inputs with all the coins we read in above.
     InitSignatureCache(); // just to be consistent -- ensure signature cache is empty
-    size_t nSameBlockCoins = 0;
-    std::map<TxId, CTransactionRef> txidMap;
     std::vector<std::vector<CScriptCheck>> vChecksPerTx;
     struct UnlimitedSigChecks : TxSigCheckLimiter {
         UnlimitedSigChecks() { remaining = std::numeric_limits<int64_t>::max(); }
@@ -84,35 +90,21 @@ static void CCheckQueue_RealData32MB(bool cacheSigs, benchmark::State &state) {
     };
     UnlimitedSigChecks highLimitPerTx, highLimitPerBlock;
     for (const auto & tx : block.vtx) {
-        // build map of txid -> tx for below loop that "finds coins"
-        txidMap.emplace(tx->GetId(), tx);
-    }
-    for (const auto & tx : block.vtx) {
         if (tx->IsCoinBase()) continue;
-        size_t nIn = 0;
         const PrecomputedTransactionData txdata(*tx);
         std::vector<CScriptCheck> vChecksThisTx;
-        for (const auto & txin : tx->vin) {
-            // coin exists in this block, use it
-            if (auto it = txidMap.find(txin.prevout.GetTxId()); it != txidMap.end()) {
-                ++nSameBlockCoins;
-                const CTxOut &prevTxOut = it->second->vout[txin.prevout.GetN()];
-                const CScript &scriptPubKey = prevTxOut.scriptPubKey;
-                const Amount &amount = prevTxOut.nValue;
-                const ScriptExecutionContext context(nIn, scriptPubKey, amount, *tx);
-                // Verify signature
-                vChecksThisTx.emplace_back(context, MANDATORY_SCRIPT_VERIFY_FLAGS,
-                                           cacheSigs /* whether to store results in cache */,
-                                           txdata, &highLimitPerTx, &highLimitPerBlock);
-            }
-            ++nIn;
+        const auto contexts = ScriptExecutionContext::createForAllInputs(*tx, coinsCache);
+        assert(contexts.size() == tx->vin.size());
+        for (size_t i = 0; i < tx->vin.size(); ++i) {
+            vChecksThisTx.emplace_back(contexts[i], MANDATORY_SCRIPT_VERIFY_FLAGS,
+                                       cacheSigs /* whether to store results in cache */,
+                                       txdata, &highLimitPerTx, &highLimitPerBlock);
         }
         // we simulate the way validtion does it -- by grouping the checks on a per-tx basis
         // note that in the code in validation.cpp pushes empty vectors as "work" quite often,
         // so we don't check here that vChecksThisTx is not empty.
         vChecksPerTx.push_back(std::move(vChecksThisTx));
     }
-    assert(nSameBlockCoins == nSameBlockCoinsExpected);
 
     // Step 2: In order to focus the benchmark on the actual CCheckQueue implementation speed,
     //         we pre-copy all the sigchecks we will do for this entire run into the below
@@ -137,7 +129,8 @@ static void CCheckQueue_RealData32MB(bool cacheSigs, benchmark::State &state) {
     });
 
     // And finally: Run the benchmark
-    size_t iterNum = 0, lastSigChecks = 0;
+    size_t iterNum = 0;
+    int64_t lastSigChecks = 0;
     while (state.KeepRunning()) {
         assert(iterNum < iterContext.size());
         auto & vChecksPerTxCopy = iterContext[iterNum++].vChecksPerTxCopy;
@@ -150,9 +143,10 @@ static void CCheckQueue_RealData32MB(bool cacheSigs, benchmark::State &state) {
         // we expect the sigchecker to succeed for the entire job, otherwise it aborts early if it doesn't, and this
         // benchmark would not be accurate in that case
         assert(result);
-        const auto checksSoFar = highLimitPerBlock.used();
-        const auto checksThisRun = checksSoFar - lastSigChecks;
-        assert(checksThisRun == nSameBlockCoinsExpected); // sanity check
+        const int64_t checksSoFar = highLimitPerBlock.used();
+        const int64_t checksThisRun = checksSoFar - lastSigChecks;
+        constexpr int64_t expectedChecksPerRun = 167074; // some txs do more than 1 sigcheck
+        assert(checksThisRun == expectedChecksPerRun); // sanity check
         lastSigChecks = checksSoFar;
     }
 }
