@@ -63,7 +63,7 @@ class MinimumChainWorkTest(BitcoinTestFramework):
                       self.nodes[0].getblockheader(hashes[-1])['chainwork']))
 
         # Sleep a few seconds and verify that node2 didn't get any new blocks
-        # or headers.  We sleep, rather than sync_blocks(node0, node1) because
+        # or headers.  We sleep, rather than sync_blocks() because
         # it's reasonable either way for node1 to get the blocks, or not get
         # them (since they're below node1's minchainwork).
         time.sleep(3)
