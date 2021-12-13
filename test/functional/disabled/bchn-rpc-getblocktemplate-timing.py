@@ -12,7 +12,6 @@ import threading
 import time
 import traceback
 
-from test_framework.util import sync_blocks
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.authproxy import JSONRPCException
 from decimal import Decimal
@@ -148,11 +147,11 @@ class GBTTimingTest(BitcoinTestFramework):
             if rewind:
                 # make sure all nodes change their pindexPrev value in getblocktemplatecommon so that the next call
                 # isn't cached
-                sync_blocks(self.nodes)
+                self.sync_blocks()
                 for n in self.nodes:
                     n.getblocktemplatelight()
                     n.invalidateblock(blockhash)
-                sync_blocks(self.nodes)
+                self.sync_blocks()
             return end - start, num_tx
 
     def setup_test(self):
@@ -187,17 +186,17 @@ class GBTTimingTest(BitcoinTestFramework):
             thread.start()
         for thread in threads:
             thread.join()
-        sync_blocks(self.nodes, timeout=10)
+        self.sync_blocks(timeout=10)
         for i in range(self.num_nodes - 2, -1, -1):
             amount = Decimal(round(rootamount / (fanout + 1) * 1e8)) / Decimal(1e8)
             payments = {node_addresses[i][n]: amount for n in range(fanout)}
             for stage in range(num_stages):
                 self.nodes[3].sendmany('', payments)
         self.nodes[3].generate(1)
-        sync_blocks(self.nodes)
+        self.sync_blocks()
         for i in range(1 + (target * self.num_nodes) // 20000):
             self.nodes[3].generate(1)
-            sync_blocks(self.nodes, timeout=20)
+            self.sync_blocks(timeout=20)
             self.nodes[3].getblock(self.nodes[3].getbestblockhash(), 1)
         return amount
 

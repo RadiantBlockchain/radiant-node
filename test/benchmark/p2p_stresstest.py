@@ -30,7 +30,6 @@ from decimal import Decimal
 
 sys.path.insert(0, os.path.join('..', 'functional'))
 import test_framework.util # noqa: E402
-from test_framework.util import sync_blocks # noqa: E402
 from test_framework.test_framework import BitcoinTestFramework # noqa: E402
 from test_framework.mininode import P2PInterface # noqa: E402
 from test_framework.authproxy import JSONRPCException # noqa: E402
@@ -93,7 +92,7 @@ class StressTest(BitcoinTestFramework):
             thread.join()
         t1 = time.time()
         print("Generating addresses took {:3.3f} sec".format(t1 - t0))
-        sync_blocks(self.nodes, timeout=10)
+        self.sync_blocks(timeout=10)
         for i in range(self.num_nodes - 1, 0, -1):
             amount = Decimal(round(rootamount / (fanout + 1) * 1e8)) / Decimal(1e8)
             payments = {node_addresses[i][n]: amount for n in range(fanout)}
@@ -103,10 +102,10 @@ class StressTest(BitcoinTestFramework):
             t2 = time.time()
             print("Filling node wallets took {:3.3f} sec for stage {}:{}".format(t2 - t1, i, stage))
         self.nodes[0].generate(1)
-        sync_blocks(self.nodes)
+        self.sync_blocks()
         for i in range(1 + (target * self.num_nodes) // 20000):
             self.nodes[0].generate(1)
-            sync_blocks(self.nodes, timeout=20)
+            self.sync_blocks(timeout=20)
             blk = self.nodes[0].getblock(self.nodes[0].getbestblockhash(), 1)
             print("Block has {} transactions and is {} bytes".format(len(blk['tx']), blk['size']))
         return amount
@@ -206,7 +205,7 @@ class StressTest(BitcoinTestFramework):
                     print("{}:{:6.3f}   ".format(n, t2c - t2b), end="")
             if not i:
                 print()
-            sync_blocks(self.nodes, timeout=180)
+            self.sync_blocks(timeout=180)
             t2c = time.time()
             if not i:
                 print("Propagating block took {:3.3f} sec -- {:3.3f} sec per hop".format(t2c -
