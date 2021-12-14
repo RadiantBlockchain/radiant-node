@@ -5,7 +5,8 @@
 #include <config.h>
 
 #include <chainparams.h>
-#include <consensus/consensus.h> // DEFAULT_EXCESSIVE_BLOCK_SIZE
+#include <consensus/consensus.h> // DEFAULT_EXCESSIVE_BLOCK_SIZE, MAX_EXCESSIVE_BLOCK_SIZE
+#include <policy/policy.h> // MAX_INV_BROADCAST_*
 
 #include <algorithm>
 
@@ -20,6 +21,11 @@ bool GlobalConfig::SetExcessiveBlockSize(uint64_t blockSize) {
     // Do not allow maxBlockSize to be set below historic 1MB limit
     // It cannot be equal either because of the "must be big" UAHF rule.
     if (blockSize <= LEGACY_MAX_BLOCK_SIZE) {
+        return false;
+    }
+
+    // We limit the excessive block size parameter to what the machine can physically address on 32-bit (2GB)
+    if (blockSize > MAX_EXCESSIVE_BLOCK_SIZE) {
         return false;
     }
 
@@ -42,6 +48,18 @@ bool GlobalConfig::SetGeneratedBlockSize(uint64_t blockSize) {
     }
 
     nGeneratedBlockSize = blockSize;
+    return true;
+}
+
+bool GlobalConfig::SetInvBroadcastRate(uint64_t rate) {
+    if (rate > MAX_INV_BROADCAST_RATE) return false;
+    nInvBroadcastRate = rate;
+    return true;
+}
+
+bool GlobalConfig::SetInvBroadcastInterval(uint64_t interval) {
+    if (interval > MAX_INV_BROADCAST_INTERVAL) return false;
+    nInvBroadcastInterval = interval;
     return true;
 }
 

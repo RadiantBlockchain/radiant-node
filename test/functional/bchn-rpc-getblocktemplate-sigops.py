@@ -12,6 +12,7 @@ from test_framework.util import (
 from test_framework.cdefs import (
     BLOCK_MAXBYTES_MAXSIGCHECKS_RATIO,
     DEFAULT_EXCESSIVE_BLOCK_SIZE,
+    MAX_EXCESSIVE_BLOCK_SIZE,
     ONE_MEGABYTE
 )
 
@@ -79,9 +80,8 @@ class GetBlockTemplateSigopsTest(BitcoinTestFramework):
         self.assert_case("when above the DEFAULT_EXCESSIVE_BLOCK_SIZE", 1, target_size)
 
         # When at the upper boundary
-        # can't start the node with upper_boundary as it will get OOM killed, so set it via rpc
         self.reinit_node(1, [])
-        upper_boundary = (1 << 63) - 1
+        upper_boundary = MAX_EXCESSIVE_BLOCK_SIZE
         self.nodes[1].setexcessiveblock(upper_boundary)
         self.assert_case("when at the upper boundary", 1, upper_boundary)
 

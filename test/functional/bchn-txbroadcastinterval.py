@@ -10,6 +10,7 @@ The outbound interval should be half of the inbound
 """
 import time
 
+from test_framework.cdefs import MAX_INV_BROADCAST_INTERVAL
 from test_framework.mininode import P2PInterface, mininode_lock
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import wait_until, connect_nodes, disconnect_nodes
@@ -80,6 +81,7 @@ class TxBroadcastIntervalTest(BitcoinTestFramework):
                             help="Set a confidence threshold for the kstest")
 
     def set_test_params(self):
+        assert self.options.interval <= MAX_INV_BROADCAST_INTERVAL
         self.scale = self.options.interval / 1000
         self.num_nodes = 3
         args = [

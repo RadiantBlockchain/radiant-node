@@ -106,12 +106,21 @@ MIN_TX_SIZE = 100
 # Maximum bytes in a TxOut pubkey script
 MAX_TXOUT_PUBKEY_SCRIPT = 10000
 
+# From consensus/consensus.h
+MAX_EXCESSIVE_BLOCK_SIZE = 2000 * ONE_MEGABYTE
+
 # The following are some node policy values, but also useful in tests.
 
 # Default setting for maximum generated size of block (soft limit)
 # This is a per-chain limit and is specified in src/chainparams.cpp
 # Please ensure this value matches the setting for CRegTestParams.
 DEFAULT_MAX_GENERATED_BLOCK_SIZE = 8 * ONE_MEGABYTE
+
+# Limit for -txbroadcastrate
+MAX_INV_BROADCAST_RATE = 1_000_000
+
+# Limit for -txbroadcastingerval
+MAX_INV_BROADCAST_INTERVAL = 1_000_000
 
 # Ensure sanity of these constants
 if DEFAULT_MAX_GENERATED_BLOCK_SIZE > DEFAULT_EXCESSIVE_BLOCK_SIZE:

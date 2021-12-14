@@ -50,9 +50,12 @@ BOOST_AUTO_TEST_CASE(excessiveblock_rpc) {
     BOOST_CHECK_NO_THROW(CallRPC(std::string("setexcessiveblock ") +
                                  std::to_string(DEFAULT_EXCESSIVE_BLOCK_SIZE * 8)));
 
-    BOOST_CHECK_NO_THROW(
-        CallRPC(std::string("setexcessiveblock ") +
-                std::to_string(std::numeric_limits<int64_t>::max())));
+
+    // Setting excessive block size outside MAX_EXCESSIVE_BLOCK_SIZE is not allowed
+    BOOST_CHECK_THROW(CallRPC(std::string("setexcessiveblock ") + std::to_string(MAX_EXCESSIVE_BLOCK_SIZE + 1)),
+                      std::runtime_error);
+    // However, setting it at the limit should be ok
+    BOOST_CHECK_NO_THROW(CallRPC(std::string("setexcessiveblock ") + std::to_string(MAX_EXCESSIVE_BLOCK_SIZE)));
 
     BOOST_CHECK_THROW(
         CallRPC(
