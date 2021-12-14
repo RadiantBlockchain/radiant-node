@@ -17,14 +17,17 @@ extern RecursiveMutex cs_main;
 /**
  * Default average delay between trickled inventory transmissions in millisec.
  * Blocks and whitelisted receivers bypass this, outbound peers get half this
- * delay.
+ * delay. Note: this ends up capped at MAX_INV_BROADCAST_INTERVAL (defined in
+ * policy/policy.h).
  */
 static constexpr unsigned int DEFAULT_INV_BROADCAST_INTERVAL = 500;
 /**
  * Maximum number of inventory items to send per transmission.
- * Limits the impact of low-fee transaction floods.
+ * Limits the impact of low-fee transaction floods. Note: this ends up capped
+ * at MAX_INV_BROADCAST_RATE (defined in policy/policy.h).
  */
 static constexpr unsigned int DEFAULT_INV_BROADCAST_RATE = 7;
+
 
 class Config;
 

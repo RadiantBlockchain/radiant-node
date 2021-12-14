@@ -1837,7 +1837,7 @@ bool AppInitParameterInteraction(Config &config) {
         gArgs.GetArg("-excessiveblocksize", chainparams.GetConsensus().nDefaultExcessiveBlockSize);
     if (!config.SetExcessiveBlockSize(nProposedExcessiveBlockSize)) {
         return InitError(
-            _("Excessive block size must be > 1,000,000 bytes (1MB)"));
+            _("Excessive block size must be > 1,000,000 bytes (1MB) and <= 2,000,000,000 bytes (2GB)."));
     }
 
     // Check blockmaxsize does not exceed maximum accepted block size.
@@ -1923,17 +1923,21 @@ bool AppInitParameterInteraction(Config &config) {
         ::minRelayTxFee = CFeeRate(n);
     }
 
-    int64_t nTxBroadcastInterval = gArgs.GetArg("-txbroadcastinterval", DEFAULT_INV_BROADCAST_INTERVAL);
+    const int64_t nTxBroadcastInterval = gArgs.GetArg("-txbroadcastinterval", DEFAULT_INV_BROADCAST_INTERVAL);
     if (nTxBroadcastInterval < 0) {
         return InitError(_("Transaction broadcast interval must not be configured with a negative value."));
     }
-    config.SetInvBroadcastInterval(nTxBroadcastInterval);
+    if ( ! config.SetInvBroadcastInterval(nTxBroadcastInterval)) {
+        return InitError("Transaction broadcast interval out of range.");
+    }
 
-    int64_t nTxBroadcastRate = gArgs.GetArg("-txbroadcastrate", DEFAULT_INV_BROADCAST_RATE);
+    const int64_t nTxBroadcastRate = gArgs.GetArg("-txbroadcastrate", DEFAULT_INV_BROADCAST_RATE);
     if (nTxBroadcastRate < 0) {
         return InitError(_("Transaction broadcast rate must not be configured with a negative value."));
     }
-    config.SetInvBroadcastRate(nTxBroadcastRate);
+    if ( ! config.SetInvBroadcastRate(nTxBroadcastRate)) {
+        return InitError("Transaction broadcast rate out of range.");
+    }
 
     // process and save -gbtcheckvalidity arg (if specified)
     config.SetGBTCheckValidity(gArgs.GetBoolArg("-gbtcheckvalidity", DEFAULT_GBT_CHECK_VALIDITY));

@@ -33,9 +33,9 @@ public:
     /** The maximum amount of RAM to be used in the mempool before TrimToSize is called. */
     virtual void SetMaxMemPoolSize(uint64_t maxMemPoolSize) = 0;
     virtual uint64_t GetMaxMemPoolSize() const = 0;
-    virtual void SetInvBroadcastRate(uint64_t rate) = 0;
+    virtual bool SetInvBroadcastRate(uint64_t rate) = 0;
     virtual uint64_t GetInvBroadcastRate() const = 0;
-    virtual void SetInvBroadcastInterval(uint64_t interval) = 0;
+    virtual bool SetInvBroadcastInterval(uint64_t interval) = 0;
     virtual uint64_t GetInvBroadcastInterval() const = 0;
     virtual const CChainParams &GetChainParams() const = 0;
     virtual void SetCashAddrEncoding(bool) = 0;
@@ -54,15 +54,18 @@ public:
 class GlobalConfig final : public Config {
 public:
     GlobalConfig();
+    //! Note: `maxBlockSize` must not be smaller than 1MB and cannot exceed 2GB
     bool SetExcessiveBlockSize(uint64_t maxBlockSize) override;
     uint64_t GetExcessiveBlockSize() const override;
     bool SetGeneratedBlockSize(uint64_t blockSize) override;
     uint64_t GetGeneratedBlockSize() const override;
     void SetMaxMemPoolSize(uint64_t maxMemPoolSize) override { nMaxMemPoolSize = maxMemPoolSize; }
     uint64_t GetMaxMemPoolSize() const override { return nMaxMemPoolSize; }
-    void SetInvBroadcastRate(uint64_t rate) override { nInvBroadcastRate = rate; }
+    //! Note: `rate` may not exceed MAX_INV_BROADCAST_RATE (1 million)
+    bool SetInvBroadcastRate(uint64_t rate) override;
     uint64_t GetInvBroadcastRate() const override { return nInvBroadcastRate; }
-    void SetInvBroadcastInterval(uint64_t interval) override { nInvBroadcastInterval = interval; }
+    //! Note: `interval` may not exceed MAX_INV_BROADCAST_INTERVAL (1 million)
+    bool SetInvBroadcastInterval(uint64_t interval) override;
     uint64_t GetInvBroadcastInterval() const override { return nInvBroadcastInterval; }
     const CChainParams &GetChainParams() const override;
     void SetCashAddrEncoding(bool) override;
@@ -108,9 +111,9 @@ public:
     uint64_t GetGeneratedBlockSize() const override { return 0; }
     void SetMaxMemPoolSize(uint64_t) override {}
     uint64_t GetMaxMemPoolSize() const override {return 0; }
-    void SetInvBroadcastRate(uint64_t) override {}
+    bool SetInvBroadcastRate(uint64_t) override { return false; }
     uint64_t GetInvBroadcastRate() const override { return 0; }
-    void SetInvBroadcastInterval(uint64_t) override {}
+    bool SetInvBroadcastInterval(uint64_t) override { return false; }
     uint64_t GetInvBroadcastInterval() const override {return 0; }
 
     void SetChainParams(const std::string &net);

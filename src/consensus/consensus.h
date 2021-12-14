@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -17,6 +18,13 @@ inline constexpr uint64_t MIN_TX_SIZE = 100;
 inline constexpr uint64_t LEGACY_MAX_BLOCK_SIZE = ONE_MEGABYTE;
 /** Default setting for maximum allowed size for a block, in bytes */
 inline constexpr uint64_t DEFAULT_EXCESSIVE_BLOCK_SIZE = 32 * ONE_MEGABYTE;
+/**
+ *  Maximum excessive blocks size: 2GB. This is a temporary limit
+ *  to prevent consensus failure between 32-bit and 64-bit platforms,
+ *  until we drop 32-bit platform support altogether, at which point
+ *  this constant should be raised well beyond 32-bit addressing limits.
+ */
+inline constexpr uint64_t MAX_EXCESSIVE_BLOCK_SIZE = uint64_t(2000) * ONE_MEGABYTE;
 /** Allowed number of signature check operations per transaction. */
 inline constexpr uint64_t MAX_TX_SIGCHECKS = 3000;
 /**

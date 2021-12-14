@@ -70,7 +70,7 @@ static UniValue setexcessiveblock(Config &config,
 
     // Set the new max block size.
     if (!config.SetExcessiveBlockSize(ebs)) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, "Unexpected error");
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Parameter out of range");
     }
 
     // settingsToUserAgentString();

@@ -12,7 +12,7 @@ Currently:
 import re
 
 from test_framework.cdefs import (LEGACY_MAX_BLOCK_SIZE,
-                                  DEFAULT_MAX_GENERATED_BLOCK_SIZE,
+                                  DEFAULT_MAX_GENERATED_BLOCK_SIZE, MAX_EXCESSIVE_BLOCK_SIZE,
                                   ONE_MEGABYTE)
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import assert_equal
@@ -54,12 +54,27 @@ class ABC_CmdLine_Test (BitcoinTestFramework):
                               + str(DEFAULT_MAX_GENERATED_BLOCK_SIZE // ONE_MEGABYTE)
                               + r"\.0; .*\)/")
 
+        self.log.info("  Set to limit, i.e. {} bytes".format(MAX_EXCESSIVE_BLOCK_SIZE))
+        self.stop_node(0)
+        self.start_node(0, ["-excessiveblocksize={}".format(MAX_EXCESSIVE_BLOCK_SIZE)])
+        self.check_excessive(MAX_EXCESSIVE_BLOCK_SIZE)
+        # Check for EB correctness in the subver string
+        self.check_subversion(r"/Bitcoin Cash Node:.*\(EB" + str(MAX_EXCESSIVE_BLOCK_SIZE // ONE_MEGABYTE)
+                              + r"\.0; .*\)/")
+
         self.log.info("  Attempt to set below legacy limit of 1MB - try {} bytes".format(
             LEGACY_MAX_BLOCK_SIZE))
         self.stop_node(0)
         self.nodes[0].assert_start_raises_init_error(
             ["-excessiveblocksize={}".format(LEGACY_MAX_BLOCK_SIZE)],
-            'Error: Excessive block size must be > 1,000,000 bytes (1MB)')
+            "Error: Excessive block size must be > 1,000,000 bytes (1MB) and <= 2,000,000,000 bytes (2GB).")
+
+        self.log.info("  Attempt to set above limit of 2GB - try {} bytes".format(MAX_EXCESSIVE_BLOCK_SIZE + 1))
+        self.stop_node(0)
+        self.nodes[0].assert_start_raises_init_error(
+            ["-excessiveblocksize={}".format(MAX_EXCESSIVE_BLOCK_SIZE + 1)],
+            "Error: Excessive block size must be > 1,000,000 bytes (1MB) and <= 2,000,000,000 bytes (2GB).")
+
         self.log.info("  Attempt to set below blockmaxsize (mining limit)")
         self.nodes[0].assert_start_raises_init_error(
             ['-blockmaxsize=1500000', '-excessiveblocksize=1300000'], 'Error: ' + MAX_GENERATED_BLOCK_SIZE_ERROR)

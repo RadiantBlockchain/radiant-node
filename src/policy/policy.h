@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2016 The Bitcoin Core developers
+// Copyright (c) 2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -74,6 +75,19 @@ static constexpr unsigned int DEFAULT_BYTES_PER_SIGCHECK = 50;
  * outputs below the new threshold.
  */
 static constexpr Amount DUST_RELAY_TX_FEE(1000 * SATOSHI);
+
+/**
+ * The maximum value we accept for configuration of the -txbroadcastinterval
+ * configuration parameter. This is a sanity check limit to avoid unspecified
+ * or extremely undesirable behavior of the node.
+ */
+inline constexpr unsigned int MAX_INV_BROADCAST_INTERVAL = 1'000'000;
+/**
+ * The maximum value we accept for configuration of the -txbroadcastrate
+ * configuration parameter. This is a sanity check limit to avoid unspecified
+ * or extremely undesirable behavior of the node.
+ */
+inline constexpr unsigned int MAX_INV_BROADCAST_RATE = 1'000'000;
 
 /**
  * When transactions fail script evaluations under standard flags, this flagset
