@@ -21,7 +21,6 @@ run this script from there.
 '''
 
 import http
-import traceback
 import threading
 import time
 import os
@@ -32,7 +31,6 @@ sys.path.insert(0, os.path.join('..', 'functional'))
 import test_framework.util # noqa: E402
 from test_framework.test_framework import BitcoinTestFramework # noqa: E402
 from test_framework.mininode import P2PInterface # noqa: E402
-from test_framework.authproxy import JSONRPCException # noqa: E402
 
 
 NUM_NODES = 4
@@ -131,23 +129,18 @@ class StressTest(BitcoinTestFramework):
                     print("Node {:2d}\ttx {:5d}\tat {:3.3f} sec\t({:3.0f} tx/sec)".format(node,
                                                                                           i, time.time() - t, (i / (time.time() - t))))
                 add = addresses[i % len(addresses)]
-                fallback_send_method = lambda: self.nodes[node].sendtoaddress(add, value, '', '', False)
                 # We test both sendtoaddress and sendmany (both should support the coinsel as the 6th arg)
-                if i % count == 0:
+                if i % 2 == 0:
                     send_method = lambda: self.nodes[node].sendtoaddress(add, value, '', '', False, 1)
                 else:
-                    send_method = lambda: self.nodes[node].sendmany('', {add: value}, '', '', False, 1)
+                    send_method = lambda: self.nodes[node].sendmany('', {add: value}, None, None, None, 1)
                 try:
                     send_method()
                 except http.client.CannotSendRequest:
                     send_method()  # Try again
-                except JSONRPCException:
-                    print("Warning: this bitcoind appears to not support the 'fast' argument for sendtoaddress")
-                    fallback_send_method()
                 except BaseException:
-                    print("Node {} had a fatal error on tx {}:".format(node, i))
-                    traceback.print_exc()
-                    break
+                    self.log.error("Node {} had a fatal error on tx {}:".format(node, i))
+                    raise
         threads = [threading.Thread(target=helper, args=(n, txcount, MAX_GENERATION_RATE_PER_NODE))
                    for n in range(1, len(self.nodes))]
 
