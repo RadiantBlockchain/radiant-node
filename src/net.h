@@ -746,7 +746,7 @@ public:
     CRollingBloomFilter filterInventoryKnown GUARDED_BY(cs_inventory);
     // Set of transaction ids we still have to announce. They are sorted by the
     // mempool before relay, so the order is not important.
-    std::set<TxId> setInventoryTxToSend;
+    std::set<TxId> setInventoryTxToSend GUARDED_BY(cs_inventory);
     // List of block ids we still have announce. There is no final sorting
     // before sending, as they are always sent immediately and in the order
     // requested.

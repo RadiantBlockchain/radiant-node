@@ -4598,7 +4598,7 @@ bool PeerLogicValidation::SendMessages(const Config &config, CNode *pto,
         }();
         {
             // reserve memory, limiting it to what we anticipate to send, up to a cap of MAX_INV_SZ
-            const uint64_t nTxsToSend = [&]{
+            const uint64_t nTxsToSend = [&]() EXCLUSIVE_LOCKS_REQUIRED(pto->cs_inventory) {
                 LOCK(pto->cs_filter);
                 return pto->fRelayTxes ? pto->setInventoryTxToSend.size() : 0;
             }();
