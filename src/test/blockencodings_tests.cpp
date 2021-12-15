@@ -473,4 +473,23 @@ BOOST_AUTO_TEST_CASE(TransactionsRequestDeserializationOverflowTest) {
                                         : "indices overflowed 32 bits"));
 }
 
+BOOST_AUTO_TEST_CASE(CompactBlocksSerializationLoadTest) {
+    // Ensure we can serialize and deserialize compact blocks with at least
+    // LARGE_NUMBER_OF_TXS transactions.
+    auto constexpr LARGE_NUMBER_OF_TXS{10000000};
+
+    CBlock block(BuildBlockTestCase());
+    block.vtx.resize(LARGE_NUMBER_OF_TXS);
+    std::fill(std::begin(block.vtx), std::end(block.vtx), block.vtx[0]);
+    CBlockHeaderAndShortTxIDs shortIDs(block);
+
+    CDataStream stream(SER_NETWORK, PROTOCOL_VERSION);
+    stream << shortIDs;
+    CBlockHeaderAndShortTxIDs shortIDs2;
+    stream >> shortIDs2;
+
+    BOOST_CHECK_EQUAL(shortIDs.BlockTxCount(), LARGE_NUMBER_OF_TXS);
+    BOOST_CHECK_EQUAL(shortIDs2.BlockTxCount(), LARGE_NUMBER_OF_TXS);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
