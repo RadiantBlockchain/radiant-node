@@ -37,7 +37,7 @@ class GetBlockTemplateLPTest(BitcoinTestFramework):
     def run_test(self):
         self.log.info(
             "Warning: this test will take about 70 seconds in the best case. Be patient.")
-        self.nodes[0].generate(10)
+        self.generate(self.nodes[0], 10)
         templat = self.nodes[0].getblocktemplate()
         longpollid = templat['longpollid']
         # longpollid should not change between successive invocations if
@@ -55,7 +55,7 @@ class GetBlockTemplateLPTest(BitcoinTestFramework):
 
         # Test 2: test that longpoll will terminate if another node generates a block
         # generate a block on another node
-        self.nodes[1].generate(1)
+        self.generate(self.nodes[1], 1)
         # check that thread will exit now that new transaction entered mempool
         # wait 5 seconds or until thread exits
         thr.join(5)
@@ -66,7 +66,7 @@ class GetBlockTemplateLPTest(BitcoinTestFramework):
         thr = LongpollThread(self.nodes[0])
         thr.start()
         # generate a block on another node
-        self.nodes[0].generate(1)
+        self.generate(self.nodes[0], 1)
         # wait 5 seconds or until thread exits
         thr.join(5)
         assert not thr.is_alive()

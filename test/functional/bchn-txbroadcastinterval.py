@@ -100,7 +100,7 @@ class TxBroadcastIntervalTest(BitcoinTestFramework):
         connect_nodes(self.nodes[0], self.nodes[1])
         connect_nodes(self.nodes[1], self.nodes[2])
         # Generate enough coins on the spending nodes
-        self.nodes[2].generate(20 + 100)
+        self.generate(self.nodes[2], 20 + 100)
         self.sync_all()
 
         # Disconnect node 3 so that it doesn't broadcast the txs it creates

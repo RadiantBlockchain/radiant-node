@@ -141,7 +141,7 @@ class GBTTimingTest(BitcoinTestFramework):
             node.getblocktemplatelight()
             return time.time() - start
         else:
-            blockhash = node.generate(1)[0]
+            blockhash = self.generate(node, 1)[0]
             num_tx = node.getblock(blockhash)['nTx']
             end = time.time()
             if rewind:
@@ -169,10 +169,10 @@ class GBTTimingTest(BitcoinTestFramework):
         rootamount = 49.0 / len(self.nodes)
         fanout = target + 1 if target < 100 else 100 if target < 100 * 50 else target // 50
         num_stages = -(-target // fanout) + 1  # rounds up
-        self.nodes[3].generate(101)
-        self.nodes[3].generate(num_stages * self.num_nodes - 1)
+        self.generate(self.nodes[3], 101)
+        self.generate(self.nodes[3], num_stages * self.num_nodes - 1)
         time.sleep(0.2)
-        self.nodes[3].generate(1)
+        self.generate(self.nodes[3], 1)
         node_addresses = [[] for _ in self.nodes]
         self.node_addresses = node_addresses
 
@@ -192,10 +192,10 @@ class GBTTimingTest(BitcoinTestFramework):
             payments = {node_addresses[i][n]: amount for n in range(fanout)}
             for stage in range(num_stages):
                 self.nodes[3].sendmany('', payments)
-        self.nodes[3].generate(1)
+        self.generate(self.nodes[3], 1)
         self.sync_blocks()
         for i in range(1 + (target * self.num_nodes) // 20000):
-            self.nodes[3].generate(1)
+            self.generate(self.nodes[3], 1)
             self.sync_blocks(timeout=20)
             self.nodes[3].getblock(self.nodes[3].getbestblockhash(), 1)
         return amount

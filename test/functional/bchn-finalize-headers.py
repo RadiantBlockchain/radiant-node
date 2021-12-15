@@ -77,7 +77,7 @@ class FinalizedHeadersTest(BitcoinTestFramework):
 
         # Have nodes mine enough blocks to get them to finalize
         for i in range(2 * DEFAULT_MAXREORGDEPTH + 1):
-            [n.generatetoaddress(1, n.get_deterministic_priv_key().address)
+            [self.generatetoaddress(n, 1, n.get_deterministic_priv_key().address)
                 for n in self.nodes]
             assert_equal(self.nodes[0].getblockcount(), i + 1)
             assert_equal(self.nodes[1].getblockcount(), i + 1)

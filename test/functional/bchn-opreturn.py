@@ -47,7 +47,7 @@ class OpReturnTest(BitcoinTestFramework):
         self.relayfee = self.nodes[0].getnetworkinfo()["relayfee"]
 
         # First, we generate some coins to spend.
-        node.generate(125)
+        self.generate(node, 125)
 
         # single opreturn are ok.
         tx = self.create_null_data_tx(1)

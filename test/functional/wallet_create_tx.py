@@ -74,7 +74,7 @@ class CreateTxWalletTest(BitcoinTestFramework):
         # Sending with the include_unsafe option will spend the unconfirmed external coin
         wunsafe.sendtoaddress(outaddr, 1,
                               '', '', True, 0, True)  # include_unsafe = True
-        self.nodes[1].generate(1)  # commit tx
+        self.generate(self.nodes[1], 1)  # commit tx
         self.sync_all()
         assert_equal(wunsafe.getbalance(), 0)
 
@@ -133,7 +133,7 @@ class CreateTxWalletTest(BitcoinTestFramework):
 
         self.log.info(
             'Check that anti-fee-sniping is enabled when we mine a recent block')
-        self.nodes[0].generate(1)
+        self.generate(self.nodes[0], 1)
         txid = self.nodes[0].sendtoaddress(self.nodes[0].getnewaddress(), 1)
         tx = self.nodes[0].decoderawtransaction(
             self.nodes[0].gettransaction(txid)['hex'])

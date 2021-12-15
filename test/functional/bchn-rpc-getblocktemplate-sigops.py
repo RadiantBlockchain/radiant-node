@@ -49,7 +49,7 @@ class GetBlockTemplateSigopsTest(BitcoinTestFramework):
 
     def run_test(self):
         # Generate 101 blocks, setup tx and sync nodes
-        self.nodes[0].generate(101)
+        self.generate(self.nodes[0], 101)
         self.nodes[0].sendtoaddress(self.nodes[1].getnewaddress(), "1")
         self.sync_all()
 

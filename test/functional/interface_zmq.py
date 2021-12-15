@@ -88,7 +88,7 @@ class ZMQTest (BitcoinTestFramework):
         num_blocks = 5
         self.log.info(
             "Generate {0} blocks (and {0} coinbase txes)".format(num_blocks))
-        genhashes = self.nodes[0].generate(num_blocks)
+        genhashes = self.generate(self.nodes[0], num_blocks)
         self.sync_all()
 
         for x in range(num_blocks):

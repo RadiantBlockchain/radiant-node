@@ -57,10 +57,10 @@ class WalletTest(BitcoinTestFramework):
 
         self.log.info("Mining one block for each node")
 
-        self.nodes[0].generate(1)
+        self.generate(self.nodes[0], 1)
         self.sync_all()
-        self.nodes[1].generate(1)
-        self.nodes[1].generatetoaddress(100, RANDOM_COINBASE_ADDRESS)
+        self.generate(self.nodes[1], 1)
+        self.generatetoaddress(self.nodes[1], 100, RANDOM_COINBASE_ADDRESS)
         self.sync_all()
 
         assert_equal(self.nodes[0].getbalance(), 50)
@@ -130,7 +130,7 @@ class WalletTest(BitcoinTestFramework):
                      "unconfirmed_balance"], Decimal('0'))
         assert_equal(self.nodes[1].getunconfirmedbalance(), Decimal('0'))
 
-        self.nodes[1].generatetoaddress(1, RANDOM_COINBASE_ADDRESS)
+        self.generatetoaddress(self.nodes[1], 1, RANDOM_COINBASE_ADDRESS)
         self.sync_all()
 
         # balances are correct after the transactions are confirmed
@@ -143,7 +143,7 @@ class WalletTest(BitcoinTestFramework):
         txs = create_transactions(self.nodes[1], self.nodes[0].getnewaddress(
         ), Decimal('29.97'), [Decimal('0.01')])
         self.nodes[1].sendrawtransaction(txs[0]['hex'])
-        self.nodes[1].generatetoaddress(2, RANDOM_COINBASE_ADDRESS)
+        self.generatetoaddress(self.nodes[1], 2, RANDOM_COINBASE_ADDRESS)
         self.sync_all()
 
         # getbalance with a minconf incorrectly excludes coins that have been spent more recently than the minconf blocks ago

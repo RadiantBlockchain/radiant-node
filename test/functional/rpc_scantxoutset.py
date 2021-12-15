@@ -21,7 +21,7 @@ class ScantxoutsetTest(BitcoinTestFramework):
 
     def run_test(self):
         self.log.info("Mining blocks...")
-        self.nodes[0].generate(110)
+        self.generate(self.nodes[0], 110)
 
         addr = self.nodes[0].getnewaddress("")
         pubkey = self.nodes[0].getaddressinfo(addr)['pubkey']
@@ -65,14 +65,14 @@ class ScantxoutsetTest(BitcoinTestFramework):
         self.nodes[0].sendtoaddress(
             "mpQ8rokAhp1TAtJQR6F6TaUmjAWkAWYYBq", 16.384)
 
-        self.nodes[0].generate(1)
+        self.generate(self.nodes[0], 1)
 
         self.log.info("Stop node, remove wallet, mine again some blocks...")
         self.stop_node(0)
         shutil.rmtree(os.path.join(
             self.nodes[0].datadir, "regtest", 'wallets'))
         self.start_node(0)
-        self.nodes[0].generate(110)
+        self.generate(self.nodes[0], 110)
 
         self.restart_node(0, ['-nowallet'])
         self.log.info("Test if we have found the non HD unspent outputs.")

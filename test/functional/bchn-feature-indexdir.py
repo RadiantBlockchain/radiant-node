@@ -32,8 +32,8 @@ class IndexdirTest(BitcoinTestFramework):
         indexdir_path = os.path.join(self.options.tmpdir, "foo", "test")
         self.start_node(0, ["-indexdir=" + indexdir_path])
         self.log.info("mining blocks..")
-        self.nodes[0].generatetoaddress(
-            10, self.nodes[0].get_deterministic_priv_key().address)
+        self.generatetoaddress(self.nodes[0],
+                               10, self.nodes[0].get_deterministic_priv_key().address)
         assert os.path.isdir(os.path.join(
             indexdir_path, "regtest", "index"))
         assert os.path.isfile(os.path.join(
@@ -44,8 +44,8 @@ class IndexdirTest(BitcoinTestFramework):
         self.log.info("Starting with default indexdir ...")
         self.start_node(0)
         self.log.info("mining blocks..")
-        self.nodes[0].generatetoaddress(
-            10, self.nodes[0].get_deterministic_priv_key().address)
+        self.generatetoaddress(self.nodes[0],
+                               10, self.nodes[0].get_deterministic_priv_key().address)
         assert os.path.isdir(os.path.join(
             self.nodes[0].datadir, "regtest", "blocks", "index"))
         assert os.path.isfile(os.path.join(

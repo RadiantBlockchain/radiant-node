@@ -90,10 +90,10 @@ class ValidateblocktemplateTest(BitcoinTestFramework):
         # Generate enough blocks to trigger certain block votes and activate BIP65 (version 4 blocks)
         amt = 1352 - self.nodes[0].getblockcount()
         for i in range(int(amt / 100)):
-            self.nodes[0].generate(100)
+            self.generate(self.nodes[0], 100)
             self.sync_all()
 
-        self.nodes[0].generate(1352 - self.nodes[0].getblockcount())
+        self.generate(self.nodes[0], 1352 - self.nodes[0].getblockcount())
         self.sync_all()
 
         self.log.info("checking: not on chain tip")
@@ -226,7 +226,7 @@ class ValidateblocktemplateTest(BitcoinTestFramework):
         assert_raises_rpc_error(-25, "Invalid block: bad-txns-premature-spend-of-coinbase",
                                 self.nodes[0].validateblocktemplate, hexblk)
 
-        self.nodes[0].generate(100)
+        self.generate(self.nodes[0], 100)
         self.sync_all()
         height = self.nodes[0].getblockcount()
         tip = self.nodes[0].getblockhash(height)

@@ -188,10 +188,10 @@ class GBTLightTest(BitcoinTestFramework):
         if nblocks_to_gen > 0:
             if self.is_wallet_compiled():
                 # generate some blocks to wallet to have spendable coins
-                self.nodes[0].generate(nblocks_to_gen)
+                self.generate(self.nodes[0], nblocks_to_gen)
             else:
                 # generate just 1 block to leave IBD state (no wallet so no spending in this mode)
-                self.nodes[0].generatetoaddress(1, self.nodes[0].get_deterministic_priv_key().address)
+                self.generatetoaddress(self.nodes[0], 1, self.nodes[0].get_deterministic_priv_key().address)
 
         self.sync_all()
 

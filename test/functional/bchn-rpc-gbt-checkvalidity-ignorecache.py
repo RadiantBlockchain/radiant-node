@@ -46,7 +46,7 @@ class GBTCheckValidityAndIgnoreCacheTest(BitcoinTestFramework):
 
     def run_test(self):
         self.log.info("Generating 101 blocks ...")
-        self.nodes[-1].generate(101 + self.num_nodes)
+        self.generate(self.nodes[-1], 101 + self.num_nodes)
         addrs = [node.getnewaddress() for node in self.nodes]
         n_txs = 32
         self.log.info("Filling mempool with {} txns ...".format(n_txs))
@@ -59,7 +59,7 @@ class GBTCheckValidityAndIgnoreCacheTest(BitcoinTestFramework):
             self.log.info("Sending to node {}: {}".format(i, amt))
             self.nodes[-1].sendtoaddress(addr, amt)
             amts[i] = amt
-        self.nodes[-1].generate(1)
+        self.generate(self.nodes[-1], 1)
         self.sync_all()
 
         def thrd_func(node):

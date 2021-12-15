@@ -49,7 +49,7 @@ class TXBroadcastIntervalTest(BitcoinTestFramework):
         return txid, [max(0.0, p2p.seen_invs[txid] - normalized_time) for p2p in p2ps]
 
     def run_test(self):
-        self.nodes[0].generate(1)  # Functional test nodes believe themselves to be in IBD until you generate 1
+        self.generate(self.nodes[0], 1)  # Functional test nodes believe themselves to be in IBD until you generate 1
         self.sync_all()
 
         class MyP2PInterface(P2PInterface):
