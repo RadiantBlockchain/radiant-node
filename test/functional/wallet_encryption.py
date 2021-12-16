@@ -4,6 +4,7 @@
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Test Wallet encryption"""
 
+import random
 import time
 
 from test_framework.test_framework import BitcoinTestFramework
@@ -112,6 +113,13 @@ class WalletEncryptionTest(BitcoinTestFramework):
         assert_greater_than_or_equal(actual_time, expected_time)
         # 5 second buffer
         assert_greater_than(expected_time + 5, actual_time)
+
+        for i in range(5):
+            r = random.uniform(0.9, 1.1)
+            self.log.info('Check that calling walletpassphrase does not freeze the node. sleep={}'.format(r))
+            self.nodes[0].walletpassphrase(passphrase2, 1)
+            time.sleep(r)
+        self.nodes[0].walletlock()
 
 
 if __name__ == '__main__':
