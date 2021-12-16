@@ -36,7 +36,8 @@ static std::string
 /* Timer-creating functions */
 static RPCTimerInterface *timerInterface = nullptr;
 /* Map of name to timer. */
-static std::map<std::string, std::unique_ptr<RPCTimerBase>> deadlineTimers;
+static Mutex g_deadline_timers_mutex;
+static std::map<std::string, std::unique_ptr<RPCTimerBase>> deadlineTimers GUARDED_BY(g_deadline_timers_mutex);
 
 struct RPCCommandExecutionInfo {
     std::string method;
@@ -452,7 +453,7 @@ void InterruptRPC() {
 
 void StopRPC() {
     LogPrint(BCLog::RPC, "Stopping RPC\n");
-    deadlineTimers.clear();
+    WITH_LOCK(g_deadline_timers_mutex, deadlineTimers.clear());
     DeleteAuthCookie();
     g_rpcSignals.Stopped();
 }
@@ -641,6 +642,7 @@ void RPCRunLater(const std::string &name, std::function<void()> func,
         throw JSONRPCError(RPC_INTERNAL_ERROR,
                            "No timer handler registered for RPC");
     }
+    LOCK(g_deadline_timers_mutex);
     deadlineTimers.erase(name);
     LogPrint(BCLog::RPC, "queue run of timer %s in %i seconds (using %s)\n",
              name, nSeconds, timerInterface->Name());
