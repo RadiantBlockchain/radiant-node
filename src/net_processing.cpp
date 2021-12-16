@@ -4602,7 +4602,7 @@ bool PeerLogicValidation::SendMessages(const Config &config, CNode *pto,
                 return pto->fRelayTxes ? pto->setInventoryTxToSend.size() : 0;
             }();
             const uint64_t nBlocksToSend = pto->vInventoryBlockToSend.size();
-             /* we never send more that MAX_INV_SZ items at a time */
+            /* we never send more that MAX_INV_SZ items at a time */
             vInv.reserve(std::min<uint64_t>(MAX_INV_SZ, std::min<uint64_t>(nMaxBroadcasts, nTxsToSend) + nBlocksToSend));
         }
 
