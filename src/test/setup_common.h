@@ -85,6 +85,10 @@ struct BasicTestingSetup {
 
 private:
     const fs::path m_path_root;
+    //! Returns a unique path in tmp, based on username, the current time, and a random number
+    static fs::path MakePathRoot();
+    //! Returns the username of this process, as read from the environment
+    static std::string GetUserNameFromEnv();
 };
 
 /**

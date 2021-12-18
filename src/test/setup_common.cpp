@@ -32,9 +32,19 @@
 #include <txdb.h>
 #include <txmempool.h>
 #include <ui_interface.h>
+#include <util/strencodings.h>
 #include <validation.h>
 
+#include <cstdlib>
 #include <memory>
+
+#if __has_include(<unistd.h>) && !defined(WIN32) /* mingw has unistd.h, but it's useless here */
+#include <unistd.h>
+#define HAS_UNISTD 1
+#else
+#define HAS_UNISTD 0
+#endif
+
 
 const std::function<std::string(const char *)> G_TRANSLATION_FUN = nullptr;
 
@@ -51,9 +61,7 @@ std::ostream &operator<<(std::ostream &os, const ScriptError &err) {
 }
 
 BasicTestingSetup::BasicTestingSetup(const std::string &chainName)
-    : m_path_root(fs::temp_directory_path() / "test_common_" PACKAGE_NAME /
-                  strprintf("%lu_%i", static_cast<unsigned long>(GetTime()),
-                            int(InsecureRandRange(1 << 30)))) {
+    : m_path_root(MakePathRoot()) {
     SHA256AutoDetect();
     ECC_Start();
     SetupEnvironment();
@@ -82,7 +90,46 @@ fs::path BasicTestingSetup::SetDataDir(const std::string &name) {
     return ret;
 }
 
-;
+/* static */
+std::string BasicTestingSetup::GetUserNameFromEnv() {
+    const char *env_vars_to_try[] = {
+#ifdef WIN32
+        // On windows this should be in the env almost 100% of the time.
+        "USERNAME",
+#else
+        // On most POSIX systems these two are usually present, with USER being preferred since it
+        // is more accurate in the case of "sudo" and/or "su".
+        "USER", "LOGNAME",
+#endif
+    };
+
+    // Try and search the env for the username, which is present on most systems and is (relatively) portable.
+    for (const char *const var : env_vars_to_try) {
+        if (const char *const user = std::getenv(var); user && *user) {
+            return user;
+        }
+    }
+#if HAS_UNISTD
+    // On POSIX, fall-back to returning the effective user-id, as a string.
+    return strprintf("%i", geteuid());
+#else
+    // Grabbing the username using the win32 api is convoluted, and relies on the messy windows.h,
+    // so we just fall-back to this if nothing found in env on Windows (or any non-POSIX).
+    return "satoshi";
+#endif
+}
+
+/* static */
+fs::path BasicTestingSetup::MakePathRoot() {
+    // Note: It's important to make the test dir basename depend on username to avoid
+    // concurrent users on the same system from clobbering each other's dirs and/or
+    // causing permissions issues with each other. See BCHN issue #43.
+    std::string baseName = "test_common_" + GetUserNameFromEnv() + "_" + PACKAGE_NAME;
+    baseName = SanitizeString(baseName, SAFE_CHARS_FILENAME);
+
+    return fs::temp_directory_path() / baseName / strprintf("%i_%u", GetTimeMicros(), InsecureRandRange(1 << 30));
+}
+
 /* static */ std::atomic_bool EnableDeadlockExceptionsMixin::saved_g_debug_lockorder_abort{false};
 /* static */ std::atomic_int EnableDeadlockExceptionsMixin::instance_ctr{0};
 

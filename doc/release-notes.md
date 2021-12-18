@@ -73,9 +73,6 @@ Some issues could not be closed in time for release, but we are tracking all of 
 
 - `doc/dependencies.md` needs revision (Issue #65).
 
-- `test_bitcoin` can collide with temporary files if used by more than
-  one user on the same system simultaneously. (Issue #43)
-
 - For users running from sources built with BerkeleyDB releases newer than
   the 5.3 which is used in this release, please take into consideration
   the database format compatibility issues described in Issue #34.
