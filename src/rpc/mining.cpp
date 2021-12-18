@@ -1283,7 +1283,7 @@ void LoadTxsFromFile(const JobId &jobId, CBlock &block) {
         const auto magicLen = kDataFileMagic.size(); // 3 for "GBT"
         std::vector<uint8_t> dataBuf;
         {
-            fs::ifstream file(filename);
+            fs::ifstream file(filename, std::ios_base::binary|std::ios_base::in);
 
             if (!file.is_open()) {
                 LogPrintf("WARNING: SubmitBlockLight found file for job_id %s, but open failed\n", jobIdStr);
