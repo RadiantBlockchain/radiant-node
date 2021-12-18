@@ -732,37 +732,17 @@ void Unserialize(Stream &is, std::basic_string<C> &str);
 
 /**
  * prevector
- * prevectors of uint8_t are a special case and are intended to be serialized as
- * a single opaque blob.
  */
 template <typename Stream, unsigned int N, typename T>
-void Serialize_impl(Stream &os, const prevector<N, T> &v, const uint8_t &);
-template <typename Stream, unsigned int N, typename T, typename V>
-void Serialize_impl(Stream &os, const prevector<N, T> &v, const V &);
-template <typename Stream, unsigned int N, typename T>
 inline void Serialize(Stream &os, const prevector<N, T> &v);
-template <typename Stream, unsigned int N, typename T>
-void Unserialize_impl(Stream &is, prevector<N, T> &v, const uint8_t &);
-template <typename Stream, unsigned int N, typename T, typename V>
-void Unserialize_impl(Stream &is, prevector<N, T> &v, const V &);
 template <typename Stream, unsigned int N, typename T>
 inline void Unserialize(Stream &is, prevector<N, T> &v);
 
 /**
  * vector
- * vectors of uint8_t are a special case and are intended to be serialized as a
- * single opaque blob.
  */
 template <typename Stream, typename T, typename A>
-void Serialize_impl(Stream &os, const std::vector<T, A> &v, const uint8_t &);
-template <typename Stream, typename T, typename A, typename V>
-void Serialize_impl(Stream &os, const std::vector<T, A> &v, const V &);
-template <typename Stream, typename T, typename A>
 inline void Serialize(Stream &os, const std::vector<T, A> &v);
-template <typename Stream, typename T, typename A>
-void Unserialize_impl(Stream &is, std::vector<T, A> &v, const uint8_t &);
-template <typename Stream, typename T, typename A, typename V>
-void Unserialize_impl(Stream &is, std::vector<T, A> &v, const V &);
 template <typename Stream, typename T, typename A>
 inline void Unserialize(Stream &is, std::vector<T, A> &v);
 
@@ -856,94 +836,104 @@ void Unserialize(Stream &is, std::basic_string<C> &str) {
     }
 }
 
+//! A private namespace used internally. Not intended to be called directly by outside code.
+namespace ser_detail {
+
+//! Serialize vectors and prevectors, optimizing uint8_t types to be serialized in blocks.
+template <typename Stream, typename Vector>
+inline void Serialize_vector(Stream &os, const Vector &v) {
+    using ValT = std::remove_cv_t<typename Vector::value_type>;
+    if constexpr (std::is_same_v<ValT, uint8_t>) {
+        // uint8_t is done in blocks as a performance optimization
+        WriteCompactSize(os, v.size());
+        if (!v.empty()) {
+            os.write(reinterpret_cast<const char *>(v.data()), v.size() * sizeof(ValT));
+        }
+    } else {
+        // Every other type is run through the generic 1-at-a-time VectorFormatter
+        Serialize(os, Using<VectorFormatter<DefaultFormatter>>(v));
+    }
+}
+
+//! Compile-time detection if type T has instance method .resize_uninitialized()
+template<typename T>
+class has_resize_uninitialized {
+    template<typename T2>
+    static constexpr auto check(T2 *)
+        -> typename std::is_same<decltype(std::declval<T2>().resize_uninitialized(0)), void>::type;
+
+    template<typename>
+    static constexpr std::false_type check(...);
+
+public:
+    static constexpr bool value = decltype(check<T>(nullptr))::value;
+};
+
+template <typename T>
+inline constexpr bool has_resize_uninitialized_v = has_resize_uninitialized<T>::value;
+
+// Sanity checks for above
+static_assert(has_resize_uninitialized_v<prevector<28, uint8_t>>);
+static_assert(!has_resize_uninitialized_v<std::vector<uint8_t>>);
+
+//! Unserialize vectors and prevectors, optimizing uint8_t to be unserialized in blocks.
+template <typename Stream, typename Vector>
+inline void Unserialize_vector(Stream &is, Vector &v) {
+    using ValT = std::remove_cv_t<typename Vector::value_type>;
+    if constexpr (std::is_same_v<ValT, uint8_t>) {
+        // uint8_t is done in blocks as a performance optimization
+        v.clear();
+        const size_t nSize = ReadCompactSize(is);
+        size_t i = 0;
+        while (i < nSize) {
+            // Limit size per read so bogus size value won't cause out of memory
+            const size_t blk = std::min(nSize - i, 1 + (MAX_VECTOR_ALLOCATE - 1) / sizeof(ValT));
+            // Detect if Vector is prevector vs regular vector and call the faster resize_uninitialized if it exists.
+            if constexpr (has_resize_uninitialized_v<Vector>) {
+                // Ensure that the prevector being used (which has a configurable size_type) hasn't been misused
+                // to not be able to fit the maximal possible compact size.
+                static_assert(std::numeric_limits<typename Vector::size_type>::max() > MAX_SIZE,
+                              "prevector size_type too small");
+                // use prevector's faster resize
+                v.resize_uninitialized(i + blk);
+            } else {
+                v.resize(i + blk);
+            }
+            is.read(reinterpret_cast<char *>(v.data() + i), blk * sizeof(ValT));
+            i += blk;
+        }
+    } else {
+        // Every other type is run through the generic 1-at-a-time VectorFormatter
+        Unserialize(is, Using<VectorFormatter<DefaultFormatter>>(v));
+    }
+}
+
+} // namespace ser_detail
+
 /**
  * prevector
  */
 template <typename Stream, unsigned int N, typename T>
-void Serialize_impl(Stream &os, const prevector<N, T> &v, const uint8_t &) {
-    WriteCompactSize(os, v.size());
-    if (!v.empty()) {
-        os.write((char *)v.data(), v.size() * sizeof(T));
-    }
-}
-
-template <typename Stream, unsigned int N, typename T, typename V>
-void Serialize_impl(Stream &os, const prevector<N, T> &v, const V &) {
-    Serialize(os, Using<VectorFormatter<DefaultFormatter>>(v));
-}
-
-template <typename Stream, unsigned int N, typename T>
 inline void Serialize(Stream &os, const prevector<N, T> &v) {
-    Serialize_impl(os, v, T());
-}
-
-template <typename Stream, unsigned int N, typename T>
-void Unserialize_impl(Stream &is, prevector<N, T> &v, const uint8_t &) {
-    // Limit size per read so bogus size value won't cause out of memory
-    v.clear();
-    size_t nSize = ReadCompactSize(is);
-    size_t i = 0;
-    while (i < nSize) {
-        size_t blk = std::min(nSize - i, size_t(1 + 4999999 / sizeof(T)));
-        v.resize_uninitialized(i + blk);
-        is.read((char *)&v[i], blk * sizeof(T));
-        i += blk;
-    }
-}
-
-template <typename Stream, unsigned int N, typename T, typename V>
-void Unserialize_impl(Stream &is, prevector<N, T> &v, const V &) {
-    Unserialize(is, Using<VectorFormatter<DefaultFormatter>>(v));
+    ser_detail::Serialize_vector(os, v);
 }
 
 template <typename Stream, unsigned int N, typename T>
 inline void Unserialize(Stream &is, prevector<N, T> &v) {
-    Unserialize_impl(is, v, T());
+    ser_detail::Unserialize_vector(is, v);
 }
 
 /**
  * vector
  */
 template <typename Stream, typename T, typename A>
-void Serialize_impl(Stream &os, const std::vector<T, A> &v, const uint8_t &) {
-    WriteCompactSize(os, v.size());
-    if (!v.empty()) {
-        os.write((char *)v.data(), v.size() * sizeof(T));
-    }
-}
-
-template <typename Stream, typename T, typename A, typename V>
-void Serialize_impl(Stream &os, const std::vector<T, A> &v, const V &) {
-    Serialize(os, Using<VectorFormatter<DefaultFormatter>>(v));
-}
-
-template <typename Stream, typename T, typename A>
 inline void Serialize(Stream &os, const std::vector<T, A> &v) {
-    Serialize_impl(os, v, T());
-}
-
-template <typename Stream, typename T, typename A>
-void Unserialize_impl(Stream &is, std::vector<T, A> &v, const uint8_t &) {
-    // Limit size per read so bogus size value won't cause out of memory
-    v.clear();
-    size_t nSize = ReadCompactSize(is);
-    size_t i = 0;
-    while (i < nSize) {
-        size_t blk = std::min(nSize - i, size_t(1 + 4999999 / sizeof(T)));
-        v.resize(i + blk);
-        is.read((char *)&v[i], blk * sizeof(T));
-        i += blk;
-    }
-}
-
-template <typename Stream, typename T, typename A, typename V>
-void Unserialize_impl(Stream &is, std::vector<T, A> &v, const V &) {
-    Unserialize(is, Using<VectorFormatter<DefaultFormatter>>(v));
+    ser_detail::Serialize_vector(os, v);
 }
 
 template <typename Stream, typename T, typename A>
 inline void Unserialize(Stream &is, std::vector<T, A> &v) {
-    Unserialize_impl(is, v, T());
+    ser_detail::Unserialize_vector(is, v);
 }
 
 /**
