@@ -1821,14 +1821,20 @@ BOOST_AUTO_TEST_CASE(test_Capitalize) {
 }
 
 BOOST_AUTO_TEST_CASE(test_GetPerfTimeNanos) {
-    // Basic test to just check sanity of the GetPerfTsNanos() call that it actually increses along with system clock.
+    // Basic test to just check sanity of the GetPerfTimeNanos() call that it actually increses along with system clock.
     // We would like to test things with more precision than this but it's very tricky to compare two distinct clocks.
     for (int i = 0; i < 100; ++i) {
         const int64_t sleeptime_msec = (i+1) * 7;
         const int64_t before = GetPerfTimeNanos();
         MilliSleep(sleeptime_msec);
         const int64_t after = GetPerfTimeNanos();
-        BOOST_CHECK_GE((after - before) + 1'000 /* fudge by 1 usec in case of drift */, sleeptime_msec * 1'000'000);
+        constexpr int64_t fuzz =
+#ifdef _WIN32
+                500'000; // round up to nearest millisecond on Windows due to lack of scheduler granularity
+#else
+                1'000; // other platforms: fudge up by 1 usec in case of drift
+#endif
+        BOOST_CHECK_GE((after - before) + fuzz, sleeptime_msec * 1'000'000);
     }
 }
 
