@@ -33,6 +33,7 @@ export AFLOUT=$PWD/outputs
 ### Building AFL
 
 It is recommended to always use the latest version of afl:
+
 ```
 wget http://lcamtuf.coredump.cx/afl/releases/afl-latest.tgz
 tar -zxvf afl-latest.tgz
@@ -45,6 +46,7 @@ export AFLPATH=$PWD
 
 To build Bitcoin Cash Node using AFL instrumentation (this assumes that the
 `AFLPATH` was set as above):
+
 ```
 mkdir -p buildFuzzer
 cd buildFuzzer

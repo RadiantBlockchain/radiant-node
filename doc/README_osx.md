@@ -31,6 +31,7 @@ To obtain it, register for a developer account, then download the [Xcode 7.3.1 d
 
 This file is several gigabytes in size, but only a single directory inside is
 needed:
+
 ```
 Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.*.sdk
 ```

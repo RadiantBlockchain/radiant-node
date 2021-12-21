@@ -1,4 +1,3 @@
-
 # Fedora / CentOS build guide
 
 (updated for Fedora 31)

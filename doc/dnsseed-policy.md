@@ -9,7 +9,6 @@ The seeds used by Cash Node should distribute peers fairly but in a
 manner which increases the likelihood that Bitcoin Cash Nodes are able
 to connect to BCH compatible peers.
 
-
 General expectations for DNS Seed operators
 -------------------------------------------
 

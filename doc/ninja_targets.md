@@ -6,13 +6,11 @@ This document describes how the CMake/Ninja build system works and how to use it
 You will find some information on how to set up a Ninja build, and what are the
 build targets and their effects.
 
-
 ## Generally understanding the Ninja build system
 
 CMake is used to generate Ninja build files.
 
 Please briefly acquaint yourself with the Ninja documentation at <https://ninja-build.org/manual.html>
-
 
 ## Setting up an out-of-tree Ninja build of Bitcoin Cash Node
 
@@ -54,7 +52,6 @@ They are grouped according to their function.
 
 For all these targets, run them by appending them to the `ninja` command.
 
-
 ## Cleanup-related targets
 
 ### clean
@@ -67,7 +64,6 @@ See also the description of the `clean` target at: <https://ninja-build.org/manu
 If you need to 'clean up hardest' then the right way is to change to the
 source folder of your checked out working area, and remove the entire
 `build/` folder. (`rm -rf build`)
-
 
 ## Build-related targets
 
@@ -82,7 +78,6 @@ There are some test-related targets which are not automatically built
 in this way.
 
 Calling `ninja all` is equivalent to just running `ninja`.
-
 
 ### check
 
@@ -252,7 +247,6 @@ files, libraries and manual pages.
 Creates a versioned tar.gz archive containing the project source code already
 configured by cmake and ready to be built.
 
-
 ## Benchmarking targets
 
 ### bench-bitcoin
@@ -268,8 +262,6 @@ the number of iterations and timings associated with those (these will be machin
 Build and run the secp256k1 benchmarks.
 Outputs the benchmark information (names, timings).
 Again, timings will be machine-specific.
-
-
 
 ## Fuzzing targets
 
@@ -326,4 +318,3 @@ All these options are passed via `-D` (defines) to the `cmake` command.
 - -DENABLE_MAN=OFF # Disable manpage generation/installation
 
 - -DDOC_ONLINE=ON # Adapt Markdown and HTML documentation for publication on docs.bitcoincashnode.org
-

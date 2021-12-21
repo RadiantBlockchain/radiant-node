@@ -9,24 +9,28 @@ If you're running bitcoind locally, the following instructions will work
 out-of-the-box:
 
 ## Mainnet
+
 ```
 bitcoind
 python3 make_chainparams.py > chainparams_main.txt
 ```
 
 ## Testnet3
+
 ```
 bitcoind --testnet
 python3 make_chainparams.py -a 127.0.0.1:18332 > chainparams_test.txt
 ```
 
 ## Testnet4
+
 ```
 bitcoind --testnet4
 python3 make_chainparams.py -a 127.0.0.1:28332 > chainparams_testnet4.txt
 ```
 
 ## Scalenet
+
 ```
 bitcoind --scalenet
 python3 make_chainparams.py -a 127.0.0.1:38332 > chainparams_scalenet.txt
@@ -37,8 +41,8 @@ needs to be reorged back to height 10,000.  Without manually editing to comment-
 the sys.exit call, the above script will exit with an error message if executed
 against a `bitcoind` that is on scalenet.
 
-
 ## Build C++ Header File
+
 ```
 python3 generate_chainparams_constants.py . > ../../../src/chainparamsconstants.h
 ```

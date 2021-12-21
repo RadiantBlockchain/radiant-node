@@ -26,12 +26,14 @@ wget -q -O - "${URL}" | tar -zxOf - "${KEYS_FILE}" | while read FINGERPRINT _; d
 ```
 
 Get the keys for version 0.21.0:
+
 ```
 URL="https://download.bitcoincashnode.org/keys/keys.txt"
 wget -q -O - "${URL}" | while read FINGERPRINT _; do gpg --recv-keys "${FINGERPRINT}"; done
 ```
 
 Check the binaries (all versions):
+
 ```
 FILE_PATTERN="./*-sha256sums.${VERSION}.asc"
 gpg --verify-files ${FILE_PATTERN}
@@ -47,6 +49,7 @@ unexpectedly, the presence of those warnings should be heeded with extreme cauti
 
 Running
 ---------------------
+
 The following are some helpful notes on how to run Bitcoin Cash Node on your
 native platform.
 

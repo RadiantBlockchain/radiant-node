@@ -48,6 +48,7 @@ The naming convention roughly mirrors [Microsoft Naming Conventions](https://doc
 C++ Coding Standards should strive to follow the [LLVM Coding Standards](https://llvm.org/docs/CodingStandards.html)
 
 Code style example:
+
 ```c++
 // namespaces should be lower_snake_case
 namespace foo_bar_bob {
@@ -99,7 +100,6 @@ public:
 } // namespace foo
 ```
 
-
 Doxygen comments
 -----------------
 
@@ -107,6 +107,7 @@ To facilitate the generation of documentation, use doxygen-compatible comment
 blocks for functions, methods and fields.
 
 For example, to describe a function use:
+
 ```c++
 /**
  * ... text ...
@@ -116,6 +117,7 @@ For example, to describe a function use:
  */
 bool function(int arg1, const char *arg2)
 ```
+
 A complete list of `@xxx` commands can be found at
 [https://www.doxygen.nl/manual/commands.html](https://www.doxygen.nl/manual/commands.html).
 As Doxygen recognizes the comments by the delimiters (`/**` and `*/` in this case),
@@ -123,6 +125,7 @@ you don't *need* to provide any commands for a comment to be valid; just a descr
 text is fine.
 
 To describe a class use the same construct above the class definition:
+
 ```c++
 /**
  * Alerts are for notifying old versions if they become too obsolete and
@@ -134,17 +137,20 @@ class CAlert
 ```
 
 To describe a member or variable use:
+
 ```c++
 int var; //!< Detailed description after the member
 ```
 
 or
+
 ```cpp
 //! Description before the member
 int var;
 ```
 
 Also OK:
+
 ```c++
 ///
 /// ... text ...
@@ -153,6 +159,7 @@ bool function2(int arg1, const char *arg2)
 ```
 
 Not OK (used plenty in the current source, but not picked up):
+
 ```c++
 //
 // ... text ...
@@ -165,6 +172,7 @@ but if possible use one of the above styles.
 
 To build doxygen locally to test changes to the Doxyfile or visualize your
 comments before landing changes:
+
 ```
 # In the build directory, call:
 doxygen doc/Doxyfile
@@ -271,7 +279,6 @@ A coverage report will now be accessible at `./check-all.coverage/index.html`.
 
 To include branch coverage, you can add the `-DENABLE_BRANCH_COVERAGE=ON` option
 to the `cmake` command line.
-
 
 ### Sanitizers
 
@@ -396,28 +403,17 @@ Threads
 -------
 
 - ThreadScriptCheck : Verifies block scripts.
-
 - ThreadImport : Loads blocks from blk*.dat files or bootstrap.dat.
-
 - StartNode : Starts other threads.
-
 - ThreadDNSAddressSeed : Loads addresses of peers from the DNS.
-
 - ThreadMapPort : Universal plug-and-play startup/shutdown
-
 - ThreadSocketHandler : Sends/Receives data from peers on port 8333.
-
 - ThreadOpenAddedConnections : Opens network connections to added nodes.
-
 - ThreadOpenConnections : Initiates new connections to peers.
-
 - ThreadMessageHandler : Higher-level message handling (sending and receiving).
-
 - DumpAddresses : Dumps IP addresses of nodes to peers.dat.
-
 - ThreadRPCServer : Remote procedure call handler, listens on port 8332 for
   connections and services them.
-
 - Shutdown : Does an orderly shutdown of everything.
 
 Ignoring IDE/editor files
@@ -440,6 +436,7 @@ to do this is thus to create your local gitignore. Add this to `~/.gitconfig`:
 on a terminal)
 
 Then put your favorite tool's temporary filenames in that file, e.g.
+
 ```
 # NetBeans
 nbproject/
@@ -461,95 +458,72 @@ pay attention to for reviewers of Bitcoin Cash Node code.
 ### Wallet
 
 - Make sure that no crashes happen with run-time option `-disablewallet`.
-
     - *Rationale*: In RPC code that conditionally uses the wallet (such as
       `validateaddress`) it is easy to forget that global pointer `pwalletMain`
       can be NULL. See `test/functional/disablewallet.py` for functional tests
       exercising the API with `-disablewallet`
-
 - Include `db_cxx.h` (BerkeleyDB header) only when `ENABLE_WALLET` is set
-
     - *Rationale*: Otherwise compilation of the disable-wallet build will fail in
       environments without BerkeleyDB
 
 ### General C++
 
 - Assertions should not have side-effects
-
     - *Rationale*: Even though the source code is set to refuse to compile
       with assertions disabled, having side-effects in assertions is unexpected and
       makes the code harder to understand
-
 - If you use the `.h`, you must link the `.cpp`
-
     - *Rationale*: Include files define the interface for the code in implementation
       files. Including one but not linking the other is confusing. Please avoid that.
       Moving functions from the `.h` to the `.cpp` should not result in build errors
-
 - Use the RAII (Resource Acquisition Is Initialization) paradigm where possible.
   For example by using `unique_ptr` for allocations in a function.
-
     - *Rationale*: This avoids memory and resource leaks, and ensures exception safety
-
 - Use `std::make_unique()` to construct objects owned by `unique_ptr`s
-
     - *Rationale*: `std::make_unique` is concise and ensures exception safety
       in complex expressions.
 
 ### C++ data structures
 
 - Never use the `std::map []` syntax when reading from a map, but instead use `.find()`
-
     - *Rationale*: `[]` does an insert (of the default element) if the item doesn't
       exist in the map yet. This has resulted in memory leaks in the past, as
       well as race conditions (expecting read-read behavior). Using `[]` is fine
       for *writing* to a map
-
 - Do not compare an iterator from one data structure with an iterator of
   another data structure (even if of the same type)
-
     - *Rationale*: Behavior is undefined. In C++ parlor this means "may reformat
       the universe", in practice this has resulted in at least one hard-to-debug
       crash bug
-
 - Watch out for out-of-bounds vector access. `&vch[vch.size()]` is illegal,
   including `&vch[0]` for an empty vector. Use `vch.data()` and `vch.data() +
   vch.size()` instead.
-
 - Vector bounds checking is only enabled in debug mode. Do not rely on it
-
 - Make sure that constructors initialize all fields. If this is skipped for a
   good reason (i.e., optimization on the critical path), add an explicit
   comment about this
-
     - *Rationale*: Ensure determinism by avoiding accidental use of uninitialized
       values. Also, static analyzers balk about this.
-
 - By default, declare single-argument constructors `explicit`.
-
     - *Rationale*: This is a precaution to avoid unintended conversions that might
       arise when single-argument constructors are used as implicit conversion
       functions.
-
 - Use explicitly signed or unsigned `char`s, or even better `uint8_t` and
   `int8_t`. Do not use bare `char` unless it is to pass to a third-party API.
   This type can be signed or unsigned depending on the architecture, which can
   lead to interoperability problems or dangerous conditions such as
   out-of-bounds array accesses
-
 - Prefer explicit constructions over implicit ones that rely on 'magical' C++ behavior
-
     - *Rationale*: Easier to understand what is happening, thus easier to spot
       mistakes, even for those that are not language lawyers
-
 - Initialize all non-static class members where they are defined
 
-    ```cpp
-    class A
-    {
-        uint32_t m_count{0};
-    }
-    ```
+  ```cpp
+  class A
+  {
+      uint32_t m_count{0};
+  }
+  ```
 
     - *Rationale*: Initializing the members in the declaration makes it easy to
       spot uninitialized ones, and avoids accidentally reading uninitialized memory
@@ -557,14 +531,11 @@ pay attention to for reviewers of Bitcoin Cash Node code.
 ### Strings and formatting
 
 - Use `std::string`, avoid C string manipulation functions
-
     - *Rationale*: C++ string handling is marginally safer, less scope for
       buffer overflows and surprises with `\0` characters. Also some C string manipulations
       tend to act differently depending on platform, or even the user locale
-
 - Use `ParseInt32`, `ParseInt64`, `ParseUInt32`, `ParseUInt64`, `ParseDouble`
   from `utilstrencodings.h` for number parsing
-
     - *Rationale*: These functions do overflow checking, and avoid pesky locale
       issues
 
@@ -630,50 +601,46 @@ source code.
       `#!/bin/bash` assumes it is always installed to /bin/ which can cause issues;
       `#!/usr/bin/env bash` searches the user's PATH to find the bash binary.
 
-    OK:
-    ```bash
-    #!/usr/bin/env bash
-    ```
+  OK:
 
-    Wrong:
+  ```bash
+  #!/usr/bin/env bash
+  ```
 
-    ```bash
-    #!/bin/bash
-    ```
+  Wrong:
+
+  ```bash
+  #!/bin/bash
+  ```
 
 ### Source code organization
 
 - Implementation code should go into the `.cpp` file and not the `.h`, unless
   necessary due to template usage or when performance due to inlining is critical
-
     - *Rationale*: Shorter and simpler header files are easier to read, and
       reduce compile time
 
 - Use only the lowercase alphanumerics (`a-z0-9`), underscore (`_`) and hyphen
   (`-`) in source code filenames.
-
     - *Rationale*: `grep`:ing and auto-completing filenames is easier when using
       a consistent naming pattern. Potential problems when building on case-insensitive
       filesystems are avoided when using only lowercase characters in source code
       filenames.
-
 - Don't import anything into the global namespace (`using namespace ...`). Use
   fully specified types such as `std::string`.
-
     - *Rationale*: Avoids symbol conflicts
-
 - Terminate namespaces with a comment (`// namespace mynamespace`). The comment
   should be placed on the same line as the brace closing the namespace, e.g.
 
-    ```c++
-    namespace mynamespace {
-        ...
-    } // namespace mynamespace
+  ```c++
+  namespace mynamespace {
+      ...
+  } // namespace mynamespace
 
-    namespace {
-        ...
-    } // namespace
-    ```
+  namespace {
+      ...
+  } // namespace
+  ```
 
     - *Rationale*: Avoids confusion about the namespace context
 
@@ -711,22 +678,18 @@ All headers should be lexically ordered inside their block.
 ### GUI
 
 - Do not display or manipulate dialogs in model code (classes `*Model`)
-
     - *Rationale*: Model classes pass through events and data from the core, they
       should not interact with the user. That's where View classes come in. The
       converse also holds: try to not directly access core data structures from Views.
-
 - Avoid adding slow or blocking code in the GUI thread. In particular do not
   add new `interface::Node` and `interface::Wallet` method calls, even if they
   may be fast now, in case they are changed to lock or communicate across
   processes in the future.
-
 - Prefer to offload work from the GUI thread to worker threads (see
   `RPCExecutor` in console code as an example) or take other steps (see
   [https://doc.qt.io/archives/qq/qq27-responsive-guis.html](https://doc.qt.io/archives/qq/qq27-responsive-guis.html))
   to keep the GUI
   responsive.
-
     - *Rationale*: Blocking the GUI thread can increase latency, and lead to
       hangs and deadlocks.
 
@@ -759,15 +722,12 @@ Current subtrees include:
       Maintained by Google, but open important PRs to Core to avoid delay.
     - **Note**: Follow the instructions in [Upgrading LevelDB](#upgrading-leveldb)
       when merging upstream changes to the leveldb subtree.
-
 - src/libsecp256k1
     - Upstream at [https://github.com/bitcoin-core/secp256k1/](https://github.com/bitcoin-core/secp256k1/);
       actively maintaned by Core contributors.
-
 - src/crypto/ctaes
     - Upstream at [https://github.com/bitcoin-core/ctaes](https://github.com/bitcoin-core/ctaes);
       actively maintained by Core contributors.
-
 - src/univalue
     - BCHN no longer has a single upstream for `src/univalue`, but maintains its
       own univalue code based on fixes from several repositories, namely [https://github.com/jgarzik/univalue](https://github.com/jgarzik/univalue),
@@ -830,27 +790,27 @@ Git and GitLab tips
 - For resolving merge/rebase conflicts, it can be useful to enable diff3 style using
   `git config merge.conflictstyle diff3`. Instead of
 
-    ```
-    <<<
-    yours
-    ===
-    theirs
-    >>>
-    ```
+  ```
+  <<<
+  yours
+  ===
+  theirs
+  >>>
+  ```
 
-    you will see
+  you will see
 
-    ```
-    <<<
-    yours
-    |||
-    original
-    ===
-    theirs
-    >>>
-    ```
+  ```
+  <<<
+  yours
+  |||
+  original
+  ===
+  theirs
+  >>>
+  ```
 
-    This may make it much clearer what caused the conflict. In this style, you can
+  This may make it much clearer what caused the conflict. In this style, you can
   often just look at what changed between *original* and *theirs*, and mechanically
   apply that to *yours* (or the other way around).
 
@@ -872,11 +832,11 @@ Git and GitLab tips
 - When looking at other's pull requests, it may make sense to add the following
   section to your `.git/config` file:
 
-    ```
-    [remote "upstream-merges"]
-            url = git@gitlab.com:bitcoin-cash-node/bitcoin-cash-node.git
-            fetch = +refs/merge-requests/*/head:refs/remotes/upstream-merges/merge-requests/*
-    ```
+  ```
+  [remote "upstream-merges"]
+          url = git@gitlab.com:bitcoin-cash-node/bitcoin-cash-node.git
+          fetch = +refs/merge-requests/*/head:refs/remotes/upstream-merges/merge-requests/*
+  ```
 
   This will add an `upstream-merges` remote to your git repository, which can be
   fetched using `git fetch --all` or `git fetch upstream-merges`. Afterwards, you
@@ -891,21 +851,15 @@ A few guidelines for introducing and reviewing new RPC interfaces:
 
 - Method naming: use consecutive lower-case names such as `getrawtransaction`
   and `submitblock`
-
     - *Rationale*: Consistency with existing interface.
-
 - Argument naming: use snake case `fee_delta` (and not, e.g. camel case `feeDelta`)
-
     - *Rationale*: Consistency with existing interface.
-
 - Use the JSON parser for parsing, don't manually parse integers or strings from
   arguments unless absolutely necessary.
-
     - *Rationale*: Introduces hand-rolled string manipulation code at both the
       caller and callee sites, which is error prone, and it is easy to get things
       such as escaping wrong.
       JSON already supports nested data structures, no need to re-invent the wheel.
-
     - *Exception*: AmountFromValue can parse amounts as string. This was introduced
       because many JSON parsers and formatters hard-code handling decimal numbers
       as floating point values, resulting in potential loss of precision. This is
@@ -913,64 +867,47 @@ A few guidelines for introducing and reviewing new RPC interfaces:
       `ValueFromAmount` when inputting or outputting monetary values. The only
       exceptions to this are `prioritisetransaction` and `getblocktemplate`
       because their interface is specified as-is in BIP22.
-
 - Missing arguments and 'null' should be treated the same: as default values. If
   there is no default value, both cases should fail in the same way. The easiest
   way to follow this guideline is detect unspecified arguments with `params[x].isNull()`
   instead of `params.size() <= x`. The former returns true if the argument is
   either null or missing, while the latter returns true if is missing, and false
   if it is null.
-
     - *Rationale*: Avoids surprises when switching to name-based arguments. Missing
       name-based arguments are passed as 'null'.
-
 - Try not to overload methods on argument type. E.g. don't make `getblock(true)`
   and `getblock("hash")` do different things.
-
     - *Rationale*: This is impossible to use with `bitcoin-cli`, and can be
       surprising to users.
-
     - *Exception*: Some RPC calls can take both an `int` and `bool`, most notably
       when a bool was switched to a multi-value, or due to other historical reasons.
       **Always** have false map to 0 and true to 1 in this case.
-
 - Don't forget to fill in the argument names correctly in the RPC command table.
-
     - *Rationale*: If not, the call can not be used with name-based arguments.
-
 - Set okSafeMode in the RPC command table to a sensible value: safe mode is when
   the blockchain is regarded to be in a confused state, and the client deems it
   unsafe to do anything irreversible such as send. Anything that just queries
   should be permitted.
-
     - *Rationale*: Troubleshooting a node in safe mode is difficult if half the
       RPCs don't work.
-
 - Add every non-string RPC argument `(method, idx, name)` to the table `vRPCConvertParams`
   in `rpc/client.cpp`.
-
     - *Rationale*: `bitcoin-cli` and the GUI debug console use this table to
       determine how to convert a plaintext command line to JSON. If the types
       don't match, the method can be unusable from there.
-
 - A RPC method must either be a wallet method or a non-wallet method. Do not
   introduce new methods such as `signrawtransaction` that differ in behavior
   based on presence of a wallet.
-
     - *Rationale*: as well as complicating the implementation and interfering
       with the introduction of multi-wallet, wallet and non-wallet code should be
       separated to avoid introducing circular dependencies between code units.
-
 - Try to make the RPC response a JSON object.
-
     - *Rationale*: If a RPC response is not a JSON object then it is harder to
       avoid API breakage if new data in the response is needed.
-
 - Wallet RPCs call BlockUntilSyncedToCurrentChain to maintain consistency with
   `getblockchaininfo`'s state immediately prior to the call's execution. Wallet
   RPCs whose behavior does *not* depend on the current chainstate may omit this
   call.
-
     - *Rationale*: In previous versions of Bitcoin Core, the wallet was always
       in-sync with the chainstate (by virtue of them all being updated in the
       same cs_main lock). In order to maintain the behavior that wallet RPCs
@@ -978,14 +915,11 @@ A few guidelines for introducing and reviewing new RPC interfaces:
       client may be aware of prior to entering a wallet RPC call, we must block
       until the wallet is caught up to the chainstate as of the RPC call's entry.
       This also makes the API much easier for RPC clients to reason about.
-
 - Be aware of RPC method aliases and generally avoid registering the same
   callback function pointer for different RPCs.
-
     - *Rationale*: RPC methods registered with the same function pointer will be
       considered aliases and only the first method name will show up in the
       `help` rpc command list.
-
     - *Exception*: Using RPC method aliases may be appropriate in cases where a
       new RPC is replacing a deprecated RPC, to avoid both RPCs confusingly
       showing up in the command list.

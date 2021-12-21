@@ -58,6 +58,7 @@ test/functional/test_runner.py
 ```
 
 Run all possible tests with
+
 ```
 test/functional/test_runner.py --extended
 ```
@@ -288,32 +289,41 @@ P2P messages. These can be found in the following source files:
   the Bitcoin Core node application logic. For custom behaviour, subclass the
   P2PInterface object and override the callback methods.
 - Can be used to write tests where specific P2P protocol behavior is tested.
+
 Example tests are `p2p-acceptblock.py`, `p2p-compactblocks.py`.
 
 ### test-framework modules
 
 #### [test_framework/authproxy.py](../test/functional/test_framework/authproxy.py)
+
 Taken from the [python-bitcoinrpc repository](https://github.com/jgarzik/python-bitcoinrpc).
 
 #### [test_framework/test_framework.py](../test/functional/test_framework/test_framework.py)
+
 Base class for functional tests.
 
 #### [test_framework/util.py](../test/functional/test_framework/util.py)
+
 Generally useful functions.
 
 #### [test_framework/mininode.py](../test/functional/test_framework/mininode.py)
+
 Basic code to support P2P connectivity to a bitcoind.
 
 #### [test_framework/script.py](../test/functional/test_framework/script.py)
+
 Utilities for manipulating transaction scripts (originally from python-bitcoinlib)
 
 #### [test_framework/key.py](../test/functional/test_framework/key.py)
+
 Wrapper around OpenSSL EC_Key (originally from python-bitcoinlib)
 
 #### [test_framework/bignum.py](../test/functional/test_framework/bignum.py)
+
 Helpers for script.py
 
 #### [test_framework/blocktools.py](../test/functional/test_framework/blocktools.py)
+
 Helper functions for creating blocks and transactions.
 
 # Running functional tests in an emulator
@@ -323,6 +333,7 @@ Cross-compiled binaries can be tested with qemu or wine.
 ## AArch64
 
 Prerequisite
+
 ```
 sudo apt install qemu-user-static
 ```
@@ -337,6 +348,7 @@ cmake -GNinja .. \
 ```
 
 To run functional tests:
+
 ```
 QEMU_LD_PREFIX=/usr/aarch64-linux-gnu ninja check-functional
 ```

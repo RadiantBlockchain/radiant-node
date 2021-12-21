@@ -5,7 +5,6 @@ The Bitcoin Cash Node project welcomes contributors!
 This guide is intended to help developers and others contribute effectively
 to Bitcoin Cash Node.
 
-
 ## Communicating with the project
 
 To get in contact with the Bitcoin Cash Node project, we monitor a number
@@ -66,15 +65,15 @@ good reason to do so.
 - Don't amend a Merge Request after it has been accepted for merging unless
   with coordination with the maintainer(s)
 - Large changes should be broken into logical chunks that are easy to review,
-and keep the code in a functional state.
+  and keep the code in a functional state.
 - Do not mix moving stuff around with changing stuff. Do changes with renames
-on their own.
+  on their own.
 - Sometimes you want to replace one subsystem by another implementation,
-in which case it is not possible to do things incrementally. In such cases,
-you keep both implementations in the codebase for a while, as described
-[here](https://www.gamasutra.com/view/news/128325/Opinion_Parallel_Implementations.php)
+  in which case it is not possible to do things incrementally. In such cases,
+  you keep both implementations in the codebase for a while, as described
+  [here](https://www.gamasutra.com/view/news/128325/Opinion_Parallel_Implementations.php)
 - There are no "development" branches, all merge requests apply to the master
-branch, and should always improve it (no regressions).
+  branch, and should always improve it (no regressions).
 - As soon as you see a bug, you fix it. Do not continue on. Fixing the bug
   becomes the top priority, more important than completing other tasks.
 
@@ -139,98 +138,99 @@ Getting set up with the Bitcoin Cash Node Repository
 1. Create an account at [https://gitlab.com](https://gitlab.com) if you don't have
    one yet
 2. Install Git on your machine
-    - Git documentation can be found at: [https://git-scm.com](https://git-scm.com)
-    - To install these packages on Debian or Ubuntu,
-      type: `sudo apt-get install git`
 3. If you do not already have an SSH key set up, follow these steps:
-    - Type: `ssh-keygen -t rsa -b 4096 -C "your_email@example.com"`
-    - Enter a file in which to save the key
-      (/home/*username*/.ssh/id_rsa): [Press enter]
-    - *NOTE: the path in the message shown above is specific to UNIX-like systems
-      and may differ if you run on other platforms.*
 4. Upload your SSH public key to GitLab
-    - Go to: [https://gitlab.com](https://gitlab.com), log in
-    - Under "User Settings", "SSH Keys", add your public key
-    - Paste contents from: `$HOME/.ssh/id_rsa.pub`
 5. Create a personal fork of the Bitcoin Cash Node repository for your work
-    - Sign into GitLab under your account, then visit the project at [https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node)
-    - Click the 'Fork' button on the top right, and choose to fork the project to
-      your personal GitLab space.
 6. Clone your personal work repository to your local machine:
+  - Git documentation can be found at: [https://git-scm.com](https://git-scm.com)
+  - To install these packages on Debian or Ubuntu,
+    type: `sudo apt-get install git`
+  - Type: `ssh-keygen -t rsa -b 4096 -C "your_email@example.com"`
+  - Enter a file in which to save the key
+    (/home/*username*/.ssh/id_rsa): [Press enter]
+  - *NOTE: the path in the message shown above is specific to UNIX-like systems
+    and may differ if you run on other platforms.*
+  - Go to: [https://gitlab.com](https://gitlab.com), log in
+  - Under "User Settings", "SSH Keys", add your public key
+  - Paste contents from: `$HOME/.ssh/id_rsa.pub`
+  - Sign into GitLab under your account, then visit the project at [https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node)
+  - Click the 'Fork' button on the top right, and choose to fork the project to
+    your personal GitLab space.
 
-    ```
-    git clone git@gitlab.com:username/bitcoin-cash-node.git
-    ```
+  ```
+  git clone git@gitlab.com:username/bitcoin-cash-node.git
+  ```
 
 7. Set your checked out copy's upstream to our main project:
 
-    ```
-    git remote add upstream https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node.git
-    ```
+  ```
+  git remote add upstream https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node.git
+  ```
 
 8. You may want to add the `mreq` alias to your `.git/config`:
 
-    ```
-    [alias]
-    mreq = !sh -c 'git fetch $1 merge-requests/$2/head:mr-$1-$2 && git checkout mr-$1-$2' -
-    ```
+  ```
+  [alias]
+  mreq = !sh -c 'git fetch $1 merge-requests/$2/head:mr-$1-$2 && git checkout mr-$1-$2' -
+  ```
 
-    This `mreq` alias can be used to easily check out Merge Requests from our
-    main repository if you intend to test them or work on them.
-    Example:
+  This `mreq` alias can be used to easily check out Merge Requests from our
+  main repository if you intend to test them or work on them.
+  Example:
 
-    ```
-    $ git mreq upstream 93
-    ```
+  ```
+  $ git mreq upstream 93
+  ```
 
-    This will checkout `merge-requests/93/head` and put you in a branch called `mr-origin-93`.
-    You can then proceed to test the changes proposed by that merge request.
+  This will checkout `merge-requests/93/head` and put you in a branch called `mr-origin-93`.
+  You can then proceed to test the changes proposed by that merge request.
 
 9. Code formatting tools
 
-    During submission of patches, our GitLab process may refused code that
-is not styled according to our coding guidelines.
+  During submission of patches, our GitLab process may refused code that
+  is not styled according to our coding guidelines.
 
-    To enforce Bitcoin Cash Node codeformatting standards, you may need to
-install `clang-format-8`, `clang-tidy` (version >=8), `autopep8`, `flake8`,
-`phpcs` and `shellcheck` on your system to format your code before submission
-as a Merge Request.
+  To enforce Bitcoin Cash Node codeformatting standards, you may need to
+  install `clang-format-8`, `clang-tidy` (version >=8), `autopep8`, `flake8`,
+  `phpcs` and `shellcheck` on your system to format your code before submission
+  as a Merge Request.
 
-    To install `clang-format-8` and `clang-tidy` on Ubuntu (>= 18.04+updates)
-    or Debian (>= 10):
+  To install `clang-format-8` and `clang-tidy` on Ubuntu (>= 18.04+updates)
+  or Debian (>= 10):
 
-    ```
-    sudo apt-get install clang-format-8 clang-tidy-8 clang-tools-8
-    ```
+  ```
+  sudo apt-get install clang-format-8 clang-tidy-8 clang-tools-8
+  ```
 
-    If not available in the distribution, `clang-format-8` and `clang-tidy` can be
-    installed from [https://releases.llvm.org/download.html](https://releases.llvm.org/download.html)
-    or [https://apt.llvm.org](https://apt.llvm.org).
+  If not available in the distribution, `clang-format-8` and `clang-tidy` can be
+  installed from [https://releases.llvm.org/download.html](https://releases.llvm.org/download.html)
+  or [https://apt.llvm.org](https://apt.llvm.org).
 
-    For example, for macOS:
+  For example, for macOS:
 
-    ```
-    curl http://releases.llvm.org/8.0.0/clang+llvm-8.0.0-x86_64-apple-darwin.tar.xz | tar -xJv
-    ln -s $PWD/clang+llvm-8.0.0-x86_64-apple-darwin/bin/clang-format /usr/local/bin/clang-format
-    ln -s $PWD/clang+llvm-8.0.0-x86_64-apple-darwin/bin/clang-tidy /usr/local/bin/clang-tidy
-    ```
+  ```
+  curl http://releases.llvm.org/8.0.0/clang+llvm-8.0.0-x86_64-apple-darwin.tar.xz | tar -xJv
+  ln -s $PWD/clang+llvm-8.0.0-x86_64-apple-darwin/bin/clang-format /usr/local/bin/clang-format
+  ln -s $PWD/clang+llvm-8.0.0-x86_64-apple-darwin/bin/clang-tidy /usr/local/bin/clang-tidy
+  ```
 
-    To install `autopep8`, `flake8` and `phpcs` on Ubuntu:
+  To install `autopep8`, `flake8` and `phpcs` on Ubuntu:
 
-    ```
-    sudo apt-get install python-autopep8 flake8 php-codesniffer shellcheck
-    ```
+  ```
+  sudo apt-get install python-autopep8 flake8 php-codesniffer shellcheck
+  ```
 
 10. Further task-specific dependencies
+  In order to run the automated tests, you'll need the tools listed in the "dependencies" sections of these two documents:
 
-    In order to run the automated tests, you'll need the tools listed in the "dependencies" sections of these two documents:
+    [Linting](doc/linting.md)
+    [Functional Tests](doc/functional-tests.md)
 
-    - [Linting](doc/linting.md)
-    - [Functional Tests](doc/functional-tests.md)
+  To produce coverage reports, you'll need the dependencies listed in:
 
-    To produce coverage reports, you'll need the dependencies listed in:
+    [Coverage](doc/coverage.md)
 
-    - [Coverage](doc/coverage.md)
+  To run benchmarks, see the "LFS dependency" section in:
 
     To run benchmarks, see [Benchmarking](doc/benchmarking.md).
 

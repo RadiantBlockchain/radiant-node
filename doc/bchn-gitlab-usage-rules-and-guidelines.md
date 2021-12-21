@@ -6,7 +6,6 @@ Cash Node repository and issue tracker at
 
 [https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/)
 
-
 ## BCHN GitLab workflow
 
 Below are common workflows users will encounter:
@@ -80,7 +79,6 @@ criticality bar, with the lead maintainer breaking a possible tie. Such
 decisions shall be reflected on the merge request in GitLab, most preferably
 via explicit comments but definitely via raising the Approval threshold of the
 merge request in its configuration to 2.
-
 
 ## Guidelines
 
@@ -177,7 +175,6 @@ Occasionally, developers may ask for review of Draft items in the understanding 
 such review is preliminary and intended to gather input for revision which is believed
 to be needed still.
 
-
 ### List of labels currently used on BCHN GitLab
 
 NOTE: MR = "Merge Request"
@@ -269,7 +266,6 @@ NOTE: MR = "Merge Request"
 
 - "SECURITY": issue/MR is considered security relevant
 
-
 ### Historical labels considered to be deprecated until further notice
 
 These labels below are historical - you might see them when examining closed issues
@@ -281,7 +277,6 @@ or MRs, but which should not be used for now in new ones without consulting main
 - "needs_tag": used to mark issues/MRs that need labeling, but deemed superfluous
 
 - "fix-warnings": replace by more general "code-quality" label
-
 
 ### Known commit tags
 
@@ -309,7 +304,6 @@ The commit tags below are used reasonably frequently.
 There are some more tags in older history, from ABC project and others, which are
 not used by BCHN developers currently, but may enter the recently history through
 backports.
-
 
 ## Notes
 

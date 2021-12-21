@@ -175,7 +175,7 @@ Some issues could not be closed in time for release, but we are tracking all of 
 #### Benchmarks
 
 ...
-    
+
 #### Seeds / seeder software
 
 ...

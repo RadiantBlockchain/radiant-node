@@ -10,6 +10,7 @@ Supported API
 -------------
 
 ### Transactions
+
 `GET /rest/tx/<TX-HASH>.<bin|hex|json>`
 
 Given a transaction hash: returns a transaction in binary, hex-encoded binary,
@@ -19,6 +20,7 @@ For full TX query capability, one must enable the transaction index via "txindex
 command line / configuration option.
 
 ### Blocks
+
 `GET /rest/block/<BLOCK-HASH>.<bin|hex|json>`
 `GET /rest/block/notxdetails/<BLOCK-HASH>.<bin|hex|json>`
 
@@ -31,11 +33,13 @@ With the /notxdetails/ option JSON response will only contain the transaction ha
 instead of the complete transaction details. The option only affects the JSON response.
 
 ### Blockheaders
+
 `GET /rest/headers/<COUNT>/<BLOCK-HASH>.<bin|hex|json>`
 
 Given a block hash: returns <COUNT> amount of blockheaders in upward direction.
 
 ### Chaininfos
+
 `GET /rest/chaininfo.json`
 
 Returns various state info regarding block chain processing.
@@ -53,6 +57,7 @@ Only supports JSON as output format.
 * softforks : (array) status of softforks in progress
 
 ### Query UTXO set
+
 `GET /rest/getutxos/<checkmempool>/<txid>-<n>/<txid>-<n>/.../<txid>-<n>.<bin|hex|json>`
 
 The getutxo command allows querying of the UTXO set given a set of outpoints.
@@ -60,6 +65,7 @@ See BIP64 for input and output serialisation:
 <https://github.com/bitcoin/bips/blob/master/bip-0064.mediawiki>
 
 Example:
+
 ```
 $ curl localhost:18332/rest/getutxos/checkmempool/b2cdfd7b89def827ff8af7cd9bff7627ff72e5e8b0f71210f92ea7a4000c5d75-0.json 2>/dev/null | json_pp
 {
@@ -86,6 +92,7 @@ $ curl localhost:18332/rest/getutxos/checkmempool/b2cdfd7b89def827ff8af7cd9bff76
 ```
 
 ### Memory pool
+
 `GET /rest/mempool/info.json`
 
 Returns various information about the TX mempool.

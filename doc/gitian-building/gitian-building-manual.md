@@ -60,6 +60,7 @@ the Gitian builder at an alternative repository, using the same descriptors
 and inputs.
 
 For example:
+
 ```bash
 URL=https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node.git
 COMMIT=v0.18.5
@@ -109,6 +110,7 @@ sudo service apt-cacher-ng restart
 ```
 
 Then when building, override the remote URLs that gbuild would otherwise pull from the Gitian descriptors::
+
 ```bash
 cd ~
 export URL=${HOME}/bitcoin-cash-node
