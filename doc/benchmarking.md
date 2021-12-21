@@ -9,6 +9,7 @@ The benchmarks can be run and built using `ninja bench-bitcoin`.
 This produces and runs the benchmarking executable `src/bench/bench_bitcoin`.
 
 The output will look similar to:
+
 ```
 # Benchmark, evals, iterations, total, min, max, median
 Base58CheckEncode, 5, 320000, 5.28577, 3.27814e-06, 3.36971e-06, 3.29183e-06
@@ -52,4 +53,3 @@ More benchmarks are needed for, in no particular order:
 - Script Validation
 - Coins database
 - Memory pool
-

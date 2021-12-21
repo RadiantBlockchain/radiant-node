@@ -85,8 +85,8 @@ always a `SCRIPT`.
       characters starting with `04`).
     - [WIF](https://en.bitcoin.it/wiki/Wallet_import_format) encoded private keys
       may be specified instead of the corresponding public key, with the same meaning.
-  -`xpub` encoded extended public key or `xprv` encoded private key (as defined
-    in [BIP 32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki)).
+-`xpub` encoded extended public key or `xprv` encoded private key (as defined
+  in [BIP 32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki)).
     - Followed by zero or more `/NUM` unhardened and `/NUM'` hardened BIP32
       derivation steps.
     - Optionally followed by a single `/*` or `/*'` final step to denote all
@@ -94,7 +94,6 @@ always a `SCRIPT`.
     - The usage of hardened derivation steps requires providing the private key.
 - Anywhere a `'` suffix is permitted to denote hardened derivation, the suffix
   `h` can be used instead.
-
 
 `ADDR` expressions are any type of supported address:
 

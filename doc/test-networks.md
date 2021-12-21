@@ -5,6 +5,7 @@ This document describes the Bitcoin Cash test networks supported by the
 BCHN software.
 
 There are currently three test networks that you can access with BCHN:
+
 - testnet3 (historical testnet)
 - testnet4
 - scalenet
@@ -21,7 +22,6 @@ to access a test network not listed above, please raise a support request.
 
 Below, we give a brief description and an overview table for these networks.
 
-
 Testnet3
 --------
 
@@ -30,7 +30,6 @@ BTC's testnet3 since 2017. It has grown substantially in size
 (2020/Oct/15: 44GB), in part due to scaling tests that deposited a number
 of 32MB blocks, and due to the resulting time to sync a test node from
 scratch, has become inconvenient for quick tests.
-
 
 Testnet4
 --------
@@ -44,7 +43,6 @@ difficulty algorithm settings adjusted to make sure it recovers to be
 CPU-mineable quickly after someone has used an ASIC on it.
 
 Scaling tests should use 'scalenet' instead (see next section).
-
 
 Scalenet
 --------
@@ -66,7 +64,6 @@ Scalenet is intended to target the performance level of a ~$40/month VPS
 or a $500 desktop computer for the near future. Any tests that target higher
 performance levels are encouraged to do so by forking off of scalenet or
 creating their own private testnets or regtest networks.
-
 
 Overview Table for BCHN-supported Test Networks
 -----------------------------------------------
@@ -110,9 +107,7 @@ Note 2: scalenet is intended to be periodically reorganized down to a
         variable (it is block 16869 now, but may be different once the
         network is reset).
 
-
 Further references
 ------------------
 
 1. <https://bitcoincashresearch.org/t/testnet4-and-scalenet/148>
-

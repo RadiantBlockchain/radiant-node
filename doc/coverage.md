@@ -14,6 +14,7 @@ The following dependencies are required for building coverage reports:
 * python3
 
 On Debian/Ubuntu
+
 ```
 apt-get install binutils gcc lcov python3
 ```

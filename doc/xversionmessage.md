@@ -56,6 +56,7 @@ on the original Satoshi code).
 
 In particular the `xmap` payload of an `xversion` message looks like this
 for `N` entries in the map:
+
 ```
 [compact-size N]
 [compact-size key0] [std::vector<uint8_t> default-encoding value0]
@@ -91,7 +92,6 @@ than this are illegal.
 Implementations should allow extra bytes following the defined fields
 in the `xversion` message to allow for further extensibility as long
 as the 100KB size constraint is not exceeded.
-
 
 ## Handling and sequencing of `xversion` messages
 
@@ -205,7 +205,9 @@ Versioning of the xversion message itself use the `0x00000000`
 prefix and the `0x00000000` suffix for the key. The value should
 reflect what version of the spec the client is following and use
 the following formula:
+
 (10000 * major) + (100 * minor) + (1 * revision)
+
 For example: spec version 0.1.0 should have a value of 100.
 
 Experimental or temporary features use the `0x00000000` prefix and
@@ -214,6 +216,7 @@ a non zero suffix as a key.
 ## Notes on implementation details
 
 ### Bitcoin Unlimited
+
 In the Bitcoin Unlimited reference implementation, the `xversion`
 message is handled using the `CXVersionMessage` class. The actual
 `xmap` is serialized and deserialized using the
@@ -222,7 +225,6 @@ cause a slow-down of key lookup in the `xmap` tables, the table is
 internally using a salted siphash to map the keys.  The implementation
 can be found in the files `src/xversionmessage.h` and
 `src/xversionmessage.cpp` relative to the source root directory.
-
 
 ## References
 

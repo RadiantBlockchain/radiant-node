@@ -6,6 +6,7 @@ of reliable nodes via a built-in DNS server. It is derived from Pieter Wuille's
 bitcoin-seeder, modified for use on the Bitcoin Cash network.
 
 Features:
+
 * regularly revisits known nodes to check their availability
 * bans nodes after enough failures, or bad behaviour
 * uses the Cash Magic when establishing connections.
@@ -38,7 +39,6 @@ On the system vps.example.com, you can now run dnsseed:
 If you want the DNS server to report SOA records, please provide an
 e-mail address (with the @ part replaced by .) using -mbox.
 
-
 RUNNING AS NON-ROOT
 -------------------
 
@@ -60,4 +60,3 @@ into every Bitcoin Cash Node release. It produces the `dnsseed.dump` files that 
 used as inputs to the scripts in [contrib/seeds](/contrib/seeds) to generate
 the seed lists. To generate seed lists, the seeder should be run continuously
 for 30 days or more.
-

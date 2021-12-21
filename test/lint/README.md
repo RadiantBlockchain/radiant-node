@@ -6,6 +6,7 @@ Check for missing documentation of command line options.
 
 git-subtree-check.sh
 ====================
+
 Run this script from the root of the repository to verify that a subtree matches the contents of
 the commit it claims to have been updated to.
 

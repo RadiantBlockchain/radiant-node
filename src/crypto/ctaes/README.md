@@ -4,6 +4,7 @@ ctaes
 Simple C module for constant-time AES encryption and decryption.
 
 Features:
+
 * Simple, pure C code without any dependencies.
 * No tables or data-dependent branches whatsoever, but using bit sliced approach from https://eprint.iacr.org/2009/129.pdf.
 * Very small object code: slightly over 4k of executable code when compiled with -Os.

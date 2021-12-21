@@ -25,7 +25,6 @@ The instructions below use the automated script [gitian-build.py](../contrib/git
 which only works in Debian/Ubuntu. For manual steps and instructions for fully
 offline signing, see [this guide](./gitian-building/gitian-building-manual.md).
 
-
 ## Preparing the Gitian builder host
 
 The first step is to prepare the host environment that will be used to perform

@@ -5,6 +5,9 @@ all
 # Header style
 #rule 'MD003', :style => 'consistent'
 
+# Unordered list indentation
+rule 'MD007', :indent => 4
+
 # line length:
 rule 'MD013', :line_length => 300
 

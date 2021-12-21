@@ -15,13 +15,11 @@ Comments-Summary: BCHN internal review comments.
 
 # getblocktemplatelight
 
-
 ## Abstract
 
 A set of RPC calls are proposed to implement a faster, lighter
 getblocktemplate [1,2] mechanism, referred to below by the
 abbreviation 'GBTL' (for "getblocktemplate light").
-
 
 ## Motivation
 
@@ -39,19 +37,16 @@ At the time of writing, getblocktemplatelight is the de facto standard in
 parts of the Chinese mining community. This document is a formalization of
 this protocol (see also Appendix A).
 
-
 ## Terms and conventions
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
 "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
 document are to be interpreted as described in RFC 2119.
 
-
 ## Specification
 
 Two new RPC calls are introduced: `getblocktemplatelight` and
 `submitblocklight`.
-
 
 ### `getblocktemplatelight`
 
@@ -60,7 +55,6 @@ construct a valid block header based on a chosen coinbase transaction.
 
 
 **GBTL-RETURN-VALUES-REQ-1**
-
 The getblocktemplatelight RPC call SHALL return
 
 1. a job id (JSON string) not exceeding 128 bytes.
@@ -79,7 +73,6 @@ NOTE: The first element of the Merkle path list will be a transaction hash
 
 
 **GBTL-INPUT-ADDITIONAL-TXS-1**
-
 The getblocktemplate call SHALL support an optional input argument
 consisting of a JSON array of strings which contain hex encoded
 transactions that must be included in the future block in addition
@@ -91,7 +84,6 @@ valid, do not conflict with each other, and do not conflict with any
 transaction in the mempool. If he fails to do so, an invalid block could be
 generated.
 
-
 **GBTL-INPUT-ADDITIONAL-TXS-2**
 
 If the additional_txs contain data that cannot be deserialized as a
@@ -99,7 +91,6 @@ transaction, the software shall raise RPC_DESERIALIZATION_ERROR (code -22).
 
 Optionally, it should provide an indication of which of the additional_txs
 failed to deserialize.
-
 
 **GBTL-JOB-ID-REQ-1**
 
@@ -112,7 +103,6 @@ the same job id as long as the template header information and the
 proposed set of transaction (resulting in a given Merkle path) has not
 changed.
 
-
 **GBTL-JOB-PERSIST-REQ-1**
 
 The running software SHALL persist an implementation-defined number of
@@ -123,24 +113,20 @@ For each job, the full list of transactions (excluding future coinbase)
 SHALL be stored to allow quick reassembly of the block once a miner submits
 a valid header using the `submitblocklight` call.
 
-
 (optional) **GBTL-JOB-PERSIST-REQ-2**
 
 An implementation-defined number of jobs SHOULD persist across a stop-start
 cycle of the node software (implementing this requires some form of
 persistent storage of jobs).
 
-
 (optional) **GBTL-JOB-PERSIST-REQ-3**
 
 An implementation-defined number of jobs SHOULD persist across a power
 cycle of the node (also requires persistent storage of jobs).
 
-
 (optional) **GBTL-JOB-PERSIST-REQ-4**
 
 The number of jobs to persist (in memory or disk) SHOULD be configurable.
-
 
 (optional) **GBTL-JOB-PERSIST-REQ-5**
 
@@ -178,13 +164,11 @@ Notes:
     reserved for the coinbase by default - this should be taken into account when
     a larger coinbase needs to be included.
 
-
 **GBTL-SUBMIT-CHECK-REQ-1**
 
 Upon receiving a job id and serialized block data, the software SHALL
 verify that the job information is available or raise an error with a
 message indicating that the job data could not be found.
-
 
 **GBTL-SUBMIT-CHECK-REQ-2**
 
@@ -193,7 +177,6 @@ verify that it only contains a single transaction which must be a coinbase
 transaction or else an RPC error is raised with a message indicating that
 the block must only contain a single coinbase transaction.
 
-
 **GBTL-SUBMIT-PROCESS-REQ-1**
 
 After validating the preconditions of job and block data, the software SHALL
@@ -201,13 +184,11 @@ reassemble the entire block from the list of transactions stored for the job
 and subject the block for further processing (as a newly found block would
 be - same as is done by `submitblock`).
 
-
 ## Rationale
 
 The maximum length of the job id has been chosen as 128 characters in order
 to fit a hex representation of a SHA512 hash value. In practice
 implementations may use shorter job ids based on whatever they see fit.
-
 
 ## Considerations for future improvement
 
@@ -215,12 +196,10 @@ implementations may use shorter job ids based on whatever they see fit.
    additional transactions passed to `getblocktemplatelight`
    (see Note under GBTL-INPUT-ADDITIONAL-TXS-REQ-1).
 
-
 ## Reference implementation
 
 A C++ reference implementation is available in Bitcoin Cash Node
 [merge request 281](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/merge_requests/281).
-
 
 ## Example outputs
 
@@ -268,9 +247,7 @@ $ bitcoin-cli getblocktemplatelight
 }
 ```
 
-
 ## Appendices
-
 
 ### Appendix A - Historical context
 
@@ -284,7 +261,6 @@ and `submitminingsolution` [9].
 
 There is an ASCII diagram with additional explanations of the Merkle
 branch construction in the Bitcoin Cash Node source code [4].
-
 
 ### Appendix B - Computation of Merkle root from coinbase + branch
 
@@ -308,7 +284,6 @@ loop while length( hashes ) > 1:
 merkle_root = hashes[0]
 ```
 
-
 ## References
 
 - [1] [BIP22: getblocktemplate - Fundamentals](https://github.com/bitcoin/bips/blob/master/bip-0022.mediawiki/)
@@ -320,7 +295,6 @@ merkle_root = hashes[0]
 - [7] [https://reference.cash/protocol/blockchain/block/#coinbase-transaction](https://reference.cash/protocol/blockchain/block/#coinbase-transaction)
 - [8] [https://reference.cash/protocol/blockchain/transaction/](https://reference.cash/protocol/blockchain/transaction/)
 - [9] [https://github.com/BitcoinUnlimited/BitcoinUnlimited/blob/release/doc/miner.md#getminingcandidate-and-submitminingsolution](https://github.com/BitcoinUnlimited/BitcoinUnlimited/blob/release/doc/miner.md#getminingcandidate-and-submitminingsolution)
-
 
 ## Copyright
 

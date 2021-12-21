@@ -2,6 +2,7 @@
 
 Create a new VirtualBox VM
 --------------------------
+
 In the VirtualBox GUI click "New" and choose the following parameters in the wizard:
 
 ![](figs/create_new_vm_debian.png)

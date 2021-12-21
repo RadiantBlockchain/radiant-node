@@ -40,6 +40,7 @@ Please encrypt using the PGP public key with fingerprint:
 `15BB B66E ACA6 F8B2 FE56  9445 7A90 DE1B F996 8031`
 
 It may be obtained via:
+
 ```
 gpg --recv-keys "15BB B66E ACA6 F8B2 FE56  9445 7A90 DE1B F996 8031"
 ```
@@ -63,6 +64,7 @@ These PGP fingerprints and emails are provided only as backups in case you are
 unable to contact Bitcoin Cash Node via the security email above.
 
 ### freetrader
+
 ```
 Bitcoin Cash Node Lead Maintainer
 contact at freetrader at tuta dot io
@@ -70,6 +72,7 @@ CC329A4FB0E41392829505FEC07A7C345E86B06C
 ```
 
 ### emergent_reasons
+
 ```
 Bitcoin Cash Node Maintainer
 contact at emergentreasons at gmail dot com
@@ -77,6 +80,7 @@ contact at emergentreasons at gmail dot com
 ```
 
 ### Dagur Valberg Johannsson
+
 ```
 Bitcoin Cash Node Developer and Maintainer
 contact at dagurval at pvv dot ntnu dot no
@@ -84,6 +88,7 @@ contact at dagurval at pvv dot ntnu dot no
 ```
 
 ### imaginary_username
+
 ```
 Bitcoin Cash Node Developer and Maintainer
 contact at imaginary dot username dot btc at gmail dot com
@@ -91,6 +96,7 @@ contact at imaginary dot username dot btc at gmail dot com
 ```
 
 ### Calin Culianu
+
 ```
 Bitcoin Cash Node Developer and Maintainer
 contact at calin dot culianu at gmail dot com
