@@ -2229,7 +2229,7 @@ static UniValue walletpassphrase(const Config &config,
         return UniValue();
     }
 
-    if (pwallet->IsCrypted() && (request.fHelp || request.params.size() != 2)) {
+    if (request.fHelp || request.params.size() != 2) {
         throw std::runtime_error(
             RPCHelpMan{"walletpassphrase",
                 "\nStores the wallet decryption key in memory for 'timeout' seconds.\n"
@@ -2249,10 +2249,6 @@ static UniValue walletpassphrase(const Config &config,
             "\nLock the wallet again (before 60 seconds)\n" +
             HelpExampleCli("walletlock", "") + "\nAs a JSON-RPC call\n" +
             HelpExampleRpc("walletpassphrase", "\"my pass phrase\", 60"));
-    }
-
-    if (request.fHelp) {
-        return true;
     }
 
     int64_t nSleepTime;
@@ -2343,7 +2339,7 @@ static UniValue walletpassphrasechange(const Config &config,
         return UniValue();
     }
 
-    if (pwallet->IsCrypted() && (request.fHelp || request.params.size() != 2)) {
+    if (request.fHelp || request.params.size() != 2) {
         throw std::runtime_error(
             RPCHelpMan{"walletpassphrasechange",
                 "\nChanges the wallet passphrase from 'oldpassphrase' to 'newpassphrase'.\n",
@@ -2361,9 +2357,6 @@ static UniValue walletpassphrasechange(const Config &config,
     auto locked_chain = pwallet->chain().lock();
     LOCK(pwallet->cs_wallet);
 
-    if (request.fHelp) {
-        return true;
-    }
     if (!pwallet->IsCrypted()) {
         throw JSONRPCError(RPC_WALLET_WRONG_ENC_STATE,
                            "Error: running with an unencrypted wallet, but "
@@ -2404,7 +2397,7 @@ static UniValue walletlock(const Config &config,
         return UniValue();
     }
 
-    if (pwallet->IsCrypted() && (request.fHelp || request.params.size() != 0)) {
+    if (request.fHelp || request.params.size() != 0) {
         throw std::runtime_error(
             RPCHelpMan{"walletlock",
                 "\nRemoves the wallet encryption key from memory, locking the wallet.\n"
@@ -2427,9 +2420,6 @@ static UniValue walletlock(const Config &config,
     auto locked_chain = pwallet->chain().lock();
     LOCK(pwallet->cs_wallet);
 
-    if (request.fHelp) {
-        return true;
-    }
     if (!pwallet->IsCrypted()) {
         throw JSONRPCError(RPC_WALLET_WRONG_ENC_STATE,
                            "Error: running with an unencrypted wallet, but "
@@ -2451,8 +2441,7 @@ static UniValue encryptwallet(const Config &config,
         return UniValue();
     }
 
-    if (!pwallet->IsCrypted() &&
-        (request.fHelp || request.params.size() != 1)) {
+    if (request.fHelp || request.params.size() != 1) {
         throw std::runtime_error(
             RPCHelpMan{"encryptwallet",
                 "\nEncrypts the wallet with 'passphrase'. This is for first time encryption.\n"
@@ -2480,9 +2469,6 @@ static UniValue encryptwallet(const Config &config,
     auto locked_chain = pwallet->chain().lock();
     LOCK(pwallet->cs_wallet);
 
-    if (request.fHelp) {
-        return true;
-    }
     if (pwallet->IsCrypted()) {
         throw JSONRPCError(RPC_WALLET_WRONG_ENC_STATE,
                            "Error: running with an encrypted wallet, but "
