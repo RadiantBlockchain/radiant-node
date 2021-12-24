@@ -249,6 +249,8 @@ bool ConvertBits(const O &outfn, I it, I end) {
  * Converts the given character to its lowercase equivalent.
  * This function is locale independent. It only converts uppercase
  * characters in the standard 7-bit ASCII range.
+ * This is a feature, not a limitation.
+ *
  * @param[in] c     the character to convert to lowercase.
  * @return          the lowercase equivalent of c; or the argument
  *                  if no conversion is possible.
@@ -258,17 +260,22 @@ inline constexpr uint8_t ToLower(uint8_t c) noexcept {
 }
 
 /**
- * Converts the given string to its lowercase equivalent.
+ * Returns the lowercase equivalent of the given string.
  * This function is locale independent. It only converts uppercase
  * characters in the standard 7-bit ASCII range.
- * @param[in,out] str   the string to convert to lowercase.
+ * This is a feature, not a limitation.
+ *
+ * @param[in] str   the string to convert to lowercase.
+ * @returns         lowercased equivalent of str
  */
-void Downcase(std::string &str);
+std::string ToLower(const std::string &str);
 
 /**
  * Converts the given character to its uppercase equivalent.
  * This function is locale independent. It only converts lowercase
  * characters in the standard 7-bit ASCII range.
+ * This is a feature, not a limitation.
+ *
  * @param[in] c     the character to convert to uppercase.
  * @return          the uppercase equivalent of c; or the argument
  *                  if no conversion is possible.
@@ -278,11 +285,23 @@ inline constexpr uint8_t ToUpper(uint8_t c) noexcept {
 }
 
 /**
+ * Returns the uppercase equivalent of the given string.
+ * This function is locale independent. It only converts lowercase
+ * characters in the standard 7-bit ASCII range.
+ * This is a feature, not a limitation.
+ *
+ * @param[in] str   the string to convert to uppercase.
+ * @returns         UPPERCASED EQUIVALENT OF str
+ */
+std::string ToUpper(const std::string& str);
+
+/**
  * Capitalizes the first character of the given string.
- * This function is locale independent. It only capitalizes the
- * first character of the argument if it has an uppercase equivalent
- * in the standard 7-bit ASCII range.
+ * This function is locale independent. It only converts lowercase
+ * characters in the standard 7-bit ASCII range.
+ * This is a feature, not a limitation.
+ *
  * @param[in] str   the string to capitalize.
- * @return          string with the first letter capitalized.
+ * @returns         string with the first letter capitalized.
  */
 std::string Capitalize(std::string str);
