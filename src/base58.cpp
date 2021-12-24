@@ -8,9 +8,12 @@
 #include <uint256.h>
 #include <util/strencodings.h>
 
+#include <array>
 #include <cassert>
 #include <cstdint>
 #include <cstring>
+
+#include <limits>
 
 /** All alphanumeric characters except for "0", "I", "O", and "l" */
 static const char *pszBase58 =
@@ -32,26 +35,26 @@ static const int8_t mapBase58[256] = {
     -1, -1, -1, -1, -1, -1, -1, -1, -1,
 };
 
-bool DecodeBase58(const char *psz, std::vector<uint8_t> &vch) {
+bool DecodeBase58(const char *psz, std::vector<uint8_t> &vch, size_t max_ret_len) {
     // Skip leading spaces.
     while (*psz && IsSpace(*psz)) {
         psz++;
     }
     // Skip and count leading '1's.
-    int zeroes = 0;
-    int length = 0;
+    size_t zeroes = 0;
+    size_t length = 0;
     while (*psz == '1') {
         zeroes++;
+        if (zeroes > max_ret_len) return false;
         psz++;
     }
     // Allocate enough space in big-endian base256 representation.
     // log(58) / log(256), rounded up.
-    int size = strlen(psz) * 733 / 1000 + 1;
+    size_t size = std::strlen(psz) * 733 / 1000 + 1;
     std::vector<uint8_t> b256(size);
     // Process the characters.
     // guarantee not out of range
-    static_assert(sizeof(mapBase58) / sizeof(mapBase58[0]) == 256,
-                  "mapBase58.size() should be 256");
+    static_assert(std::size(mapBase58) == 256, "mapBase58.size() should be 256");
     while (*psz && !IsSpace(*psz)) {
         // Decode base58 character
         int carry = mapBase58[(uint8_t)*psz];
@@ -59,7 +62,7 @@ bool DecodeBase58(const char *psz, std::vector<uint8_t> &vch) {
         if (carry == -1) {
             return false;
         }
-        int i = 0;
+        size_t i = 0;
         for (std::vector<uint8_t>::reverse_iterator it = b256.rbegin();
              (carry != 0 || i < length) && (it != b256.rend()); ++it, ++i) {
             carry += 58 * (*it);
@@ -68,6 +71,7 @@ bool DecodeBase58(const char *psz, std::vector<uint8_t> &vch) {
         }
         assert(carry == 0);
         length = i;
+        if (length + zeroes > max_ret_len) return false;
         psz++;
     }
     // Skip trailing spaces.
@@ -79,9 +83,6 @@ bool DecodeBase58(const char *psz, std::vector<uint8_t> &vch) {
     }
     // Skip leading zeroes in b256.
     std::vector<uint8_t>::iterator it = b256.begin() + (size - length);
-    while (it != b256.end() && *it == 0) {
-        it++;
-    }
     // Copy result into output vector.
     vch.reserve(zeroes + (b256.end() - it));
     vch.assign(zeroes, 0x00);
@@ -93,20 +94,20 @@ bool DecodeBase58(const char *psz, std::vector<uint8_t> &vch) {
 
 std::string EncodeBase58(const uint8_t *pbegin, const uint8_t *pend) {
     // Skip & count leading zeroes.
-    int zeroes = 0;
-    int length = 0;
+    size_t zeroes = 0;
+    size_t length = 0;
     while (pbegin != pend && *pbegin == 0) {
         pbegin++;
         zeroes++;
     }
     // Allocate enough space in big-endian base58 representation.
     // log(256) / log(58), rounded up.
-    int size = (pend - pbegin) * 138 / 100 + 1;
+    size_t size = (pend - pbegin) * 138 / 100 + 1;
     std::vector<uint8_t> b58(size);
     // Process the bytes.
     while (pbegin != pend) {
         int carry = *pbegin;
-        int i = 0;
+        size_t i = 0;
         // Apply "b58 = b58 * 256 + ch".
         for (std::vector<uint8_t>::reverse_iterator it = b58.rbegin();
              (carry != 0 || i < length) && (it != b58.rend()); it++, i++) {
@@ -138,8 +139,8 @@ std::string EncodeBase58(const std::vector<uint8_t> &vch) {
     return EncodeBase58(vch.data(), vch.data() + vch.size());
 }
 
-bool DecodeBase58(const std::string &str, std::vector<uint8_t> &vchRet) {
-    return DecodeBase58(str.c_str(), vchRet);
+bool DecodeBase58(const std::string &str, std::vector<uint8_t> &vchRet, size_t max_ret_len) {
+    return DecodeBase58(str.c_str(), vchRet, max_ret_len);
 }
 
 std::string EncodeBase58Check(const std::vector<uint8_t> &vchIn) {
@@ -150,8 +151,11 @@ std::string EncodeBase58Check(const std::vector<uint8_t> &vchIn) {
     return EncodeBase58(vch);
 }
 
-bool DecodeBase58Check(const char *psz, std::vector<uint8_t> &vchRet) {
-    if (!DecodeBase58(psz, vchRet) || (vchRet.size() < 4)) {
+bool DecodeBase58Check(const char *psz, std::vector<uint8_t> &vchRet, size_t max_ret_len) {
+    if (!DecodeBase58(psz, vchRet,
+                      max_ret_len > std::numeric_limits<size_t>::max() - 4 ? std::numeric_limits<size_t>::max()
+                                                                           : max_ret_len + 4) ||
+        (vchRet.size() < 4)) {
         vchRet.clear();
         return false;
     }
@@ -165,6 +169,6 @@ bool DecodeBase58Check(const char *psz, std::vector<uint8_t> &vchRet) {
     return true;
 }
 
-bool DecodeBase58Check(const std::string &str, std::vector<uint8_t> &vchRet) {
-    return DecodeBase58Check(str.c_str(), vchRet);
+bool DecodeBase58Check(const std::string &str, std::vector<uint8_t> &vchRet, size_t max_ret_len) {
+    return DecodeBase58Check(str.c_str(), vchRet, max_ret_len);
 }

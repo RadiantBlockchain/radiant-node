@@ -37,14 +37,13 @@ std::string EncodeBase58(const std::vector<uint8_t> &vch);
  * return true if decoding is successful.
  * psz cannot be nullptr.
  */
-[[nodiscard]] bool DecodeBase58(const char *psz, std::vector<uint8_t> &vchRet);
+[[nodiscard]] bool DecodeBase58(const char *psz, std::vector<uint8_t> &vchRet, size_t max_ret_len);
 
 /**
  * Decode a base58-encoded string (str) into a byte vector (vchRet).
  * return true if decoding is successful.
  */
-[[nodiscard]] bool DecodeBase58(const std::string &str,
-                                std::vector<uint8_t> &vchRet);
+[[nodiscard]] bool DecodeBase58(const std::string &str, std::vector<uint8_t> &vchRet, size_t max_ret_len);
 
 /**
  * Encode a byte vector into a base58-encoded string, including checksum
@@ -55,11 +54,10 @@ std::string EncodeBase58Check(const std::vector<uint8_t> &vchIn);
  * Decode a base58-encoded string (psz) that includes a checksum into a byte
  * vector (vchRet), return true if decoding is successful
  */
-[[nodiscard]] bool DecodeBase58Check(const char *psz, std::vector<uint8_t> &vchRet);
+[[nodiscard]] bool DecodeBase58Check(const char *psz, std::vector<uint8_t> &vchRet, size_t max_ret_len);
 
 /**
  * Decode a base58-encoded string (str) that includes a checksum into a byte
  * vector (vchRet), return true if decoding is successful
  */
-[[nodiscard]] bool DecodeBase58Check(const std::string &str,
-                                     std::vector<uint8_t> &vchRet);
+[[nodiscard]] bool DecodeBase58Check(const std::string &str, std::vector<uint8_t> &vchRet, size_t max_ret_len);
