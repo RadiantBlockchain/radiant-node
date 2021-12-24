@@ -13,6 +13,7 @@
 #include <util/defer.h>
 #include <util/moneystr.h>
 #include <util/strencodings.h>
+#include <util/string.h>
 #include <util/vector.h>
 
 #include <test/setup_common.h>
@@ -160,6 +161,19 @@ BOOST_AUTO_TEST_CASE(util_HexStr) {
 
     // check that if begin > end, empty string is returned
     BOOST_CHECK_EQUAL(HexStr(ParseHex_expected + 10, ParseHex_expected + 1, true), "");
+}
+
+BOOST_AUTO_TEST_CASE(util_Join) {
+    // Normal version
+    BOOST_CHECK_EQUAL(Join({}, ", "), "");
+    BOOST_CHECK_EQUAL(Join({"foo"}, ", "), "foo");
+    BOOST_CHECK_EQUAL(Join({"foo", "bar"}, ", "), "foo, bar");
+
+    // Version with unary operator
+    const auto op_upper = [](const std::string &s) { return ToUpper(s); };
+    BOOST_CHECK_EQUAL(Join<std::string>({}, ", ", op_upper), "");
+    BOOST_CHECK_EQUAL(Join<std::string>({"foo"}, ", ", op_upper), "FOO");
+    BOOST_CHECK_EQUAL(Join<std::string>({"foo", "bar"}, ", ", op_upper), "FOO, BAR");
 }
 
 BOOST_AUTO_TEST_CASE(util_FormatParseISO8601DateTime) {
