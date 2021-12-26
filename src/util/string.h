@@ -42,5 +42,5 @@ inline std::string Join(const std::vector<std::string> &list, const std::string 
  * Check if a string does not contain any embedded NUL (\0) characters
  */
 [[nodiscard]] inline bool ValidAsCString(const std::string &str) noexcept {
-    return str.size() == std::strlen(str.c_str());
+    return str.find_first_of('\0') == std::string::npos;
 }

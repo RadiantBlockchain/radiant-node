@@ -10,6 +10,7 @@
 #include <txmempool.h>
 #include <univalue.h>
 #include <util/strencodings.h>
+#include <util/string.h>
 #include <validation.h>
 
 #include <boost/algorithm/string.hpp> // boost::join, boost::split
@@ -167,7 +168,7 @@ std::string ResultsPartForVerbosity(int verbosity, std::string::size_type indent
         boost::split(lines, ret, boost::is_any_of("\n"));
         const std::string indentStr(indent, ' ');
         const std::string lineSep = "\n" + indentStr;
-        ret = indentStr + boost::join(lines, lineSep);
+        ret = indentStr + Join(lines, lineSep);
     }
     return ret;
 }
