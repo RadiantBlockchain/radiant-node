@@ -163,6 +163,20 @@ BOOST_AUTO_TEST_CASE(util_HexStr) {
     BOOST_CHECK_EQUAL(HexStr(ParseHex_expected + 10, ParseHex_expected + 1, true), "");
 }
 
+/// Test string utility functions: trim
+BOOST_AUTO_TEST_CASE(util_TrimString) {
+    static const std::string pattern = " \t\r\n";
+    BOOST_CHECK(TrimString(" \t asdf \t fdsa\r \n", pattern) == std::string{"asdf \t fdsa"});
+    BOOST_CHECK(TrimString("\t\t\t asdf \t fdsa\r\r\r ", pattern) == std::string{"asdf \t fdsa"});
+    BOOST_CHECK(TrimString("", pattern) == std::string{""});
+    BOOST_CHECK(TrimString("\t\t\t", pattern) == std::string{""});
+    BOOST_CHECK(TrimString("\t\t\tA", pattern) == std::string{"A"});
+    BOOST_CHECK(TrimString("A\t\t\tA", pattern) == std::string{"A\t\t\tA"});
+    BOOST_CHECK(TrimString("A\t\t\t", pattern) == std::string{"A"});
+    BOOST_CHECK(TrimString(" \f\n\r\t\vasdf fdsa \f\n\r\t\v") == std::string{"asdf fdsa"}); // test default parameters
+}
+
+/// Test string utility functions: join
 BOOST_AUTO_TEST_CASE(util_Join) {
     // Normal version
     BOOST_CHECK_EQUAL(Join({}, ", "), "");
@@ -174,6 +188,20 @@ BOOST_AUTO_TEST_CASE(util_Join) {
     BOOST_CHECK_EQUAL(Join<std::string>({}, ", ", op_upper), "");
     BOOST_CHECK_EQUAL(Join<std::string>({"foo"}, ", ", op_upper), "FOO");
     BOOST_CHECK_EQUAL(Join<std::string>({"foo", "bar"}, ", ", op_upper), "FOO, BAR");
+}
+
+/// Test string utility functions: validate
+BOOST_AUTO_TEST_CASE(util_ValidAsCString) {
+    using namespace std::string_literals; // since C++14 using std::string literals allows us to embed null characters
+    BOOST_CHECK(ValidAsCString("valid"));
+    BOOST_CHECK(ValidAsCString(std::string{"valid"}));
+    BOOST_CHECK(ValidAsCString(std::string{"valid"s}));
+    BOOST_CHECK(ValidAsCString("valid"s));
+    BOOST_CHECK(!ValidAsCString("invalid\0"s));
+    BOOST_CHECK(!ValidAsCString("\0invalid"s));
+    BOOST_CHECK(!ValidAsCString("inv\0alid"s));
+    BOOST_CHECK(ValidAsCString(""s));
+    BOOST_CHECK(!ValidAsCString("\0"s));
 }
 
 BOOST_AUTO_TEST_CASE(util_FormatParseISO8601DateTime) {
