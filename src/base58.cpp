@@ -7,7 +7,7 @@
 #include <hash.h>
 #include <uint256.h>
 #include <util/strencodings.h>
-
+#include <util/string.h>
 #include <array>
 #include <cassert>
 #include <cstdint>
@@ -140,6 +140,9 @@ std::string EncodeBase58(const std::vector<uint8_t> &vch) {
 }
 
 bool DecodeBase58(const std::string &str, std::vector<uint8_t> &vchRet, size_t max_ret_len) {
+    if (!ValidAsCString(str)) {
+        return false;
+    }
     return DecodeBase58(str.c_str(), vchRet, max_ret_len);
 }
 
@@ -170,5 +173,8 @@ bool DecodeBase58Check(const char *psz, std::vector<uint8_t> &vchRet, size_t max
 }
 
 bool DecodeBase58Check(const std::string &str, std::vector<uint8_t> &vchRet, size_t max_ret_len) {
+    if (!ValidAsCString(str)) {
+        return false;
+    }
     return DecodeBase58Check(str.c_str(), vchRet, max_ret_len);
 }
