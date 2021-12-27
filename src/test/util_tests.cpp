@@ -166,14 +166,14 @@ BOOST_AUTO_TEST_CASE(util_HexStr) {
 /// Test string utility functions: trim
 BOOST_AUTO_TEST_CASE(util_TrimString) {
     static const std::string pattern = " \t\r\n";
-    BOOST_CHECK(TrimString(" \t asdf \t fdsa\r \n", pattern) == std::string{"asdf \t fdsa"});
-    BOOST_CHECK(TrimString("\t\t\t asdf \t fdsa\r\r\r ", pattern) == std::string{"asdf \t fdsa"});
-    BOOST_CHECK(TrimString("", pattern) == std::string{""});
-    BOOST_CHECK(TrimString("\t\t\t", pattern) == std::string{""});
-    BOOST_CHECK(TrimString("\t\t\tA", pattern) == std::string{"A"});
-    BOOST_CHECK(TrimString("A\t\t\tA", pattern) == std::string{"A\t\t\tA"});
-    BOOST_CHECK(TrimString("A\t\t\t", pattern) == std::string{"A"});
-    BOOST_CHECK(TrimString(" \f\n\r\t\vasdf fdsa \f\n\r\t\v") == std::string{"asdf fdsa"}); // test default parameters
+    BOOST_CHECK_EQUAL(TrimString(" \t asdf \t fdsa\r \n", pattern), std::string{"asdf \t fdsa"});
+    BOOST_CHECK_EQUAL(TrimString("\t\t\t asdf \t fdsa\r\r\r ", pattern), std::string{"asdf \t fdsa"});
+    BOOST_CHECK_EQUAL(TrimString("", pattern), std::string{""});
+    BOOST_CHECK_EQUAL(TrimString("\t\t\t", pattern), std::string{""});
+    BOOST_CHECK_EQUAL(TrimString("\t\t\tA", pattern), std::string{"A"});
+    BOOST_CHECK_EQUAL(TrimString("A\t\t\tA", pattern), std::string{"A\t\t\tA"});
+    BOOST_CHECK_EQUAL(TrimString("A\t\t\t", pattern), std::string{"A"});
+    BOOST_CHECK_EQUAL(TrimString(" \f\n\r\t\vasdf fdsa \f\n\r\t\v"), std::string{"asdf fdsa"}); // test default parameters
 }
 
 /// Test string utility functions: join
@@ -188,6 +188,106 @@ BOOST_AUTO_TEST_CASE(util_Join) {
     BOOST_CHECK_EQUAL(Join<std::string>({}, ", ", op_upper), "");
     BOOST_CHECK_EQUAL(Join<std::string>({"foo"}, ", ", op_upper), "FOO");
     BOOST_CHECK_EQUAL(Join<std::string>({"foo", "bar"}, ", ", op_upper), "FOO, BAR");
+}
+
+/// Test string utility functions: split
+BOOST_AUTO_TEST_CASE(util_Split) {
+    std::vector<std::string> result;
+
+    Split(result, "", " \n");
+    BOOST_CHECK_EQUAL(result.size(), 1);
+    BOOST_CHECK(result[0].empty());
+
+    Split(result, "   ", " ");
+    BOOST_CHECK_EQUAL(result.size(), 4);
+    BOOST_CHECK(result[0].empty());
+    BOOST_CHECK(result[3].empty());
+
+    Split(result, "  .", " .");
+    BOOST_CHECK_EQUAL(result.size(), 4);
+    BOOST_CHECK(result[0].empty());
+    BOOST_CHECK(result[3].empty());
+
+    Split(result, "word", " \n");
+    BOOST_CHECK_EQUAL(result.size(), 1);
+    BOOST_CHECK_EQUAL(result[0], "word");
+
+    Split(result, "simple\ntest", " .\n");
+    BOOST_CHECK_EQUAL(result.size(), 2);
+    BOOST_CHECK_EQUAL(result[0], "simple");
+    BOOST_CHECK_EQUAL(result[1], "test");
+
+    Split(result, "This is a test.", " .");
+    BOOST_CHECK_EQUAL(result.size(), 5);
+    BOOST_CHECK_EQUAL(result[0], "This");
+    BOOST_CHECK_EQUAL(result[3], "test");
+    BOOST_CHECK(result[4].empty());
+
+    Split(result, "This is a test...", " .");
+    BOOST_CHECK_EQUAL(result.size(), 7);
+    BOOST_CHECK_EQUAL(result[0], "This");
+    BOOST_CHECK_EQUAL(result[3], "test");
+    BOOST_CHECK(result[4].empty());
+
+    Split(result, " \f\n\r\t\vasdf fdsa \f\n\r\t\v"); // test default parameters
+    BOOST_CHECK_EQUAL(result.size(), 14);
+    BOOST_CHECK(result[0].empty());
+    BOOST_CHECK_EQUAL(result[6], "asdf");
+    BOOST_CHECK_EQUAL(result[7], "fdsa");
+    BOOST_CHECK(result[3].empty());
+
+    Split(result, "", " \n", true);
+    BOOST_CHECK_EQUAL(result.size(), 1);
+    BOOST_CHECK(result[0].empty());
+
+    Split(result, "   ", " ", true);
+    BOOST_CHECK_EQUAL(result.size(), 2);
+    BOOST_CHECK(result[0].empty());
+    BOOST_CHECK(result[1].empty());
+
+    Split(result, "  .", " .", true);
+    BOOST_CHECK_EQUAL(result.size(), 2);
+    BOOST_CHECK(result[0].empty());
+    BOOST_CHECK(result[1].empty());
+
+    Split(result, "word", " \n", true);
+    BOOST_CHECK_EQUAL(result.size(), 1);
+    BOOST_CHECK_EQUAL(result[0], "word");
+
+    Split(result, "simple\ntest", " .\n", true);
+    BOOST_CHECK_EQUAL(result.size(), 2);
+    BOOST_CHECK_EQUAL(result[0], "simple");
+    BOOST_CHECK_EQUAL(result[1], "test");
+
+    Split(result, "This is a test.", " .", true);
+    BOOST_CHECK_EQUAL(result.size(), 5);
+    BOOST_CHECK_EQUAL(result[0], "This");
+    BOOST_CHECK_EQUAL(result[3], "test");
+    BOOST_CHECK(result[4].empty());
+
+    Split(result, "This is a test...", " .", true); // the same token should merge
+    BOOST_CHECK_EQUAL(result.size(), 5);
+    BOOST_CHECK_EQUAL(result[0], "This");
+    BOOST_CHECK_EQUAL(result[3], "test");
+    BOOST_CHECK(result[4].empty());
+
+    Split(result, " \f\n\r\t\vasdf fdsa \f\n\r\t\v", " \f\n\r\t\v", true);
+    BOOST_CHECK_EQUAL(result.size(), 4);
+    BOOST_CHECK(result[0].empty());
+    BOOST_CHECK_EQUAL(result[1], "asdf");
+    BOOST_CHECK_EQUAL(result[2], "fdsa");
+    BOOST_CHECK(result[3].empty());
+
+    // verify behaviour is identical to boost::split (until we eliminate boost)
+    std::vector<std::string> result_boost;
+
+    Split(result, "This is a test...", " .");
+    boost::split(result_boost, "This is a test...", boost::is_any_of(" ."));
+    BOOST_CHECK(result == result_boost);
+
+    Split(result, "This is a test...", " .", true);
+    boost::split(result_boost, "This is a test...", boost::is_any_of(" ."), boost::token_compress_on);
+    BOOST_CHECK(result == result_boost);
 }
 
 /// Test string utility functions: validate
