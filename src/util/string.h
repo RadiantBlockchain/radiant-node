@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <boost/algorithm/string.hpp>
+
 #include <cstring>
 #include <string>
 #include <vector>
@@ -36,6 +38,12 @@ std::string Join(const std::vector<T> &list, const std::string &separator, Unary
 
 inline std::string Join(const std::vector<std::string> &list, const std::string &separator) {
     return Join(list, separator, [](const std::string &i) { return i; });
+}
+
+template<typename SequenceSequenceT, typename RangeT>
+SequenceSequenceT& Split(SequenceSequenceT &Result, RangeT &&Input, const std::string &pattern = " \f\n\r\t\v", bool token_compress_on = false) {
+    return boost::split(Result, Input, boost::is_any_of(pattern), 
+                        token_compress_on ? boost::token_compress_on : boost::token_compress_off);
 }
 
 /**
