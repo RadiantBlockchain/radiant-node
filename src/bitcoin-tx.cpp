@@ -22,6 +22,7 @@
 #include <script/sign.h>
 #include <util/moneystr.h>
 #include <util/strencodings.h>
+#include <util/string.h>
 #include <util/system.h>
 
 #include <boost/algorithm/string.hpp>
@@ -257,7 +258,7 @@ static void MutateTxLocktime(CMutableTransaction &tx,
 static void MutateTxAddInput(CMutableTransaction &tx,
                              const std::string &strInput) {
     std::vector<std::string> vStrInputParts;
-    boost::split(vStrInputParts, strInput, boost::is_any_of(":"));
+    Split(vStrInputParts, strInput, ":");
 
     // separate TXID:VOUT in string
     if (vStrInputParts.size() < 2) {
@@ -323,7 +324,7 @@ static void MutateTxAddOutPubKey(CMutableTransaction &tx,
                                  const std::string &strInput) {
     // Separate into VALUE:PUBKEY[:FLAGS]
     std::vector<std::string> vStrInputParts;
-    boost::split(vStrInputParts, strInput, boost::is_any_of(":"));
+    Split(vStrInputParts, strInput, ":");
 
     if (vStrInputParts.size() < 2 || vStrInputParts.size() > 3) {
         throw std::runtime_error("TX output missing or too many separators");
@@ -362,7 +363,7 @@ static void MutateTxAddOutMultiSig(CMutableTransaction &tx,
                                    const std::string &strInput) {
     // Separate into VALUE:REQUIRED:NUMKEYS:PUBKEY1:PUBKEY2:....[:FLAGS]
     std::vector<std::string> vStrInputParts;
-    boost::split(vStrInputParts, strInput, boost::is_any_of(":"));
+    Split(vStrInputParts, strInput, ":");
 
     // Check that there are enough parameters
     if (vStrInputParts.size() < 3) {
@@ -461,7 +462,7 @@ static void MutateTxAddOutData(CMutableTransaction &tx,
 static void MutateTxAddOutScript(CMutableTransaction &tx, const std::string &strInput) {
     // separate VALUE:SCRIPT[:FLAGS]
     std::vector<std::string> vStrInputParts;
-    boost::split(vStrInputParts, strInput, boost::is_any_of(":"));
+    Split(vStrInputParts, strInput, ":");
     if (vStrInputParts.size() < 2) {
         throw std::runtime_error("TX output missing separator");
     }
@@ -807,9 +808,7 @@ static std::string readStdin() {
         throw std::runtime_error("error reading stdin");
     }
 
-    boost::algorithm::trim_right(ret);
-
-    return ret;
+    return TrimString(ret);
 }
 
 static int CommandLineRawTx(int argc, char *argv[], const Config &config, const CChainParams &chainParams) {

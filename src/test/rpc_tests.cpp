@@ -13,10 +13,10 @@
 #include <interfaces/chain.h>
 #include <key_io.h>
 #include <netbase.h>
+#include <util/string.h>
 
 #include <test/setup_common.h>
 
-#include <boost/algorithm/string.hpp>
 #include <boost/test/unit_test.hpp>
 
 #include <univalue.h>
@@ -33,7 +33,7 @@ UniValue CallRPC(const std::string &strMethod, bool multithreaded = false); // f
 UniValue CallRPC(const std::string &args, bool multithreaded)
 {
     std::vector<std::string> vArgs;
-    boost::split(vArgs, args, boost::is_any_of(" \t"));
+    Split(vArgs, args, " \t");
     std::string strMethod = vArgs[0];
     vArgs.erase(vArgs.begin());
     GlobalConfig config;

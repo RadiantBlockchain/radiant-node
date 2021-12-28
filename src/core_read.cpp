@@ -13,12 +13,11 @@
 #include <serialize.h>
 #include <streams.h>
 #include <util/strencodings.h>
+#include <util/string.h>
 #include <util/system.h>
 #include <version.h>
 
-#include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/replace.hpp>
-#include <boost/algorithm/string/split.hpp>
 
 #include <algorithm>
 
@@ -47,8 +46,7 @@ CScript ParseScript(const std::string &s) {
     }
 
     std::vector<std::string> words;
-    boost::algorithm::split(words, s, boost::algorithm::is_any_of(" \t\n"),
-                            boost::algorithm::token_compress_on);
+    Split(words, s, " \t\n", true);
 
     size_t push_size = 0, next_push_size = 0;
     size_t script_size = 0;
@@ -57,7 +55,7 @@ CScript ParseScript(const std::string &s) {
 
     for (const auto &w : words) {
         if (w.empty()) {
-            // Empty string, ignore. (boost::split given '' will return one
+            // Empty string, ignore. Split given '' will return one
             // word)
             continue;
         }

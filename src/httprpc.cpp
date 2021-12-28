@@ -16,10 +16,9 @@
 #include <sync.h>
 #include <ui_interface.h>
 #include <util/strencodings.h>
+#include <util/string.h>
 #include <util/system.h>
 #include <walletinitinterface.h>
-
-#include <boost/algorithm/string.hpp> // boost::trim
 
 #include <cstdio>
 #include <memory>
@@ -101,7 +100,7 @@ static bool multiUserAuthorized(const std::string &strUserPass) {
     for (const std::string &strRPCAuth : gArgs.GetArgs("-rpcauth")) {
         // Search for multi-user login/pass "rpcauth" from config
         std::vector<std::string> vFields;
-        boost::split(vFields, strRPCAuth, boost::is_any_of(":$"));
+        Split(vFields, strRPCAuth, ":$");
         if (vFields.size() != 3) {
             // Incorrect formatting in config file
             continue;
@@ -145,8 +144,7 @@ static bool RPCAuthorized(const std::string &strAuth,
     }
 
     std::string strUserPass64 = strAuth.substr(6);
-    boost::trim(strUserPass64);
-    std::string strUserPass = DecodeBase64(strUserPass64);
+    std::string strUserPass = DecodeBase64(TrimString(strUserPass64));
 
     if (strUserPass.find(':') != std::string::npos) {
         strAuthUsernameOut = strUserPass.substr(0, strUserPass.find(':'));

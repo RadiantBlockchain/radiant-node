@@ -3,11 +3,11 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <util/strencodings.h>
+#include <util/string.h>
 #include <util/system.h>
 
 #include <test/setup_common.h>
 
-#include <boost/algorithm/string.hpp>
 #include <boost/test/unit_test.hpp>
 
 #include <string>
@@ -19,7 +19,7 @@ BOOST_FIXTURE_TEST_SUITE(getarg_tests, BasicTestingSetup)
 static void ResetArgs(ArgsManager &am, const std::string &strArg) {
     std::vector<std::string> vecArg;
     if (strArg.size()) {
-        boost::split(vecArg, strArg, IsSpace, boost::token_compress_on);
+        Split(vecArg, strArg, " \f\n\r\t\v", true);
     }
 
     // Insert dummy executable name:
