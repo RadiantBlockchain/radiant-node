@@ -23,7 +23,7 @@ code_quality:
     artifacts:
         paths: [gl-code-quality-report.json]
 
-image: bitcoincashnode/buildenv:debian
+image: bitcoincashnode/buildenv:debian-v2
 
 stages:
     - static_checks
@@ -209,8 +209,8 @@ static-run-linters:
 .debian-clang-env:
     extends: .cache-debian-clang
     variables:
-        CC: clang-8
-        CXX: clang++-8
+        CC: clang-11
+        CXX: clang++-11
 
 ## Debian native build
 
@@ -548,8 +548,8 @@ test-debian-debug-unittests:
 .debian-debug-clang-env:
     extends: .cache-debian-debug-clang
     variables:
-        CC: clang-8
-        CXX: clang++-8
+        CC: clang-11
+        CXX: clang++-11
 
 build-debian-debug-clang:
     stage: build
