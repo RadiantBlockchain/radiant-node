@@ -16,12 +16,11 @@
 #include <sync.h>
 #include <ui_interface.h>
 #include <util/strencodings.h>
+#include <util/string.h>
 #include <util/system.h>
 
 #include <univalue.h>
 
-#include <boost/algorithm/string/classification.hpp>
-#include <boost/algorithm/string/split.hpp>
 #include <boost/signals2/signal.hpp>
 
 #include <memory> // for unique_ptr
@@ -531,8 +530,7 @@ transformNamedArguments(const JSONRPCRequest &in,
     int hole = 0;
     for (const std::string &argNamePattern : argNames) {
         std::vector<std::string> vargNames;
-        boost::algorithm::split(vargNames, argNamePattern,
-                                boost::algorithm::is_any_of("|"));
+        Split(vargNames, argNamePattern, "|");
         auto fr = argsIn.end();
         for (const std::string &argName : vargNames) {
             fr = argsIn.find(argName);

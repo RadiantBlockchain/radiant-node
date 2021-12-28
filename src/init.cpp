@@ -61,9 +61,7 @@
 #include <walletinitinterface.h>
 #include <warnings.h>
 
-#include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/replace.hpp>
-#include <boost/algorithm/string/split.hpp>
 #include <boost/thread.hpp>
 
 #if ENABLE_ZMQ

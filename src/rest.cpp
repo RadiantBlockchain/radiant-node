@@ -19,10 +19,9 @@
 #include <sync.h>
 #include <txmempool.h>
 #include <util/strencodings.h>
+#include <util/string.h>
 #include <validation.h>
 #include <version.h>
-
-#include <boost/algorithm/string.hpp>
 
 #include <univalue.h>
 
@@ -125,7 +124,7 @@ static bool rest_headers(Config &config, HTTPRequest *req,
     std::string param;
     const RetFormat rf = ParseDataFormat(param, strURIPart);
     std::vector<std::string> path;
-    boost::split(path, param, boost::is_any_of("/"));
+    Split(path, param, "/");
 
     if (path.size() != 2) {
         return RESTERR(req, HTTP_BAD_REQUEST,
@@ -445,7 +444,7 @@ static bool rest_getutxos(Config &config, HTTPRequest *req,
     std::vector<std::string> uriParts;
     if (param.length() > 1) {
         std::string strUriParams = param.substr(1);
-        boost::split(uriParts, strUriParams, boost::is_any_of("/"));
+        Split(uriParts, strUriParams, "/");
     }
 
     // throw exception in case of an empty request

@@ -14,13 +14,12 @@
 #include <script/script.h>
 #include <script/standard.h>
 #include <sync.h>
+#include <util/string.h>
 #include <util/system.h>
 #include <util/time.h>
 #include <validation.h>
 #include <wallet/rpcwallet.h>
 #include <wallet/wallet.h>
-
-#include <boost/algorithm/string.hpp>
 
 #include <univalue.h>
 
@@ -666,7 +665,7 @@ UniValue importwallet(const Config &config, const JSONRPCRequest &request) {
             }
 
             std::vector<std::string> vstr;
-            boost::split(vstr, line, boost::is_any_of(" "));
+            Split(vstr, line, " ");
             if (vstr.size() < 2) {
                 continue;
             }

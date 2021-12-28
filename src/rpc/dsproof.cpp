@@ -13,8 +13,6 @@
 #include <util/string.h>
 #include <validation.h>
 
-#include <boost/algorithm/string.hpp> // boost::join, boost::split
-
 #include <algorithm>
 
 namespace {
@@ -165,7 +163,7 @@ std::string ResultsPartForVerbosity(int verbosity, std::string::size_type indent
     }
     if (indent) {
         std::vector<std::string> lines;
-        boost::split(lines, ret, boost::is_any_of("\n"));
+        Split(lines, ret, "\n");
         const std::string indentStr(indent, ' ');
         const std::string lineSep = "\n" + indentStr;
         ret = indentStr + Join(lines, lineSep);

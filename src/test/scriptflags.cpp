@@ -5,9 +5,8 @@
 #include <script/interpreter.h>
 
 #include <test/scriptflags.h>
+#include <util/string.h>
 
-#include <boost/algorithm/string/classification.hpp>
-#include <boost/algorithm/string/split.hpp>
 #include <boost/test/unit_test.hpp>
 
 #include <map>
@@ -42,7 +41,7 @@ uint32_t ParseScriptFlags(const std::string &strFlags) {
 
     uint32_t flags = 0;
     std::vector<std::string> words;
-    boost::algorithm::split(words, strFlags, boost::algorithm::is_any_of(","));
+    Split(words, strFlags, ",");
 
     for (const std::string &word : words) {
         if (!mapFlagNames.count(word)) {
