@@ -15,6 +15,7 @@
 #include <sync.h>
 #include <ui_interface.h>
 #include <util/strencodings.h>
+#include <util/string.h>
 #include <util/system.h>
 #include <util/threadnames.h>
 
@@ -232,33 +233,47 @@ static void http_request_cb(struct evhttp_request *req, void *arg) {
         }
     }
     auto hreq = std::make_unique<HTTPRequest>(req);
+    const auto peer = hreq->GetPeer();
+
+    // If HTTPTRACE is enabled, log the request immediately
+    // Note: Unlike with regular HTTP logging, we *don't* sanitize any strings
+    // coming from the user. HTTPTRACE is an advanced debugging option not
+    // intended for general use, so it is felt that this is acceptable.
+    if (LogAcceptCategory(BCLog::HTTPTRACE)) {
+        const auto headersVec = hreq->GetAllInputHeaders();
+        const std::string headers = Join(headersVec, "\n", [] (const auto &nvp) {
+            return strprintf("%s: %s", nvp.first, nvp.second);
+        });
+        const std::string content = hreq->ReadBody(false);
+        LogPrintf("<httptrace> Request from %s, method: \"%s\", URI: \"%s\", headers: %u, content: %u bytes\n"
+                  "--- HEADERS ---\n%s\n--- CONTENT ---\n%s\n",
+                  peer.ToString(), RequestMethodString(hreq->GetRequestMethod()), hreq->GetURI(),
+                  headersVec.size(), content.size(), headers, content);
+    }
 
     // Early address-based allow check
-    if (!ClientAllowed(hreq->GetPeer())) {
-        LogPrint(BCLog::HTTP,
-                 "HTTP request from %s rejected: Client network is not allowed "
-                 "RPC access\n",
-                 hreq->GetPeer().ToString());
+    if (!ClientAllowed(peer)) {
+        LogPrint(BCLog::HTTP, "HTTP request from %s rejected: Client network is not allowed RPC access\n",
+                 peer.ToString());
         hreq->WriteReply(HTTP_FORBIDDEN);
         return;
     }
 
+    const auto method = hreq->GetRequestMethod();
+
     // Early reject unknown HTTP methods
-    if (hreq->GetRequestMethod() == HTTPRequest::UNKNOWN) {
-        LogPrint(BCLog::HTTP,
-                 "HTTP request from %s rejected: Unknown HTTP request method\n",
-                 hreq->GetPeer().ToString());
+    if (method == HTTPRequest::UNKNOWN) {
+        LogPrint(BCLog::HTTP, "HTTP request from %s rejected: Unknown HTTP request method\n", peer.ToString());
         hreq->WriteReply(HTTP_BADMETHOD);
         return;
     }
 
+    const std::string strURI = hreq->GetURI();
+
     LogPrint(BCLog::HTTP, "Received a %s request for %s from %s\n",
-             RequestMethodString(hreq->GetRequestMethod()),
-             SanitizeString(hreq->GetURI(), SAFE_CHARS_URI).substr(0, 100),
-             hreq->GetPeer().ToString());
+             RequestMethodString(method), SanitizeString(strURI, SAFE_CHARS_URI).substr(0, 100), peer.ToString());
 
     // Find registered handler for prefix
-    std::string strURI = hreq->GetURI();
     std::string path;
     std::vector<HTTPPathHandler>::const_iterator i = pathHandlers.begin();
     std::vector<HTTPPathHandler>::const_iterator iend = pathHandlers.end();
@@ -555,24 +570,39 @@ HTTPRequest::~HTTPRequest() {
     // evhttpd cleans up the request, as long as a reply was sent.
 }
 
-std::pair<bool, std::string>
-HTTPRequest::GetHeader(const std::string &hdr) const {
+std::optional<std::string> HTTPRequest::GetHeader(const std::string &hdr) const {
     const struct evkeyvalq *headers = evhttp_request_get_input_headers(req);
     assert(headers);
     const char *val = evhttp_find_header(headers, hdr.c_str());
     if (val) {
-        return std::make_pair(true, val);
+        return val;
     } else {
-        return std::make_pair(false, "");
+        return std::nullopt;
     }
 }
 
-std::string HTTPRequest::ReadBody() {
+std::vector<HTTPRequest::NameValuePair> HTTPRequest::GetAllHeaders(bool input) const {
+    std::vector<NameValuePair> ret;
+    const evkeyvalq *headers = input ? evhttp_request_get_input_headers(req)
+                                     : evhttp_request_get_output_headers(req);
+    assert(headers);
+
+    // Note: we would use TAILQ_FOREACH here but that's not always defined on all platforms, so
+    // we must do this.
+    for (const evkeyval *header = headers->tqh_first; header != nullptr; header = header->next.tqe_next) {
+        ret.emplace_back(header->key, header->value);
+    }
+
+    return ret;
+}
+
+std::string HTTPRequest::ReadBody(bool drain) {
+    std::string ret;
     struct evbuffer *buf = evhttp_request_get_input_buffer(req);
     if (!buf) {
-        return "";
+        return ret;
     }
-    size_t size = evbuffer_get_length(buf);
+    const size_t size = evbuffer_get_length(buf);
     /**
      * Trivial implementation: if this is ever a performance bottleneck,
      * internal copying can be avoided in multi-segment buffers by using
@@ -584,11 +614,11 @@ std::string HTTPRequest::ReadBody() {
 
     // returns nullptr in case of empty buffer.
     if (!data) {
-        return "";
+        return ret;
     }
-    std::string rv(data, size);
-    evbuffer_drain(buf, size);
-    return rv;
+    ret.assign(data, size);
+    if (drain) evbuffer_drain(buf, size);
+    return ret;
 }
 
 void HTTPRequest::WriteHeader(const std::string &hdr,
@@ -608,6 +638,31 @@ void HTTPRequest::WriteReply(int nStatus, const std::string &strReply) {
     if (ShutdownRequested()) {
         WriteHeader("Connection", "close");
     }
+
+    // If HTTPTRACE is enabled, log what we are replying with
+    if (LogAcceptCategory(BCLog::HTTPTRACE)) {
+        const auto headersVec = GetAllOutputHeaders();
+        bool isBinary = false;
+        const std::string headers = Join(headersVec, "\n", [&isBinary] (const auto &nvp) {
+            const auto & [name, value] = nvp;
+            // Set the isBinary flag if we are outputting binary (this is for REST .bin output mode)
+            if (!isBinary && name == "Content-Type" && value == "application/octet-stream") isBinary = true;
+            return strprintf("%s: %s", nvp.first, nvp.second);
+        });
+        const char *content_desc = "";
+        std::string hexStrReply;
+        if (isBinary) {
+            // If we are outputting binary (REST .bin mode), we will encode the data as hex first,
+            // to keep log files tidy.
+            content_desc = " (binary data, hex encoded)";
+            hexStrReply = HexStr(strReply.begin(), strReply.end());
+        }
+        const std::string &content = isBinary ? hexStrReply : strReply;
+        LogPrintf("<httptrace> Writing reply to %s, status: %d, headers: %u, content: %u bytes\n"
+                  "--- HEADERS ---\n%s\n--- CONTENT%s ---\n%s\n",
+                  GetPeer().ToString(), nStatus, headersVec.size(), strReply.size(), headers, content_desc, content);
+    }
+
     // Send event to main http thread to send reply message
     struct evbuffer *evb = evhttp_request_get_output_buffer(req);
     assert(evb);

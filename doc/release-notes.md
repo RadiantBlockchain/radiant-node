@@ -22,7 +22,10 @@ This version contains further corrections and improvements, such as:
 
 ## Added functionality
 
-...
+- Added a new logging option, `-debug=httptrace` which logs all HTTP data to/from the internal JSON-RPC and REST server, including HTTP content.
+  - This is an advanced debugging option intended for troubleshooting the low-level JSON-RPC and/or REST protocol, primarily aimed at developers.
+  - This option is not enabled by default, even if using `-debug=all`, and must be explicitly enabled using `-debug=httptrace`.
+  - Unlike the regular `-debug=http` debug option, incoming strings and data are *not* sanitized in any way in the log file, and are simply logged verbatim as they come in off the network.
 
 ## Deprecated functionality
 

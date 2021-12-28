@@ -873,14 +873,9 @@ void SetupServerArgs() {
                  ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::DEBUG_TEST);
 
     gArgs.AddArg("-debug=<category>",
-                 strprintf("Output debugging information (default: %u, "
-                           "supplying <category> is optional)",
-                           0) +
-                     ". " +
-                     "If <category> is not supplied or if <category> = 1, "
-                     "output all debugging information."
-                     "<category> can be: " +
-                     ListLogCategories() + ".",
+                 strprintf("Output debugging information (default: %u, supplying <category> is optional)", 0) +
+                 ". If <category> is not supplied or if <category> = 1 or all, output all debugging information "
+                 "(except for httptrace). <category> can be: " + ListLogCategories() + ".",
                  ArgsManager::ALLOW_ANY, OptionsCategory::DEBUG_TEST);
     gArgs.AddArg(
         "-debugexclude=<category>",

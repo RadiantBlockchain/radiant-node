@@ -7,7 +7,10 @@
 
 #include <cstdint>
 #include <functional>
+#include <optional>
 #include <string>
+#include <utility>
+#include <vector>
 
 static const int DEFAULT_HTTP_THREADS = 4;
 static const int DEFAULT_HTTP_WORKQUEUE = 16;
@@ -72,7 +75,6 @@ struct event_base *EventBase();
  * Thin C++ wrapper around evhttp_request.
  */
 class HTTPRequest {
-private:
     struct evhttp_request *req;
     bool replySent;
 
@@ -92,18 +94,37 @@ public:
     RequestMethod GetRequestMethod() const;
 
     /**
-     * Get the request header specified by hdr, or an empty string.
-     * Return a pair (isPresent,string).
+     * Get the request header specified by hdr.
+     * @return The header's value, if present, or a std::nullopt if the header
+     * was not present.
      */
-    std::pair<bool, std::string> GetHeader(const std::string &hdr) const;
+    std::optional<std::string> GetHeader(const std::string &hdr) const;
+
+    //! A vector of these is returned by GetAll*Headers.
+    using NameValuePair = std::pair<std::string, std::string>;
+
+    /**
+     *  Get the entire header contents for the request. This is all of the
+     *  headers sent to us by the client.
+     */
+    std::vector<NameValuePair> GetAllInputHeaders() const { return GetAllHeaders(true); }
+
+    /**
+     *  Get the entire header contents for the reply. This is all of the
+     *  headers enqueued for sending to the client via previous calls to
+     *  WriteHeader().
+     */
+    std::vector<NameValuePair> GetAllOutputHeaders() const { return GetAllHeaders(false); }
 
     /**
      * Read request body.
      *
-     * @note As this consumes the underlying buffer, call this only once.
-     * Repeated calls will return an empty string.
+     * @param drain - If set to true, consume the underlying buffer.
+     * @note Specifying drain = true will consume the underlying buffer,
+     * so call it this way only once. Repeated calls after a drain = true
+     * call will always return an empty string.
      */
-    std::string ReadBody();
+    std::string ReadBody(bool drain = true);
 
     /**
      * Write output header.
@@ -123,6 +144,9 @@ public:
      * this.
      */
     void WriteReply(int nStatus, const std::string &strReply = "");
+
+private:
+    std::vector<NameValuePair> GetAllHeaders(bool input) const;
 };
 
 /** Event handler closure */

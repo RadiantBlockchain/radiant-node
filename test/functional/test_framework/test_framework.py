@@ -14,6 +14,7 @@ import shutil
 import sys
 import tempfile
 import time
+from typing import Callable
 
 from .authproxy import JSONRPCException
 from . import coverage
@@ -387,9 +388,11 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
             # Wait for nodes to stop
             node.wait_until_stopped()
 
-    def restart_node(self, i, extra_args=None):
+    def restart_node(self, i, extra_args=None, before_start: Callable = None):
         """Stop and start a test node"""
         self.stop_node(i)
+        if before_start:
+            before_start()
         self.start_node(i, extra_args)
 
     def wait_for_node_exit(self, i, timeout):
