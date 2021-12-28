@@ -164,17 +164,18 @@ static bool checkCORS(HTTPRequest *req) {
 
     // 1. If the Origin header is not present terminate this set of steps.
     // The request is outside the scope of this specification.
-    std::pair<bool, std::string> origin = req->GetHeader("origin");
-    if (!origin.first) {
+    const auto originOpt = req->GetHeader("origin");
+    if (!originOpt) {
         return false;
     }
+    const std::string &origin = *originOpt;
 
     // 2. If the value of the Origin header is not a case-sensitive match for
     // any of the values in list of origins do not set any additional headers
     // and terminate this set of steps.
     // Note: Always matching is acceptable since the list of origins can be
     // unbounded.
-    if (origin.second != strRPCCORSDomain) {
+    if (origin != strRPCCORSDomain) {
         return false;
     }
 
@@ -192,11 +193,11 @@ static bool checkCORS(HTTPRequest *req) {
         // If there is no Access-Control-Request-Method header or if parsing
         // failed, do not set any additional headers and terminate this set
         // of steps. The request is outside the scope of this specification.
-        std::pair<bool, std::string> method =
-            req->GetHeader("access-control-request-method");
-        if (!method.first) {
+        const auto methodOpt = req->GetHeader("access-control-request-method");
+        if (!methodOpt) {
             return false;
         }
+        const std::string &method = *methodOpt;
 
         // 4. Let header field-names be the values as result of parsing
         // the Access-Control-Request-Headers headers.
@@ -205,15 +206,14 @@ static bool checkCORS(HTTPRequest *req) {
         // If parsing failed do not set any additional headers and terminate
         // this set of steps. The request is outside the scope of this
         // specification.
-        std::pair<bool, std::string> header_field_names =
-            req->GetHeader("access-control-request-headers");
+        const auto header_field_names_opt = req->GetHeader("access-control-request-headers");
 
         // 5. If method is not a case-sensitive match for any of the
         // values in list of methods do not set any additional headers
         // and terminate this set of steps.
         // Note: Always matching is acceptable since the list of methods
         // can be unbounded.
-        if (method.second != "POST") {
+        if (method != "POST") {
             return false;
         }
 
@@ -222,14 +222,14 @@ static bool checkCORS(HTTPRequest *req) {
         // set any additional headers and terminate this set of steps.
         // Note: Always matching is acceptable since the list of headers can
         // be unbounded.
-        const std::string &list_of_headers = "authorization,content-type";
+        static const std::string list_of_headers = "authorization,content-type";
 
         // 7. If the resource supports credentials add a single
         // Access-Control-Allow-Origin header, with the value of the Origin
         // header as value, and add a single
         // Access-Control-Allow-Credentials header with the case-sensitive
         // string "true" as value.
-        req->WriteHeader("Access-Control-Allow-Origin", origin.second);
+        req->WriteHeader("Access-Control-Allow-Origin", origin);
         req->WriteHeader("Access-Control-Allow-Credentials", "true");
 
         // 8. Optionally add a single Access-Control-Max-Age header with as
@@ -244,15 +244,15 @@ static bool checkCORS(HTTPRequest *req) {
         // Note: Since the list of methods can be unbounded, simply
         // returning the method indicated by
         // Access-Control-Request-Method (if supported) can be enough.
-        req->WriteHeader("Access-Control-Allow-Methods", method.second);
+        req->WriteHeader("Access-Control-Allow-Methods", method);
 
         // 10. If each of the header field-names is a simple header and none
         // is Content-Type, this step may be skipped.
         // Add one or more Access-Control-Allow-Headers headers consisting
         // of (a subset of) the list of headers.
         req->WriteHeader("Access-Control-Allow-Headers",
-                         header_field_names.first ? header_field_names.second
-                                                  : list_of_headers);
+                         header_field_names_opt ? *header_field_names_opt
+                                                : list_of_headers);
         req->WriteReply(HTTP_OK);
         return true;
     }
@@ -269,7 +269,7 @@ static bool checkCORS(HTTPRequest *req) {
     // Access-Control-Allow-Origin header, with the value of the Origin
     // header as value, and add a single Access-Control-Allow-Credentials
     // header with the case-sensitive string "true" as value.
-    req->WriteHeader("Access-Control-Allow-Origin", origin.second);
+    req->WriteHeader("Access-Control-Allow-Origin", origin);
     req->WriteHeader("Access-Control-Allow-Credentials", "true");
 
     // 4. If the list of exposed headers is not empty add one or more
@@ -293,15 +293,16 @@ bool HTTPRPCRequestProcessor::ProcessHTTPRequest(HTTPRequest *req) {
         return false;
     }
     // Check authorization
-    std::pair<bool, std::string> authHeader = req->GetHeader("authorization");
-    if (!authHeader.first) {
+    const auto authHeaderOpt = req->GetHeader("authorization");
+    if (!authHeaderOpt) {
         req->WriteHeader("WWW-Authenticate", WWW_AUTH_HEADER_DATA);
         req->WriteReply(HTTP_UNAUTHORIZED);
         return false;
     }
+    const std::string &authHeader = *authHeaderOpt;
 
     JSONRPCRequest jreq;
-    if (!RPCAuthorized(authHeader.second, jreq.authUser)) {
+    if (!RPCAuthorized(authHeader, jreq.authUser)) {
         LogPrintf("ThreadRPCServer incorrect password attempt from %s\n",
                   req->GetPeer().ToString());
 

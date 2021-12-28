@@ -57,7 +57,14 @@ enum LogFlags : uint32_t {
     FINALIZATION = (1 << 21),
     PARKING = (1 << 22),
     DSPROOF = (1 << 23),
-    ALL = ~uint32_t(0),
+
+    //! Log *all* httpserver request and response data transferred to/from the
+    //! client. Note: Unlike all the other categories, to avoid logs from
+    //! filling up (and from revealing potentially sensitive data), this is
+    //! NOT enabled automatically if using ALL. It must be enabled explicitly.
+    HTTPTRACE = (1 << 24),
+
+    ALL = ~uint32_t(0) & ~uint32_t(HTTPTRACE),
 };
 
 class Logger {
