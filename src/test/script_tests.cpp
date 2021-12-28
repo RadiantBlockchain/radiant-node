@@ -2769,7 +2769,7 @@ BOOST_AUTO_TEST_CASE(script_combineSigs) {
         key.MakeNewKey(i % 2 == 1);
         keys.push_back(key);
         pubkeys.push_back(key.GetPubKey());
-        keystore.AddKey(key);
+        BOOST_CHECK(keystore.AddKey(key));
     }
 
     CMutableTransaction txFrom = BuildCreditingTransaction(
@@ -2787,7 +2787,7 @@ BOOST_AUTO_TEST_CASE(script_combineSigs) {
     auto const context = std::nullopt;
 
     // Single signature case:
-    SignSignature(keystore, CTransaction(txFrom), txTo, 0, SigHashType().withForkId(), context);
+    BOOST_CHECK(SignSignature(keystore, CTransaction(txFrom), txTo, 0, SigHashType().withForkId(), context));
     scriptSig = DataFromTransaction(txTo, 0, txFrom.vout[0]);
     combined = CombineSignatures(txFrom.vout[0], txTo, scriptSig, empty);
     BOOST_CHECK(combined.scriptSig == scriptSig.scriptSig);
@@ -2796,7 +2796,7 @@ BOOST_AUTO_TEST_CASE(script_combineSigs) {
     SignatureData scriptSigCopy = scriptSig;
 
     // Signing again will give a different, valid signature:
-    SignSignature(keystore, CTransaction(txFrom), txTo, 0, SigHashType().withForkId(), context);
+    BOOST_CHECK(SignSignature(keystore, CTransaction(txFrom), txTo, 0, SigHashType().withForkId(), context));
     scriptSig = DataFromTransaction(txTo, 0, txFrom.vout[0]);
     combined = CombineSignatures(txFrom.vout[0], txTo, scriptSigCopy, scriptSig);
     BOOST_CHECK(combined.scriptSig == scriptSigCopy.scriptSig ||
@@ -2805,16 +2805,16 @@ BOOST_AUTO_TEST_CASE(script_combineSigs) {
     // P2SH, single-signature case:
     CScript pkSingle;
     pkSingle << ToByteVector(keys[0].GetPubKey()) << OP_CHECKSIG;
-    keystore.AddCScript(pkSingle);
+    BOOST_CHECK(keystore.AddCScript(pkSingle));
     scriptPubKey = GetScriptForDestination(CScriptID(pkSingle));
-    SignSignature(keystore, CTransaction(txFrom), txTo, 0, SigHashType().withForkId(), context);
+    BOOST_CHECK(SignSignature(keystore, CTransaction(txFrom), txTo, 0, SigHashType().withForkId(), context));
     scriptSig = DataFromTransaction(txTo, 0, txFrom.vout[0]);
     combined = CombineSignatures(txFrom.vout[0], txTo, scriptSig, empty);
     BOOST_CHECK(combined.scriptSig == scriptSig.scriptSig);
     combined = CombineSignatures(txFrom.vout[0], txTo, empty, scriptSig);
     BOOST_CHECK(combined.scriptSig == scriptSig.scriptSig);
     scriptSigCopy = scriptSig;
-    SignSignature(keystore, CTransaction(txFrom), txTo, 0, SigHashType().withForkId(), context);
+    BOOST_CHECK(SignSignature(keystore, CTransaction(txFrom), txTo, 0, SigHashType().withForkId(), context));
     scriptSig = DataFromTransaction(txTo, 0, txFrom.vout[0]);
     combined = CombineSignatures(txFrom.vout[0], txTo, scriptSigCopy, scriptSig);
     BOOST_CHECK(combined.scriptSig == scriptSigCopy.scriptSig ||
@@ -2822,8 +2822,8 @@ BOOST_AUTO_TEST_CASE(script_combineSigs) {
 
     // Hardest case:  Multisig 2-of-3
     scriptPubKey = GetScriptForMultisig(2, pubkeys);
-    keystore.AddCScript(scriptPubKey);
-    SignSignature(keystore, CTransaction(txFrom), txTo, 0, SigHashType().withForkId(), context);
+    BOOST_CHECK(keystore.AddCScript(scriptPubKey));
+    BOOST_CHECK(SignSignature(keystore, CTransaction(txFrom), txTo, 0, SigHashType().withForkId(), context));
     scriptSig = DataFromTransaction(txTo, 0, txFrom.vout[0]);
     combined = CombineSignatures(txFrom.vout[0], txTo, scriptSig, empty);
     BOOST_CHECK(combined.scriptSig == scriptSig.scriptSig);
