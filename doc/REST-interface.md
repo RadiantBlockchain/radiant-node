@@ -3,8 +3,12 @@ Unauthenticated REST Interface
 
 The REST API can be enabled with the `-rest` option.
 
-The interface runs on the same port as the JSON-RPC interface, by default port
-8332 for mainnet, port 18332 for testnet, and port 18443 for regtest.
+The interface runs on the same port as the JSON-RPC interface, by default:
+- port 8332 for mainnet,
+- port 18332 for testnet,
+- port 28332 for testnet4,
+- port 38332 for scalenet,
+- port 18443 for regtest.
 
 Supported API
 -------------
