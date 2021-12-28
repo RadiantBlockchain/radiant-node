@@ -92,13 +92,16 @@ if(NOT ENABLE_CLANG_TIDY)
 	add_compiler_flags(-fstack-reuse=none)
 endif()
 
-# Ensure that WINDRES_PREPROC is enabled when using windres.
+# Windows specific flags
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	# Ensure that WINDRES_PREPROC is enabled when using windres.
 	list(APPEND CMAKE_RC_FLAGS "-DWINDRES_PREPROC")
 
 	# Build all static so there is no dll file to distribute.
 	add_linker_flags(-static)
+
+	# _WIN32_WINNT_WIN7
+	add_compile_definitions(_WIN32_WINNT=0x0601)
 endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
