@@ -33,7 +33,7 @@ This version contains further corrections and improvements, such as:
 
 ## Modified functionality
 
-...
+- The `-whitelistrelay` default has been restored to enabled. The help text indicated the default being enabled, despite the default actually being disabled. This has been broken since v22.0.0.
 
 ## Removed functionality
 
