@@ -192,7 +192,10 @@ public:
     std::string ToStringPort() const;
     std::string ToStringIPPort() const;
 
-    SERIALIZE_METHODS(CService, obj) { READWRITE(obj.ip, Using<BigEndianFormatter<2>>(obj.port)); }
+    SERIALIZE_METHODS(CService, obj) {
+        READWRITEAS(CNetAddr, obj);
+        READWRITE(Using<BigEndianFormatter<2>>(obj.port));
+    }
 };
 
 // std::unordered_map & std::unordered_set support
