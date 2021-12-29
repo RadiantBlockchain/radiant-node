@@ -21,19 +21,48 @@
 #include <utility>
 #include <vector>
 
+/**
+ * A network type.
+ * @note An address may belong to more than one network, for example `10.0.0.1`
+ * belongs to both `NET_UNROUTABLE` and `NET_IPV4`.
+ * Keep these sequential starting from 0 and `NET_MAX` as the last entry.
+ * We have loops like `for (int i = 0; i < NET_MAX; i++)` that expect to iterate
+ * over all enum values and also `GetExtNetwork()` "extends" this enum by
+ * introducing standalone constants starting from `NET_MAX`.
+ */
 enum Network {
+    /// Addresses from these networks are not publicly routable on the global Internet.
     NET_UNROUTABLE = 0,
+
+    /// IPv4
     NET_IPV4,
+
+    /// IPv6
     NET_IPV6,
+
+    /// TORv2
     NET_ONION,
+
+    /// A set of dummy addresses that map a name to an IPv6 address. These
+    /// addresses belong to RFC4193's fc00::/7 subnet (unique-local addresses).
+    /// We use them to map a string or FQDN to an IPv6 address in CAddrMan to
+    /// keep track of which DNS seeds were used.
     NET_INTERNAL,
 
+    /// Dummy value to indicate the number of NET_* constants.
     NET_MAX,
 };
 
-/** IP address (IPv6, or IPv4 using mapped IPv6 range (::FFFF:0:0/96)) */
+/**
+ * Network address.
+ */
 class CNetAddr {
 protected:
+    /**
+     * Network to which this address belongs.
+     */
+    Network m_net{NET_IPV6};
+
     static constexpr size_t ADDRLEN = 16;
     // in network byte order
     uint8_t ip[ADDRLEN];
@@ -46,6 +75,14 @@ public:
     explicit CNetAddr(const struct in6_addr &pipv6Addr, const uint32_t scope = 0);
 
     void SetIP(const CNetAddr &ip);
+
+    /**
+     * Set from a legacy IPv6 address.
+     * Legacy IPv6 address may be a normal IPv6 address, or another address
+     * (e.g. IPv4) disguised as IPv6. This encoding is used in the legacy
+     * `addr` encoding.
+     */
+    void SetLegacyIPv6(const uint8_t ipv6[16]);
 
 private:
     /**
@@ -122,7 +159,25 @@ public:
     }
     friend bool operator<(const CNetAddr &a, const CNetAddr &b);
 
-    SERIALIZE_METHODS(CNetAddr, obj) { READWRITE(obj.ip); }
+    /**
+     * Serialize to a stream.
+     */
+    template <typename Stream>
+    void Serialize(Stream &s) const {
+        s << ip;
+    }
+
+    /**
+     * Unserialize from a stream.
+     */
+    template <typename Stream>
+    void Unserialize(Stream &s) {
+        uint8_t ip_temp[sizeof(ip)];
+        s >> ip_temp;
+        // Use SetLegacyIPv6() so that m_net is set correctly. For example
+        // ::FFFF:0102:0304 should be set as m_net=NET_IPV4 (1.2.3.4).
+        SetLegacyIPv6(ip_temp);
+    }
 
     friend class CSubNet;
 };

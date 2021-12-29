@@ -38,8 +38,7 @@ struct SeedSpec6 : public CService {
     constexpr SeedSpec6(const std::array<uint8_t, GetAddressLen()> &addr_, uint16_t port_) noexcept {
         static_assert(sizeof(ip[0]) == 1);
         port = port_;
-        for (size_t i = 0; i < GetAddressLen(); ++i)
-            ip[i] = addr_[i];
+        SetLegacyIPv6(addr_.data());
     }
 };
 
