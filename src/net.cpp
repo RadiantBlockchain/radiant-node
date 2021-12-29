@@ -1277,7 +1277,7 @@ void CConnman::SocketEvents(std::set<SOCKET> &recv_set, std::set<SOCKET> &send_s
         vpollfds.push_back(std::move(it.second));
     }
 
-    if (poll(vpollfds.data(), vpollfds.size(), SELECT_TIMEOUT_MILLISECONDS) < 0) return;
+    if (poll(vpollfds.data(), vpollfds.size(), SELECT_TIMEOUT_MILLISECONDS) <= 0) return;
 
     if (interruptNet) return;
 
@@ -1298,10 +1298,9 @@ void CConnman::SocketEvents(std::set<SOCKET> &recv_set, std::set<SOCKET> &send_s
     //
     // Find which sockets have data to receive
     //
-    struct timeval timeout;
-    timeout.tv_sec = 0;
+
     // frequency to poll pnode->vSend
-    timeout.tv_usec = SELECT_TIMEOUT_MILLISECONDS * 1000;
+    struct timeval timeout = MillisToTimeval(SELECT_TIMEOUT_MILLISECONDS);
 
     fd_set fdsetRecv;
     fd_set fdsetSend;
@@ -1328,7 +1327,7 @@ void CConnman::SocketEvents(std::set<SOCKET> &recv_set, std::set<SOCKET> &send_s
 
     int nSelect = select(hSocketMax + 1, &fdsetRecv, &fdsetSend, &fdsetError, &timeout);
 
-    if (interruptNet) {
+    if (interruptNet || nSelect == 0) {
         return;
     }
 
