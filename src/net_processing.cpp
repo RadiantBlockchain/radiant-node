@@ -6,6 +6,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <net_processing.h>
+#include <net_processing_internal.h>
 
 #include <addrman.h>
 #include <arith_uint256.h>
@@ -131,7 +132,8 @@ static constexpr uint32_t MAX_NON_STANDARD_ORPHAN_PER_NODE = 5;
 
 namespace internal {
 RecursiveMutex g_cs_orphans;
-std::map<TxId, COrphanTx> mapOrphanTransactions GUARDED_BY(g_cs_orphans);
+MapOrphanTransactions mapOrphanTransactions GUARDED_BY(g_cs_orphans);
+MapOrphanTransactionsByPrev mapOrphanTransactionsByPrev GUARDED_BY(g_cs_orphans);
 }
 
 /**
@@ -228,15 +230,6 @@ std::deque<std::pair<int64_t, MapRelay::iterator>>
 
 // Used only to inform the wallet of when we last received a block
 std::atomic<int64_t> nTimeBestReceived(0);
-
-struct IteratorComparator {
-    template <typename I> bool operator()(const I &a, const I &b) const {
-        return &(*a) < &(*b);
-    }
-};
-std::map<COutPoint,
-         std::set<std::map<TxId, internal::COrphanTx>::iterator, IteratorComparator>>
-    mapOrphanTransactionsByPrev GUARDED_BY(internal::g_cs_orphans);
 
 static size_t vExtraTxnForCompactIt GUARDED_BY(internal::g_cs_orphans) = 0;
 static std::vector<std::pair<TxHash, CTransactionRef>>
@@ -1023,8 +1016,10 @@ bool internal::AddOrphanTx(const CTransactionRef &tx, NodeId peer)
         return false;
     }
 
-    auto ret = mapOrphanTransactions.emplace(
-        txid, COrphanTx{tx, peer, GetTime() + ORPHAN_TX_EXPIRE_TIME});
+    auto ret = mapOrphanTransactions.try_emplace(
+        txid,
+        /* COrphanTx c'tor: */ tx, peer, GetTime() + ORPHAN_TX_EXPIRE_TIME
+    );
     assert(ret.second);
     for (const CTxIn &txin : tx->vin) {
         mapOrphanTransactionsByPrev[txin.prevout].insert(ret.first);
@@ -1033,8 +1028,7 @@ bool internal::AddOrphanTx(const CTransactionRef &tx, NodeId peer)
     AddToCompactExtraTransactions(tx);
 
     LogPrint(BCLog::MEMPOOL, "stored orphan tx %s (mapsz %u outsz %u)\n",
-             txid.ToString(), internal::mapOrphanTransactions.size(),
-             mapOrphanTransactionsByPrev.size());
+             txid.ToString(), mapOrphanTransactions.size(), mapOrphanTransactionsByPrev.size());
     return true;
 }
 
@@ -1049,13 +1043,13 @@ static int EraseOrphanTx(const TxId &id) EXCLUSIVE_LOCKS_REQUIRED(internal::g_cs
     // while looping below.
     return [&it]() EXCLUSIVE_LOCKS_REQUIRED(internal::g_cs_orphans) {
         for (const CTxIn &txin : it->second.tx->vin) {
-            const auto itPrev = mapOrphanTransactionsByPrev.find(txin.prevout);
-            if (itPrev == mapOrphanTransactionsByPrev.end()) {
+            const auto itPrev = internal::mapOrphanTransactionsByPrev.find(txin.prevout);
+            if (itPrev == internal::mapOrphanTransactionsByPrev.end()) {
                 continue;
             }
             itPrev->second.erase(it);
             if (itPrev->second.empty()) {
-                mapOrphanTransactionsByPrev.erase(itPrev);
+                internal::mapOrphanTransactionsByPrev.erase(itPrev);
             }
         }
         internal::mapOrphanTransactions.erase(it);
@@ -1084,7 +1078,7 @@ unsigned int internal::LimitOrphanTxSize(unsigned int nMaxOrphans) {
     LOCK(g_cs_orphans);
 
     unsigned int nEvicted = 0;
-    static int64_t nNextSweep;
+    static int64_t nNextSweep GUARDED_BY(g_cs_orphans);
     int64_t nNow = GetTime();
     if (nNextSweep <= nNow) {
         // Sweep out expired orphan pool entries:
@@ -1227,8 +1221,8 @@ void PeerLogicValidation::BlockConnected(
 
         // Which orphan pool entries must we evict?
         for (const auto &txin : tx.vin) {
-            auto itByPrev = mapOrphanTransactionsByPrev.find(txin.prevout);
-            if (itByPrev == mapOrphanTransactionsByPrev.end()) {
+            auto itByPrev = internal::mapOrphanTransactionsByPrev.find(txin.prevout);
+            if (itByPrev == internal::mapOrphanTransactionsByPrev.end()) {
                 continue;
             }
 
@@ -2904,10 +2898,9 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
             // one
             std::unordered_map<NodeId, uint32_t> rejectCountPerNode;
             while (!vWorkQueue.empty()) {
-                auto itByPrev =
-                    mapOrphanTransactionsByPrev.find(vWorkQueue.front());
+                auto itByPrev = internal::mapOrphanTransactionsByPrev.find(vWorkQueue.front());
                 vWorkQueue.pop_front();
-                if (itByPrev == mapOrphanTransactionsByPrev.end()) {
+                if (itByPrev == internal::mapOrphanTransactionsByPrev.end()) {
                     continue;
                 }
                 for (auto mi = itByPrev->second.begin();
@@ -5013,6 +5006,6 @@ public:
     ~CNetProcessingCleanup() {
         // orphan transactions
         internal::mapOrphanTransactions.clear();
-        mapOrphanTransactionsByPrev.clear();
+        internal::mapOrphanTransactionsByPrev.clear();
     }
 } instance_of_cnetprocessingcleanup;
