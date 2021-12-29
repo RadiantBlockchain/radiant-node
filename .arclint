@@ -132,10 +132,6 @@
                 "(^src/(secp256k1|univalue|leveldb)/)"
             ]
         },
-        "lint-boost-dependencies": {
-            "type": "lint-boost-dependencies",
-            "include": "(^src/.*\\.(h|cpp)$)"
-        },
         "check-rpc-mappings": {
             "type": "check-rpc-mappings",
             "include": "(^src/(rpc/|wallet/rpc).*\\.cpp$)"

@@ -19,7 +19,6 @@ TESTS
 	check-doc.py
 	check-rpc-mappings.py
 	lint-assertions.sh
-	lint-boost-dependencies.sh
 	lint-circular-dependencies.sh
 	lint-cpp.sh
 	lint-format-strings.sh
