@@ -6,11 +6,17 @@
 
 #include <random.h>
 #include <script/sigcache.h>
+#include <sync.h>
 
 #include <test/setup_common.h>
 
 #include <boost/test/unit_test.hpp>
-#include <boost/thread/shared_mutex.hpp>
+
+#include <algorithm>
+#include <functional>
+#include <list>
+#include <thread>
+#include <vector>
 
 /**
  * Test Suite for CuckooCache
@@ -284,9 +290,9 @@ static void test_cache_erase_parallel(size_t megabytes) {
     SeedInsecureRand(true);
     std::vector<uint256> hashes;
     Cache set{};
-    size_t bytes = megabytes * (1 << 20);
+    const size_t bytes = megabytes * (1 << 20);
     set.setup_bytes(bytes);
-    uint32_t n_insert = static_cast<uint32_t>(load * (bytes / sizeof(uint256)));
+    const uint32_t n_insert = static_cast<uint32_t>(load * (bytes / sizeof(uint256)));
     hashes.resize(n_insert);
     for (uint32_t i = 0; i < n_insert; ++i) {
         hashes[i] = InsecureRand256();
@@ -297,11 +303,11 @@ static void test_cache_erase_parallel(size_t megabytes) {
      * "future proofed".
      */
     std::vector<uint256> hashes_insert_copy = hashes;
-    boost::shared_mutex mtx;
+    SharedMutex mtx;
 
     {
         /** Grab lock to make sure we release inserts */
-        boost::unique_lock<boost::shared_mutex> l(mtx);
+        LOCK(mtx);
         /** Insert the first half */
         for (uint32_t i = 0; i < (n_insert / 2); ++i) {
             set.insert(hashes_insert_copy[i]);
@@ -312,26 +318,32 @@ static void test_cache_erase_parallel(size_t megabytes) {
      * Spin up 3 threads to run contains with erase.
      */
     std::vector<std::thread> threads;
+    std::list<bool> thread_ok_flags;  // we use a list here to avoid the strangeness of std::vector<bool>
     /** Erase the first quarter */
     for (uint32_t x = 0; x < 3; ++x) {
         /** Each thread is emplaced with x copy-by-value */
-        threads.emplace_back([&, x] {
-            boost::shared_lock<boost::shared_mutex> l(mtx);
+        threads.emplace_back([n_insert, &set, &mtx, &hashes](uint32_t thread_num, bool &flag) {
+            LOCK_SHARED(mtx);
             size_t ntodo = (n_insert / 4) / 3;
-            size_t start = ntodo * x;
-            size_t end = ntodo * (x + 1);
+            size_t start = ntodo * thread_num;
+            size_t end = ntodo * (thread_num + 1);
             for (uint32_t i = start; i < end; ++i) {
-                BOOST_CHECK(set.contains(hashes[i], true));
+                // cannot do BOOST_CHECK in a thread, so we just update the per-thread flag here
+                flag = set.contains(hashes[i], true) && flag;
             }
-        });
+        }, x, std::ref(thread_ok_flags.emplace_back(true)));
     }
 
     /** Wait for all threads to finish */
     for (std::thread &t : threads) {
         t.join();
     }
+
+    /** Make sure that none of the threads got a false return from set.contains() above */
+    BOOST_CHECK(std::all_of(thread_ok_flags.begin(), thread_ok_flags.end(), [](bool b) { return b; }));
+
     /** Grab lock to make sure we observe erases */
-    boost::unique_lock<boost::shared_mutex> l(mtx);
+    LOCK(mtx);
     /** Insert the second half */
     for (uint32_t i = (n_insert / 2); i < n_insert; ++i) {
         set.insert(hashes_insert_copy[i]);
