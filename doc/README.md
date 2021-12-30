@@ -70,5 +70,5 @@ Drag `bitcoin-cash-node` to your applications folder, and then run `bitcoin-cash
 
 ### Need Help?
 
-* Ask for help on the [Bitcoin Cash Node Subreddit](https://www.reddit.com/r/bitcoincashnode/).
+- Ask for help on the [Bitcoin Cash Node Subreddit](https://www.reddit.com/r/bitcoincashnode/).
 

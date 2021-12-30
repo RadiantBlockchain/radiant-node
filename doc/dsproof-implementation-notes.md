@@ -70,7 +70,6 @@ some additional notes on the BCHN implementation of this feature.
      (after a valid proof is received that shows the orphan was fake)
      will get punished (misbehaviour score increased by 10 points).
 
-
 Notes on the DSProof specification
 ----------------------------------
 
@@ -82,4 +81,3 @@ Notes on the DSProof specification
 3. The value of the  first `list-size` field in the spender record
    (the `Number-of-pushdata's`) is currently fixed to 1, and thus its
    encoding only occupies a single byte.
-

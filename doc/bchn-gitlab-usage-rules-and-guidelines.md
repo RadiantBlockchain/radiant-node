@@ -10,19 +10,18 @@ Cash Node repository and issue tracker at
 
 Below are common workflows users will encounter:
 
-* Raise an Issue if you experience a problem or have a suggestion for improving
+- Raise an Issue if you experience a problem or have a suggestion for improving
   the product
 
-* Fork the BCHN Repository
+- Fork the BCHN Repository
 
-* Create a branch for your change
+- Create a branch for your change
 
-* Commit your changes
+- Commit your changes
 
-* Create a Merge Request (MR)
+- Create a Merge Request (MR)
 
 You will need to create a GitLab account if you don't have one (it's free to do so).
-
 
 ## General rules for contributors
 
@@ -115,17 +114,17 @@ land merge requests.
 
 Commonly used lingo when reviewing a MR
 
-* "Concept ACK" - "I have not reviewed the code, but I approve of this change
+- "Concept ACK" - "I have not reviewed the code, but I approve of this change
   conceptually"
 
-* ACK - "I have reviewed and tested the code"
+- ACK - "I have reviewed and tested the code"
 
-* utACK - "(untested ACK) I have reviewed the code"
+- utACK - "(untested ACK) I have reviewed the code"
 
-* tACK - "(test-only ACK) I have only run the tests on the code, not able to review
+- tACK - "(test-only ACK) I have only run the tests on the code, not able to review
   it"
 
-* NACK - " I don't approve of this change because of review or verification issues
+- NACK - "I don't approve of this change because of review or verification issues
   with it"
 
 

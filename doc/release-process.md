@@ -58,9 +58,7 @@ Bitcoin Cash Node Release Process
 3. Verify IBD bith with and without `-checkpoints=0 -assumevalid=0`
 4. Upload Gitian Builds to [bitcoincashnode.org](https://bitcoincashnode.org/)
 5. Create a [release](https://github.com/bitcoin-cash-node/bitcoin-cash-node)
-   on our GitHub mirror: `contrib/release/github-release.sh -a
-   <path to release binaries> -t <release tag> -o
-   <file containing your Github OAuth token>`
+   on our GitHub mirror: `contrib/release/github-release.sh -a <path to release binaries> -t <release tag> -o <file containing your Github OAuth token>`
 6. Create [Ubuntu PPA packages](https://launchpad.net/~bitcoin-cash-node/+archive/ubuntu/ppa):
    Maintainers need to clone [packaging](https://gitlab.com/bitcoin-cash-node/bchn-sw/packaging)
    and follow instructions to run `debian-packaging.sh` in that repository.
