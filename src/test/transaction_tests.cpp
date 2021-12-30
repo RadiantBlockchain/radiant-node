@@ -990,4 +990,61 @@ BOOST_FIXTURE_TEST_CASE(checktxinput_test, TestChain100Setup) {
     }
 }
 
+BOOST_AUTO_TEST_CASE(COutPoint_ToString) {
+    BOOST_CHECK_EQUAL(COutPoint{}.ToString(), "COutPoint(0000000000, 4294967295)");
+    BOOST_CHECK_EQUAL(COutPoint(TxId(uint256(std::vector<uint8_t>{1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0})), 0).ToString(), "COutPoint(0001000100, 0)");
+}
+
+BOOST_AUTO_TEST_CASE(CTxIn_ToString) {
+    CTxIn txin;
+    BOOST_CHECK_EQUAL(txin.ToString(), "CTxIn(COutPoint(0000000000, 4294967295), coinbase )");
+
+    txin.nSequence = 0;
+    BOOST_CHECK_EQUAL(txin.ToString(), "CTxIn(COutPoint(0000000000, 4294967295), coinbase , nSequence=0)");
+
+    txin.prevout = COutPoint{TxId{uint256{std::vector<uint8_t>{1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0}}}, 0};
+    BOOST_CHECK_EQUAL(txin.ToString(), "CTxIn(COutPoint(0001000100, 0), scriptSig=, nSequence=0)");
+
+    txin.nSequence = CTxIn::SEQUENCE_FINAL;
+    BOOST_CHECK_EQUAL(txin.ToString(), "CTxIn(COutPoint(0001000100, 0), scriptSig=)");
+
+    std::vector<uint8_t> script_data{ParseHex("76a9141234567890abcdefa1a2a3a4a5a6a7a8a9a0aaab88ac")};
+    txin.scriptSig = CScript{script_data.begin(), script_data.end()};
+    txin.prevout = COutPoint{};
+    txin.nSequence = 0;
+    BOOST_CHECK_EQUAL(txin.ToString(), "CTxIn(COutPoint(0000000000, 4294967295), coinbase 76a9141234567890abcdefa1a2a3a4a5a6a7a8a9a0aaab88ac, nSequence=0)");
+
+    txin.prevout = COutPoint{TxId{uint256{std::vector<uint8_t>{1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0}}}, 0};
+    BOOST_CHECK_EQUAL(txin.ToString(), "CTxIn(COutPoint(0001000100, 0), scriptSig=76a9141234567890abcdefa1, nSequence=0)");
+
+    txin.nSequence = CTxIn::SEQUENCE_FINAL;
+    BOOST_CHECK_EQUAL(txin.ToString(), "CTxIn(COutPoint(0001000100, 0), scriptSig=76a9141234567890abcdefa1)");
+}
+
+BOOST_AUTO_TEST_CASE(CTxOut_ToString) {
+    CTxOut txout;
+
+    //BOOST_CHECK_EQUAL(txout.ToString(), "CTxOut(nValue=-0.00000001, scriptPubKey=)");
+    // test fails with current implementation ("0.-0000001")
+
+    std::vector<uint8_t> script_data{ParseHex("76a9141234567890abcdefa1a2a3a4a5a6a7a8a9a0aaab88ac")};
+    txout.scriptPubKey = CScript{script_data.begin(), script_data.end()};
+
+    txout.nValue = Amount::zero();
+    BOOST_CHECK_EQUAL(txout.ToString(), "CTxOut(nValue=0.00000000, scriptPubKey=76a9141234567890abcdefa1a2a3a4)");
+
+    txout.nValue = 123'456'000 * SATOSHI;
+    BOOST_CHECK_EQUAL(txout.ToString(), "CTxOut(nValue=1.23456000, scriptPubKey=76a9141234567890abcdefa1a2a3a4)");
+
+    txout.nValue = 1230 * COIN;
+    BOOST_CHECK_EQUAL(txout.ToString(), "CTxOut(nValue=1230.00000000, scriptPubKey=76a9141234567890abcdefa1a2a3a4)");
+
+    txout.nValue = -123'456'000 * SATOSHI;
+    //BOOST_CHECK_EQUAL(txout.ToString(), "CTxOut(nValue=-1.23456000, scriptPubKey=76a9141234567890abcdefa1a2a3a4)");
+    // test fails with current implementation ("-1.-23456000")
+
+    txout.nValue = -1230 * COIN;
+    BOOST_CHECK_EQUAL(txout.ToString(), "CTxOut(nValue=-1230.00000000, scriptPubKey=76a9141234567890abcdefa1a2a3a4)");
+}
+
 BOOST_AUTO_TEST_SUITE_END()

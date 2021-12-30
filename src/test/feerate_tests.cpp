@@ -88,4 +88,14 @@ BOOST_AUTO_TEST_CASE(GetFeeTest) {
     CFeeRate(MAX_MONEY, std::numeric_limits<size_t>::max() >> 1).GetFeePerK();
 }
 
+BOOST_AUTO_TEST_CASE(ToString) {
+    BOOST_CHECK_EQUAL(CFeeRate{Amount::zero()}.ToString(), "0.00000000 BCH/kB");
+    BOOST_CHECK_EQUAL(CFeeRate{SATOSHI}.ToString(), "0.00000001 BCH/kB");
+    BOOST_CHECK_EQUAL(CFeeRate{Amount{123'456'000 * SATOSHI}}.ToString(), "1.23456000 BCH/kB");
+    BOOST_CHECK_EQUAL(CFeeRate{Amount{1230 * COIN}}.ToString(), "1230.00000000 BCH/kB");
+    //BOOST_CHECK_EQUAL(CFeeRate{Amount{-123'456'000 * SATOSHI}}.ToString(), "-1.23456000 BCH/kB");
+    // test fails with current implementation! ("-1.-23456000")
+    BOOST_CHECK_EQUAL(CFeeRate{Amount{-1230 * COIN}}.ToString(), "-1230.00000000 BCH/kB");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
