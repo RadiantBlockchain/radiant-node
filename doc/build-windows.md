@@ -8,18 +8,18 @@ be removed).
 
 The options known to work for building Bitcoin Cash Node on Windows are:
 
-* On Linux, using the [Mingw-w64](https://mingw-w64.org/doku.php) cross compiler
+- On Linux, using the [Mingw-w64](https://mingw-w64.org/doku.php) cross compiler
   tool chain. Debian Buster is recommended and is the platform used to build the
   Bitcoin Cash Node Windows release binaries.
-* On Windows, using [Windows Subsystem for Linux (WSL)](https://msdn.microsoft.com/commandline/wsl/about)
+- On Windows, using [Windows Subsystem for Linux (WSL)](https://msdn.microsoft.com/commandline/wsl/about)
   and the Mingw-w64 cross compiler tool chain. This is covered in these notes.
 
 Other options which may work, but which have not been extensively tested are
 (please contribute instructions):
 
-* On Windows, using a POSIX compatibility layer application such as
+- On Windows, using a POSIX compatibility layer application such as
   [cygwin](http://www.cygwin.com/) or [msys2](http://www.msys2.org/).
-* On Windows, using a native compiler tool chain such as
+- On Windows, using a native compiler tool chain such as
   [Visual Studio](https://www.visualstudio.com).
 
 In any case please make sure that the compiler supports C++17.
@@ -157,11 +157,11 @@ for further info.
 To install Ubuntu 18.04 on your WSL, you need to:
 
 1. Install Ubuntu 18.04
-    * Open Microsoft Store and search for Ubuntu 18.04 or use [this link](https://www.microsoft.com/store/productId/9n9tngvndl3q)
-    * Click **Get**
+    - Open Microsoft Store and search for Ubuntu 18.04 or use [this link](https://www.microsoft.com/store/productId/9n9tngvndl3q)
+    - Click **Get**
 2. Complete Installation
-    * Open a cmd prompt and type "Ubuntu"
-    * Create a new UNIX user account
+    - Open a cmd prompt and type "Ubuntu"
+    - Create a new UNIX user account
       (this is a separate account from your Windows account)
 
 After the bash shell is active, you can follow the instructions below, starting

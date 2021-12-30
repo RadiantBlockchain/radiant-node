@@ -59,3 +59,4 @@ exclude_patterns:
   - src/leveldb/
   - src/secp256k1/
   - test/functional/
+  - depends/SDK

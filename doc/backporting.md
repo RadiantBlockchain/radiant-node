@@ -17,7 +17,7 @@ Identifying commits
    `> git tag -a fork-commit 964a185 -m 'Where the fun started'`
 4. `git log --topo-order --graph fork-commit..HEAD -- <file or folder of interest>`
 5. Find the commit, and if applicable, the associated merge commit that
-   are worth backporting.	The merge commit may indicate that there were other
+   are worth backporting.  The merge commit may indicate that there were other
    commits associated with this change that you will need to backport. E.g:
 
 ```
