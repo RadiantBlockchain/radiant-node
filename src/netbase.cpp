@@ -11,6 +11,7 @@
 #include <uint256.h>
 #include <util/bit_cast.h>
 #include <util/strencodings.h>
+#include <util/string.h>
 #include <util/system.h>
 
 #include <tinyformat.h>
@@ -67,9 +68,13 @@ std::string GetNetworkName(enum Network net) {
     }
 }
 
-static bool LookupIntern(const char *pszName, std::vector<CNetAddr> &vIP,
-                         unsigned int nMaxSolutions, bool fAllowLookup) {
+static bool LookupIntern(const std::string &name, std::vector<CNetAddr> &vIP, unsigned int nMaxSolutions,
+                         bool fAllowLookup) {
     vIP.clear();
+
+    if (!ValidAsCString(name)) {
+        return false;
+    }
 
     {
         CNetAddr addr;
@@ -79,7 +84,7 @@ static bool LookupIntern(const char *pszName, std::vector<CNetAddr> &vIP,
         // getaddrinfo to decode them and it wouldn't make sense to resolve
         // them, we return a network address representing it instead. See
         // CNetAddr::SetSpecial(const std::string&) for more details.
-        if (addr.SetSpecial(std::string(pszName))) {
+        if (addr.SetSpecial(name)) {
             vIP.push_back(addr);
             return true;
         }
@@ -111,7 +116,7 @@ static bool LookupIntern(const char *pszName, std::vector<CNetAddr> &vIP,
     // hostname lookups.
     aiHint.ai_flags = fAllowLookup ? AI_ADDRCONFIG : AI_NUMERICHOST;
     struct addrinfo *aiRes = nullptr;
-    int nErr = getaddrinfo(pszName, nullptr, &aiHint, &aiRes);
+    int nErr = getaddrinfo(name.c_str(), nullptr, &aiHint, &aiRes);
     if (nErr) {
         return false;
     }
@@ -150,7 +155,7 @@ static bool LookupIntern(const char *pszName, std::vector<CNetAddr> &vIP,
 /**
  * Resolve a host string to its corresponding network addresses.
  *
- * @param pszName The string representing a host. Could be a name or a numerical
+ * @param name    The string representing a host. Could be a name or a numerical
  *                IP address (IPv6 addresses in their bracketed form are
  *                allowed).
  * @param[out] vIP The resulting network addresses to which the specified host
@@ -162,9 +167,11 @@ static bool LookupIntern(const char *pszName, std::vector<CNetAddr> &vIP,
  * @see Lookup(const char *, std::vector<CService>&, int, bool, unsigned int)
  *      for additional parameter descriptions.
  */
-bool LookupHost(const char *pszName, std::vector<CNetAddr> &vIP,
-                unsigned int nMaxSolutions, bool fAllowLookup) {
-    std::string strHost(pszName);
+bool LookupHost(const std::string &name, std::vector<CNetAddr> &vIP, unsigned int nMaxSolutions, bool fAllowLookup) {
+    if (!ValidAsCString(name)) {
+        return false;
+    }
+    std::string strHost = name;
     if (strHost.empty()) {
         return false;
     }
@@ -172,18 +179,21 @@ bool LookupHost(const char *pszName, std::vector<CNetAddr> &vIP,
         strHost = strHost.substr(1, strHost.size() - 2);
     }
 
-    return LookupIntern(strHost.c_str(), vIP, nMaxSolutions, fAllowLookup);
+    return LookupIntern(strHost, vIP, nMaxSolutions, fAllowLookup);
 }
 
  /**
  * Resolve a host string to its first corresponding network address.
  *
- * @see LookupHost(const char *, std::vector<CNetAddr>&, unsigned int, bool) for
+ * @see LookupHost(const std::string&, std::vector<CNetAddr>&, unsigned int, bool) for
  *      additional parameter descriptions.
  */
-bool LookupHost(const char *pszName, CNetAddr &addr, bool fAllowLookup) {
+bool LookupHost(const std::string &name, CNetAddr &addr, bool fAllowLookup) {
+    if (!ValidAsCString(name)) {
+        return false;
+    }
     std::vector<CNetAddr> vIP;
-    LookupHost(pszName, vIP, 1, fAllowLookup);
+    LookupHost(name, vIP, 1, fAllowLookup);
     if (vIP.empty()) {
         return false;
     }
@@ -194,7 +204,7 @@ bool LookupHost(const char *pszName, CNetAddr &addr, bool fAllowLookup) {
 /**
  * Resolve a service string to its corresponding service.
  *
- * @param pszName The string representing a service. Could be a name or a
+ * @param name    The string representing a service. Could be a name or a
  *                numerical IP address (IPv6 addresses should be in their
  *                disambiguated bracketed form), optionally followed by a port
  *                number. (e.g. example.com:8333 or
@@ -211,18 +221,17 @@ bool LookupHost(const char *pszName, CNetAddr &addr, bool fAllowLookup) {
  * @returns Whether or not the service string successfully resolved to any
  *          resulting services.
  */
-bool Lookup(const char *pszName, std::vector<CService> &vAddr, int portDefault,
-            bool fAllowLookup, unsigned int nMaxSolutions) {
-    if (pszName[0] == 0) {
+bool Lookup(const std::string &name, std::vector<CService> &vAddr, int portDefault, bool fAllowLookup,
+            unsigned int nMaxSolutions) {
+    if (name.empty() || !ValidAsCString(name)) {
         return false;
     }
     int port = portDefault;
     std::string hostname;
-    SplitHostPort(std::string(pszName), port, hostname);
+    SplitHostPort(name, port, hostname);
 
     std::vector<CNetAddr> vIP;
-    bool fRet =
-        LookupIntern(hostname.c_str(), vIP, nMaxSolutions, fAllowLookup);
+    bool fRet = LookupIntern(hostname, vIP, nMaxSolutions, fAllowLookup);
     if (!fRet) {
         return false;
     }
@@ -239,10 +248,12 @@ bool Lookup(const char *pszName, std::vector<CService> &vAddr, int portDefault,
  * @see Lookup(const char *, std::vector<CService>&, int, bool, unsigned int)
  *      for additional parameter descriptions.
  */
-bool Lookup(const char *pszName, CService &addr, int portDefault,
-            bool fAllowLookup) {
+bool Lookup(const std::string &name, CService &addr, int portDefault, bool fAllowLookup) {
+    if (!ValidAsCString(name)) {
+        return false;
+    }
     std::vector<CService> vService;
-    bool fRet = Lookup(pszName, vService, portDefault, fAllowLookup, 1);
+    bool fRet = Lookup(name, vService, portDefault, fAllowLookup, 1);
     if (!fRet) {
         return false;
     }
@@ -260,11 +271,14 @@ bool Lookup(const char *pszName, CService &addr, int portDefault,
  * @see Lookup(const char *, CService&, int, bool) for additional parameter
  *      descriptions.
  */
-CService LookupNumeric(const char *pszName, int portDefault) {
+CService LookupNumeric(const std::string &name, int portDefault) {
+    if (!ValidAsCString(name)) {
+        return {};
+    }
     CService addr;
     // "1.2:345" will fail to resolve the ip, but will still set the port.
     // If the ip fails to resolve, re-init the result.
-    if (!Lookup(pszName, addr, portDefault, false)) {
+    if (!Lookup(name, addr, portDefault, false)) {
         addr = CService();
     }
     return addr;
@@ -839,14 +853,12 @@ bool IsProxy(const CNetAddr &addr) {
  *
  * @returns Whether or not the operation succeeded.
  */
-bool ConnectThroughProxy(const proxyType &proxy, const std::string &strDest,
-                         int port, const SOCKET &hSocket, int nTimeout,
-                         bool *outProxyConnectionFailed) {
+bool ConnectThroughProxy(const proxyType &proxy, const std::string &strDest, int port, const SOCKET &hSocket,
+                         int nTimeout, bool &outProxyConnectionFailed) {
+    outProxyConnectionFailed = false;
     // first connect to proxy server
     if (!ConnectSocketDirectly(proxy.proxy, hSocket, nTimeout, true)) {
-        if (outProxyConnectionFailed) {
-            *outProxyConnectionFailed = true;
-        }
+        outProxyConnectionFailed = true;
         return false;
     }
     // do socks negotiation
@@ -868,22 +880,24 @@ bool ConnectThroughProxy(const proxyType &proxy, const std::string &strDest,
  * Parse and resolve a specified subnet string into the appropriate internal
  * representation.
  *
- * @param pszName A string representation of a subnet of the form `network
+ * @param strSubnet A string representation of a subnet of the form `network
  *                address [ "/", ( CIDR-style suffix | netmask ) ]`(e.g.
  *                `2001:db8::/32`, `192.0.2.0/255.255.255.0`, or `8.8.8.8`).
  * @param ret The resulting internal representation of a subnet.
  *
  * @returns Whether the operation succeeded or not.
  */
-bool LookupSubNet(const char *pszName, CSubNet &ret) {
-    std::string strSubnet(pszName);
+bool LookupSubNet(const std::string &strSubnet, CSubNet &ret) {
+    if (!ValidAsCString(strSubnet)) {
+        return false;
+    }
     size_t slash = strSubnet.find_last_of('/');
     std::vector<CNetAddr> vIP;
 
     std::string strAddress = strSubnet.substr(0, slash);
-    // TODO: Use LookupHost(const char *, CNetAddr&, bool) instead to just get
+    // TODO: Use LookupHost(const std::string&, CNetAddr&, bool) instead to just get
     //       one CNetAddr.
-    if (LookupHost(strAddress.c_str(), vIP, 1, false)) {
+    if (LookupHost(strAddress, vIP, 1, false)) {
         CNetAddr network = vIP[0];
         if (slash != strSubnet.npos) {
             std::string strNetmask = strSubnet.substr(slash + 1);
@@ -895,7 +909,7 @@ bool LookupSubNet(const char *pszName, CSubNet &ret) {
             } else {
                 // If not a valid number, try full netmask syntax
                 // Never allow lookup for netmask
-                if (LookupHost(strNetmask.c_str(), vIP, 1, false)) {
+                if (LookupHost(strNetmask, vIP, 1, false)) {
                     ret = CSubNet(network, vIP[0]);
                     return ret.IsValid();
                 }

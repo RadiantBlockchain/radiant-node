@@ -16,19 +16,19 @@
 
 BOOST_FIXTURE_TEST_SUITE(netbase_tests, BasicTestingSetup)
 
-static CNetAddr ResolveIP(const char *ip) {
+static CNetAddr ResolveIP(const std::string &ip) {
     CNetAddr addr;
     LookupHost(ip, addr, false);
     return addr;
 }
 
-static CSubNet ResolveSubNet(const char *subnet) {
+static CSubNet ResolveSubNet(const std::string &subnet) {
     CSubNet ret;
     LookupSubNet(subnet, ret);
     return ret;
 }
 
-static CNetAddr CreateInternal(const char *host) {
+static CNetAddr CreateInternal(const std::string &host) {
     CNetAddr addr;
     addr.SetInternal(host);
     return addr;
@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE(netbase_splithost) {
 }
 
 static bool TestParse(const std::string &src, const std::string &canon, CService *out = nullptr) {
-    const CService addr = LookupNumeric(src.c_str(), 65535);
+    const CService addr = LookupNumeric(src, 65535);
     if (out) *out = addr;
     return canon == addr.ToString();
 }
@@ -532,6 +532,23 @@ BOOST_AUTO_TEST_CASE(cservice_get_set_sockaddr_test) {
         BOOST_CHECK(srv == srv2);
         BOOST_CHECK(srv2.IsIPv6());
     }
+}
+
+BOOST_AUTO_TEST_CASE(netbase_dont_resolve_strings_with_embedded_nul_characters) {
+    CNetAddr addr;
+    BOOST_CHECK(LookupHost(std::string("127.0.0.1", 9), addr, false));
+    BOOST_CHECK(!LookupHost(std::string("127.0.0.1\0", 10), addr, false));
+    BOOST_CHECK(!LookupHost(std::string("127.0.0.1\0example.com", 21), addr, false));
+    BOOST_CHECK(!LookupHost(std::string("127.0.0.1\0example.com\0", 22), addr, false));
+    CSubNet ret;
+    BOOST_CHECK(LookupSubNet(std::string("1.2.3.0/24", 10), ret));
+    BOOST_CHECK(!LookupSubNet(std::string("1.2.3.0/24\0", 11), ret));
+    BOOST_CHECK(!LookupSubNet(std::string("1.2.3.0/24\0example.com", 22), ret));
+    BOOST_CHECK(!LookupSubNet(std::string("1.2.3.0/24\0example.com\0", 23), ret));
+    BOOST_CHECK(LookupSubNet(std::string("5wyqrzbvrdsumnok.onion", 22), ret));
+    BOOST_CHECK(!LookupSubNet(std::string("5wyqrzbvrdsumnok.onion\0", 23), ret));
+    BOOST_CHECK(!LookupSubNet(std::string("5wyqrzbvrdsumnok.onion\0example.com", 34), ret));
+    BOOST_CHECK(!LookupSubNet(std::string("5wyqrzbvrdsumnok.onion\0example.com\0", 35), ret));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
