@@ -60,6 +60,20 @@ void CNetAddr::SetRaw(Network network, const uint8_t *ip_in) {
     }
 }
 
+/**
+ * Try to make this a dummy address that maps the specified name into IPv6 like
+ * so: (0xFD + %sha256("bitcoin")[0:5]) + %sha256(name)[0:10]. Such dummy
+ * addresses have a prefix of fd6b:88c0:8724::/48 and are guaranteed to not be
+ * publicly routable as it falls under RFC4193's fc00::/7 subnet allocated to
+ * unique-local addresses.
+ *
+ * CAddrMan uses these fake addresses to keep track of which DNS seeds were
+ * used.
+ *
+ * @returns Whether or not the operation was successful.
+ *
+ * @see CNetAddr::IsInternal(), CNetAddr::IsRFC4193()
+ */
 bool CNetAddr::SetInternal(const std::string &name) {
     if (name.empty()) {
         return false;
@@ -72,6 +86,16 @@ bool CNetAddr::SetInternal(const std::string &name) {
     return true;
 }
 
+/**
+ * Try to make this a dummy address that maps the specified onion address into
+ * IPv6 using OnionCat's range and encoding. Such dummy addresses have a prefix
+ * of fd87:d87e:eb43::/48 and are guaranteed to not be publicly routable as they
+ * fall under RFC4193's fc00::/7 subnet allocated to unique-local addresses.
+ *
+ * @returns Whether or not the operation was successful.
+ *
+ * @see CNetAddr::IsTor(), CNetAddr::IsRFC4193()
+ */
 bool CNetAddr::SetSpecial(const std::string &strName) {
     if (strName.size() > 6 &&
         strName.substr(strName.size() - 6, 6) == ".onion") {
@@ -248,6 +272,15 @@ bool CNetAddr::IsValid() const
     return true;
 }
 
+/**
+ * @returns Whether or not this network address is publicly routable on the
+ *          global internet.
+ *
+ * @note A routable address is always valid. As in, the set of routable addreses
+ *       is a subset of the set of valid addresses.
+ *
+ * @see CNetAddr::IsValid()
+ */
 bool CNetAddr::IsRoutable() const {
     return IsValid() &&
            !(IsRFC1918() || IsRFC2544() || IsRFC3927() || IsRFC4862() ||
@@ -320,6 +353,16 @@ bool operator<(const CNetAddr &a, const CNetAddr &b) {
     return a.m_net < b.m_net || (a.m_net == b.m_net && std::memcmp(a.ip, b.ip, 16) < 0);
 }
 
+/**
+ * Try to get our IPv4 address.
+ *
+ * @param[out] pipv4Addr The in_addr struct to which to copy.
+ *
+ * @returns Whether or not the operation was successful, in particular, whether
+ *          or not our address was an IPv4 address.
+ *
+ * @see CNetAddr::IsIPv4()
+ */
 bool CNetAddr::GetInAddr(struct in_addr *pipv4Addr) const {
     if (!IsIPv4()) {
         return false;
@@ -328,6 +371,16 @@ bool CNetAddr::GetInAddr(struct in_addr *pipv4Addr) const {
     return true;
 }
 
+/**
+ * Try to get our IPv6 address.
+ *
+ * @param[out] pipv6Addr The in6_addr struct to which to copy.
+ *
+ * @returns Whether or not the operation was successful, in particular, whether
+ *          or not our address was an IPv6 address.
+ *
+ * @see CNetAddr::IsIPv6()
+ */
 bool CNetAddr::GetIn6Addr(struct in6_addr *pipv6Addr) const {
     if (!IsIPv6()) {
         return false;
@@ -336,8 +389,16 @@ bool CNetAddr::GetIn6Addr(struct in6_addr *pipv6Addr) const {
     return true;
 }
 
-// get canonical identifier of an address' group no two connections will be
-// attempted to addresses with the same group
+/**
+ * Get the canonical identifier of our network group
+ *
+ * The groups are assigned in a way where it should be costly for an attacker to
+ * obtain addresses with many different group identifiers, even if it is cheap
+ * to obtain addresses with the same identifier.
+ *
+ * @note No two connections will be attempted to addresses with the same network
+ *       group.
+ */
 std::vector<uint8_t> CNetAddr::GetGroup() const {
     std::vector<uint8_t> vchRet;
     int nClass = NET_IPV6;
@@ -389,11 +450,14 @@ std::vector<uint8_t> CNetAddr::GetGroup() const {
     }
 
     vchRet.push_back(nClass);
+
+    // push our ip onto vchRet byte by byte...
     while (nBits >= 8) {
         vchRet.push_back(GetByte(15 - nStartByte));
         nStartByte++;
         nBits -= 8;
     }
+    // ...for the last byte, push nBits and for the rest of the byte push 1's
     if (nBits > 0) {
         vchRet.push_back(GetByte(15 - nStartByte) | ((1 << (8 - nBits)) - 1));
     }
@@ -538,6 +602,11 @@ bool operator<(const CService &a, const CService &b) {
             a.port < b.port);
 }
 
+/**
+ * Obtain the IPv4/6 socket address this represents.
+ *
+ * @returns An optional sockaddr / length pair when successful.
+ */
 std::optional<std::pair<sockaddr_storage, socklen_t>> CService::GetSockAddr() const {
     std::optional<std::pair<sockaddr_storage, socklen_t>> ret;
     if (IsIPv4()) {
@@ -567,6 +636,9 @@ std::optional<std::pair<sockaddr_storage, socklen_t>> CService::GetSockAddr() co
     return ret;
 }
 
+/**
+ * @returns An identifier unique to this service's address and port number.
+ */
 std::vector<uint8_t> CService::GetKey() const {
     auto addr = GetAddressBytes();
     std::vector<uint8_t> key(addr, addr + GetAddressLen());
@@ -663,6 +735,10 @@ bool CSubNet::Match(const CNetAddr &addr) const {
     return true;
 }
 
+/**
+ * @returns The number of 1-bits in the prefix of the specified subnet mask. If
+ *          the specified subnet mask is not a valid one, -1.
+ */
 static inline int NetmaskBits(uint8_t x) {
     switch (x) {
         case 0x00:
