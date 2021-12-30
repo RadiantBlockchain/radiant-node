@@ -50,6 +50,7 @@ add_executable(bench_bitcoin
 	rpc_blockchain.cpp
 	rpc_mempool.cpp
 	json.cpp
+	util_string.cpp
 	util_time.cpp
 	verify_script.cpp
 

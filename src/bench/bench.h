@@ -1,4 +1,5 @@
 // Copyright (c) 2015-2016 The Bitcoin Core developers
+// Copyright (c) 2021 The Bitcoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -9,6 +10,8 @@
 #include <limits>
 #include <map>
 #include <string>
+#include <type_traits>
+#include <utility>
 #include <vector>
 
 #include <boost/preprocessor/cat.hpp>
@@ -128,6 +131,34 @@ private:
     int64_t m_width;
     int64_t m_height;
 };
+
+
+namespace internal {
+/// Internal function (called with pointers only by NoOptimize() below). This function is a no-op.
+extern void
+#if defined(__clang__)
+__attribute__((optnone)) /* disable optimizations -- should keep this function also from being reordered */
+#elif defined(__GNUC__)
+__attribute__((optimize(0),no_reorder))
+#endif
+NoOptimize(...) noexcept;
+} // namespace internal
+
+/// This is a "do nothing" function that can take any number of arguments. The intent here is to
+/// hopefully not have the optimizer elide some calls during a benchmark iteration. Use this to
+/// wrap function calls or to denote objects during a benchmark iteration which you would like
+/// the optimizer to not elide or reorder.
+template <typename...Args>
+constexpr void NoOptimize(Args && ...args) noexcept {
+    auto GetPointer = [](auto && arg) noexcept {
+        if constexpr (std::is_pointer_v<std::remove_reference_t<decltype(arg)>>)
+            return arg;
+        else
+            return &arg;
+    };
+    internal::NoOptimize(GetPointer(std::forward<Args>(args))...);
+}
+
 } // namespace benchmark
 
 // BENCHMARK(foo, num_iters_for_one_second) expands to:  benchmark::BenchRunner
