@@ -151,3 +151,16 @@ bool benchmark::State::UpdateTimer(const benchmark::time_point current_time) {
     m_num_iters_left = m_num_iters - 1;
     return true;
 }
+
+void
+#if defined(__clang__)
+__attribute__((optnone))
+#elif defined(__GNUC__)
+__attribute__((optimize(0),no_reorder))
+#endif
+benchmark::internal::NoOptimize(...) noexcept
+{
+#ifdef __GNUC__ // NB: this also is true for clang
+    __asm__ __volatile__ ("":::"memory"); // acts as a memory barrier and may prevent some forms of LTO and reordering.
+#endif
+}
