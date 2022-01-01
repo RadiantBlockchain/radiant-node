@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2021 The Bitcoin developers
+# Copyright (c) 2017-2022 The Bitcoin developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -18,7 +18,7 @@ project(bitcoin-cash-node
 set(PACKAGE_NAME "Bitcoin Cash Node")
 
 # Copyright
-set(COPYRIGHT_YEAR 2021)
+set(COPYRIGHT_YEAR 2022)
 set(COPYRIGHT_HOLDERS "The %s developers")
 set(COPYRIGHT_HOLDERS_SUBSTITUTION Bitcoin)
 string(REPLACE "%s" ${COPYRIGHT_HOLDERS_SUBSTITUTION} COPYRIGHT_HOLDERS_FINAL ${COPYRIGHT_HOLDERS})
