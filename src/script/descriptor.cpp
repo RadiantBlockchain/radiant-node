@@ -857,7 +857,7 @@ std::unique_ptr<Descriptor> InferScript(const CScript &script,
 
 std::unique_ptr<Descriptor> Parse(const std::string &descriptor,
                                   FlatSigningProvider &out) {
-    Span<const char> sp(descriptor.data(), descriptor.size());
+    Span<const char> sp{descriptor};
     auto ret = ParseScript(sp, ParseScriptContext::TOP, out);
     if (sp.size() == 0 && ret) {
         return ret;
