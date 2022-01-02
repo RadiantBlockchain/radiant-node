@@ -761,7 +761,7 @@ std::vector<bool> CAddrMan::DecodeAsmap(fs::path path) {
     }
     if (!SanityCheckASMap(bits)) {
         LogPrintf("Sanity check of asmap file %s failed\n", path);
-        return {};
+        bits.clear();
     }
     return bits;
 }

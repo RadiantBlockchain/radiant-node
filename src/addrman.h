@@ -488,14 +488,14 @@ public:
         if (nVersion > 1) {
             s >> serialized_asmap_version;
         }
+        const bool asmap_versions_equal = supplied_asmap_version == serialized_asmap_version;
 
         for (int n = 0; n < nNew; n++) {
             CAddrInfo &info = mapInfo[n];
             int bucket = entryToBucket[n];
             int nUBucketPos = info.GetBucketPosition(nKey, true, bucket);
             if (nVersion == 2 && nUBuckets == ADDRMAN_NEW_BUCKET_COUNT && vvNew[bucket][nUBucketPos] == -1 &&
-                info.nRefCount < ADDRMAN_NEW_BUCKETS_PER_ADDRESS &&
-                serialized_asmap_version == supplied_asmap_version) {
+                info.nRefCount < ADDRMAN_NEW_BUCKETS_PER_ADDRESS && asmap_versions_equal) {
                 // Bucketing has not changed, using existing bucket positions for the new table
                 vvNew[bucket][nUBucketPos] = n;
                 info.nRefCount++;

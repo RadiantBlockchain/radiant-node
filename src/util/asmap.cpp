@@ -3,17 +3,19 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <crypto/common.h>
+#include <span.h>
 
+#include <array>
 #include <cassert>
 #include <map>
 #include <vector>
 
 namespace {
 
-constexpr uint32_t INVALID = 0xFFFFFFFF;
+inline constexpr uint32_t INVALID = 0xFFFFFFFF;
 
 uint32_t DecodeBits(std::vector<bool>::const_iterator &bitpos, const std::vector<bool>::const_iterator &endpos,
-                    uint8_t minval, const std::vector<uint8_t> &bit_sizes) {
+                    const uint8_t minval, const Span<const uint8_t> bit_sizes) {
     uint32_t val = minval;
     bool bit;
     for (auto bit_sizes_it = bit_sizes.begin(); bit_sizes_it != bit_sizes.end(); ++bit_sizes_it) {
@@ -46,23 +48,23 @@ enum class Instruction : uint32_t {
     DEFAULT = 3,
 };
 
-const std::vector<uint8_t> TYPE_BIT_SIZES{0, 0, 1};
+inline constexpr std::array<uint8_t, 3> TYPE_BIT_SIZES = {{0, 0, 1}};
 Instruction DecodeType(std::vector<bool>::const_iterator &bitpos, const std::vector<bool>::const_iterator &endpos) {
     return Instruction(DecodeBits(bitpos, endpos, 0, TYPE_BIT_SIZES));
 }
 
-const std::vector<uint8_t> ASN_BIT_SIZES{15, 16, 17, 18, 19, 20, 21, 22, 23, 24};
+inline constexpr std::array<uint8_t, 10> ASN_BIT_SIZES = {{15, 16, 17, 18, 19, 20, 21, 22, 23, 24}};
 uint32_t DecodeASN(std::vector<bool>::const_iterator &bitpos, const std::vector<bool>::const_iterator &endpos) {
     return DecodeBits(bitpos, endpos, 1, ASN_BIT_SIZES);
 }
 
-const std::vector<uint8_t> MATCH_BIT_SIZES{1, 2, 3, 4, 5, 6, 7, 8};
+inline constexpr std::array<uint8_t, 8> MATCH_BIT_SIZES = {{1, 2, 3, 4, 5, 6, 7, 8}};
 uint32_t DecodeMatch(std::vector<bool>::const_iterator &bitpos, const std::vector<bool>::const_iterator &endpos) {
     return DecodeBits(bitpos, endpos, 2, MATCH_BIT_SIZES);
 }
 
-const std::vector<uint8_t> JUMP_BIT_SIZES{5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 17,
-                                          18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30};
+inline constexpr std::array<uint8_t, 26> JUMP_BIT_SIZES = {{5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 17,
+                                                            18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30}};
 uint32_t DecodeJump(std::vector<bool>::const_iterator &bitpos, const std::vector<bool>::const_iterator &endpos) {
     return DecodeBits(bitpos, endpos, 17, JUMP_BIT_SIZES);
 }
@@ -113,10 +115,10 @@ uint32_t Interpret(const std::vector<bool> &asmap, const std::vector<bool> &ip) 
     return 0; // 0 is not a valid ASN
 }
 
-bool SanityCheckASMap(const std::vector<bool> &asmap, int bits) {
+bool SanityCheckASMap(const std::vector<bool> &asmap, uint32_t bits) {
     const std::vector<bool>::const_iterator begin = asmap.begin(), endpos = asmap.end();
     std::vector<bool>::const_iterator pos = begin;
-    std::vector<std::pair<uint32_t, int>>
+    std::vector<std::pair<uint32_t, uint32_t>>
         jumps; // All future positions we may jump to (bit offset in asmap -> bits to consume left)
     jumps.reserve(bits);
     Instruction prevopcode = Instruction::JUMP;
@@ -161,7 +163,7 @@ bool SanityCheckASMap(const std::vector<bool> &asmap, int bits) {
         } else if (opcode == Instruction::MATCH) {
             uint32_t match = DecodeMatch(pos, endpos);
             if (match == INVALID) return false; // Match bits straddle EOF
-            int matchlen = CountBits(match) - 1;
+            uint32_t matchlen = CountBits(match) - 1;
             if (prevopcode != Instruction::MATCH) had_incomplete_match = false;
             if (matchlen < 8 && had_incomplete_match)
                 return false; // Within a sequence of matches only at most one should be incomplete

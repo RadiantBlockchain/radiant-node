@@ -430,8 +430,8 @@ uint8_t CNetAddr::GetNetClass() const {
 }
 
 uint32_t CNetAddr::GetMappedAS(const std::vector<bool> &asmap) const {
-    const uint8_t net_class = GetNetClass();
-    if (asmap.size() == 0 || (net_class != NET_IPV4 && net_class != NET_IPV6)) {
+    if (uint8_t net_class;
+            asmap.size() == 0 || ((net_class = GetNetClass()) != NET_IPV4 && net_class != NET_IPV6)) {
         return 0; // Indicates not found, safe because AS0 is reserved per RFC7607.
     }
     std::vector<bool> ip_bits(128);
@@ -471,7 +471,6 @@ uint32_t CNetAddr::GetMappedAS(const std::vector<bool> &asmap) const {
  */
 std::vector<uint8_t> CNetAddr::GetGroup(const std::vector<bool> &asmap) const {
     std::vector<uint8_t> vchRet;
-    const uint8_t net_class = GetNetClass();
     // If non-empty asmap is supplied and the address is IPv4/IPv6,
     // return ASN to be used for bucketing.
     uint32_t asn = GetMappedAS(asmap);
@@ -483,7 +482,7 @@ std::vector<uint8_t> CNetAddr::GetGroup(const std::vector<bool> &asmap) const {
         return vchRet;
     }
 
-    vchRet.push_back(net_class);
+    vchRet.push_back(GetNetClass());
     int nStartByte = 0;
     int nBits = 16;
 
