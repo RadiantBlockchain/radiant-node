@@ -25,10 +25,8 @@
 #include <limits>
 #include <tuple>
 
-static const uint8_t pchSingleAddressNetmask[16] =
+static constexpr uint8_t pchSingleAddressNetmask[16] =
     {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
-
-constexpr size_t CNetAddr::V1_SERIALIZATION_SIZE;
 
 void CNetAddr::SetIP(const CNetAddr &ipIn) {
     // Size check.
@@ -62,25 +60,26 @@ static inline bool HasPrefix(const T1 &obj, const std::array<uint8_t, PREFIX_LEN
 void CNetAddr::SetLegacyIPv6(Span<const uint8_t> ipv6) {
     assert(ipv6.size() == ADDR_IPV6_SIZE);
 
-    size_t skip{0};
+    size_t skip{};
 
     if (HasPrefix(ipv6, IPV4_IN_IPV6_PREFIX)) {
         // IPv4-in-IPv6
         m_net = NET_IPV4;
-        skip = sizeof(IPV4_IN_IPV6_PREFIX);
+        skip = IPV4_IN_IPV6_PREFIX.size();
     } else if (HasPrefix(ipv6, TORV2_IN_IPV6_PREFIX)) {
         // TORv2-in-IPv6
         m_net = NET_ONION;
-        skip = sizeof(TORV2_IN_IPV6_PREFIX);
+        skip = TORV2_IN_IPV6_PREFIX.size();
     } else if (HasPrefix(ipv6, INTERNAL_IN_IPV6_PREFIX)) {
         // Internal-in-IPv6
         m_net = NET_INTERNAL;
-        skip = sizeof(INTERNAL_IN_IPV6_PREFIX);
+        skip = INTERNAL_IN_IPV6_PREFIX.size();
     } else {
         // IPv6
         m_net = NET_IPV6;
     }
-    m_addr.assign(ipv6.begin() + skip, ipv6.end());
+    const auto subspan = ipv6.subspan(skip);
+    m_addr.assign(subspan.begin(), subspan.end());
 }
 
 /**
@@ -111,8 +110,7 @@ bool CNetAddr::SetInternal(const std::string &name) {
 bool CNetAddr::SetSpecial(const std::string &strName) {
     if (strName.size() > 6 &&
         strName.substr(strName.size() - 6, 6) == ".onion") {
-        std::vector<uint8_t> vchAddr =
-            DecodeBase32(strName.substr(0, strName.size() - 6).c_str());
+        const std::vector<uint8_t> vchAddr = DecodeBase32(strName.substr(0, strName.size() - 6).c_str());
         if (vchAddr.size() != ADDR_TORV2_SIZE) {
             return false;
         }
@@ -124,13 +122,15 @@ bool CNetAddr::SetSpecial(const std::string &strName) {
 }
 
 CNetAddr::CNetAddr(const struct in_addr &ipv4Addr) {
+    static_assert(sizeof(ipv4Addr) == ADDR_IPV4_SIZE, "struct in_addr must be exactly ADDR_IPV4_SIZE bytes (4)");
     m_net = NET_IPV4;
     const uint8_t *ptr = reinterpret_cast<const uint8_t *>(&ipv4Addr);
     m_addr.assign(ptr, ptr + ADDR_IPV4_SIZE);
 }
 
 CNetAddr::CNetAddr(const struct in6_addr &ipv6Addr, const uint32_t scope) {
-    SetLegacyIPv6(Span<const uint8_t>(reinterpret_cast<const uint8_t *>(&ipv6Addr), sizeof(ipv6Addr)));
+    static_assert(sizeof(ipv6Addr) == ADDR_IPV6_SIZE, "struct in6_addr must be exactly ADDR_IPV6_SIZE bytes (16)");
+    SetLegacyIPv6(Span<const uint8_t>(reinterpret_cast<const uint8_t *>(&ipv6Addr), ADDR_IPV6_SIZE));
     scopeId = scope;
 }
 
@@ -231,7 +231,7 @@ bool CNetAddr::IsLocal() const {
     }
 
     // IPv6 loopback (::1/128)
-    static const uint8_t pchLocal[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
+    static constexpr uint8_t pchLocal[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
     if (IsIPv6() && std::memcmp(m_addr.data(), pchLocal, sizeof(pchLocal)) == 0) {
         return true;
     }
@@ -252,7 +252,7 @@ bool CNetAddr::IsLocal() const {
 bool CNetAddr::IsValid() const
 {
     // unspecified IPv6 address (::/128)
-    uint8_t ipNone6[16] = {};
+    static constexpr uint8_t ipNone6[16] = {};
     if (IsIPv6() && std::memcmp(m_addr.data(), ipNone6, sizeof(ipNone6)) == 0) {
         return false;
     }
@@ -519,12 +519,6 @@ std::vector<uint8_t> CNetAddr::GetGroup(const std::vector<bool> &asmap) const {
     }
 
     return vchRet;
-}
-
-std::vector<uint8_t> CNetAddr::GetAddrBytes() const {
-    uint8_t serialized[V1_SERIALIZATION_SIZE];
-    SerializeV1Array(serialized);
-    return {std::begin(serialized), std::end(serialized)};
 }
 
 uint64_t CNetAddr::GetHash() const {

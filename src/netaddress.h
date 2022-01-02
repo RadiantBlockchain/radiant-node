@@ -56,7 +56,7 @@ enum Network {
 
 /// Prefix of an IPv6 address when it contains an embedded IPv4 address.
 /// Used when (un)serializing addresses in ADDRv1 format (pre-BIP155).
-static const std::array<uint8_t, 12> IPV4_IN_IPV6_PREFIX{{
+inline constexpr std::array<uint8_t, 12> IPV4_IN_IPV6_PREFIX{{
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF
 }};
 
@@ -64,7 +64,7 @@ static const std::array<uint8_t, 12> IPV4_IN_IPV6_PREFIX{{
 /// Used when (un)serializing addresses in ADDRv1 format (pre-BIP155).
 /// Such dummy IPv6 addresses are guaranteed to not be publicly routable as they
 /// fall under RFC4193's fc00::/7 subnet allocated to unique-local addresses.
-static const std::array<uint8_t, 6> TORV2_IN_IPV6_PREFIX{{
+inline constexpr std::array<uint8_t, 6> TORV2_IN_IPV6_PREFIX{{
     0xFD, 0x87, 0xD8, 0x7E, 0xEB, 0x43
 }};
 
@@ -73,21 +73,21 @@ static const std::array<uint8_t, 6> TORV2_IN_IPV6_PREFIX{{
 /// The prefix comes from 0xFD + SHA256("bitcoin")[0:5].
 /// Such dummy IPv6 addresses are guaranteed to not be publicly routable as they
 /// fall under RFC4193's fc00::/7 subnet allocated to unique-local addresses.
-static const std::array<uint8_t, 6> INTERNAL_IN_IPV6_PREFIX{{
+inline constexpr std::array<uint8_t, 6> INTERNAL_IN_IPV6_PREFIX{{
     0xFD, 0x6B, 0x88, 0xC0, 0x87, 0x24 // 0xFD + sha256("bitcoin")[0:5].
 }};
 
 /// Size of IPv4 address (in bytes).
-static constexpr size_t ADDR_IPV4_SIZE = 4;
+inline constexpr size_t ADDR_IPV4_SIZE = 4;
 
 /// Size of IPv6 address (in bytes).
-static constexpr size_t ADDR_IPV6_SIZE = 16;
+inline constexpr size_t ADDR_IPV6_SIZE = 16;
 
 /// Size of TORv2 address (in bytes).
-static constexpr size_t ADDR_TORV2_SIZE = 10;
+inline constexpr size_t ADDR_TORV2_SIZE = 10;
 
 /// Size of "internal" (NET_INTERNAL) address (in bytes).
-static constexpr size_t ADDR_INTERNAL_SIZE = 10;
+inline constexpr size_t ADDR_INTERNAL_SIZE = 10;
 
 /**
  * Network address.
@@ -185,7 +185,8 @@ public:
     uint32_t GetMappedAS(const std::vector<bool> &asmap) const;
 
     std::vector<uint8_t> GetGroup(const std::vector<bool> &asmap) const;
-    std::vector<uint8_t> GetAddrBytes() const;
+    // This will return the address as a serialized V1 vector (size: 16 bytes).
+    std::vector<uint8_t> GetAddrBytes() const { return SerializeV1Array(); }
     int GetReachabilityFrom(const CNetAddr *paddrPartner = nullptr) const;
 
     bool GetIn6Addr(struct in6_addr *pipv6Addr) const;
@@ -223,39 +224,36 @@ private:
     /**
      * Serialize in pre-ADDRv2/BIP155 format to an array.
      * Some addresses (e.g. TORv3) cannot be serialized in pre-BIP155 format.
+     * The returned vector is always V1_SERIALIZATION_SIZE bytes (16 bytes).
      */
-    void SerializeV1Array(uint8_t (&arr)[V1_SERIALIZATION_SIZE]) const {
-        size_t prefix_size;
+    std::vector<uint8_t> SerializeV1Array() const {
+        std::vector<uint8_t> ret;
+        ret.reserve(V1_SERIALIZATION_SIZE);
 
         switch (m_net) {
             case NET_IPV6:
-                assert(m_addr.size() == sizeof(arr));
-                std::memcpy(arr, m_addr.data(), m_addr.size());
-                return;
+                ret.insert(ret.end(), m_addr.begin(), m_addr.end());
+                break;
             case NET_IPV4:
-                prefix_size = sizeof(IPV4_IN_IPV6_PREFIX);
-                assert(prefix_size + m_addr.size() == sizeof(arr));
-                std::memcpy(arr, IPV4_IN_IPV6_PREFIX.data(), prefix_size);
-                std::memcpy(arr + prefix_size, m_addr.data(), m_addr.size());
-                return;
+                ret.insert(ret.end(), IPV4_IN_IPV6_PREFIX.begin(), IPV4_IN_IPV6_PREFIX.end());
+                ret.insert(ret.end(), m_addr.begin(), m_addr.end());
+                break;
             case NET_ONION:
-                prefix_size = sizeof(TORV2_IN_IPV6_PREFIX);
-                assert(prefix_size + m_addr.size() == sizeof(arr));
-                std::memcpy(arr, TORV2_IN_IPV6_PREFIX.data(), prefix_size);
-                std::memcpy(arr + prefix_size, m_addr.data(), m_addr.size());
-                return;
+                ret.insert(ret.end(), TORV2_IN_IPV6_PREFIX.begin(), TORV2_IN_IPV6_PREFIX.end());
+                ret.insert(ret.end(), m_addr.begin(), m_addr.end());
+                break;
             case NET_INTERNAL:
-                prefix_size = sizeof(INTERNAL_IN_IPV6_PREFIX);
-                assert(prefix_size + m_addr.size() == sizeof(arr));
-                std::memcpy(arr, INTERNAL_IN_IPV6_PREFIX.data(), prefix_size);
-                std::memcpy(arr + prefix_size, m_addr.data(), m_addr.size());
-                return;
+                ret.insert(ret.end(), INTERNAL_IN_IPV6_PREFIX.begin(), INTERNAL_IN_IPV6_PREFIX.end());
+                ret.insert(ret.end(), m_addr.begin(), m_addr.end());
+                break;
             case NET_UNROUTABLE:
             case NET_MAX:
                 assert(false);
+                break; // prevent compiler warnings if using -Wimplicit-fallthrough
         } // no default case, so the compiler can warn about missing cases
 
-        assert(false);
+        assert(ret.size() == V1_SERIALIZATION_SIZE);
+        return ret;
     }
 
     /**
@@ -264,20 +262,18 @@ private:
      */
     template <typename Stream>
     void SerializeV1Stream(Stream &s) const {
-        uint8_t serialized[V1_SERIALIZATION_SIZE];
-
-        SerializeV1Array(serialized);
-
-        s << serialized;
+        // We write the contents "as if" it were a direct array (fixed size, no compactsize preamble).
+        s << MakeSpan(SerializeV1Array());
     }
 
     /**
-     * Unserialize from a pre-ADDRv2/BIP155 format from an array.
+     * Unserialize from a pre-ADDRv2/BIP155 format from a vector. Note the supplied Span *MUST* be
+     * V1_SERIALIZATION_SIZE bytes in size (16 bytes).
      */
-    void UnserializeV1Array(uint8_t (&arr)[V1_SERIALIZATION_SIZE]) {
+    void UnserializeV1Array(Span<const uint8_t> data) {
         // Use SetLegacyIPv6() so that m_net is set correctly. For example
         // ::FFFF:0102:0304 should be set as m_net=NET_IPV4 (1.2.3.4).
-        SetLegacyIPv6(arr);
+        SetLegacyIPv6(data);
     }
 
     /**
@@ -285,8 +281,9 @@ private:
      */
     template <typename Stream>
     void UnserializeV1Stream(Stream &s) {
-        uint8_t serialized[V1_SERIALIZATION_SIZE];
+        std::array<uint8_t, V1_SERIALIZATION_SIZE> serialized;
 
+        // Direct array (fixed size, no compactsize preamble).
         s >> serialized;
 
         UnserializeV1Array(serialized);
