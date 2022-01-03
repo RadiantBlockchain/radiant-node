@@ -18,8 +18,7 @@
 BOOST_FIXTURE_TEST_SUITE(seedspec6_tests, BasicTestingSetup)
 
 BOOST_AUTO_TEST_CASE(test_string_constructor_parse) {
-    static_assert (SeedSpec6::GetAddressLen() == 16, "Expected SeedSpec6 ADDRLEN == 16");
-    using ExpectedTup = std::tuple<std::array<uint8_t, SeedSpec6::GetAddressLen()>, uint16_t, std::string>;
+    using ExpectedTup = std::tuple<std::vector<uint8_t>, uint16_t, std::string>;
     const ExpectedTup expected[] = {
         // Note: Double-brace for the std::array initializer is required for older GCC, see issue #170
         {{{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xff,0xff,0x02,0x25,0xb7,0x95}}, 8333, "2.37.183.149:8333"},
@@ -301,7 +300,8 @@ BOOST_AUTO_TEST_CASE(test_string_constructor_parse) {
         const std::string &host = std::get<2>(tup);
         BOOST_TEST_MESSAGE("Testing: " + host);
         const SeedSpec6 spec{data, port};
-        BOOST_CHECK(std::memcmp(spec.GetAddressBytes(), data.data(), spec.GetAddressLen()) == 0);
+        const auto addrBytes = spec.GetAddrBytes();
+        BOOST_CHECK_EQUAL_COLLECTIONS(data.begin(), data.end(), addrBytes.begin(), addrBytes.end());
         BOOST_CHECK_EQUAL(spec.GetPort(), port);
         const SeedSpec6 specFromHostStr{host},
                         specFromHostCStr{host.c_str()};
