@@ -231,8 +231,8 @@ bool CNetAddr::IsLocal() const {
     }
 
     // IPv6 loopback (::1/128)
-    static constexpr uint8_t pchLocal[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
-    if (IsIPv6() && std::memcmp(m_addr.data(), pchLocal, sizeof(pchLocal)) == 0) {
+    constexpr uint8_t pchLocal[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
+    if (IsIPv6() && MakeSpan(m_addr) == MakeSpan(pchLocal)) {
         return true;
     }
 
@@ -252,8 +252,8 @@ bool CNetAddr::IsLocal() const {
 bool CNetAddr::IsValid() const
 {
     // unspecified IPv6 address (::/128)
-    static constexpr uint8_t ipNone6[16] = {};
-    if (IsIPv6() && std::memcmp(m_addr.data(), ipNone6, sizeof(ipNone6)) == 0) {
+    constexpr uint8_t ipNone6[16] = {};
+    if (IsIPv6() && MakeSpan(m_addr) == MakeSpan(ipNone6)) {
         return false;
     }
 
@@ -522,9 +522,10 @@ std::vector<uint8_t> CNetAddr::GetGroup(const std::vector<bool> &asmap) const {
 }
 
 uint64_t CNetAddr::GetHash() const {
-    uint256 hash = Hash(m_addr.begin(), m_addr.end());
+    const uint256 hash = Hash(m_addr.begin(), m_addr.end());
     uint64_t nRet;
-    std::memcpy(&nRet, &hash, sizeof(nRet));
+    static_assert(sizeof(nRet) <= hash.size());
+    std::memcpy(&nRet, &*hash.begin(), sizeof(nRet));
     return nRet;
 }
 
@@ -731,7 +732,7 @@ CSubNet::CSubNet(const CNetAddr &addr, uint8_t mask) : CSubNet() {
     uint8_t n = mask;
     for (size_t i = 0; i < network.m_addr.size(); ++i) {
         const uint8_t bits = n < 8 ? n : 8;
-        netmask[i] = (uint8_t)((uint8_t)0xFF << (8 - bits)); // Set first bits.
+        netmask[i] = static_cast<uint8_t>(0xFFu << (8u - bits)); // Set first bits.
         network.m_addr[i] &= netmask[i]; // Normalize network according to netmask.
         n -= bits;
     }
