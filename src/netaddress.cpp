@@ -11,6 +11,7 @@
 #include <netaddress.h>
 #include <random.h>
 #include <tinyformat.h>
+#include <util/asmap.h>
 #include <util/bit_cast.h>
 #include <util/strencodings.h>
 
@@ -203,6 +204,10 @@ bool CNetAddr::IsRFC7343() const {
            (GetByte(12) & 0xF0) == 0x20;
 }
 
+bool CNetAddr::IsHeNet() const {
+    return (GetByte(15) == 0x20 && GetByte(14) == 0x01 && GetByte(13) == 0x04 && GetByte(12) == 0x70);
+}
+
 /**
  * @returns Whether or not this is a dummy address that maps an onion address
  *          into IPv6.
@@ -389,6 +394,71 @@ bool CNetAddr::GetIn6Addr(struct in6_addr *pipv6Addr) const {
     return true;
 }
 
+bool CNetAddr::HasLinkedIPv4() const {
+    return IsRoutable() && (IsIPv4() || IsRFC6145() || IsRFC6052() || IsRFC3964() || IsRFC4380());
+}
+
+uint32_t CNetAddr::GetLinkedIPv4() const {
+    if (IsIPv4() || IsRFC6145() || IsRFC6052()) {
+        // IPv4, mapped IPv4, SIIT translated IPv4: the IPv4 address is the last 4 bytes of the address
+        return ReadBE32(ip + 12);
+    } else if (IsRFC3964()) {
+        // 6to4 tunneled IPv4: the IPv4 address is in bytes 2-6
+        return ReadBE32(ip + 2);
+    } else if (IsRFC4380()) {
+        // Teredo tunneled IPv4: the IPv4 address is in the last 4 bytes of the address, but bitflipped
+        return ~ReadBE32(ip + 12);
+    }
+    assert(false);
+}
+
+uint8_t CNetAddr::GetNetClass() const {
+    uint8_t net_class = NET_IPV6;
+    if (IsLocal()) {
+        net_class = 255;
+    }
+    if (IsInternal()) {
+        net_class = NET_INTERNAL;
+    } else if (!IsRoutable()) {
+        net_class = NET_UNROUTABLE;
+    } else if (HasLinkedIPv4()) {
+        net_class = NET_IPV4;
+    } else if (IsTor()) {
+        net_class = NET_ONION;
+    }
+    return net_class;
+}
+
+uint32_t CNetAddr::GetMappedAS(const std::vector<bool> &asmap) const {
+    if (uint8_t net_class;
+            asmap.size() == 0 || ((net_class = GetNetClass()) != NET_IPV4 && net_class != NET_IPV6)) {
+        return 0; // Indicates not found, safe because AS0 is reserved per RFC7607.
+    }
+    std::vector<bool> ip_bits(128);
+    if (HasLinkedIPv4()) {
+        // For lookup, treat as if it was just an IPv4 address (pchIPv4 prefix + IPv4 bits)
+        for (int8_t byte_i = 0; byte_i < 12; ++byte_i) {
+            for (uint8_t bit_i = 0; bit_i < 8; ++bit_i) {
+                ip_bits[byte_i * 8 + bit_i] = (pchIPv4[byte_i] >> (7 - bit_i)) & 1;
+            }
+        }
+        uint32_t ipv4 = GetLinkedIPv4();
+        for (int i = 0; i < 32; ++i) {
+            ip_bits[96 + i] = (ipv4 >> (31 - i)) & 1;
+        }
+    } else {
+        // Use all 128 bits of the IPv6 address otherwise
+        for (int8_t byte_i = 0; byte_i < 16; ++byte_i) {
+            uint8_t cur_byte = GetByte(15 - byte_i);
+            for (uint8_t bit_i = 0; bit_i < 8; ++bit_i) {
+                ip_bits[byte_i * 8 + bit_i] = (cur_byte >> (7 - bit_i)) & 1;
+            }
+        }
+    }
+    uint32_t mapped_as = Interpret(asmap, ip_bits);
+    return mapped_as;
+}
+
 /**
  * Get the canonical identifier of our network group
  *
@@ -399,57 +469,49 @@ bool CNetAddr::GetIn6Addr(struct in6_addr *pipv6Addr) const {
  * @note No two connections will be attempted to addresses with the same network
  *       group.
  */
-std::vector<uint8_t> CNetAddr::GetGroup() const {
+std::vector<uint8_t> CNetAddr::GetGroup(const std::vector<bool> &asmap) const {
     std::vector<uint8_t> vchRet;
-    int nClass = NET_IPV6;
+    // If non-empty asmap is supplied and the address is IPv4/IPv6,
+    // return ASN to be used for bucketing.
+    uint32_t asn = GetMappedAS(asmap);
+    if (asn != 0) { // Either asmap was empty, or address has non-asmappable net class (e.g. TOR).
+        vchRet.push_back(NET_IPV6); // IPv4 and IPv6 with same ASN should be in the same bucket
+        for (int i = 0; i < 4; i++) {
+            vchRet.push_back((asn >> (8 * i)) & 0xFF);
+        }
+        return vchRet;
+    }
+
+    vchRet.push_back(GetNetClass());
     int nStartByte = 0;
     int nBits = 16;
 
-    // all local addresses belong to the same group
     if (IsLocal()) {
-        nClass = 255;
+        // all local addresses belong to the same group
         nBits = 0;
-    }
-
-    if (IsInternal()) {
+    } else if (IsInternal()) {
         // all internal-usage addresses get their own group
-        nClass = NET_INTERNAL;
         nStartByte = sizeof(g_internal_prefix);
         nBits = (sizeof(ip) - sizeof(g_internal_prefix)) * 8;
     } else if (!IsRoutable()) {
         // all other unroutable addresses belong to the same group
-        nClass = NET_UNROUTABLE;
         nBits = 0;
-    } else if (IsIPv4() || IsRFC6145() || IsRFC6052()) {
-        // for IPv4 addresses, '1' + the 16 higher-order bits of the IP includes
-        // mapped IPv4, SIIT translated IPv4, and the well-known prefix
-        nClass = NET_IPV4;
-        nStartByte = 12;
-    } else if (IsRFC3964()) {
-        // for 6to4 tunnelled addresses, use the encapsulated IPv4 address
-        nClass = NET_IPV4;
-        nStartByte = 2;
-    } else if (IsRFC4380()) {
-        // for Teredo-tunnelled IPv6 addresses, use the encapsulated IPv4
-        // address
-        vchRet.push_back(NET_IPV4);
-        vchRet.push_back(GetByte(3) ^ 0xFF);
-        vchRet.push_back(GetByte(2) ^ 0xFF);
+    } else if (HasLinkedIPv4()) {
+        // IPv4 addresses (and mapped IPv4 addresses) use /16 groups
+        uint32_t ipv4 = GetLinkedIPv4();
+        vchRet.push_back((ipv4 >> 24) & 0xFF);
+        vchRet.push_back((ipv4 >> 16) & 0xFF);
         return vchRet;
     } else if (IsTor()) {
-        nClass = NET_ONION;
         nStartByte = 6;
         nBits = 4;
-    } else if (GetByte(15) == 0x20 && GetByte(14) == 0x01 &&
-               GetByte(13) == 0x04 && GetByte(12) == 0x70) {
+    } else if (IsHeNet()) {
         // for he.net, use /36 groups
         nBits = 36;
     } else {
         // for the rest of the IPv6 network, use /32 groups
         nBits = 32;
     }
-
-    vchRet.push_back(nClass);
 
     // push our ip onto vchRet byte by byte...
     while (nBits >= 8) {
@@ -833,4 +895,8 @@ size_t SaltedNetAddrHasher::operator()(const CNetAddr &addr) const
 size_t SaltedSubNetHasher::operator()(const CSubNet &subnet) const
 {
     return static_cast<size_t>(SerializeSipHash(subnet, k0(), k1()));
+}
+
+bool SanityCheckASMap(const std::vector<bool> &asmap) {
+    return SanityCheckASMap(asmap, 128); // For IP address lookups, the input is 128 bits
 }

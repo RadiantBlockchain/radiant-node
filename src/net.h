@@ -152,6 +152,7 @@ public:
         bool m_use_addrman_outgoing = true;
         std::vector<std::string> m_specified_outgoing;
         std::vector<std::string> m_added_nodes;
+        std::vector<bool> m_asmap;
     };
 
     void Init(const Options &connOptions) {
@@ -329,6 +330,8 @@ public:
      * Variable intervals will result in privacy decrease.
      */
     int64_t PoissonNextSendInbound(int64_t now, int average_interval_ms);
+
+    void SetAsmap(std::vector<bool> asmap) { addrman.m_asmap = std::move(asmap); }
 
 private:
     struct ListenSocket {
@@ -593,6 +596,7 @@ struct CNodeStats {
     CAddress addr;
     // Bind address of our side of the connection
     CAddress addrBind;
+    uint32_t m_mapped_as;
 };
 
 class CNetMessage {
@@ -897,7 +901,7 @@ public:
 
     void CloseSocketDisconnect();
 
-    void copyStats(CNodeStats &stats);
+    void copyStats(CNodeStats &stats, const std::vector<bool> &m_asmap);
 
     ServiceFlags GetLocalServices() const { return nLocalServices; }
 

@@ -134,6 +134,8 @@ public:
     bool IsRFC6052() const;
     // IPv6 IPv4-translated address (::FFFF:0:0:0/96) (actually defined in RFC2765)
     bool IsRFC6145() const;
+    // IPv6 Hurricane Electric - https://he.net (2001:0470::/36)
+    bool IsHeNet() const;
     bool IsTor() const;
     bool IsLocal() const;
     bool IsRoutable() const;
@@ -149,7 +151,20 @@ public:
     unsigned int GetByte(int n) const;
     uint64_t GetHash() const;
     bool GetInAddr(struct in_addr *pipv4Addr) const;
-    std::vector<uint8_t> GetGroup() const;
+    uint8_t GetNetClass() const;
+
+    //! For IPv4, mapped IPv4, SIIT translated IPv4, Teredo, 6to4 tunneled addresses, return the relevant IPv4 address
+    //! as a uint32.
+    uint32_t GetLinkedIPv4() const;
+    //! Whether this address has a linked IPv4 address (see GetLinkedIPv4()).
+    bool HasLinkedIPv4() const;
+
+    // The AS on the BGP path to the node we use to diversify
+    // peers in AddrMan bucketing based on the AS infrastructure.
+    // The ip->AS mapping depends on how asmap is constructed.
+    uint32_t GetMappedAS(const std::vector<bool> &asmap) const;
+
+    std::vector<uint8_t> GetGroup(const std::vector<bool> &asmap) const;
     int GetReachabilityFrom(const CNetAddr *paddrPartner = nullptr) const;
 
     bool GetIn6Addr(struct in6_addr *pipv6Addr) const;
@@ -263,3 +278,5 @@ struct SaltedSubNetHasher : SaltedHasherBase {
     SaltedSubNetHasher() noexcept {} // circumvent some libstdc++-11 bugs on Debian unstable
     size_t operator()(const CSubNet  &) const;
 };
+
+bool SanityCheckASMap(const std::vector<bool> &asmap);

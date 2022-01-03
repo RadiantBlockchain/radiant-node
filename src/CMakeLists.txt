@@ -339,6 +339,7 @@ add_library(util
 	sync.cpp
 	threadinterrupt.cpp
 	uint256.cpp
+	util/asmap.cpp
 	util/moneystr.cpp
 	util/saltedhashers.cpp
 	util/strencodings.cpp
