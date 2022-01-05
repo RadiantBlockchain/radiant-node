@@ -181,8 +181,7 @@ static bool rest_headers(Config &config, HTTPRequest *req,
                 ssHeader << pindex->GetBlockHeader();
             }
 
-            std::string strHex =
-                HexStr(ssHeader.begin(), ssHeader.end()) + "\n";
+            std::string strHex = HexStr(ssHeader) + "\n";
             req->WriteHeader("Content-Type", "text/plain");
             req->WriteReply(HTTP_OK, strHex);
             return true;
@@ -258,7 +257,7 @@ static bool rest_block(const Config &config, HTTPRequest *req,
             CDataStream ssBlock(SER_NETWORK,
                                 PROTOCOL_VERSION | RPCSerializationFlags());
             ssBlock << block;
-            std::string strHex = HexStr(ssBlock.begin(), ssBlock.end()) + "\n";
+            std::string strHex = HexStr(ssBlock) + "\n";
             req->WriteHeader("Content-Type", "text/plain");
             req->WriteReply(HTTP_OK, strHex);
             return true;
@@ -410,7 +409,7 @@ static bool rest_tx(Config &config, HTTPRequest *req,
                              PROTOCOL_VERSION | RPCSerializationFlags());
             ssTx << tx;
 
-            std::string strHex = HexStr(ssTx.begin(), ssTx.end()) + "\n";
+            std::string strHex = HexStr(ssTx) + "\n";
             req->WriteHeader("Content-Type", "text/plain");
             req->WriteReply(HTTP_OK, strHex);
             return true;
@@ -605,9 +604,7 @@ static bool rest_getutxos(Config &config, HTTPRequest *req,
             ssGetUTXOResponse << ::ChainActive().Height()
                               << ::ChainActive().Tip()->GetBlockHash() << bitmap
                               << outs;
-            std::string strHex =
-                HexStr(ssGetUTXOResponse.begin(), ssGetUTXOResponse.end()) +
-                "\n";
+            std::string strHex = HexStr(ssGetUTXOResponse) + "\n";
 
             req->WriteHeader("Content-Type", "text/plain");
             req->WriteReply(HTTP_OK, strHex);

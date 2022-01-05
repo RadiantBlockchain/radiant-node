@@ -1215,7 +1215,7 @@ static UniValue addmultisigaddress(const Config &config,
     UniValue::Object result;
     result.reserve(2);
     result.emplace_back("address", EncodeDestination(dest, config));
-    result.emplace_back("redeemScript", HexStr(inner.begin(), inner.end()));
+    result.emplace_back("redeemScript", HexStr(inner));
     return result;
 }
 
@@ -3341,12 +3341,12 @@ static UniValue listunspent(const Config &config,
                 const CScriptID &hash = boost::get<CScriptID>(address);
                 CScript redeemScript;
                 if (pwallet->GetCScript(hash, redeemScript)) {
-                    entry.emplace_back("redeemScript", HexStr(redeemScript.begin(), redeemScript.end()));
+                    entry.emplace_back("redeemScript", HexStr(redeemScript));
                 }
             }
         }
 
-        entry.emplace_back("scriptPubKey", HexStr(scriptPubKey.begin(), scriptPubKey.end()));
+        entry.emplace_back("scriptPubKey", HexStr(scriptPubKey));
         entry.emplace_back("amount", ValueFromAmount(out.tx->tx->vout[out.i].nValue));
         entry.emplace_back("confirmations", out.nDepth);
         entry.emplace_back("spendable", out.fSpendable);
@@ -3817,7 +3817,7 @@ class DescribeWalletAddressVisitor : public boost::static_visitor<void> {
         std::vector<std::vector<uint8_t>> solutions_data;
         txnouttype which_type = Solver(subscript, solutions_data);
         obj.emplace_back("script", GetTxnOutputType(which_type));
-        obj.emplace_back("hex", HexStr(subscript.begin(), subscript.end()));
+        obj.emplace_back("hex", HexStr(subscript));
 
         CTxDestination embedded;
         UniValue::Array a;
@@ -3826,7 +3826,7 @@ class DescribeWalletAddressVisitor : public boost::static_visitor<void> {
             UniValue::Object subobj;
             DescribeWalletAddress(pwallet, embedded, subobj);
             subobj.emplace_back("address", EncodeDestination(embedded, GetConfig()));
-            subobj.emplace_back("scriptPubKey", HexStr(subscript.begin(), subscript.end()));
+            subobj.emplace_back("scriptPubKey", HexStr(subscript));
             // Always report the pubkey at the top level, so that
             // `getnewaddress()['pubkey']` always works.
             if (auto pubkeyUV = subobj.locate("pubkey")) {
@@ -3848,7 +3848,7 @@ class DescribeWalletAddressVisitor : public boost::static_visitor<void> {
                 if (include_addresses) {
                     a.emplace_back(EncodeDestination(key.GetID(), GetConfig()));
                 }
-                pubkeys.emplace_back(HexStr(key.begin(), key.end()));
+                pubkeys.emplace_back(HexStr(key));
             }
             obj.emplace_back("pubkeys", std::move(pubkeys));
         }
@@ -4006,7 +4006,7 @@ UniValue getaddressinfo(const Config &config, const JSONRPCRequest &request) {
     ret.emplace_back("address", EncodeDestination(dest, config));
 
     CScript scriptPubKey = GetScriptForDestination(dest);
-    ret.emplace_back("scriptPubKey", HexStr(scriptPubKey.begin(), scriptPubKey.end()));
+    ret.emplace_back("scriptPubKey", HexStr(scriptPubKey));
 
     isminetype mine = IsMine(*pwallet, dest);
     ret.emplace_back("ismine", bool(mine & ISMINE_SPENDABLE));

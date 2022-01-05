@@ -3980,17 +3980,10 @@ bool PeerLogicValidation::ProcessMessages(const Config &config, CNode *pfrom,
     // Checksum
     CDataStream &vRecv = msg.vRecv;
     const uint256 &hash = msg.GetMessageHash();
-    if (memcmp(hash.begin(), hdr.pchChecksum, CMessageHeader::CHECKSUM_SIZE) !=
-        0) {
-        LogPrint(
-            BCLog::NET,
-            "%s(%s, %u bytes): CHECKSUM ERROR expected %s was %s from "
-            "peer=%d\n",
-            __func__, SanitizeString(strCommand), nMessageSize,
-            HexStr(hash.begin(), hash.begin() + CMessageHeader::CHECKSUM_SIZE),
-            HexStr(hdr.pchChecksum,
-                   hdr.pchChecksum + CMessageHeader::CHECKSUM_SIZE),
-            pfrom->GetId());
+    if (std::memcmp(hash.data(), hdr.pchChecksum, CMessageHeader::CHECKSUM_SIZE) != 0) {
+        LogPrint(BCLog::NET, "%s(%s, %u bytes): CHECKSUM ERROR expected %s was %s from peer=%d\n", __func__,
+                 SanitizeString(strCommand), nMessageSize, HexStr(MakeSpan(hash).first(CMessageHeader::CHECKSUM_SIZE)),
+                 HexStr(hdr.pchChecksum), pfrom->GetId());
         if (m_banman) {
             m_banman->Discourage(pfrom->addr);
         }

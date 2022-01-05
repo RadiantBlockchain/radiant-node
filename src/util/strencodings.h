@@ -10,6 +10,7 @@
 #pragma once
 
 #include <attributes.h>
+#include <span.h>
 
 #include <cassert>
 #include <cstdint>
@@ -185,9 +186,15 @@ std::string HexStr(const T itbegin, const T itend, bool fSpaces = false) {
     return rv;
 }
 
-template <typename T>
-inline std::string HexStr(const T &vch, bool fSpaces = false) {
-    return HexStr(vch.begin(), vch.end(), fSpaces);
+/**
+ * Convert a span of bytes to a lower-case hexadecimal string.
+ */
+inline std::string HexStr(const Span<const uint8_t> input, bool fSpaces = false) {
+    return HexStr(input.begin(), input.end(), fSpaces);
+}
+
+inline std::string HexStr(const Span<const char> input, bool fSpaces = false) {
+    return HexStr(MakeUInt8Span(input), fSpaces);
 }
 
 /**

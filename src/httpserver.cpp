@@ -655,7 +655,7 @@ void HTTPRequest::WriteReply(int nStatus, const std::string &strReply) {
             // If we are outputting binary (REST .bin mode), we will encode the data as hex first,
             // to keep log files tidy.
             content_desc = " (binary data, hex encoded)";
-            hexStrReply = HexStr(strReply.begin(), strReply.end());
+            hexStrReply = HexStr(strReply);
         }
         const std::string &content = isBinary ? hexStrReply : strReply;
         LogPrintf("<httptrace> Writing reply to %s, status: %d, headers: %u, content: %u bytes\n"
