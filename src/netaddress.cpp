@@ -28,6 +28,7 @@
 #include <ios>
 #include <iterator>
 #include <limits>
+#include <string_view>
 #include <tuple>
 
 static constexpr uint8_t pchSingleAddressNetmask[16] =
@@ -188,26 +189,28 @@ bool CNetAddr::SetInternal(const std::string &name) {
 
 namespace torv3 {
 // https://gitweb.torproject.org/torspec.git/tree/rend-spec-v3.txt#n2135
-static constexpr size_t CHECKSUM_LEN = 2;
-static const unsigned char VERSION[] = {3};
-static constexpr size_t TOTAL_LEN = ADDR_TORV3_SIZE + CHECKSUM_LEN + sizeof(VERSION);
+inline constexpr size_t CHECKSUM_LEN = 2;
+inline constexpr std::array<uint8_t, 1> VERSION = {{3}};
+inline constexpr size_t TOTAL_LEN = ADDR_TORV3_SIZE + CHECKSUM_LEN + VERSION.size();
+using ChecksumBytes = std::array<uint8_t, CHECKSUM_LEN>;
 
-static void Checksum(Span<const uint8_t> addr_pubkey, uint8_t (&checksum)[CHECKSUM_LEN]) {
+static ChecksumBytes Checksum(Span<const uint8_t> addr_pubkey) {
     // TORv3 CHECKSUM = H(".onion checksum" | PUBKEY | VERSION)[:2]
-    static const unsigned char prefix[] = ".onion checksum";
-    static constexpr size_t prefix_len = 15;
-
+    using namespace std::string_view_literals;
     SHA3_256 hasher;
 
-    hasher.Write(MakeSpan(prefix).first(prefix_len));
+    hasher.Write(MakeUInt8Span(".onion checksum"sv));
     hasher.Write(addr_pubkey);
     hasher.Write(VERSION);
 
-    uint8_t checksum_full[SHA3_256::OUTPUT_SIZE];
+    std::array<uint8_t, SHA3_256::OUTPUT_SIZE> checksum_full;
 
     hasher.Finalize(checksum_full);
 
-    std::memcpy(checksum, checksum_full, sizeof(checksum));
+    ChecksumBytes ret;
+    static_assert(checksum_full.size() >= ret.size());
+    std::copy_n(checksum_full.begin(), ret.size(), ret.begin());
+    return ret;
 }
 
 }; // namespace torv3
@@ -220,15 +223,16 @@ static void Checksum(Span<const uint8_t> addr_pubkey, uint8_t (&checksum)[CHECKS
  * @see CNetAddr::IsTor()
  */
 bool CNetAddr::SetSpecial(const std::string &str) {
-    static const char *const suffix{".onion"};
-    static constexpr size_t suffix_len{6};
+    using namespace std::string_view_literals;
+    constexpr auto suffix = ".onion"sv;
 
-    if (!ValidAsCString(str) || str.size() <= suffix_len || str.substr(str.size() - suffix_len) != suffix) {
+    if (!ValidAsCString(str) || str.size() <= suffix.size()
+        || static_cast<std::string_view>(str).substr(str.size() - suffix.size()) != suffix) {
         return false;
     }
 
     bool invalid;
-    const auto &input = DecodeBase32(str.substr(0, str.size() - suffix_len).c_str(), &invalid);
+    const auto &input = DecodeBase32(str.substr(0, str.size() - suffix.size()).c_str(), &invalid);
 
     if (invalid) {
         return false;
@@ -243,10 +247,9 @@ bool CNetAddr::SetSpecial(const std::string &str) {
             Span<const uint8_t> input_pubkey{input.data(), ADDR_TORV3_SIZE};
             Span<const uint8_t> input_checksum{input.data() + ADDR_TORV3_SIZE, torv3::CHECKSUM_LEN};
             Span<const uint8_t> input_version{input.data() + ADDR_TORV3_SIZE + torv3::CHECKSUM_LEN,
-                                              sizeof(torv3::VERSION)};
+                                              torv3::VERSION.size()};
 
-            uint8_t calculated_checksum[torv3::CHECKSUM_LEN];
-            torv3::Checksum(input_pubkey, calculated_checksum);
+            const auto calculated_checksum = torv3::Checksum(input_pubkey);
 
             if (input_checksum != calculated_checksum || input_version != torv3::VERSION) {
                 return false;
@@ -503,13 +506,12 @@ std::string CNetAddr::ToStringIP() const {
                 case ADDR_TORV2_SIZE:
                     return EncodeBase32(m_addr) + ".onion";
                 case ADDR_TORV3_SIZE: {
-                    uint8_t checksum[torv3::CHECKSUM_LEN];
-                    torv3::Checksum(m_addr, checksum);
+                    const auto checksum = torv3::Checksum(m_addr);
 
                     // TORv3 onion_address = base32(PUBKEY | CHECKSUM | VERSION) + ".onion"
                     prevector<torv3::TOTAL_LEN, uint8_t> address{m_addr.begin(), m_addr.end()};
-                    address.insert(address.end(), checksum, checksum + torv3::CHECKSUM_LEN);
-                    address.insert(address.end(), torv3::VERSION, torv3::VERSION + sizeof(torv3::VERSION));
+                    address.insert(address.end(), checksum.begin(), checksum.end());
+                    address.insert(address.end(), torv3::VERSION.begin(), torv3::VERSION.end());
 
                     return EncodeBase32(address) + ".onion";
                 }
@@ -525,9 +527,11 @@ std::string CNetAddr::ToStringIP() const {
         case NET_UNROUTABLE: // m_net is never and should not be set to NET_UNROUTABLE
         case NET_MAX:        // m_net is never and should not be set to NET_MAX
             assert(false);
+            break; // prevent compiler warnings if compiling with -Wimplicit-fallthrough
     } // no default case, so the compiler can warn about missing cases
 
     assert(false);
+    return {}; // not reached: prevent compiler warnings about missing return
 }
 
 std::string CNetAddr::ToString() const {
