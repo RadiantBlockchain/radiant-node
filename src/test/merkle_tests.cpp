@@ -20,9 +20,9 @@ ComputeMerkleRootFromBranch(const uint256 &leaf,
     for (std::vector<uint256>::const_iterator it = vMerkleBranch.begin();
          it != vMerkleBranch.end(); ++it) {
         if (nIndex & 1) {
-            hash = Hash(it->begin(), it->end(), hash.begin(), hash.end());
+            hash = Hash(*it, hash);
         } else {
-            hash = Hash(hash.begin(), hash.end(), it->begin(), it->end());
+            hash = Hash(hash, *it);
         }
         nIndex >>= 1;
     }
@@ -79,10 +79,7 @@ static void MerkleComputation(const std::vector<uint256> &leaves,
                 }
             }
             mutated |= (inner[level] == h);
-            CHash256()
-                .Write(inner[level].begin(), 32)
-                .Write(h.begin(), 32)
-                .Finalize(h.begin());
+            CHash256().Write(inner[level]).Write(h).Finalize(h);
         }
         // Store the resulting hash at inner position level.
         inner[level] = h;
@@ -108,10 +105,7 @@ static void MerkleComputation(const std::vector<uint256> &leaves,
         if (pbranch && matchh) {
             pbranch->push_back(h);
         }
-        CHash256()
-            .Write(h.begin(), 32)
-            .Write(h.begin(), 32)
-            .Finalize(h.begin());
+        CHash256().Write(h).Write(h).Finalize(h);
         // Increment count to the value it would have if two entries at this
         // level had existed.
         count += (((uint32_t)1) << level);
@@ -126,10 +120,7 @@ static void MerkleComputation(const std::vector<uint256> &leaves,
                     matchh = true;
                 }
             }
-            CHash256()
-                .Write(inner[level].begin(), 32)
-                .Write(h.begin(), 32)
-                .Finalize(h.begin());
+            CHash256().Write(inner[level]).Write(h).Finalize(h);
             level++;
         }
     }
@@ -180,9 +171,7 @@ static uint256 BlockBuildMerkleTree(const CBlock &block, bool *fMutated,
                 // level.
                 mutated = true;
             }
-            vMerkleTree.push_back(
-                Hash(vMerkleTree[j + i].begin(), vMerkleTree[j + i].end(),
-                     vMerkleTree[j + i2].begin(), vMerkleTree[j + i2].end()));
+            vMerkleTree.push_back(Hash(vMerkleTree[j + i], vMerkleTree[j + i2]));
         }
         j += nSize;
     }

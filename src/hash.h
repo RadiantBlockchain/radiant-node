@@ -26,14 +26,15 @@ private:
 public:
     static const size_t OUTPUT_SIZE = CSHA256::OUTPUT_SIZE;
 
-    void Finalize(uint8_t hash[OUTPUT_SIZE]) {
+    void Finalize(Span<uint8_t> output) {
+        assert(output.size() == OUTPUT_SIZE);
         uint8_t buf[CSHA256::OUTPUT_SIZE];
         sha.Finalize(buf);
-        sha.Reset().Write(buf, CSHA256::OUTPUT_SIZE).Finalize(hash);
+        sha.Reset().Write(buf, CSHA256::OUTPUT_SIZE).Finalize(output.data());
     }
 
-    CHash256 &Write(const uint8_t *data, size_t len) {
-        sha.Write(data, len);
+    CHash256 &Write(Span<const uint8_t> input) {
+        sha.Write(input.data(), input.size());
         return *this;
     }
 
@@ -51,14 +52,15 @@ private:
 public:
     static const size_t OUTPUT_SIZE = CRIPEMD160::OUTPUT_SIZE;
 
-    void Finalize(uint8_t hash[OUTPUT_SIZE]) {
+    void Finalize(Span<uint8_t> output) {
+        assert(output.size() == OUTPUT_SIZE);
         uint8_t buf[CSHA256::OUTPUT_SIZE];
         sha.Finalize(buf);
-        CRIPEMD160().Write(buf, CSHA256::OUTPUT_SIZE).Finalize(hash);
+        CRIPEMD160().Write(buf, CSHA256::OUTPUT_SIZE).Finalize(output.data());
     }
 
-    CHash160 &Write(const uint8_t *data, size_t len) {
-        sha.Write(data, len);
+    CHash160 &Write(Span<const uint8_t> input) {
+        sha.Write(input.data(), input.size());
         return *this;
     }
 
@@ -69,51 +71,27 @@ public:
 };
 
 /** Compute the 256-bit hash of an object. */
-template <typename T1> inline uint256 Hash(const T1 pbegin, const T1 pend) {
-    static const uint8_t pblank[1] = {};
-    uint256 result;
-    CHash256()
-        .Write(pbegin == pend ? pblank : (const uint8_t *)&pbegin[0],
-               (pend - pbegin) * sizeof(pbegin[0]))
-        .Finalize((uint8_t *)&result);
+template <typename T>
+inline uint256 Hash(const T &in1) {
+    uint256 result{uint256::Uninitialized};
+    CHash256().Write(MakeUInt8Span(in1)).Finalize(result);
     return result;
 }
 
 /** Compute the 256-bit hash of the concatenation of two objects. */
 template <typename T1, typename T2>
-inline uint256 Hash(const T1 p1begin, const T1 p1end, const T2 p2begin,
-                    const T2 p2end) {
-    static const uint8_t pblank[1] = {};
-    uint256 result;
-    CHash256()
-        .Write(p1begin == p1end ? pblank : (const uint8_t *)&p1begin[0],
-               (p1end - p1begin) * sizeof(p1begin[0]))
-        .Write(p2begin == p2end ? pblank : (const uint8_t *)&p2begin[0],
-               (p2end - p2begin) * sizeof(p2begin[0]))
-        .Finalize((uint8_t *)&result);
+inline uint256 Hash(const T1 &in1, const T2 &in2) {
+    uint256 result{uint256::Uninitialized};
+    CHash256().Write(MakeUInt8Span(in1)).Write(MakeUInt8Span(in2)).Finalize(result);
     return result;
 }
 
 /** Compute the 160-bit hash an object. */
-template <typename T1> inline uint160 Hash160(const T1 pbegin, const T1 pend) {
-    static uint8_t pblank[1] = {};
-    uint160 result;
-    CHash160()
-        .Write(pbegin == pend ? pblank : (const uint8_t *)&pbegin[0],
-               (pend - pbegin) * sizeof(pbegin[0]))
-        .Finalize((uint8_t *)&result);
+template <typename T1>
+inline uint160 Hash160(const T1 &in1) {
+    uint160 result{uint160::Uninitialized};
+    CHash160().Write(MakeUInt8Span(in1)).Finalize(result);
     return result;
-}
-
-/** Compute the 160-bit hash of a vector. */
-inline uint160 Hash160(const std::vector<uint8_t> &vch) {
-    return Hash160(vch.begin(), vch.end());
-}
-
-/** Compute the 160-bit hash of a vector. */
-template <unsigned int N>
-inline uint160 Hash160(const prevector<N, uint8_t> &vch) {
-    return Hash160(vch.begin(), vch.end());
 }
 
 /** A writer stream (for serialization) that computes a 256-bit hash. */
@@ -132,13 +110,13 @@ public:
     int GetVersion() const { return nVersion; }
 
     void write(const char *pch, size_t size) {
-        ctx.Write((const uint8_t *)pch, size);
+        ctx.Write({UInt8Cast(pch), size});
     }
 
     // invalidates the object
     uint256 GetHash() {
-        uint256 result;
-        ctx.Finalize(&*result.begin());
+        uint256 result{uint256::Uninitialized};
+        ctx.Finalize(result);
         return result;
     }
 
@@ -203,8 +181,7 @@ uint256 SerializeHash(const T &obj, int nType = SER_GETHASH,
 // MurmurHash3: ultra-fast hash suitable for hash tables but not cryptographically secure
 uint32_t MurmurHash3(uint32_t nHashSeed,
                      const uint8_t *pDataToHash, size_t nDataLen /* bytes */);
-inline uint32_t MurmurHash3(uint32_t nHashSeed,
-                            const std::vector<uint8_t> &vDataToHash) {
+inline uint32_t MurmurHash3(uint32_t nHashSeed, Span<const uint8_t> vDataToHash) {
     return MurmurHash3(nHashSeed, vDataToHash.data(), vDataToHash.size());
 }
 

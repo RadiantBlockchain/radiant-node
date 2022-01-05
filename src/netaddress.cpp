@@ -522,7 +522,7 @@ std::vector<uint8_t> CNetAddr::GetGroup(const std::vector<bool> &asmap) const {
 }
 
 uint64_t CNetAddr::GetHash() const {
-    const uint256 hash = Hash(m_addr.begin(), m_addr.end());
+    const uint256 hash = Hash(m_addr);
     uint64_t nRet;
     static_assert(sizeof(nRet) <= hash.size());
     std::memcpy(&nRet, &*hash.begin(), sizeof(nRet));

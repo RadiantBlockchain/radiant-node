@@ -16,8 +16,7 @@ typedef std::vector<uint8_t> valtype;
 
 uint32_t nMaxDatacarrierBytes = MAX_OP_RETURN_RELAY;
 
-CScriptID::CScriptID(const CScript &in)
-    : uint160(Hash160(in.begin(), in.end())) {}
+CScriptID::CScriptID(const CScript &in) : uint160(Hash160(in)) {}
 
 const char *GetTxnOutputType(txnouttype t) {
     switch (t) {

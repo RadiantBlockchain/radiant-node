@@ -23,6 +23,7 @@
 #include <primitives/transaction.h>
 #include <protocol.h>
 #include <scheduler.h>
+#include <span.h>
 #include <ui_interface.h>
 #include <util/bit_cast.h>
 #include <util/strencodings.h>
@@ -698,7 +699,7 @@ int CNetMessage::readData(const char *pch, uint32_t nBytes) {
         vRecv.resize(std::min(hdr.nMessageSize, nDataPos + nCopy + 256 * 1024));
     }
 
-    hasher.Write((const uint8_t *)pch, nCopy);
+    hasher.Write({UInt8Cast(pch), nCopy});
     memcpy(&vRecv[nDataPos], pch, nCopy);
     nDataPos += nCopy;
 
@@ -708,7 +709,7 @@ int CNetMessage::readData(const char *pch, uint32_t nBytes) {
 const uint256 &CNetMessage::GetMessageHash() const {
     assert(complete());
     if (data_hash.IsNull()) {
-        hasher.Finalize(data_hash.begin());
+        hasher.Finalize(data_hash);
     }
     return data_hash;
 }
@@ -2836,7 +2837,7 @@ void CConnman::PushMessage(CNode *pnode, CSerializedNetMsg &&msg) {
 
     std::vector<uint8_t> serializedHeader;
     serializedHeader.reserve(CMessageHeader::HEADER_SIZE);
-    uint256 hash = Hash(msg.data.data(), msg.data.data() + nMessageSize);
+    uint256 hash = Hash(MakeSpan(msg.data).first(nMessageSize));
     CMessageHeader hdr(config->GetChainParams().NetMagic(), msg.command.c_str(),
                        nMessageSize);
     memcpy(hdr.pchChecksum, hash.begin(), CMessageHeader::CHECKSUM_SIZE);

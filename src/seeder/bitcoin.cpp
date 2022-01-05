@@ -10,6 +10,7 @@
 #include <primitives/blockhash.h>
 #include <seeder/db.h>
 #include <serialize.h>
+#include <span.h>
 #include <uint256.h>
 #include <validation.h>
 
@@ -51,7 +52,7 @@ void CSeederNode::EndMessage() {
                     offsetof(CMessageHeader, nMessageSize),
                 &nSize, sizeof(nSize));
     if (vSend.GetVersion() >= 209) {
-        uint256 hash = Hash(vSend.begin() + nMessageStart, vSend.end());
+        uint256 hash = Hash(MakeSpan(vSend).subspan(nMessageStart));
         unsigned int nChecksum = 0;
         std::memcpy(&nChecksum, &hash, sizeof(nChecksum));
         assert(nMessageStart - nHeaderStart >=
@@ -243,7 +244,7 @@ bool CSeederNode::ProcessMessages() {
             break;
         }
         if (vRecv.GetVersion() >= 209) {
-            uint256 hash = Hash(vRecv.begin(), vRecv.begin() + nMessageSize);
+            uint256 hash = Hash(MakeSpan(vRecv).first(nMessageSize));
             if (std::memcmp(hash.begin(), hdr.pchChecksum,
                             CMessageHeader::CHECKSUM_SIZE) != 0) {
                 continue;
