@@ -31,10 +31,9 @@
 /**
  * A flag that is ORed into the protocol version to designate that addresses
  * should be serialized in (unserialized from) v2 format (BIP155).
- * Make sure that this does not collide with any of the values in `version.h`
- * or with `SERIALIZE_TRANSACTION_NO_WITNESS`.
+ * Make sure that this does not collide with any of the values in `version.h`.
  */
-static const int ADDRV2_FORMAT = 0x20000000;
+inline constexpr int ADDRV2_FORMAT = 0x20000000;
 
 /**
  * A network type.
@@ -421,8 +420,8 @@ private:
             // disk.
             if (HasPrefix(m_addr, INTERNAL_IN_IPV6_PREFIX)) {
                 m_net = NET_INTERNAL;
-                std::memmove(m_addr.data(), m_addr.data() + INTERNAL_IN_IPV6_PREFIX.size(), ADDR_INTERNAL_SIZE);
-                m_addr.resize(ADDR_INTERNAL_SIZE);
+                // Delete the serialized "INTERNAL" prefix since we don't store it in memory.
+                m_addr.erase(m_addr.begin(), m_addr.begin() + INTERNAL_IN_IPV6_PREFIX.size());
                 return;
             }
 
