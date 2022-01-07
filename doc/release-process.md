@@ -1,6 +1,4 @@
-Bitcoin Cash Node Release Process
-=================================
-
+# Release Process
 
 ## Before Release
 

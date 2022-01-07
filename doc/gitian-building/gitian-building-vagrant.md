@@ -1,5 +1,5 @@
 Preparing the Gitian builder host
----------------------------------
+=================================
 
 The first step is to prepare the host environment that will be used to perform
 the Gitian builds. This guide explains how to set up the environment, and how

@@ -1,4 +1,5 @@
-# Setup Debian virtual machine on VirtualBox
+Setup Debian virtual machine on VirtualBox
+==========================================
 
 Create a new VirtualBox VM
 --------------------------

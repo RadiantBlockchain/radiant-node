@@ -131,8 +131,7 @@ Here are some handy links for development practices aligned with Bitcoin Cash No
 - [Good Work, Great Work, and Right Work](https://forum.dlang.org/post/q7u6g1$94p$1@digitalmars.com)
 - [Accelerate: The Science of Lean Software and DevOps](https://www.amazon.com/Accelerate-Software-Performing-Technology-Organizations/dp/1942788339)
 
-Getting set up with the Bitcoin Cash Node Repository
-----------------------------------------------
+## Getting set up with the Bitcoin Cash Node Repository
 
 1. Create an account at [https://gitlab.com](https://gitlab.com) if you don't have
    one yet
@@ -240,9 +239,7 @@ Getting set up with the Bitcoin Cash Node Repository
 
     To run benchmarks, see [Benchmarking](doc/benchmarking.md).
 
-
-Working with The Bitcoin Cash Node Repository
----------------------------------------------
+## Working with The Bitcoin Cash Node Repository
 
 A typical workflow would be:
 
@@ -285,23 +282,20 @@ please contact our developers and they will help you decide.
   later), as this will help cut your re-build times from several minutes to under
   a minute, in many cases.
 
-What to work on
----------------
+## What to work on
 
 If you are looking for a useful task to contribute to the project, a good place
 to start is the list of issues at [https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/issues](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/issues)
 
 Look for issues marked with a label 'good-first-issue'.
 
-Copyright
----------
+## Copyright
 
 By contributing to this repository, you agree to license your work under the
 MIT license unless specified otherwise in `contrib/debian/copyright` or at
 the top of the file itself. Any work contributed where you are not the original
 author must contain its license header with the original author(s) and source.
 
-Disclosure Policy
------------------
+## Disclosure Policy
 
 See [DISCLOSURE_POLICY](DISCLOSURE_POLICY.md).

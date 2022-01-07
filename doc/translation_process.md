@@ -1,12 +1,10 @@
-Translations
-============
+# Translations
 
 The Bitcoin Cash Node graphical user interface is translated on Crowdin:
 
   <https://crowdin.com/project/bitcoin-cash-node>
 
-Contributing to translations
-----------------------------
+## Contributing to translations
 
 ### Step 1: Join the Crowdin project
 
@@ -63,8 +61,7 @@ users instead. It is fine to approve your own translation proposals. If needed,
 proofreaders can always change previously verified translations at a later
 moment.
 
-Managing translations
----------------------
+## Managing translations
 
 ### Exporting source strings from Git to Crowdin
 

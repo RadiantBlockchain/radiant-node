@@ -1,4 +1,4 @@
-## Linting
+# Linting
 
 Linting is the automated checking of our source code for programmatic and
 stylistic errors.
@@ -10,7 +10,7 @@ To run all linters, run `ninja check-lint`. To run individual linters, run
 It's also possible to execute linters directly from the root directory, such as
 `./test/lint/check-doc-py`.
 
-### Linter dependencies
+## Linter dependencies
 
 If the linter requires external tools to be install, such as for example
 `flake8`, the linter will be skipped and return success.
@@ -23,7 +23,7 @@ The following external tools are required to run all linters
 | lint-python   | mypy          | `pip3 install mypy`    |
 | lint-yaml     | yamllint      | `apt install yamllint` |
 
-### Adding a linter
+## Adding a linter
 
 Add a new script in `test/lint`. The working directory for the linters are the
 project root directory.

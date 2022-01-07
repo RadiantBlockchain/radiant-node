@@ -1,3 +1,5 @@
+Files
+=====
 
 * banlist.dat: stores the IPs/Subnets of banned nodes
 * bitcoin.conf: contains configuration settings for bitcoind or bitcoin-qt

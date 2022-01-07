@@ -15,6 +15,9 @@ rule 'MD013', :line_length => 300
 #rule 'MD024', :allow_different_nesting => true
 exclude_rule 'MD024'
 
+# Trailing punctuation in header
+exclude_rule 'MD026'
+
 # ordered list item prefix
 rule 'MD029', :style => 'ordered'
 

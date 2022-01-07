@@ -9,7 +9,6 @@ may not. In particular, the Tor Browser Bundle defaults to listening on port 915
 See [Tor Project FAQ:TBBSocksPort](https://www.torproject.org/docs/faq.html.en#TBBSocksPort)
 for how to properly configure Tor.
 
-
 ## 1. Run Bitcoin Cash Node behind a Tor proxy
 
 The first step is running Bitcoin Cash Node behind a Tor proxy. This will already
@@ -34,7 +33,6 @@ anonymize all outgoing connections, but more is possible.
 In a typical situation, this suffices to run behind a Tor proxy:
 
     ./bitcoind -proxy=127.0.0.1:9050
-
 
 ## 2. Run a Bitcoin Cash Node hidden server
 

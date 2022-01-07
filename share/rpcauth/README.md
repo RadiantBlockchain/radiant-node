@@ -1,7 +1,6 @@
-RPC Tools
----------------------
+# RPC Tools #
 
-### [RPCAuth](/share/rpcauth) ###
+## [RPCAuth](/share/rpcauth) ##
 
 ```
 usage: rpcauth.py [-h] username [password]

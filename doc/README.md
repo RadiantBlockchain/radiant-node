@@ -1,5 +1,4 @@
-Bitcoin Cash Node Setup
-=======================
+# Bitcoin Cash Node Setup
 
 Bitcoin Cash Node is a node and wallet implementation for the Bitcoin Cash network.
 It downloads and, by default, stores the entire history of Bitcoin Cash
@@ -9,8 +8,7 @@ can take anywhere from a few hours to a day or more.
 
 To download Bitcoin Cash Node, visit [bitcoincashnode.org](https://bitcoincashnode.org/).
 
-Verify
----------------------
+## Verify
 
 If you download the associated signature files with the binaries from the above link,
 you can verify the integrity of the binaries by following these instructions, replacing
@@ -47,8 +45,7 @@ you should `gpg --sign-key <signer key>` for each release signer key and rerun
 the above script (there should be no warnings the second time). If the keys change
 unexpectedly, the presence of those warnings should be heeded with extreme caution.
 
-Running
----------------------
+## Running
 
 The following are some helpful notes on how to run Bitcoin Cash Node on your
 native platform.
@@ -68,7 +65,7 @@ Unpack the files into a directory, and then run `bitcoin-qt.exe`.
 
 Drag `bitcoin-cash-node` to your applications folder, and then run `bitcoin-cash-node`.
 
-### Need Help?
+## Help
 
 - Ask for help on the [Bitcoin Cash Node Subreddit](https://www.reddit.com/r/bitcoincashnode/).
 
