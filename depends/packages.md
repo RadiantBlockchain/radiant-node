@@ -1,3 +1,5 @@
+# Packages
+
 Each recipe consists of 3 main parts: defining identifiers, setting build
 variables, and defining build commands.
 
@@ -50,8 +52,8 @@ These variables are optional:
     Any extra files that will be fetched via $(package)_fetch_cmds. These are
     specified so that they can be fetched and verified via 'make download'.
 
+## Build Variables
 
-## Build Variables:
 After defining the main identifiers, build variables may be added or customized
 before running the build commands. They should be added to a function called
 $(package)_set_vars. For example:
@@ -102,7 +104,7 @@ These will be used in addition to the options that do not specify
 debug/release. All builds are considered to be release unless DEBUG=1 is set by
 the user. Other variables may be defined as needed.
 
-## Build commands:
+## Build commands
 
   For each build, a unique build dir and staging dir are created. For example,
   `work/build/mylib/1.0-1adac830f6e` and `work/staging/mylib/1.0-1adac830f6e`.
@@ -153,7 +155,7 @@ Most autotools projects can be properly staged using:
 
     $(MAKE) DESTDIR=$($(package)_staging_dir) install
 
-## Build outputs:
+## Build outputs
 
 In general, the output of a depends package should not contain any libtool
 archives. Instead, the package should output `.pc` (`pkg-config`) files where
@@ -165,7 +167,7 @@ From the [Gentoo Wiki entry](https://wiki.gentoo.org/wiki/Project:Quality_Assura
 >  creates. This leads to massive overlinking, which is toxic to the Gentoo
 >  ecosystem, as it leads to a massive number of unnecessary rebuilds.
 
-## Secondary dependencies:
+## Secondary dependencies
 
 Secondary dependency packages relative to the bitcoin binaries/libraries (i.e.
 those not in `ALLOWED_LIBRARIES` in `contrib/devtools/symbol-check.py`) don't

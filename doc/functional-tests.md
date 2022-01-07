@@ -326,11 +326,11 @@ Helpers for script.py
 
 Helper functions for creating blocks and transactions.
 
-# Running functional tests in an emulator
+## Running functional tests in an emulator
 
 Cross-compiled binaries can be tested with qemu or wine.
 
-## AArch64
+### AArch64
 
 Prerequisite
 

@@ -1,8 +1,6 @@
-Developer Notes
-===============
+# Developer Notes
 
-Coding Style
----------------
+## Coding Style
 
 Various coding styles have been used during the history of the codebase,
 and the result is not very consistent. However, we're now trying to converge to
@@ -100,8 +98,7 @@ public:
 } // namespace foo
 ```
 
-Doxygen comments
------------------
+## Doxygen comments
 
 To facilitate the generation of documentation, use doxygen-compatible comment
 blocks for functions, methods and fields.
@@ -179,8 +176,7 @@ doxygen doc/Doxyfile
 # output goes to doc/doxygen/html/
 ```
 
-Development tips and tricks
----------------------------
+## Development tips and tricks
 
 ### Compiling for debugging
 
@@ -382,8 +378,7 @@ Additional resources:
 - [Google Sanitizers Wiki](https://github.com/google/sanitizers/wiki)
 - [Issue #12691: Enable -fsanitize flags in Travis](https://github.com/bitcoin/bitcoin/issues/12691)
 
-Locking/mutex usage notes
--------------------------
+## Locking/mutex usage notes
 
 The code is multi-threaded, and uses mutexes and the
 `LOCK` and `TRY_LOCK` macros to protect data structures.
@@ -399,8 +394,7 @@ between the various components is a goal, with any necessary locking
 done by the components (e.g. see the self-contained `CBasicKeyStore` class
 and its `cs_KeyStore` lock for example).
 
-Threads
--------
+## Threads
 
 - ThreadScriptCheck : Verifies block scripts.
 - ThreadImport : Loads blocks from blk*.dat files or bootstrap.dat.
@@ -416,8 +410,7 @@ Threads
   connections and services them.
 - Shutdown : Does an orderly shutdown of everything.
 
-Ignoring IDE/editor files
---------------------------
+## Ignoring IDE/editor files
 
 In closed-source environments in which everyone uses the same IDE it is common
 to add temporary files it produces to the project-wide `.gitignore` file.
@@ -449,8 +442,7 @@ If a set of tools is used by the build system or scripts the repository (for
 example, lcov) it is perfectly acceptable to add its files to `.gitignore`
 and commit them.
 
-Development guidelines
-----------------------
+## Development guidelines
 
 A few non-style-related recommendations for developers, as well as points to
 pay attention to for reviewers of Bitcoin Cash Node code.
@@ -788,8 +780,7 @@ would be to revert the upstream fix before applying the updates to Bitcoin
 Cash Node's copy of LevelDB. In general you should be wary of any upstream
 changes affecting what data is returned from LevelDB queries.
 
-Git and GitLab tips
----------------------
+## Git and GitLab tips
 
 - See CONTRIBUTING.md for instructions on setting up your repo correctly.
 
@@ -853,8 +844,7 @@ Git and GitLab tips
   `git checkout` and anywhere a commit id would be acceptable to see the changes
   from merge request NUMBER.
 
-RPC interface guidelines
---------------------------
+## RPC interface guidelines
 
 A few guidelines for introducing and reviewing new RPC interfaces:
 

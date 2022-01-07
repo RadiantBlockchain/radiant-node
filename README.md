@@ -20,7 +20,7 @@ split on August 1, 2017. Bitcoin Cash and the Bitcoin Core version of Bitcoin
 share the same transaction history up until the split.
 
 What is Bitcoin Cash Node?
---------------------
+--------------------------
 
 [Bitcoin Cash Node](https://www.bitcoincashnode.org) is the name of open-source
 software which enables the use of Bitcoin Cash. It is a descendant of the

@@ -1,5 +1,4 @@
-Ninja build system targets
-==========================
+# Ninja build system targets
 
 This document describes how the CMake/Ninja build system works and how to use it.
 
@@ -194,7 +193,7 @@ that the next upgrade has been activated.
 
 Same as above but running long Python regression tests only (`--startfrom=40`).
 
-### coverage-<target>
+### coverage-`<target>`
 
 Generate coverage report for <target>. See [generate coverage report](coverage.md).
 

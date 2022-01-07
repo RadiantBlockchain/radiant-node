@@ -1,5 +1,4 @@
-Fuzz-testing Bitcoin Cash Node
-==============================
+# Fuzz-testing Bitcoin Cash Node
 
 A special test harness in `src/test/fuzz/` is provided for each fuzz target to
 provide an easy entry point for fuzzers and the like. In this document we'll

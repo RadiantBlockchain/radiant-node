@@ -1,5 +1,6 @@
-Repository Tools
----------------------
+# Contrib tools #
+
+## Repository Tools ##
 
 ### [Developer tools](devtools/) ###
 
@@ -18,14 +19,13 @@ A Linux bash script that will set up traffic control (tc) to limit the outgoing 
 
 Utility to generate the pnSeed[] array that is compiled into the client.
 
-Build Tools and Keys
----------------------
+## Build Tools and Keys ##
 
 ### [Gitian-descriptors](gitian-descriptors/) ###
 
 Notes on getting Gitian builds up and running using KVM.
 
-### [Gitian-keys](gitian-signing/)
+### [Gitian-keys](gitian-signing/) ###
 
 PGP keys used for signing Bitcoin Cash Node [Gitian release](../doc/release-process.md) results.
 
@@ -37,8 +37,8 @@ Scripts and notes for Mac builds.
 
 Script for running full Gitian builds.
 
-Test and Verify Tools 
----------------------
+## Test and Verify Tools ##
 
 ### [TestGen](testgen/) ###
+
 Utilities to generate test vectors for the data-driven Bitcoin tests.

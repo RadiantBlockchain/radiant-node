@@ -1,4 +1,6 @@
-### Usage
+# Dependencies
+
+## Usage
 
 To build dependencies for the current architecture + OS:
 
@@ -61,13 +63,13 @@ from the project root):
 
 No other options are needed, the paths are automatically configured.
 
-### Install the required dependencies: Ubuntu & Debian
+## Install the required dependencies: Ubuntu & Debian
 
-#### Common to all arch/OS
+### Common to all arch/OS
 
     sudo apt-get install build-essential autoconf automake cmake curl git libtool ninja-build patch pkg-config python3
 
-#### For macOS cross compilation
+### For macOS cross compilation
 
 Install the following packages:
 
@@ -77,11 +79,11 @@ Obtain the same SDK packge that is used in the gitian build (refer to `gitian-bu
 Create an `SDKs` folder within the `depends` folder, if it does not already exist.
 Unpack the SDK tarball there.
 
-#### For Win64 cross compilation
+### For Win64 cross compilation
 
 - see [build-windows.md](../doc/build-windows.md#cross-compilation-for-ubuntu-and-windows-subsystem-for-linux)
 
-#### For Linux cross compilation
+### For Linux cross compilation
 
 Common linux dependencies:
 
@@ -106,8 +108,7 @@ For linux AARCH64 cross compilation:
 
     sudo apt-get install g++-aarch64-linux-gnu
 
-
-### Dependency Options
+## Dependency Options
 
 The following can be set when running make: make FOO=bar
 
@@ -146,7 +147,7 @@ Additional targets:
     download-linux: run 'make download-linux' to fetch all sources needed for linux builds
     build-all: build the dependencies for all the arch/OS
 
-### Other documentation
+## Other documentation
 
 - [description.md](description.md): General description of the depends system
 - [packages.md](packages.md): Steps for adding packages

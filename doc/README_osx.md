@@ -1,4 +1,4 @@
-Deterministic macOS DMG Notes.
+# Deterministic macOS DMG Notes
 
 Working macOS DMGs are created in Linux by combining a recent clang,
 the Apple binutils (ld, ar, etc) and DMG authoring tools.

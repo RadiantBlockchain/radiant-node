@@ -1,10 +1,8 @@
-Contents
-========
+# Contents
 
 This directory contains tools for developers working on this repository.
 
-copyright\_header.py
-====================
+## copyright\_header.py
 
 Provides utilities for managing copyright headers of `The Bitcoin developers`
 in repository source files. It has three subcommands:
@@ -17,15 +15,13 @@ $ ./copyright_header.py insert <file>
 
 Running these subcommands without arguments displays a usage string.
 
-copyright\_header.py report \<base\_directory\> [verbose]
----------------------------------------------------------
+### copyright\_header.py report \<base\_directory\> [verbose]
 
 Produces a report of all copyright header notices found inside the source files
 of a repository. Useful to quickly visualize the state of the headers.
 Specifying `verbose` will list the full filenames of files of each category.
 
-copyright\_header.py update \<base\_directory\> [verbose]
----------------------------------------------------------
+### copyright\_header.py update \<base\_directory\> [verbose]
 
 Updates all the copyright headers of `The Bitcoin developers` which were changed
 in a year more recent than is listed. For example:
@@ -57,8 +53,7 @@ will be updated to:
 
 where the update is appropriate.
 
-copyright\_header.py insert \<file\>
-------------------------------------
+### copyright\_header.py insert \<file\>
 
 Inserts a copyright header for `The Bitcoin developers` at the top of the file
 in either Python or C++ style as determined by the file extension. If the file
@@ -73,19 +68,16 @@ year rather than two hyphenated years.
 If the file already has a copyright for `The Bitcoin developers`, the script
 will exit.
 
-optimize-pngs.py
-================
+## optimize-pngs.py
 
 A script to optimize png files in the bitcoin
 repository (requires pngcrush).
 
-security-check.py and test-security-check.py
-============================================
+## security-check.py and test-security-check.py
 
 Perform basic ELF security checks on a series of executables.
 
-symbol-check.py
-===============
+## symbol-check.py
 
 A script to check that the (Linux) executables produced by gitian only contain
 allowed gcc, glibc and libstdc++ version symbols. This makes sure they are
@@ -108,8 +100,7 @@ If there are 'unsupported' symbols, the return value will be 1 a list like this 
 .../64/test_bitcoin: symbol _ZNSt8__detail15_List_nod from unsupported version GLIBCXX_3.4.15
 ```
 
-circular-dependencies.py
-========================
+## circular-dependencies.py
 
 Run this script from the root of the source tree (`src/`) to find circular dependencies in the source code.
 This looks only at which files include other files, treating the `.cpp` and `.h` file as one unit.

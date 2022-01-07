@@ -1,3 +1,6 @@
+Gitian Building Manual
+======================
+
 Getting and building the inputs
 -------------------------------
 

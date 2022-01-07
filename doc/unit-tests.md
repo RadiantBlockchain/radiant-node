@@ -1,10 +1,10 @@
-### Compiling/running unit tests
+# Compiling/running unit tests
 
 Unit tests are not part of the default build but can be built on demand.
 
 All the unit tests can be built and run with a single command: `ninja check`.
 
-#### bitcoind unit tests
+## bitcoind unit tests
 
 The `bitcoind` unit tests can be built with `ninja test_bitcoin`.
 They can also be built and run in a single command with `ninja check-bitcoin`.
@@ -15,7 +15,7 @@ To add more `bitcoind` tests, add `BOOST_AUTO_TEST_CASE` functions to the
 existing .cpp files in the `src/test/` directory or add new .cpp files that
 implement new `BOOST_AUTO_TEST_SUITE` sections.
 
-#### bitcoin-qt unit tests
+## bitcoin-qt unit tests
 
 The `bitcoin-qt` tests can be built with `ninja test_bitcoin-qt` or
 built and run in a single command with `ninja check-bitcoin-qt`.
@@ -25,7 +25,7 @@ To run the `bitcoin-qt` tests manually, launch `src/qt/test/test_bitcoin-qt`.
 To add more `bitcoin-qt` tests, add them to the `src/qt/test/` directory and
 the `src/qt/test/test_main.cpp` file.
 
-#### bitcoin-seeder unit tests
+## bitcoin-seeder unit tests
 
 The `bitcoin-seeder` unit tests can be built with `ninja test_bitcoin-seeder` or
 built and run in a single command with `ninja check-bitcoin-seeder`.
@@ -37,7 +37,7 @@ To add more `bitcoin-seeder` tests, add `BOOST_AUTO_TEST_CASE` functions to the
 existing .cpp files in the `src/seeder/test/` directory or add new .cpp files
 that implement new `BOOST_AUTO_TEST_SUITE` sections.
 
-### Running individual tests
+## Running individual tests
 
 `test_bitcoin` has some built-in command-line arguments; for
 example, to run just the `getarg_tests` verbosely:
@@ -54,7 +54,7 @@ test_bitcoin --run_test=getarg_tests/doubledash
 
 Run `test_bitcoin --help` for the full list.
 
-### Note on adding test cases
+## Note on adding test cases
 
 The build system is setup to compile an executable called `test_bitcoin`
 that runs all of the unit tests.  The main source file is called
@@ -70,7 +70,7 @@ For further reading, I found the following website to be helpful in
 explaining how the boost unit test framework works:
 [https://legalizeadulthood.wordpress.com/2009/07/04/c-unit-tests-with-boost-test-part-1/](https://legalizeadulthood.wordpress.com/2009/07/04/c-unit-tests-with-boost-test-part-1/)
 
-### Debugging unit tests
+## Debugging unit tests
 
 Simple example of debugging unit tests with GDB on Linux:
 
