@@ -79,7 +79,8 @@ TEST_PARAMS = {
     "wallet_txn_clone.py": [["--mineblock"]],
     "wallet_createwallet.py": [["--usecli"]],
     "wallet_multiwallet.py": [["--usecli"]],
-    "bchn-txbroadcastinterval.py": [["--testoutbound"]]
+    "bchn-txbroadcastinterval.py": [["--testoutbound"]],
+    "rpc_bind.py": [["--ipv4"], ["--ipv6"], ["--nonloopback"]],
 }
 
 # Used to limit the number of tests, when list of tests is not provided on command line

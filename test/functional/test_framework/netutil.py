@@ -163,8 +163,8 @@ def test_ipv6_local():
     # fail if there is no route to IPv6 localhost.
     have_ipv6 = True
     try:
-        s = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
-        s.connect(('::1', 0))
+        with socket.socket(socket.AF_INET6, socket.SOCK_DGRAM) as s:
+            s.connect(('::1', 0))
     except socket.error:
         have_ipv6 = False
     return have_ipv6
