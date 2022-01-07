@@ -6,12 +6,11 @@
 
 #include <span.h>
 
-#include <boost/algorithm/string.hpp>
-
 #include <algorithm>
 #include <array>
 #include <cstring>
 #include <string>
+#include <string_view>
 #include <vector>
 
 [[nodiscard]] inline std::string TrimString(const std::string &str, const std::string &pattern = " \f\n\r\t\v") {
@@ -44,10 +43,51 @@ inline std::string Join(const std::vector<std::string> &list, const std::string 
     return Join(list, separator, [](const std::string &i) { return i; });
 }
 
-template<typename SequenceSequenceT, typename RangeT>
-SequenceSequenceT& Split(SequenceSequenceT &Result, RangeT &&Input, const std::string &pattern = " \f\n\r\t\v", bool token_compress_on = false) {
-    return boost::split(Result, Input, boost::is_any_of(pattern), 
-                        token_compress_on ? boost::token_compress_on : boost::token_compress_off);
+/**
+ * boost::split work-alike, appends tokens from `input` to `result`. Separators are identified by `separators`.
+ *
+ * @param result - Tokens are appended to this container. It should be a container of std::string or std::string_view.
+ *                 This container will be overwritten by this function.
+ * @param input - The string to split.
+ * @param separators - The set of characters to consider as separators.
+ * @param tokenCompress - If true, adjacent separators are merged together. Otherwise, every two separators delimit a
+ *                        token.
+ * @return A reference to `result`. `result` will be overwritten with the tokens.
+ */
+template<typename OutputSequence>
+OutputSequence& Split(OutputSequence& result, std::string_view input, std::string_view separators = " \f\n\r\t\v",
+                      bool tokenCompress = false) {
+    // GCC 8.3.0 workaround so that e.g. OutputSequence above can be std::set<std::string>.
+    struct Token {
+        std::string_view s;
+        Token(std::string_view::iterator begin, std::string_view::iterator end) : s(&*begin, end - begin) {}
+        operator std::string() const { return std::string{s.begin(), s.end()}; }
+        operator std::string_view() const noexcept { return s; }
+    };
+    std::vector<Token> tokens;
+    auto it = input.begin();
+    auto tok_begin = it;
+    const auto end = input.end();
+    size_t repeated_sep_ct = 0;
+    while (it != end) {
+        if (separators.find_first_of(*it) != separators.npos) {
+            if (!tokenCompress || repeated_sep_ct++ == 0) {
+                tokens.emplace_back(tok_begin, it);
+            }
+            tok_begin = ++it;
+        } else {
+            ++it;
+            repeated_sep_ct = 0;
+        }
+    }
+    // append the last token (or the entire string, even if empty, if no tokens found)
+    tokens.emplace_back(tok_begin, end);
+
+    // We use a tmp container in this way to leverage InputIterator construction, so we can operate on any container,
+    // including std::set<std::string>, etc.
+    OutputSequence tmp(tokens.begin(), tokens.end());
+    result.swap(tmp);
+    return result;
 }
 
 /**
