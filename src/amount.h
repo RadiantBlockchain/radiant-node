@@ -136,17 +136,17 @@ public:
         return stream << ca.amount;
     }
 
-    std::string ToString() const;
+    std::string ToString(bool trimTrailingZeros = true, bool trimTrailingDecimalPoint = false) const;
 
     // serialization support
     SERIALIZE_METHODS(Amount, obj) { READWRITE(obj.amount); }
 };
 
-static constexpr Amount SATOSHI = Amount::satoshi();
-static constexpr Amount CASH = 100 * SATOSHI;
-static constexpr Amount COIN = 100000000 * SATOSHI;
+inline constexpr Amount SATOSHI = Amount::satoshi();
+inline constexpr Amount CASH = 100 * SATOSHI;
+inline constexpr Amount COIN = 100'000'000 * SATOSHI;
 
-extern const std::string CURRENCY_UNIT;
+inline const std::string CURRENCY_UNIT = "BCH";
 
 /**
  * No amount larger than this (in satoshi) is valid.
@@ -158,7 +158,7 @@ extern const std::string CURRENCY_UNIT;
  * critical; in unusual circumstances like a(nother) overflow bug that allowed
  * for the creation of coins out of thin air modification could lead to a fork.
  */
-static const Amount MAX_MONEY = 21000000 * COIN;
+inline constexpr Amount MAX_MONEY = 21'000'000 * COIN;
 inline bool MoneyRange(const Amount nValue) {
     return nValue >= Amount::zero() && nValue <= MAX_MONEY;
 }
