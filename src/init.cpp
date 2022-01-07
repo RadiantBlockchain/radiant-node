@@ -119,11 +119,11 @@ static fs::path GetPidFile() {
     FILE *file = fsbridge::fopen(GetPidFile(), "w");
     if (file) {
 #ifdef WIN32
-        fprintf(file, "%d\n", GetCurrentProcessId());
+        std::fprintf(file, "%lu\n", static_cast<unsigned long>(GetCurrentProcessId()));
 #else
-        fprintf(file, "%d\n", getpid());
+        std::fprintf(file, "%ld\n", static_cast<long>(getpid()));
 #endif
-        fclose(file);
+        std::fclose(file);
         return true;
     } else {
         return InitError(strprintf(_("Unable to create the PID file '%s': %s"),
