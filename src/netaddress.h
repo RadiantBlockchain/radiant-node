@@ -12,17 +12,28 @@
 #include <prevector.h>
 #include <serialize.h>
 #include <span.h>
+#include <tinyformat.h>
 #include <util/saltedhashers.h>
+#include <util/strencodings.h>
+#include <util/string.h>
 
 #include <array>
 #include <cstdint>
 #include <cstring>
 #include <functional>
+#include <ios>
 #include <optional>
 #include <string>
 #include <type_traits>
 #include <utility>
 #include <vector>
+
+/**
+ * A flag that is ORed into the protocol version to designate that addresses
+ * should be serialized in (unserialized from) v2 format (BIP155).
+ * Make sure that this does not collide with any of the values in `version.h`.
+ */
+inline constexpr int ADDRV2_FORMAT = 0x20000000;
 
 /**
  * A network type.
@@ -43,8 +54,14 @@ enum Network {
     /// IPv6
     NET_IPV6,
 
-    /// TORv2
+    /// TOR (v2 or v3)
     NET_ONION,
+
+    /// I2P
+    NET_I2P,
+
+    /// CJDNS
+    NET_CJDNS,
 
     /// A set of addresses that represent the hash of a string or FQDN. We use
     /// them in CAddrMan to keep track of which DNS seeds were used.
@@ -85,6 +102,16 @@ inline constexpr size_t ADDR_IPV6_SIZE = 16;
 
 /// Size of TORv2 address (in bytes).
 inline constexpr size_t ADDR_TORV2_SIZE = 10;
+
+/// Size of TORv3 address (in bytes). This is the length of just the address
+/// as used in BIP155, without the checksum and the version byte.
+inline constexpr size_t ADDR_TORV3_SIZE = 32;
+
+/// Size of I2P address (in bytes).
+inline constexpr size_t ADDR_I2P_SIZE = 32;
+
+/// Size of CJDNS address (in bytes).
+inline constexpr size_t ADDR_CJDNS_SIZE = 16;
 
 /// Size of "internal" (NET_INTERNAL) address (in bytes).
 inline constexpr size_t ADDR_INTERNAL_SIZE = 10;
@@ -162,6 +189,8 @@ public:
     // IPv6 Hurricane Electric - https://he.net (2001:0470::/36)
     bool IsHeNet() const;
     bool IsTor() const;
+    bool IsI2P() const;
+    bool IsCJDNS() const;
     bool IsLocal() const;
     bool IsRoutable() const;
     bool IsInternal() const;
@@ -202,7 +231,11 @@ public:
      */
     template <typename Stream>
     void Serialize(Stream &s) const {
-        SerializeV1Stream(s);
+        if (s.GetVersion() & ADDRV2_FORMAT) {
+            SerializeV2Stream(s);
+        } else {
+            SerializeV1Stream(s);
+        }
     }
 
     /**
@@ -210,16 +243,55 @@ public:
      */
     template <typename Stream>
     void Unserialize(Stream &s) {
-        UnserializeV1Stream(s);
+        if (s.GetVersion() & ADDRV2_FORMAT) {
+            UnserializeV2Stream(s);
+        } else {
+            UnserializeV1Stream(s);
+        }
     }
 
     friend class CSubNet;
 
 private:
     /**
+     * BIP155 network ids recognized by this software.
+     */
+    enum BIP155Network : uint8_t {
+        IPV4 = 1,
+        IPV6 = 2,
+        TORV2 = 3,
+        TORV3 = 4,
+        I2P = 5,
+        CJDNS = 6,
+    };
+
+    /**
      * Size of CNetAddr when serialized as ADDRv1 (pre-BIP155) (in bytes).
      */
     static constexpr size_t V1_SERIALIZATION_SIZE = ADDR_IPV6_SIZE;
+
+    /**
+     * Maximum size of an address as defined in BIP155 (in bytes).
+     * This is only the size of the address, not the entire CNetAddr object
+     * when serialized.
+     */
+    static constexpr size_t MAX_ADDRV2_SIZE = 512;
+
+    /**
+     * Get the BIP155 network id of this address.
+     * Must not be called for IsInternal() objects.
+     * @returns BIP155 network id
+     */
+    BIP155Network GetBIP155Network() const;
+
+    /**
+     * Set `m_net` from the provided BIP155 network id and size after validation.
+     * @retval true the network was recognized, is valid and `m_net` was set
+     * @retval false not recognised (from future?) and should be silently ignored
+     * @throws std::ios_base::failure if the network is one of the BIP155 founding
+     * networks (id 1..6) with wrong address size.
+     */
+    bool SetNetFromBIP155Network(uint8_t possible_bip155_net, size_t address_size);
 
     /**
      * Serialize in pre-ADDRv2/BIP155 format to an array.
@@ -239,12 +311,22 @@ private:
                 ret.insert(ret.end(), m_addr.begin(), m_addr.end());
                 break;
             case NET_ONION:
+                if (m_addr.size() == ADDR_TORV3_SIZE) {
+                    // Serialize TORv3 as all-zeros.
+                    ret.assign(V1_SERIALIZATION_SIZE, 0);
+                    break;
+                }
                 ret.insert(ret.end(), TORV2_IN_IPV6_PREFIX.begin(), TORV2_IN_IPV6_PREFIX.end());
                 ret.insert(ret.end(), m_addr.begin(), m_addr.end());
                 break;
             case NET_INTERNAL:
                 ret.insert(ret.end(), INTERNAL_IN_IPV6_PREFIX.begin(), INTERNAL_IN_IPV6_PREFIX.end());
                 ret.insert(ret.end(), m_addr.begin(), m_addr.end());
+                break;
+            case NET_I2P:
+            case NET_CJDNS:
+                // Serialize I2P and CJDNS as all-zeros.
+                ret.assign(V1_SERIALIZATION_SIZE, 0);
                 break;
             case NET_UNROUTABLE:
             case NET_MAX:
@@ -258,12 +340,29 @@ private:
 
     /**
      * Serialize in pre-ADDRv2/BIP155 format to a stream.
-     * Some addresses (e.g. TORv3) cannot be serialized in pre-BIP155 format.
      */
     template <typename Stream>
     void SerializeV1Stream(Stream &s) const {
         // We write the contents "as if" it were a direct array (fixed size, no compactsize preamble).
         s << MakeSpan(SerializeV1Array());
+    }
+
+    /**
+     * Serialize as ADDRv2 / BIP155.
+     */
+    template <typename Stream>
+    void SerializeV2Stream(Stream &s) const {
+        if (IsInternal()) {
+            // Serialize NET_INTERNAL as embedded in IPv6. We need to
+            // serialize such addresses from addrman.
+            s << static_cast<uint8_t>(BIP155Network::IPV6);
+            s << COMPACTSIZE(ADDR_IPV6_SIZE);
+            SerializeV1Stream(s);
+            return;
+        }
+
+        s << static_cast<uint8_t>(GetBIP155Network());
+        s << m_addr;
     }
 
     /**
@@ -287,6 +386,61 @@ private:
         s >> serialized;
 
         UnserializeV1Array(serialized);
+    }
+
+    /**
+     * Unserialize from a ADDRv2 / BIP155 format.
+     */
+    template <typename Stream>
+    void UnserializeV2Stream(Stream &s) {
+        uint8_t bip155_net;
+        s >> bip155_net;
+
+        size_t address_size;
+        s >> COMPACTSIZE(address_size);
+
+        if (address_size > MAX_ADDRV2_SIZE) {
+            throw std::ios_base::failure(strprintf("Address too long: %u > %u", address_size, MAX_ADDRV2_SIZE));
+        }
+
+        scopeId = 0;
+
+        if (SetNetFromBIP155Network(bip155_net, address_size)) {
+            m_addr.resize(address_size);
+            s >> MakeSpan(m_addr);
+
+            if (m_net != NET_IPV6) {
+                return;
+            }
+
+            // Do some special checks on IPv6 addresses.
+
+            // Recognize NET_INTERNAL embedded in IPv6, such addresses are not
+            // gossiped but could be coming from addrman, when unserializing from
+            // disk.
+            if (HasPrefix(m_addr, INTERNAL_IN_IPV6_PREFIX)) {
+                m_net = NET_INTERNAL;
+                // Delete the serialized "INTERNAL" prefix since we don't store it in memory.
+                m_addr.erase(m_addr.begin(), m_addr.begin() + INTERNAL_IN_IPV6_PREFIX.size());
+                return;
+            }
+
+            if (!HasPrefix(m_addr, IPV4_IN_IPV6_PREFIX) && !HasPrefix(m_addr, TORV2_IN_IPV6_PREFIX)) {
+                return;
+            }
+
+            // IPv4 and TORv2 are not supposed to be embedded in IPv6 (like in V1
+            // encoding). Unserialize as !IsValid(), thus ignoring them.
+        } else {
+            // If we receive an unknown BIP155 network id (from the future?) then
+            // ignore the address - unserialize as !IsValid().
+            s.ignore(address_size);
+        }
+
+        // Mimic a default-constructed CNetAddr object which is !IsValid() and thus
+        // will not be gossiped, but continue reading next addresses from the stream.
+        m_net = NET_IPV6;
+        m_addr.assign(ADDR_IPV6_SIZE, 0x0);
     }
 };
 
