@@ -24,14 +24,19 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <optional>
+#include <set>
+#include <string>
+#include <string_view>
 #include <system_error>
 #include <utility>
+#include <vector>
+
 #ifndef WIN32
 #include <csignal>
 #include <sys/types.h>
 #include <sys/wait.h>
 #endif
-#include <vector>
 
 BOOST_FIXTURE_TEST_SUITE(util_tests, BasicTestingSetup)
 
@@ -183,88 +188,105 @@ BOOST_AUTO_TEST_CASE(util_Join) {
     BOOST_CHECK_EQUAL(Join<std::string>({"foo", "bar"}, ", ", op_upper), "FOO, BAR");
 }
 
+static void SplitWrapper(std::vector<std::string> &result, std::string_view str,
+                         std::optional<std::string_view> delims = std::nullopt, bool tokenCompress = false) {
+    std::set<std::string> set;
+
+    if (delims) {
+        Split(result, str, *delims, tokenCompress);
+        Split(set, str, *delims, tokenCompress);
+    } else {
+        // this is so that this test doesn't have to keep track of whatever the default delim arg is for Split()
+        Split(result, str);
+        Split(set, str);
+    }
+
+    // check that using std::set produces correct results as compared to the std::vector version.
+    BOOST_CHECK(set == std::set<std::string>(result.begin(), result.end()));
+}
+
 /// Test string utility functions: split
 BOOST_AUTO_TEST_CASE(util_Split) {
     std::vector<std::string> result;
 
-    Split(result, "", " \n");
+    SplitWrapper(result, "", " \n");
     BOOST_CHECK_EQUAL(result.size(), 1);
     BOOST_CHECK(result[0].empty());
 
-    Split(result, "   ", " ");
+    SplitWrapper(result, "   ", " ");
     BOOST_CHECK_EQUAL(result.size(), 4);
     BOOST_CHECK(result[0].empty());
     BOOST_CHECK(result[3].empty());
 
-    Split(result, "  .", " .");
+    SplitWrapper(result, "  .", " .");
     BOOST_CHECK_EQUAL(result.size(), 4);
     BOOST_CHECK(result[0].empty());
     BOOST_CHECK(result[3].empty());
 
-    Split(result, "word", " \n");
+    SplitWrapper(result, "word", " \n");
     BOOST_CHECK_EQUAL(result.size(), 1);
     BOOST_CHECK_EQUAL(result[0], "word");
 
-    Split(result, "simple\ntest", " .\n");
+    SplitWrapper(result, "simple\ntest", " .\n");
     BOOST_CHECK_EQUAL(result.size(), 2);
     BOOST_CHECK_EQUAL(result[0], "simple");
     BOOST_CHECK_EQUAL(result[1], "test");
 
-    Split(result, "This is a test.", " .");
+    SplitWrapper(result, "This is a test.", " .");
     BOOST_CHECK_EQUAL(result.size(), 5);
     BOOST_CHECK_EQUAL(result[0], "This");
     BOOST_CHECK_EQUAL(result[3], "test");
     BOOST_CHECK(result[4].empty());
 
-    Split(result, "This is a test...", " .");
+    SplitWrapper(result, "This is a test...", " .");
     BOOST_CHECK_EQUAL(result.size(), 7);
     BOOST_CHECK_EQUAL(result[0], "This");
     BOOST_CHECK_EQUAL(result[3], "test");
     BOOST_CHECK(result[4].empty());
 
-    Split(result, " \f\n\r\t\vasdf fdsa \f\n\r\t\v"); // test default parameters
+    SplitWrapper(result, " \f\n\r\t\vasdf fdsa \f\n\r\t\v"); // test default parameters
     BOOST_CHECK_EQUAL(result.size(), 14);
     BOOST_CHECK(result[0].empty());
     BOOST_CHECK_EQUAL(result[6], "asdf");
     BOOST_CHECK_EQUAL(result[7], "fdsa");
     BOOST_CHECK(result[3].empty());
 
-    Split(result, "", " \n", true);
+    SplitWrapper(result, "", " \n", true);
     BOOST_CHECK_EQUAL(result.size(), 1);
     BOOST_CHECK(result[0].empty());
 
-    Split(result, "   ", " ", true);
+    SplitWrapper(result, "   ", " ", true);
     BOOST_CHECK_EQUAL(result.size(), 2);
     BOOST_CHECK(result[0].empty());
     BOOST_CHECK(result[1].empty());
 
-    Split(result, "  .", " .", true);
+    SplitWrapper(result, "  .", " .", true);
     BOOST_CHECK_EQUAL(result.size(), 2);
     BOOST_CHECK(result[0].empty());
     BOOST_CHECK(result[1].empty());
 
-    Split(result, "word", " \n", true);
+    SplitWrapper(result, "word", " \n", true);
     BOOST_CHECK_EQUAL(result.size(), 1);
     BOOST_CHECK_EQUAL(result[0], "word");
 
-    Split(result, "simple\ntest", " .\n", true);
+    SplitWrapper(result, "simple\ntest", " .\n", true);
     BOOST_CHECK_EQUAL(result.size(), 2);
     BOOST_CHECK_EQUAL(result[0], "simple");
     BOOST_CHECK_EQUAL(result[1], "test");
 
-    Split(result, "This is a test.", " .", true);
+    SplitWrapper(result, "This is a test.", " .", true);
     BOOST_CHECK_EQUAL(result.size(), 5);
     BOOST_CHECK_EQUAL(result[0], "This");
     BOOST_CHECK_EQUAL(result[3], "test");
     BOOST_CHECK(result[4].empty());
 
-    Split(result, "This is a test...", " .", true); // the same token should merge
+    SplitWrapper(result, "This is a test...", " .", true); // the same token should merge
     BOOST_CHECK_EQUAL(result.size(), 5);
     BOOST_CHECK_EQUAL(result[0], "This");
     BOOST_CHECK_EQUAL(result[3], "test");
     BOOST_CHECK(result[4].empty());
 
-    Split(result, " \f\n\r\t\vasdf fdsa \f\n\r\t\v", " \f\n\r\t\v", true);
+    SplitWrapper(result, " \f\n\r\t\vasdf fdsa \f\n\r\t\v", " \f\n\r\t\v", true);
     BOOST_CHECK_EQUAL(result.size(), 4);
     BOOST_CHECK(result[0].empty());
     BOOST_CHECK_EQUAL(result[1], "asdf");
@@ -272,52 +294,52 @@ BOOST_AUTO_TEST_CASE(util_Split) {
     BOOST_CHECK(result[3].empty());
 
     // empty separator string should yield the same string again both for compressed and uncompressed version
-    Split(result, "i lack separators, compressed", "", true);
+    SplitWrapper(result, "i lack separators, compressed", "", true);
     BOOST_CHECK_EQUAL(result.size(), 1);
     BOOST_CHECK_EQUAL(result[0], "i lack separators, compressed");
-    Split(result, "i lack separators, uncompressed", "", false);
+    SplitWrapper(result, "i lack separators, uncompressed", "", false);
     BOOST_CHECK_EQUAL(result.size(), 1);
     BOOST_CHECK_EQUAL(result[0], "i lack separators, uncompressed");
 
     // nothing, with compression is 1 empty token
-    Split(result, "", ",", true);
+    SplitWrapper(result, "", ",", true);
     BOOST_CHECK_EQUAL(result.size(), 1);
     BOOST_CHECK(result[0].empty());
     // nothing, without compression is still 1 empty token
-    Split(result, "", ",");
+    SplitWrapper(result, "", ",");
     BOOST_CHECK_EQUAL(result.size(), 1);
     BOOST_CHECK(result[0].empty());
 
     // 2 empty fields, compressed, is 2 empty tokens
-    Split(result, ",", ",", true);
+    SplitWrapper(result, ",", ",", true);
     BOOST_CHECK_EQUAL(result.size(), 2);
     BOOST_CHECK(result[0].empty());
     BOOST_CHECK(result[1].empty());
     // 2 empty fields, not compressed is also 2 empty tokens
-    Split(result, ",", ",");
+    SplitWrapper(result, ",", ",");
     BOOST_CHECK_EQUAL(result.size(), 2);
     BOOST_CHECK(result[0].empty());
     BOOST_CHECK(result[1].empty());
 
     // 3 empty fields, compressed is 2 empty tokens
-    Split(result, ",,", ",", true);
+    SplitWrapper(result, ",,", ",", true);
     BOOST_CHECK_EQUAL(result.size(), 2);
     BOOST_CHECK(result[0].empty());
     BOOST_CHECK(result[1].empty());
     // 3 empty fields, not compressed is 3 empty tokens
-    Split(result, ",,", ",");
+    SplitWrapper(result, ",,", ",");
     BOOST_CHECK_EQUAL(result.size(), 3);
     BOOST_CHECK(result[0].empty());
     BOOST_CHECK(result[1].empty());
     BOOST_CHECK(result[2].empty());
 
     // N empty fields, compressed, is always 2 empty tokens
-    Split(result, ",,,,,", ",", true);
+    SplitWrapper(result, ",,,,,", ",", true);
     BOOST_CHECK_EQUAL(result.size(), 2);
     BOOST_CHECK(result[0].empty());
     BOOST_CHECK(result[1].empty());
     // N empty fields, not compressed, is N empty tokens
-    Split(result, ",,,,,", ",");
+    SplitWrapper(result, ",,,,,", ",");
     BOOST_CHECK_EQUAL(result.size(), 6);
     BOOST_CHECK(result[0].empty());
     BOOST_CHECK(result[1].empty());
@@ -327,12 +349,12 @@ BOOST_AUTO_TEST_CASE(util_Split) {
     BOOST_CHECK(result[5].empty());
 
     // an odd number of empty fields, plus a non-empty is 2 tokens
-    Split(result, ",,,hello", ",", true);
+    SplitWrapper(result, ",,,hello", ",", true);
     BOOST_CHECK_EQUAL(result.size(), 2);
     BOOST_CHECK(result[0].empty());
     BOOST_CHECK_EQUAL(result[1], "hello");
     // uncompressed: expect 4 tokens, 3 empty, 1 with "hello"
-    Split(result, ",,,hello", ",");
+    SplitWrapper(result, ",,,hello", ",");
     BOOST_CHECK_EQUAL(result.size(), 4);
     BOOST_CHECK(result[0].empty());
     BOOST_CHECK(result[1].empty());
@@ -340,12 +362,12 @@ BOOST_AUTO_TEST_CASE(util_Split) {
     BOOST_CHECK_EQUAL(result[3], "hello");
 
     // an even number of empty fields plus a non-empty is 2 tokens
-    Split(result, ",,,,hello", ",", true);
+    SplitWrapper(result, ",,,,hello", ",", true);
     BOOST_CHECK_EQUAL(result.size(), 2);
     BOOST_CHECK(result[0].empty());
     BOOST_CHECK_EQUAL(result[1], "hello");
     // uncompressed: expect 5 tokens, 4 empty, 1 with "hello"
-    Split(result, ",,,,hello", ",");
+    SplitWrapper(result, ",,,,hello", ",");
     BOOST_CHECK_EQUAL(result.size(), 5);
     BOOST_CHECK(result[0].empty());
     BOOST_CHECK(result[1].empty());
@@ -354,12 +376,12 @@ BOOST_AUTO_TEST_CASE(util_Split) {
     BOOST_CHECK_EQUAL(result[4], "hello");
 
     // a non-empty, a bunch of empties, and a non-empty is 2 tokens
-    Split(result, "1,,,,hello", ",", true);
+    SplitWrapper(result, "1,,,,hello", ",", true);
     BOOST_CHECK_EQUAL(result.size(), 2);
     BOOST_CHECK_EQUAL(result[0], "1");
     BOOST_CHECK_EQUAL(result[1], "hello");
     // uncompressed: 5 tokens
-    Split(result, "1,,,,hello", ",", false);
+    SplitWrapper(result, "1,,,,hello", ",", false);
     BOOST_CHECK_EQUAL(result.size(), 5);
     BOOST_CHECK_EQUAL(result[0], "1");
     BOOST_CHECK(result[1].empty());
@@ -368,13 +390,13 @@ BOOST_AUTO_TEST_CASE(util_Split) {
     BOOST_CHECK_EQUAL(result[4], "hello");
 
     // compressed: a bunch of empties, a non-empty, a bunch of empties
-    Split(result, ",,,1,,,,hello", ",", true);
+    SplitWrapper(result, ",,,1,,,,hello", ",", true);
     BOOST_CHECK_EQUAL(result.size(), 3);
     BOOST_CHECK(result[0].empty());
     BOOST_CHECK_EQUAL(result[1], "1");
     BOOST_CHECK_EQUAL(result[2], "hello");
     // uncompressed: it's 8 tokens
-    Split(result, ",,,1,,,,hello", ",", false);
+    SplitWrapper(result, ",,,1,,,,hello", ",", false);
     BOOST_CHECK_EQUAL(result.size(), 8);
     BOOST_CHECK(result[0].empty());
     BOOST_CHECK(result[1].empty());
@@ -384,17 +406,6 @@ BOOST_AUTO_TEST_CASE(util_Split) {
     BOOST_CHECK(result[5].empty());
     BOOST_CHECK(result[6].empty());
     BOOST_CHECK_EQUAL(result[7], "hello");
-
-    // verify behaviour is identical to boost::split (until we eliminate boost)
-    std::vector<std::string> result_boost;
-
-    Split(result, "This is a test...", " .");
-    boost::split(result_boost, "This is a test...", boost::is_any_of(" ."));
-    BOOST_CHECK(result == result_boost);
-
-    Split(result, "This is a test...", " .", true);
-    boost::split(result_boost, "This is a test...", boost::is_any_of(" ."), boost::token_compress_on);
-    BOOST_CHECK(result == result_boost);
 }
 
 /// Test string utility functions: validate
