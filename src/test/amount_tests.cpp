@@ -127,6 +127,130 @@ BOOST_AUTO_TEST_CASE(BinaryOperatorTest) {
 }
 
 BOOST_AUTO_TEST_CASE(ToStringTest) {
+    BOOST_CHECK_EQUAL((123'456'000 * SATOSHI).ToString(false), "1.23456000");
+    BOOST_CHECK_EQUAL((123'456'000 * SATOSHI).ToString(true), "1.23456");
+    BOOST_CHECK_EQUAL((123'456'000 * SATOSHI).ToString(false, false), "1.23456000");
+    BOOST_CHECK_EQUAL((123'456'000 * SATOSHI).ToString(false, true), (123'456'000 * SATOSHI).ToString(false, false)); // 2nd arg shouldn't change behaviour if 1st is false
+    BOOST_CHECK_EQUAL((123'456'000 * SATOSHI).ToString(true, false), "1.23456");
+    BOOST_CHECK_EQUAL((123'456'000 * SATOSHI).ToString(true, true), "1.23456");
+    BOOST_CHECK_EQUAL((123'456'000 * SATOSHI).ToString(), "1.23456"); // check default behaviour
+
+    BOOST_CHECK_EQUAL((1230 * COIN).ToString(false), "1230.00000000");
+    BOOST_CHECK_EQUAL((1230 * COIN).ToString(true), "1230.0");
+    BOOST_CHECK_EQUAL((1230 * COIN).ToString(false, false), "1230.00000000");
+    BOOST_CHECK_EQUAL((1230 * COIN).ToString(false, true), (1230 * COIN).ToString(false, false));
+    BOOST_CHECK_EQUAL((1230 * COIN).ToString(true, false), "1230.0");
+    BOOST_CHECK_EQUAL((1230 * COIN).ToString(true, true), "1230");
+    BOOST_CHECK_EQUAL((1230 * COIN).ToString(), "1230.0");
+
+    BOOST_CHECK_EQUAL((-123'456'000 * SATOSHI).ToString(false), "-1.23456000");
+    BOOST_CHECK_EQUAL((-123'456'000 * SATOSHI).ToString(true), "-1.23456");
+    BOOST_CHECK_EQUAL((-123'456'000 * SATOSHI).ToString(false, false), "-1.23456000");
+    BOOST_CHECK_EQUAL((-123'456'000 * SATOSHI).ToString(false, true), (-123'456'000 * SATOSHI).ToString(false, false));
+    BOOST_CHECK_EQUAL((-123'456'000 * SATOSHI).ToString(true, false), "-1.23456");
+    BOOST_CHECK_EQUAL((-123'456'000 * SATOSHI).ToString(true, true), "-1.23456");
+    BOOST_CHECK_EQUAL((-123'456'000 * SATOSHI).ToString(), "-1.23456");
+
+    BOOST_CHECK_EQUAL((-1230 * COIN).ToString(false), "-1230.00000000");
+    BOOST_CHECK_EQUAL((-1230 * COIN).ToString(true), "-1230.0");
+    BOOST_CHECK_EQUAL((-1230 * COIN).ToString(false, false), "-1230.00000000");
+    BOOST_CHECK_EQUAL((-1230 * COIN).ToString(false, true), (-1230 * COIN).ToString(false, false));
+    BOOST_CHECK_EQUAL((-1230 * COIN).ToString(true, false), "-1230.0");
+    BOOST_CHECK_EQUAL((-1230 * COIN).ToString(true, true), "-1230");
+    BOOST_CHECK_EQUAL((-1230 * COIN).ToString(), "-1230.0");
+
+    BOOST_CHECK_EQUAL(COIN.ToString(false), "1.00000000");
+    BOOST_CHECK_EQUAL(COIN.ToString(true), "1.0");
+    BOOST_CHECK_EQUAL(COIN.ToString(false, false), "1.00000000");
+    BOOST_CHECK_EQUAL(COIN.ToString(false, true), COIN.ToString(false, false));
+    BOOST_CHECK_EQUAL(COIN.ToString(true, false), "1.0");
+    BOOST_CHECK_EQUAL(COIN.ToString(true, true), "1");
+    BOOST_CHECK_EQUAL(COIN.ToString(), "1.0");
+
+    BOOST_CHECK_EQUAL((-COIN).ToString(false), "-1.00000000");
+    BOOST_CHECK_EQUAL((-COIN).ToString(true), "-1.0");
+    BOOST_CHECK_EQUAL((-COIN).ToString(false, false), "-1.00000000");
+    BOOST_CHECK_EQUAL((-COIN).ToString(false, true), (-COIN).ToString(false, false));
+    BOOST_CHECK_EQUAL((-COIN).ToString(true, false), "-1.0");
+    BOOST_CHECK_EQUAL((-COIN).ToString(true, true), "-1");
+    BOOST_CHECK_EQUAL((-COIN).ToString(), "-1.0");
+
+    BOOST_CHECK_EQUAL((100 * COIN).ToString(false), "100.00000000");
+    BOOST_CHECK_EQUAL((100 * COIN).ToString(true), "100.0");
+    BOOST_CHECK_EQUAL((100 * COIN).ToString(false, false), "100.00000000");
+    BOOST_CHECK_EQUAL((100 * COIN).ToString(false, true), (100 * COIN).ToString(false, false));
+    BOOST_CHECK_EQUAL((100 * COIN).ToString(true, false), "100.0");
+    BOOST_CHECK_EQUAL((100 * COIN).ToString(true, true), "100");
+    BOOST_CHECK_EQUAL((100 * COIN).ToString(), "100.0");
+
+    BOOST_CHECK_EQUAL((-100 * COIN).ToString(false), "-100.00000000");
+    BOOST_CHECK_EQUAL((-100 * COIN).ToString(true), "-100.0");
+    BOOST_CHECK_EQUAL((-100 * COIN).ToString(false, false), "-100.00000000");
+    BOOST_CHECK_EQUAL((-100 * COIN).ToString(false, true), (-100 * COIN).ToString(false, false));
+    BOOST_CHECK_EQUAL((-100 * COIN).ToString(true, false), "-100.0");
+    BOOST_CHECK_EQUAL((-100 * COIN).ToString(true, true), "-100");
+    BOOST_CHECK_EQUAL((-100 * COIN).ToString(), "-100.0");
+
+    BOOST_CHECK_EQUAL(SATOSHI.ToString(false), "0.00000001");
+    BOOST_CHECK_EQUAL(SATOSHI.ToString(true), "0.00000001");
+    BOOST_CHECK_EQUAL(SATOSHI.ToString(false, false), "0.00000001");
+    BOOST_CHECK_EQUAL(SATOSHI.ToString(false, true), SATOSHI.ToString(false, false));
+    BOOST_CHECK_EQUAL(SATOSHI.ToString(true, false), "0.00000001");
+    BOOST_CHECK_EQUAL(SATOSHI.ToString(true, true), "0.00000001");
+    BOOST_CHECK_EQUAL(SATOSHI.ToString(), "0.00000001");
+
+    BOOST_CHECK_EQUAL((-SATOSHI).ToString(false), "-0.00000001");
+    BOOST_CHECK_EQUAL((-SATOSHI).ToString(true), "-0.00000001");
+    BOOST_CHECK_EQUAL((-SATOSHI).ToString(false, false), "-0.00000001");
+    BOOST_CHECK_EQUAL((-SATOSHI).ToString(false, true), (-SATOSHI).ToString(false, false));
+    BOOST_CHECK_EQUAL((-SATOSHI).ToString(true, false), "-0.00000001");
+    BOOST_CHECK_EQUAL((-SATOSHI).ToString(true, true), "-0.00000001");
+    BOOST_CHECK_EQUAL((-SATOSHI).ToString(), "-0.00000001");
+
+    BOOST_CHECK_EQUAL((100 * SATOSHI).ToString(false), "0.00000100");
+    BOOST_CHECK_EQUAL((100 * SATOSHI).ToString(true), "0.000001");
+    BOOST_CHECK_EQUAL((100 * SATOSHI).ToString(false, false), "0.00000100");
+    BOOST_CHECK_EQUAL((100 * SATOSHI).ToString(false, true), (100 * SATOSHI).ToString(false, false));
+    BOOST_CHECK_EQUAL((100 * SATOSHI).ToString(true, false), "0.000001");
+    BOOST_CHECK_EQUAL((100 * SATOSHI).ToString(true, true), "0.000001");
+    BOOST_CHECK_EQUAL((100 * SATOSHI).ToString(), "0.000001");
+
+    BOOST_CHECK_EQUAL((-100 * SATOSHI).ToString(false), "-0.00000100");
+    BOOST_CHECK_EQUAL((-100 * SATOSHI).ToString(true), "-0.000001");
+    BOOST_CHECK_EQUAL((-100 * SATOSHI).ToString(false, false), "-0.00000100");
+    BOOST_CHECK_EQUAL((-100 * SATOSHI).ToString(false, true), (-100 * SATOSHI).ToString(false, false));
+    BOOST_CHECK_EQUAL((-100 * SATOSHI).ToString(true, false), "-0.000001");
+    BOOST_CHECK_EQUAL((-100 * SATOSHI).ToString(true, true), "-0.000001");
+    BOOST_CHECK_EQUAL((-100 * SATOSHI).ToString(), "-0.000001");
+
+    BOOST_CHECK_EQUAL((COIN / 10).ToString(false), "0.10000000");
+    BOOST_CHECK_EQUAL((COIN / 10).ToString(true), "0.1");
+    BOOST_CHECK_EQUAL((COIN / 10).ToString(false, false), "0.10000000");
+    BOOST_CHECK_EQUAL((COIN / 10).ToString(false, true), (COIN / 10).ToString(false, false));
+    BOOST_CHECK_EQUAL((COIN / 10).ToString(true, false), "0.1");
+    BOOST_CHECK_EQUAL((COIN / 10).ToString(true, true), "0.1");
+    BOOST_CHECK_EQUAL((COIN / 10).ToString(), "0.1");
+
+    BOOST_CHECK_EQUAL((-COIN / 10).ToString(false), "-0.10000000");
+    BOOST_CHECK_EQUAL((-COIN / 10).ToString(true), "-0.1");
+    BOOST_CHECK_EQUAL((-COIN / 10).ToString(false, false), "-0.10000000");
+    BOOST_CHECK_EQUAL((-COIN / 10).ToString(false, true), (-COIN / 10).ToString(false, false));
+    BOOST_CHECK_EQUAL((-COIN / 10).ToString(true, false), "-0.1");
+    BOOST_CHECK_EQUAL((-COIN / 10).ToString(true, true), "-0.1");
+    BOOST_CHECK_EQUAL((-COIN / 10).ToString(), "-0.1");
+
+
+    BOOST_CHECK_EQUAL(Amount{}.ToString(false), "0.00000000");
+    BOOST_CHECK_EQUAL(Amount{}.ToString(true), "0.0");
+    BOOST_CHECK_EQUAL(Amount{}.ToString(false, false), "0.00000000");
+    BOOST_CHECK_EQUAL(Amount{}.ToString(false, true), Amount{}.ToString(false, false));
+    BOOST_CHECK_EQUAL(Amount{}.ToString(true, false), "0.0");
+    BOOST_CHECK_EQUAL(Amount{}.ToString(true, true), "0");
+    BOOST_CHECK_EQUAL(Amount{}.ToString(), "0.0");
+
+    BOOST_CHECK_EQUAL((INT64_MAX * SATOSHI).ToString(), "92233720368.54775807");
+    BOOST_CHECK_EQUAL((-INT64_MAX * SATOSHI).ToString(), "-92233720368.54775807");
+    BOOST_CHECK_EQUAL((INT64_MIN * SATOSHI).ToString(), "-92233720368.54775808");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
