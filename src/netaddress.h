@@ -453,6 +453,9 @@ protected:
     /// Is this value valid? (only used to signal parse errors)
     bool valid;
 
+    /// Returns the CIDR length e.g. 0, 8, 12, 16, 24, etc
+    uint8_t GetCIDRLength() const;
+
 public:
     CSubNet() noexcept : netmask{0}, valid{false} {}
     CSubNet(const CNetAddr &addr, uint8_t mask);
@@ -475,6 +478,9 @@ public:
         return !(a == b);
     }
     friend bool operator<(const CSubNet &a, const CSubNet &b);
+
+    /// Return the (prefix as CNetAddr, mask length)
+    std::pair<CNetAddr, uint8_t> GetCIDR() const;
 
     SERIALIZE_METHODS(CSubNet, obj) { READWRITE(obj.network, obj.netmask, obj.valid); }
 };

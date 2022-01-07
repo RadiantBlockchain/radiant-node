@@ -1023,19 +1023,23 @@ bool CSubNet::Match(const CNetAddr &addr) const {
     return true;
 }
 
-std::string CSubNet::ToString() const {
-    assert(network.m_addr.size() <= sizeof(netmask));
-
+uint8_t CSubNet::GetCIDRLength() const {
+    assert(network.m_addr.size() <= std::size(netmask));
     uint8_t cidr = 0;
-
     for (size_t i = 0; i < network.m_addr.size(); ++i) {
-        if (netmask[i] == 0x00) {
-            break;
-        }
-        cidr += NetmaskBits(netmask[i]);
+        const int bits = NetmaskBits(netmask[i]);
+        if (bits <= 0) break; // end of mask
+        cidr += bits;
     }
+    return cidr;
+}
 
-    return network.ToString() + strprintf("/%u", cidr);
+std::pair<CNetAddr, uint8_t> CSubNet::GetCIDR() const {
+    return {network, GetCIDRLength()};
+}
+
+std::string CSubNet::ToString() const {
+    return network.ToString() + strprintf("/%u", GetCIDRLength());
 }
 
 bool CSubNet::IsSingleIP() const {
