@@ -1463,6 +1463,13 @@ BOOST_AUTO_TEST_CASE(strprintf_numbers) {
     BOOST_CHECK(strprintf("%s %d %s", B, spt, E) == B " -87654321 " E);
     BOOST_CHECK(strprintf("%s %u %s", B, pt, E) == B " 87654321 " E);
     BOOST_CHECK(strprintf("%s %x %s", B, pt, E) == B " 5397fb1 " E);
+
+    BOOST_CHECK_EQUAL(strprintf("%s %f %s", B, 12345.6789f, E), B " 12345.678711 " E); // float - expect loss of precision
+    BOOST_CHECK_EQUAL(strprintf("%s %f %s", B, 12345.6789, E), B " 12345.678900 " E); // double - no loss of precision
+    BOOST_CHECK_EQUAL(strprintf("%s %f %s", B, -12345.6789f, E), B " -12345.678711 " E); // negative float
+    BOOST_CHECK_EQUAL(strprintf("%s %f %s", B, -12345.6789, E), B " -12345.678900 " E); // negative double
+    BOOST_CHECK_EQUAL(strprintf("%s %f %s", B, 16777216u, E), B " 16777216 " E); // float representation of unsigned integer
+    BOOST_CHECK_EQUAL(strprintf("%s %f %s", B, -16777216, E), B " -16777216 " E); // float representation of negative integer
 }
 #undef B
 #undef E

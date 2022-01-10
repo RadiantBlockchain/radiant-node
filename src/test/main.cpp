@@ -8,6 +8,11 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <clocale>
+#include <iostream>
+#include <locale>
+
+
 namespace utf = boost::unit_test::framework;
 
 /*
@@ -19,11 +24,13 @@ struct CustomArgumentsFixture {
 
     CustomArgumentsFixture() {
         const std::string testsuitename = "-testsuitename";
+        const std::string force_locale = "-force_locale";
 
         const std::set<std::string> testArgs = {
             testsuitename,
             "-axionactivationtime",
             "-upgrade8activationtime",
+            force_locale,
         };
 
         for (const auto &arg : testArgs) {
@@ -38,6 +45,16 @@ struct CustomArgumentsFixture {
 
         master_test_suite.p_name.value =
             gArgs.GetArg(testsuitename, master_test_suite.p_name.value);
+
+        if (gArgs.IsArgSet(force_locale)) {
+            const std::string new_locale = gArgs.GetArg(force_locale, "C");
+            std::cout << "Forcing locale to \"" << new_locale << "\"" << std::endl;
+            std::setlocale(LC_ALL, new_locale.c_str());
+            const std::locale loc(new_locale);
+            std::locale::global(loc);
+            std::cout.imbue(loc);
+            std::cerr.imbue(loc);
+        }
     }
 
     ~CustomArgumentsFixture(){};
