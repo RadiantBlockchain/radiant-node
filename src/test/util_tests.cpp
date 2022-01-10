@@ -1874,8 +1874,10 @@ static void TestOtherProcess(const fs::path &dirname, const std::string &locknam
                 // Using exec also stops valgrind from thinking it needs to
                 // analyze the memory leaks in this forked process.
                 execlp("true", "true", (char *)NULL);
+                break;
             default:
                 assert(0);
+                break;
         }
     }
 }
