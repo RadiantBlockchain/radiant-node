@@ -2932,6 +2932,7 @@ std::string getSubVersionEB(uint64_t MaxBlockSize) {
     // 1) translate from byte to MB and convert to string
     // 2) limit the EB string to the first decimal digit (floored)
     std::stringstream ebMBs;
+    ebMBs.imbue(std::locale::classic());
     ebMBs << (MaxBlockSize / (ONE_MEGABYTE / 10));
     std::string eb = ebMBs.str();
     eb.insert(eb.size() - 1, ".", 1);
