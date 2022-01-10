@@ -21,6 +21,8 @@ BOOST_FIXTURE_TEST_SUITE(rpc_server_tests, TestingSetup)
 
 class ArgsTestRPCCommand : public RPCCommandWithArgsContext {
 public:
+    using RPCCommandWithArgsContext::Execute; // un-hides RPCCommandWithArgsContext::Execute(const JSONRPCRequest&) to avoid overloaded-virtual warning
+
     ArgsTestRPCCommand(const std::string &nameIn)
         : RPCCommandWithArgsContext(nameIn) {}
 
