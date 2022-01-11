@@ -325,7 +325,7 @@ class DoubleSpendProofTest(BitcoinTestFramework):
 
         # Ensure that the non-dsproof node has the messages we expect in its log
         # (this checks that dsproof was disabled for this node)
-        debug_log = os.path.join(non_dsproof_node.datadir, 'regtest', 'debug.log')
+        debug_log = os.path.join(non_dsproof_node.datadir, self.chain, 'debug.log')
         dsp_inv_ctr = 0
         with open(debug_log, encoding='utf-8') as dl:
             for line in dl.readlines():
@@ -354,7 +354,7 @@ class DoubleSpendProofTest(BitcoinTestFramework):
                 expected_msgs=['Imported mempool transactions from disk',
                                'Failed to open dsproofs file on disk. Continuing anyway.'],
                 timeout=60):
-            dsproofs_dat = os.path.join(self.nodes[1].datadir, 'regtest', 'dsproofs.dat')
+            dsproofs_dat = os.path.join(self.nodes[1].datadir, self.chain, 'dsproofs.dat')
             self.stop_node(1)
             # remove the dsproofs.dat file to keep the proof from coming back
             os.remove(dsproofs_dat)

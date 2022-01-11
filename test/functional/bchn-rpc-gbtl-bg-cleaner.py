@@ -72,7 +72,7 @@ class GBTLightBGCleanerTest(BitcoinTestFramework):
         ]
 
         node = self.nodes[0]
-        gbt_dir = os.path.join(os.path.join(node.datadir, 'regtest'), 'gbt')
+        gbt_dir = os.path.join(node.datadir, self.chain, 'gbt')
         trash_dir = os.path.join(gbt_dir, 'trash')
 
         def path_for_job(jid): return os.path.join(gbt_dir, jid)

@@ -289,6 +289,31 @@ def wait_until(predicate, *, attempts=float('inf'),
             "Predicate {} not true after {} seconds".format(predicate_source, timeout))
     raise RuntimeError('Unreachable')
 
+
+CHAIN_CONF_ARG = {
+    'testnet': 'testnet',
+    'testnet3': 'testnet',
+    'testnet4': 'testnet4',
+    'scalenet': 'scalenet',
+    'regtest': 'regtest',
+}
+
+CHAIN_CONF_SECTION = {
+    'testnet': 'test',
+    'testnet3': 'test',
+    'testnet4': 'test4',
+    'scalenet': 'scale',
+    'regtest': 'regtest',
+}
+
+
+def get_chain_conf_arg(chain):
+    return CHAIN_CONF_ARG.get(chain, None)
+
+
+def get_chain_conf_section(chain):
+    return CHAIN_CONF_SECTION.get(chain, None)
+
 # RPC/P2P connection constants and functions
 ############################################
 
@@ -343,8 +368,8 @@ def rpc_port(n):
         (MAX_NODES * PortSeed.n) % (PORT_RANGE - 1 - MAX_NODES)
 
 
-def rpc_url(datadir, host, port):
-    rpc_u, rpc_p = get_auth_cookie(datadir)
+def rpc_url(datadir, chain, host, port):
+    rpc_u, rpc_p = get_auth_cookie(datadir, chain)
     if host is None:
         host = '127.0.0.1'
     return "http://{}:{}@{}:{}".format(rpc_u, rpc_p, host, int(port))
@@ -353,18 +378,23 @@ def rpc_url(datadir, host, port):
 ################
 
 
-def initialize_datadir(dirname, n):
+def initialize_datadir(dirname, n, chain):
     datadir = get_datadir_path(dirname, n)
     if not os.path.isdir(datadir):
         os.makedirs(datadir)
+    # Translate chain name to config name
+    chain_name_conf_arg = get_chain_conf_arg(chain)
+    chain_name_conf_section = get_chain_conf_section(chain)
     with open(os.path.join(datadir, "bitcoin.conf"), 'w', encoding='utf8') as f:
-        f.write("regtest=1\n")
-        f.write("[regtest]\n")
+        if chain_name_conf_arg:
+            f.write("{}=1\n".format(chain_name_conf_arg))
+            f.write("[{}]\n".format(chain_name_conf_section))
         f.write("port=" + str(p2p_port(n)) + "\n")
         f.write("rpcport=" + str(rpc_port(n)) + "\n")
         f.write("server=1\n")
         f.write("keypool=1\n")
         f.write("discover=0\n")
+        f.write("dnsseed=0\n")
         f.write("listenonion=0\n")
         f.write("usecashaddr=1\n")
         os.makedirs(os.path.join(datadir, 'stderr'), exist_ok=True)
@@ -382,7 +412,7 @@ def append_config(datadir, options):
             f.write(option + "\n")
 
 
-def get_auth_cookie(datadir):
+def get_auth_cookie(datadir, chain):
     user = None
     password = None
     if os.path.isfile(os.path.join(datadir, "bitcoin.conf")):
@@ -395,7 +425,7 @@ def get_auth_cookie(datadir):
                     assert password is None  # Ensure that there is only one rpcpassword line
                     password = line.split("=")[1].strip("\n")
     try:
-        with open(os.path.join(datadir, "regtest", ".cookie"), 'r', encoding="ascii") as f:
+        with open(os.path.join(datadir, chain, ".cookie"), 'r', encoding="ascii") as f:
             userpass = f.read()
             split_userpass = userpass.split(':')
             user = split_userpass[0]
@@ -408,10 +438,10 @@ def get_auth_cookie(datadir):
 
 
 # If a cookie file exists in the given datadir, delete it.
-def delete_cookie_file(datadir):
-    if os.path.isfile(os.path.join(datadir, "regtest", ".cookie")):
+def delete_cookie_file(datadir, chain):
+    if os.path.isfile(os.path.join(datadir, chain, ".cookie")):
         logger.debug("Deleting leftover cookie file")
-        os.remove(os.path.join(datadir, "regtest", ".cookie"))
+        os.remove(os.path.join(datadir, chain, ".cookie"))
 
 
 def set_node_times(nodes, t):

@@ -29,7 +29,7 @@ class ExtVersionDisabledTest(BitcoinTestFramework):
         self.log.info("Testing that no node sent or received an extversion message")
         for node in self.nodes:
             assert node.is_node_stopped()
-            debug_log = os.path.join(node.datadir, 'regtest', 'debug.log')
+            debug_log = os.path.join(node.datadir, self.chain, 'debug.log')
             must_not_exist_found_ct = 0
             with open(debug_log, encoding='utf-8') as dl:
                 for line in dl:

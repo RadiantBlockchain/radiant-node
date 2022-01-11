@@ -47,7 +47,7 @@ class RejectSubVersionTest(BitcoinTestFramework):
 
         # Connect to node 1, node 1 should reject us because of our subversion
         p2p = MyP2PInterface()  # create a new instance just to be sure
-        p2p.peer_connect(dstaddr='127.0.0.1', dstport=self.nodes[1].p2p_port)()
+        p2p.peer_connect(dstaddr='127.0.0.1', dstport=self.nodes[1].p2p_port, net=self.chain)()
         wait_until(
             lambda: p2p.lost_conn,
             timeout=10
