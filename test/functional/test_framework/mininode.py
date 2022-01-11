@@ -30,6 +30,7 @@ from test_framework.messages import (
     msg_blocktxn,
     msg_cmpctblock,
     msg_feefilter,
+    msg_filteradd,
     msg_filterclear,
     msg_filterload,
     msg_getaddr,
@@ -67,6 +68,7 @@ MESSAGEMAP = {
     b"blocktxn": msg_blocktxn,
     b"cmpctblock": msg_cmpctblock,
     b"feefilter": msg_feefilter,
+    b"filteradd": msg_filteradd,
     b"filterclear": msg_filterclear,
     b"filterload": msg_filterload,
     b"getaddr": msg_getaddr,
@@ -371,6 +373,8 @@ class P2PInterface(P2PConnection):
     def on_cmpctblock(self, message): pass
 
     def on_feefilter(self, message): pass
+
+    def on_filteradd(self, message): pass
 
     def on_filterclear(self, message): pass
 
