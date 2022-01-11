@@ -547,7 +547,7 @@ CAddress GetLocalAddress(const CNetAddr *paddrPeer,
 
 extern bool fDiscover;
 extern bool fListen;
-extern bool fRelayTxes;
+extern bool g_relay_txes;
 
 struct LocalServiceInfo {
     int nScore;
