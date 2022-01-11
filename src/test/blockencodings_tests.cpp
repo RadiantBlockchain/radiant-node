@@ -492,4 +492,98 @@ BOOST_AUTO_TEST_CASE(CompactBlocksSerializationLoadTest) {
     BOOST_CHECK_EQUAL(shortIDs2.BlockTxCount(), LARGE_NUMBER_OF_TXS);
 }
 
+BOOST_AUTO_TEST_CASE(ToStringTest) {
+    CBlock block;
+
+    BOOST_CHECK_EQUAL(block.ToString(),
+        "CBlock(hash=14508459b221041eab257d2baaa7459775ba748246c8403609eb708f0e57e74b, ver=0x00000000, "
+        "hashPrevBlock=0000000000000000000000000000000000000000000000000000000000000000, "
+        "hashMerkleRoot=0000000000000000000000000000000000000000000000000000000000000000, "
+        "nTime=0, nBits=00000000, nNonce=0, vtx=0)\n");
+
+    CMutableTransaction tx;
+    tx.vin.resize(1);
+    tx.vin[0].scriptSig.resize(10);
+    tx.vout.resize(1);
+    tx.vout[0].nValue = 42 * SATOSHI;
+
+    block.vtx.resize(3);
+    block.vtx[0] = MakeTransactionRef(tx);
+    block.nVersion = 42;
+    block.hashPrevBlock = BlockHash(ArithToUint256(1234567890));
+    block.nBits = 0x207fffff;
+
+    tx.vin[0].prevout = COutPoint(TxId(ArithToUint256(9876543210)), 0);
+    block.vtx[1] = MakeTransactionRef(tx);
+
+    tx.vin.resize(10);
+    for (size_t i = 0; i < tx.vin.size(); i++) {
+        tx.vin[i].prevout = COutPoint(TxId(ArithToUint256(1357986420)), 0);
+    }
+    block.vtx[2] = MakeTransactionRef(tx);
+
+    BOOST_CHECK_EQUAL(block.ToString(),
+        "CBlock(hash=edad8495e648009f06ad566e3246c4cc0530a633c35fd0cf71b450110885b635, ver=0x0000002a, "
+        "hashPrevBlock=00000000000000000000000000000000000000000000000000000000499602d2, "
+        "hashMerkleRoot=0000000000000000000000000000000000000000000000000000000000000000, nTime=0, nBits=207fffff, nNonce=0, vtx=3)"
+        "\n  CTransaction(txid=f598013009, ver=2, vin.size=1, vout.size=1, nLockTime=0)"
+        "\n    CTxIn(COutPoint(0000000000, 4294967295), coinbase 00000000000000000000)"
+        "\n    CTxOut(nValue=0.00000042, scriptPubKey=)"
+        "\n"
+        "\n  CTransaction(txid=28c3daba31, ver=2, vin.size=1, vout.size=1, nLockTime=0)"
+        "\n    CTxIn(COutPoint(0000000000, 0), scriptSig=00000000000000000000)"
+        "\n    CTxOut(nValue=0.00000042, scriptPubKey=)"
+        "\n"
+        "\n  CTransaction(txid=7418cfcbb6, ver=2, vin.size=10, vout.size=1, nLockTime=0)"
+        "\n    CTxIn(COutPoint(0000000000, 0), scriptSig=00000000000000000000)"
+        "\n    CTxIn(COutPoint(0000000000, 0), scriptSig=)"
+        "\n    CTxIn(COutPoint(0000000000, 0), scriptSig=)"
+        "\n    CTxIn(COutPoint(0000000000, 0), scriptSig=)"
+        "\n    CTxIn(COutPoint(0000000000, 0), scriptSig=)"
+        "\n    CTxIn(COutPoint(0000000000, 0), scriptSig=)"
+        "\n    CTxIn(COutPoint(0000000000, 0), scriptSig=)"
+        "\n    CTxIn(COutPoint(0000000000, 0), scriptSig=)"
+        "\n    CTxIn(COutPoint(0000000000, 0), scriptSig=)"
+        "\n    CTxIn(COutPoint(0000000000, 0), scriptSig=)"
+        "\n    CTxOut(nValue=0.00000042, scriptPubKey=)"
+        "\n"
+        "\n");
+
+    bool mutated;
+    block.hashMerkleRoot = BlockMerkleRoot(block, &mutated);
+    assert(!mutated);
+
+    GlobalConfig config;
+    const Consensus::Params &params = config.GetChainParams().GetConsensus();
+    while (!CheckProofOfWork(block.GetHash(), block.nBits, params)) {
+        ++block.nNonce;
+    }
+    BOOST_CHECK_EQUAL(block.ToString(),
+        "CBlock(hash=54bd6ad7054552d536c0bb793164b8410f5f58f10d9340a97a5f31e088917462, ver=0x0000002a, "
+        "hashPrevBlock=00000000000000000000000000000000000000000000000000000000499602d2, "
+        "hashMerkleRoot=3c29ff8818239743c8999bf24edd3436f3c79f1f8421a0f767ba7bc05e541d53, nTime=0, nBits=207fffff, nNonce=2, vtx=3)"
+        "\n  CTransaction(txid=f598013009, ver=2, vin.size=1, vout.size=1, nLockTime=0)"
+        "\n    CTxIn(COutPoint(0000000000, 4294967295), coinbase 00000000000000000000)"
+        "\n    CTxOut(nValue=0.00000042, scriptPubKey=)"
+        "\n"
+        "\n  CTransaction(txid=28c3daba31, ver=2, vin.size=1, vout.size=1, nLockTime=0)"
+        "\n    CTxIn(COutPoint(0000000000, 0), scriptSig=00000000000000000000)"
+        "\n    CTxOut(nValue=0.00000042, scriptPubKey=)"
+        "\n"
+        "\n  CTransaction(txid=7418cfcbb6, ver=2, vin.size=10, vout.size=1, nLockTime=0)"
+        "\n    CTxIn(COutPoint(0000000000, 0), scriptSig=00000000000000000000)"
+        "\n    CTxIn(COutPoint(0000000000, 0), scriptSig=)"
+        "\n    CTxIn(COutPoint(0000000000, 0), scriptSig=)"
+        "\n    CTxIn(COutPoint(0000000000, 0), scriptSig=)"
+        "\n    CTxIn(COutPoint(0000000000, 0), scriptSig=)"
+        "\n    CTxIn(COutPoint(0000000000, 0), scriptSig=)"
+        "\n    CTxIn(COutPoint(0000000000, 0), scriptSig=)"
+        "\n    CTxIn(COutPoint(0000000000, 0), scriptSig=)"
+        "\n    CTxIn(COutPoint(0000000000, 0), scriptSig=)"
+        "\n    CTxIn(COutPoint(0000000000, 0), scriptSig=)"
+        "\n    CTxOut(nValue=0.00000042, scriptPubKey=)"
+        "\n"
+        "\n");
+}
+
 BOOST_AUTO_TEST_SUITE_END()

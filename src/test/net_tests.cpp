@@ -563,6 +563,15 @@ BOOST_AUTO_TEST_CASE(test_getSubVersionEB) {
     BOOST_CHECK_EQUAL(getSubVersionEB(0), "0.0");
 }
 
+BOOST_AUTO_TEST_CASE(test_FormatSubVersion) {
+    BOOST_CHECK_EQUAL(FormatSubVersion("Test", 1, std::vector<std::string>{"comment1", "comment2", "comment3"}), "/Test:0.0.0.1(comment1; comment2; comment3)/");
+    BOOST_CHECK_EQUAL(FormatSubVersion("Test 2", 12, std::vector<std::string>{"comment1"}), "/Test 2:0.0.0.12(comment1)/");
+    BOOST_CHECK_EQUAL(FormatSubVersion("Test 3", 123, std::vector<std::string>{"comment1", "comment2"}), "/Test 3:0.0.1.23(comment1; comment2)/");
+    BOOST_CHECK_EQUAL(FormatSubVersion("Test 4", 1234, std::vector<std::string>{"comment1", "comment2", "comment3"}), "/Test 4:0.0.12.34(comment1; comment2; comment3)/");
+    BOOST_CHECK_EQUAL(FormatSubVersion("Test 5", 1234567890, std::vector<std::string>{"comment1", "comment2", "comment3"}), "/Test 5:1234.56.78.90(comment1; comment2; comment3)/");
+    BOOST_CHECK_EQUAL(FormatSubVersion("", 0, std::vector<std::string>{}), "/:0.0.0/");
+}
+
 BOOST_AUTO_TEST_CASE(test_userAgent) {
     NetTestConfig config;
 
@@ -575,6 +584,10 @@ BOOST_AUTO_TEST_CASE(test_userAgent) {
         std::to_string(CLIENT_VERSION_MINOR) + "." +
         std::to_string(CLIENT_VERSION_REVISION) + "(EB8.0; " + uacomment + ")/";
 
+    const std::string versionMessage_strprintf =
+        strprintf("/Bitcoin Cash Node:%d.%d.%d(EB8.0; %s)/", CLIENT_VERSION_MAJOR, CLIENT_VERSION_MINOR, CLIENT_VERSION_REVISION, uacomment);
+
+    BOOST_CHECK_EQUAL(versionMessage, versionMessage_strprintf); // verify our test methodology is sound - std::to_string is locale-dependent
     BOOST_CHECK_EQUAL(userAgent(config), versionMessage);
 }
 
