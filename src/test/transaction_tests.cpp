@@ -1047,4 +1047,22 @@ BOOST_AUTO_TEST_CASE(CTxOut_ToString) {
     BOOST_CHECK_EQUAL(txout.ToString(), "CTxOut(nValue=-1230.00000000, scriptPubKey=76a9141234567890abcdefa1a2a3a4)");
 }
 
+BOOST_AUTO_TEST_CASE(CTransaction_ToString) {
+    const std::vector<uint8_t> txBytes = ParseHex(
+        "01000000012232249686666ec07808f294e7b139953ecf775e3070c86e3e911b4813ee50e3010000006b483045022100e498300237c45b"
+        "90f76bd5b43c8ee2f34dffc9357554fe034f4baa9a85e048dd02202f770fffc15936e37bed2a6c4927db4080f9c9d94748099775f78e77"
+        "e07e098c412102574c8811c6e5435f0773a588495271c7d74b687cc374b95a3a330d45c9a7d0d7ffffffff02c58b8b1a000000001976a9"
+        "147d9a37c154facc9fd0068a5b8be0b1b1a637dd9b88ac00e1f505000000001976a9140a373caf0ab3c2b46cd05625b8d545c295b93d7a"
+        "88ac00000000");
+    CDataStream ss(txBytes, SER_NETWORK, CLIENT_VERSION);
+    CMutableTransaction mtx;
+    ss >> mtx;
+    CTransaction tx(mtx);
+    BOOST_CHECK_EQUAL(tx.ToString(), "CTransaction(txid=79851cf2de, ver=1, vin.size=1, vout.size=2, nLockTime=0)"
+        "\n    CTxIn(COutPoint(e350ee1348, 1), scriptSig=483045022100e498300237c4)"
+        "\n    CTxOut(nValue=4.45352901, scriptPubKey=76a9147d9a37c154facc9fd0068a5b)"
+        "\n    CTxOut(nValue=1.00000000, scriptPubKey=76a9140a373caf0ab3c2b46cd05625)"
+        "\n");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
