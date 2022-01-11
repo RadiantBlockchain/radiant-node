@@ -289,6 +289,31 @@ def wait_until(predicate, *, attempts=float('inf'),
             "Predicate {} not true after {} seconds".format(predicate_source, timeout))
     raise RuntimeError('Unreachable')
 
+
+CHAIN_CONF_ARG = {
+    'testnet': 'testnet',
+    'testnet3': 'testnet',
+    'testnet4': 'testnet4',
+    'scalenet': 'scalenet',
+    'regtest': 'regtest',
+}
+
+CHAIN_CONF_SECTION = {
+    'testnet': 'test',
+    'testnet3': 'test',
+    'testnet4': 'test4',
+    'scalenet': 'scale',
+    'regtest': 'regtest',
+}
+
+
+def get_chain_conf_arg(chain):
+    return CHAIN_CONF_ARG.get(chain, None)
+
+
+def get_chain_conf_section(chain):
+    return CHAIN_CONF_SECTION.get(chain, None)
+
 # RPC/P2P connection constants and functions
 ############################################
 
@@ -349,25 +374,8 @@ def rpc_url(datadir, chain, host, port):
         host = '127.0.0.1'
     return "http://{}:{}@{}:{}".format(rpc_u, rpc_p, host, int(port))
 
-
 # Node functions
 ################
-
-CHAIN_CONF_ARG = {
-    'testnet': 'testnet',
-    'testnet3': 'testnet',
-    'testnet4': 'testnet4',
-    'scalenet': 'scalenet',
-    'regtest': 'regtest',
-}
-
-CHAIN_CONF_SECTION = {
-    'testnet': 'test',
-    'testnet3': 'test',
-    'testnet4': 'test4',
-    'scalenet': 'scale',
-    'regtest': 'regtest',
-}
 
 
 def initialize_datadir(dirname, n, chain):
@@ -375,8 +383,8 @@ def initialize_datadir(dirname, n, chain):
     if not os.path.isdir(datadir):
         os.makedirs(datadir)
     # Translate chain name to config name
-    chain_name_conf_arg = CHAIN_CONF_ARG.get(chain, None)
-    chain_name_conf_section = CHAIN_CONF_SECTION.get(chain, None)
+    chain_name_conf_arg = get_chain_conf_arg(chain)
+    chain_name_conf_section = get_chain_conf_section(chain)
     with open(os.path.join(datadir, "bitcoin.conf"), 'w', encoding='utf8') as f:
         if chain_name_conf_arg:
             f.write("{}=1\n".format(chain_name_conf_arg))

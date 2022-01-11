@@ -7,7 +7,7 @@ import subprocess
 import textwrap
 
 from test_framework.test_framework import BitcoinTestFramework
-from test_framework.util import assert_equal
+from test_framework.util import assert_equal, get_chain_conf_arg
 
 
 class ToolWalletTest(BitcoinTestFramework):
@@ -21,8 +21,8 @@ class ToolWalletTest(BitcoinTestFramework):
     def bitcoin_wallet_process(self, *args):
         binary = self.config["environment"]["BUILDDIR"] + \
             '/src/bitcoin-wallet' + self.config["environment"]["EXEEXT"]
-        args = ['-datadir={}'.format(self.nodes[0].datadir),
-                '-regtest'] + list(args)
+        chain_conf_arg = get_chain_conf_arg(self.chain)
+        args = ['-datadir={}'.format(self.nodes[0].datadir), f'-{chain_conf_arg}' if chain_conf_arg else ''] + list(args)
         return subprocess.Popen([binary] + args, stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
 
