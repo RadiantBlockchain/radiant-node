@@ -115,23 +115,23 @@ void benchmark::BenchRunner::RunAll(Printer &printer, uint64_t num_evals,
 
     printer.header();
 
-    for (const auto &p : benchmarks()) {
-        TestingSetup test{CBaseChainParams::REGTEST};
-        assert(::ChainActive().Height() == 0);
-
-        if (!std::regex_match(p.first, baseMatch, reFilter)) {
+    for (const auto &[name, bench] : benchmarks()) {
+        if (!std::regex_match(name, baseMatch, reFilter)) {
             continue;
         }
 
-        uint64_t num_iters =
-            static_cast<uint64_t>(p.second.num_iters_for_one_second * scaling);
-        if (0 == num_iters) {
-            num_iters = 1;
+        uint64_t num_iters = std::max(static_cast<uint64_t>(bench.num_iters_for_one_second * scaling), uint64_t{1});
+
+        if (is_list_only) {
+            std::cout << name << ", " << num_evals << ", " << num_iters << std::endl;
+            continue;
         }
-        State state(p.first, num_evals, num_iters, printer);
-        if (!is_list_only) {
-            p.second.func(state);
-        }
+
+        TestingSetup test{CBaseChainParams::REGTEST};
+        assert(::ChainActive().Height() == 0);
+
+        State state(name, num_evals, num_iters, printer);
+        bench.func(state);
         printer.result(state);
     }
 
