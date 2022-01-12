@@ -26,6 +26,10 @@ from test_framework.util import (
     assert_equal,
     wait_until,
 )
+from test_framework.script import (
+    CScript,
+    OP_TRUE
+)
 
 
 class InvalidTxRequestTest(BitcoinTestFramework):
@@ -92,11 +96,12 @@ class InvalidTxRequestTest(BitcoinTestFramework):
         self.log.info('Test orphan transaction handling ... ')
         # Create a root transaction that we withold until all dependend transactions
         # are sent out and in the orphan cache
+        SCRIPT_PUB_KEY_OP_TRUE = CScript([OP_TRUE])
         tx_withhold = CTransaction()
         tx_withhold.vin.append(
             CTxIn(outpoint=COutPoint(block1.vtx[0].sha256, 0)))
         tx_withhold.vout.append(
-            CTxOut(nValue=50 * COIN - 12000, scriptPubKey=b'\x51'))
+            CTxOut(nValue=50 * COIN - 12000, scriptPubKey=SCRIPT_PUB_KEY_OP_TRUE))
         pad_tx(tx_withhold)
         tx_withhold.calc_sha256()
 
@@ -104,7 +109,7 @@ class InvalidTxRequestTest(BitcoinTestFramework):
         tx_orphan_1 = CTransaction()
         tx_orphan_1.vin.append(
             CTxIn(outpoint=COutPoint(tx_withhold.sha256, 0)))
-        tx_orphan_1.vout = [CTxOut(nValue=10 * COIN, scriptPubKey=b'\x51')] * 3
+        tx_orphan_1.vout = [CTxOut(nValue=10 * COIN, scriptPubKey=SCRIPT_PUB_KEY_OP_TRUE)] * 3
         pad_tx(tx_orphan_1)
         tx_orphan_1.calc_sha256()
 
@@ -113,7 +118,7 @@ class InvalidTxRequestTest(BitcoinTestFramework):
         tx_orphan_2_no_fee.vin.append(
             CTxIn(outpoint=COutPoint(tx_orphan_1.sha256, 0)))
         tx_orphan_2_no_fee.vout.append(
-            CTxOut(nValue=10 * COIN, scriptPubKey=b'\x51'))
+            CTxOut(nValue=10 * COIN, scriptPubKey=SCRIPT_PUB_KEY_OP_TRUE))
         pad_tx(tx_orphan_2_no_fee)
 
         # A valid transaction with sufficient fee
@@ -121,7 +126,7 @@ class InvalidTxRequestTest(BitcoinTestFramework):
         tx_orphan_2_valid.vin.append(
             CTxIn(outpoint=COutPoint(tx_orphan_1.sha256, 1)))
         tx_orphan_2_valid.vout.append(
-            CTxOut(nValue=10 * COIN - 12000, scriptPubKey=b'\x51'))
+            CTxOut(nValue=10 * COIN - 12000, scriptPubKey=SCRIPT_PUB_KEY_OP_TRUE))
         tx_orphan_2_valid.calc_sha256()
         pad_tx(tx_orphan_2_valid)
 
@@ -130,7 +135,8 @@ class InvalidTxRequestTest(BitcoinTestFramework):
         tx_orphan_2_invalid.vin.append(
             CTxIn(outpoint=COutPoint(tx_orphan_1.sha256, 2)))
         tx_orphan_2_invalid.vout.append(
-            CTxOut(nValue=11 * COIN, scriptPubKey=b'\x51'))
+            CTxOut(nValue=11 * COIN, scriptPubKey=SCRIPT_PUB_KEY_OP_TRUE))
+        tx_orphan_2_invalid.calc_sha256()
         pad_tx(tx_orphan_2_invalid)
 
         self.log.info('Send the orphans ... ')
@@ -168,6 +174,24 @@ class InvalidTxRequestTest(BitcoinTestFramework):
         # p2ps[1] is no longer connected
         wait_until(lambda: 1 == len(node.getpeerinfo()), timeout=12)
         assert_equal(expected_mempool, set(node.getrawmempool()))
+
+        self.log.info('Test orphan pool overflow')
+        orphan_tx_pool = [CTransaction() for _ in range(101)]
+        for i in range(len(orphan_tx_pool)):
+            orphan_tx_pool[i].vin.append(CTxIn(outpoint=COutPoint(i, 333)))
+            orphan_tx_pool[i].vout.append(CTxOut(nValue=11 * COIN, scriptPubKey=SCRIPT_PUB_KEY_OP_TRUE))
+            pad_tx(orphan_tx_pool[i])
+
+        with node.assert_debug_log(['mapOrphan overflow, removed 1 tx']):
+            node.p2p.send_txs_and_test(orphan_tx_pool, node, success=False)
+
+        rejected_parent = CTransaction()
+        rejected_parent.vin.append(CTxIn(outpoint=COutPoint(tx_orphan_2_invalid.sha256, 0)))
+        rejected_parent.vout.append(CTxOut(nValue=11 * COIN, scriptPubKey=SCRIPT_PUB_KEY_OP_TRUE))
+        pad_tx(rejected_parent)
+        rejected_parent.rehash()
+        with node.assert_debug_log(['not keeping orphan with rejected parents {}'.format(rejected_parent.hash)]):
+            node.p2p.send_txs_and_test([rejected_parent], node, success=False)
 
         # restart node with sending BIP61 messages disabled, check that it
         # disconnects without sending the reject message
