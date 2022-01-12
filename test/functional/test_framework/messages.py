@@ -57,7 +57,7 @@ NODE_EXTVERSION = (1 << 11)
 MSG_TX = 1
 MSG_BLOCK = 2
 MSG_FILTERED_BLOCK = 3
-MSG_CMPCTBLOCK = 4
+MSG_CMPCT_BLOCK = 4
 MSG_TYPE_MASK = 0xffffffff >> 2
 MSG_DSPROOF = 0x94a0  # Temporary type id
 
@@ -273,7 +273,7 @@ class CInv:
         MSG_TX: "TX",
         MSG_BLOCK: "Block",
         MSG_FILTERED_BLOCK: "filtered Block",
-        MSG_CMPCTBLOCK: "CompactBlock",
+        MSG_CMPCT_BLOCK: "CompactBlock",
         0x94a0: "DoubleSpendProofbeta",
     }
 

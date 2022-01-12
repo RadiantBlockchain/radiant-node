@@ -24,6 +24,8 @@ from test_framework.messages import (
     CTxOut,
     FromHex,
     HeaderAndShortIDs,
+    MSG_BLOCK,
+    MSG_CMPCT_BLOCK,
     msg_block,
     msg_blocktxn,
     msg_cmpctblock,
@@ -79,7 +81,7 @@ class TestP2PConn(P2PInterface):
 
     def on_inv(self, message):
         for x in self.last_message["inv"].inv:
-            if x.type == 2:
+            if x.type == MSG_BLOCK:
                 self.block_announced = True
                 self.announced_blockhashes.add(x.hash)
 
@@ -351,7 +353,7 @@ class CompactBlocksTest(BitcoinTestFramework):
         # Now fetch the compact block using a normal non-announce getdata
         with mininode_lock:
             test_node.clear_block_announcement()
-            inv = CInv(4, block_hash)  # 4 == "CompactBlock"
+            inv = CInv(MSG_CMPCT_BLOCK, block_hash)
             test_node.send_message(msg_getdata([inv]))
 
         wait_until(test_node.received_block_announcement,
@@ -416,7 +418,7 @@ class CompactBlocksTest(BitcoinTestFramework):
                 test_node.last_message.pop("getdata", None)
 
             if announce == "inv":
-                test_node.send_message(msg_inv([CInv(2, block.sha256)]))
+                test_node.send_message(msg_inv([CInv(MSG_BLOCK, block.sha256)]))
                 wait_until(lambda: "getheaders" in test_node.last_message,
                            timeout=30, lock=mininode_lock)
                 test_node.send_header_for_blocks([block])
@@ -623,7 +625,7 @@ class CompactBlocksTest(BitcoinTestFramework):
         wait_until(lambda: "getdata" in test_node.last_message,
                    timeout=10, lock=mininode_lock)
         assert_equal(len(test_node.last_message["getdata"].inv), 1)
-        assert test_node.last_message["getdata"].inv[0].type == 2
+        assert test_node.last_message["getdata"].inv[0].type == MSG_BLOCK
         assert_equal(
             test_node.last_message["getdata"].inv[0].hash, block.sha256)
 
@@ -690,7 +692,7 @@ class CompactBlocksTest(BitcoinTestFramework):
                        timeout=30, lock=mininode_lock)
 
         test_node.clear_block_announcement()
-        test_node.send_message(msg_getdata([CInv(4, int(new_blocks[0], 16))]))
+        test_node.send_message(msg_getdata([CInv(MSG_CMPCT_BLOCK, int(new_blocks[0], 16))]))
         wait_until(lambda: "cmpctblock" in test_node.last_message,
                    timeout=30, lock=mininode_lock)
 
@@ -701,7 +703,7 @@ class CompactBlocksTest(BitcoinTestFramework):
         test_node.clear_block_announcement()
         with mininode_lock:
             test_node.last_message.pop("block", None)
-        test_node.send_message(msg_getdata([CInv(4, int(new_blocks[0], 16))]))
+        test_node.send_message(msg_getdata([CInv(MSG_CMPCT_BLOCK, int(new_blocks[0], 16))]))
         wait_until(lambda: "block" in test_node.last_message,
                    timeout=30, lock=mininode_lock)
         with mininode_lock:
