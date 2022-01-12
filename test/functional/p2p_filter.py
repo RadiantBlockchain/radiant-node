@@ -61,9 +61,13 @@ class FilterTest(BitcoinTestFramework):
     def run_test(self):
         filter_node = self.nodes[0].add_p2p_connection(FilterNode())
 
-        self.log.info('Check that too large filter is rejected')
-        with self.nodes[0].assert_debug_log(['Misbehaving']):
+        self.log.info('Check that too large filter (nHashfuncs) is rejected')
+        with self.nodes[0].assert_debug_log(['Misbehaving', 'oversized-bloom-filter']):
             filter_node.send_and_ping(msg_filterload(data=b'\xaa', nHashFuncs=51, nTweak=0, nFlags=1))
+
+        self.log.info('Check that too large filter (data size) is rejected')
+        with self.nodes[0].assert_debug_log(['Misbehaving', 'oversized-bloom-filter']):
+            filter_node.send_and_ping(msg_filterload(data=b'\xaa' * 36001, nHashFuncs=1, nTweak=0, nFlags=1))
 
         self.log.info('Add filtered P2P connection to the node')
         filter_node.send_and_ping(filter_node.watch_filter_init)
