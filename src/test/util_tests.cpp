@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE(util_HexStr) {
 }
 
 /// Test string utility functions: trim
-BOOST_AUTO_TEST_CASE(util_TrimString) {
+BOOST_AUTO_TEST_CASE(util_TrimString, *boost::unit_test::timeout(5)) {
     static const std::string pattern = " \t\r\n";
     BOOST_CHECK_EQUAL(TrimString(" \t asdf \t fdsa\r \n", pattern), std::string{"asdf \t fdsa"});
     BOOST_CHECK_EQUAL(TrimString("\t\t\t asdf \t fdsa\r\r\r ", pattern), std::string{"asdf \t fdsa"});
@@ -175,7 +175,7 @@ BOOST_AUTO_TEST_CASE(util_TrimString) {
 }
 
 /// Test string utility functions: join
-BOOST_AUTO_TEST_CASE(util_Join) {
+BOOST_AUTO_TEST_CASE(util_Join, *boost::unit_test::timeout(5)) {
     // Normal version
     BOOST_CHECK_EQUAL(Join({}, ", "), "");
     BOOST_CHECK_EQUAL(Join({"foo"}, ", "), "foo");
@@ -206,7 +206,7 @@ static void SplitWrapper(std::vector<std::string> &result, std::string_view str,
 }
 
 /// Test string utility functions: split
-BOOST_AUTO_TEST_CASE(util_Split) {
+BOOST_AUTO_TEST_CASE(util_Split, *boost::unit_test::timeout(5)) {
     std::vector<std::string> result;
 
     SplitWrapper(result, "", " \n");
@@ -408,8 +408,36 @@ BOOST_AUTO_TEST_CASE(util_Split) {
     BOOST_CHECK_EQUAL(result[7], "hello");
 }
 
+/// Test string utility functions: replace all
+BOOST_AUTO_TEST_CASE(util_ReplaceAll, *boost::unit_test::timeout(5)) {
+    auto test_replaceall = [](std::string const &input,
+                              std::string const &search,
+                              std::string const &format,
+                              std::string const &expected){
+        std::string input_copy{input};
+        ReplaceAll(input_copy, search, format);
+        BOOST_CHECK_EQUAL(input_copy, expected);
+    };
+
+    // adapted and expanded from boost unit tests for replace_all and erase_all
+    test_replaceall("1abc3abc2", "abc", "YYY", "1YYY3YYY2");
+    test_replaceall("1abc3abc2", "/", "\\", "1abc3abc2");
+    test_replaceall("1abc3abc2", "abc", "Z", "1Z3Z2");
+    test_replaceall("1abc3abc2", "abc", "XXXX", "1XXXX3XXXX2");
+    test_replaceall("1abc3abc2", "XXXX", "", "1abc3abc2");
+    test_replaceall("1abc3abc2", "", "XXXX", "1abc3abc2");
+    test_replaceall("1abc3abc2", "", "", "1abc3abc2");
+    test_replaceall("1abc3abc2", "abc", "", "132");
+    test_replaceall("1abc3abc2", "", "", "1abc3abc2");
+    test_replaceall("aaaBBaaaBBaa", "BB", "cBBc", "aaacBBcaaacBBcaa");
+    test_replaceall("", "abc", "XXXX", "");
+    test_replaceall("", "abc", "", "");
+    test_replaceall("", "", "XXXX", "");
+    test_replaceall("", "", "", "");
+}
+
 /// Test string utility functions: validate
-BOOST_AUTO_TEST_CASE(util_ValidAsCString) {
+BOOST_AUTO_TEST_CASE(util_ValidAsCString, *boost::unit_test::timeout(5)) {
     using namespace std::string_literals; // since C++14 using std::string literals allows us to embed null characters
     BOOST_CHECK(ValidAsCString("valid"));
     BOOST_CHECK(ValidAsCString(std::string{"valid"}));

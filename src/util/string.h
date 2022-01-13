@@ -91,6 +91,20 @@ OutputSequence& Split(OutputSequence& result, std::string_view input, std::strin
 }
 
 /**
+ * boost::replace_all equivalent, finds all instances of `old` and replaces with `new` in-place.
+ *
+ * @param input - A reference to the string to operate on.
+ * @param search - The substring to search for and replace.
+ * @param format - The string to insert in place of `old`.
+ */
+inline void ReplaceAll(std::string &input, std::string const &search, std::string const &format) {
+    if (search.empty()) return; // an empty string will always match in string::find - we don't want that
+    for (size_t pos = input.find(search); pos != std::string::npos; pos = input.find(search, pos + format.length())) {
+        input.replace(pos, search.length(), format);
+    }
+}
+
+/**
  * Check if a string does not contain any embedded NUL (\0) characters
  */
 [[nodiscard]] inline bool ValidAsCString(const std::string &str) noexcept {

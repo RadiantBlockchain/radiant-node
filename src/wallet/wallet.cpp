@@ -30,13 +30,12 @@
 #include <txmempool.h>
 #include <ui_interface.h>
 #include <util/moneystr.h>
+#include <util/string.h>
 #include <util/system.h>
 #include <validation.h>
 #include <wallet/coincontrol.h>
 #include <wallet/coinselection.h>
 #include <wallet/fees.h>
-
-#include <boost/algorithm/string/replace.hpp>
 
 #include <algorithm>
 #include <cassert>
@@ -1015,7 +1014,7 @@ bool CWallet::AddToWallet(const CWalletTx &wtxIn, bool fFlushOnClose) {
     std::string strCmd = gArgs.GetArg("-walletnotify", "");
 
     if (!strCmd.empty()) {
-        boost::replace_all(strCmd, "%s", wtxIn.GetId().GetHex());
+        ReplaceAll(strCmd, "%s", wtxIn.GetId().GetHex());
         std::thread t(runCommand, strCmd);
         // Thread runs free.
         t.detach();

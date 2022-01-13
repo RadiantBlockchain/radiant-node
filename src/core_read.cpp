@@ -17,8 +17,6 @@
 #include <util/system.h>
 #include <version.h>
 
-#include <boost/algorithm/string/replace.hpp>
-
 #include <algorithm>
 
 CScript ParseScript(const std::string &s) {
@@ -40,7 +38,8 @@ CScript ParseScript(const std::string &s) {
             std::string strName(name);
             mapOpNames[strName] = static_cast<opcodetype>(op);
             // Convenience: OP_ADD and just ADD are both recognized:
-            boost::algorithm::replace_first(strName, "OP_", "");
+            if (strName.substr(0,3) == "OP_") strName.erase(0, 3);
+
             mapOpNames[strName] = static_cast<opcodetype>(op);
         }
     }

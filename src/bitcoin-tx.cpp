@@ -25,8 +25,6 @@
 #include <util/string.h>
 #include <util/system.h>
 
-#include <boost/algorithm/string.hpp>
-
 #include <univalue.h>
 
 #include <cstdio>
