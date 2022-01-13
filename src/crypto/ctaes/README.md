@@ -6,7 +6,7 @@ Simple C module for constant-time AES encryption and decryption.
 Features:
 
 * Simple, pure C code without any dependencies.
-* No tables or data-dependent branches whatsoever, but using bit sliced approach from https://eprint.iacr.org/2009/129.pdf.
+* No tables or data-dependent branches whatsoever, but using bit sliced approach from <https://eprint.iacr.org/2009/129.pdf>.
 * Very small object code: slightly over 4k of executable code when compiled with -Os.
 * Slower than implementations based on precomputed tables or specialized instructions, but can do ~15 MB/s on modern CPUs.
 
@@ -26,17 +26,17 @@ Build steps
 
 Object code:
 
-    $ gcc -O3 ctaes.c -c -o ctaes.o
+    gcc -O3 ctaes.c -c -o ctaes.o
 
 Tests:
 
-    $ gcc -O3 ctaes.c test.c -o test
+    gcc -O3 ctaes.c test.c -o test
 
 Benchmark:
 
-    $ gcc -O3 ctaes.c bench.c -o bench
+    gcc -O3 ctaes.c bench.c -o bench
 
 Review
 ------
 
-Results of a formal review of the code can be found in http://bitcoin.sipa.be/ctaes/review.zip
+Results of a formal review of the code can be found in <http://bitcoin.sipa.be/ctaes/review.zip>

@@ -53,7 +53,7 @@ For all these targets, run them by appending them to the `ninja` command.
 
 ## Cleanup-related targets
 
-### clean
+### `clean`
 
 When used without further arguments, cleans up the build area by removing all
 build products.
@@ -78,25 +78,25 @@ in this way.
 
 Calling `ninja all` is equivalent to just running `ninja`.
 
-### check
+### `check`
 
 `ninja check` runs only basic unit tests on the daemon, the Qt wallet (if built),
 and other utilities.
 
-### check-bitcoin
+### `check-bitcoin`
 
 Builds and runs only the core application's C++ unit tests.
 
-### check-bitcoin-upgrade-activated
+### `check-bitcoin-upgrade-activated`
 
 Similar to `check-bitcoin`, but runs the tests in a mode simulating that the next
 upgrade has activated.
 
-### check-bitcoin-util
+### `check-bitcoin-util`
 
 Builds and runs application utility unit tests.
 
-### check-devtools
+### `check-devtools`
 
 Runs `devtools/chainparams/test_make_chainparams.py`.
 
@@ -104,13 +104,13 @@ This tests utilities to generate chainparams constants that are compiled into
 the client.
 See `contrib/devtools/chainparams/README.md` for more information on these tools.
 
-### check-lint
+### `check-lint`
 
 Runs checking of our source code for programmatic and stylistic errors.
 
 See [linting documentation](linting.md) for details.
 
-### security-check
+### `security-check`
 
 Runs a series of security tests for ELF binaries against the following executables:
 
@@ -124,105 +124,105 @@ If the checks are successful, the exit status of the script `security-check.py`
 script will be 0 and its output will be silent, otherwise there will be a log
 which executables failed which checks.
 
-### check-leveldb
+### `check-leveldb`
 
 Build and run LevelDB test suite.
 
-### check-rpcauth
+### `check-rpcauth`
 
 Build and run Bitcoin RPC authentication tests.
 
-### check-secp256k1
+### `check-secp256k1`
 
 Build and run all secp256k1 tests.
 
-### check-secp256k1-tests
+### `check-secp256k1-tests`
 
 Build and run only the 'non-exhaustive' secp256k1 tests (this is a subset of
 `check-secp256k1` target).
 
-### check-secp256k1-exhaustive_tests
+### `check-secp256k1-exhaustive_tests`
 
 Build and run only the 'exhaustive' secp256k1 tests (this is a subset of
 `check-secp256k1` target).
 
-### check-all
+### `check-all`
 
 `ninja check-all` runs basic unit tests and the Python functional regression tests,
 but not all (excludes so-called "extended" tests).
 
-### check-extended
+### `check-extended`
 
 Runs unit tests and extended Python functional regression tests.
 
-### check-upgrade-activated
+### `check-upgrade-activated`
 
 Runs seeder and application unit and Python functional regression tests in a mode
 where it simulates that the next planned upgrade (already built into the code)
 has been activated.
 
-### check-upgrade-activated-extended
+### `check-upgrade-activated-extended`
 
 Similar to check-upgrade-activated but with more extensive Python functional
 regression tests (the `--extended` suite).
 
-### check-functional
+### `check-functional`
 
 Builds the application (daemon and command line RPC client) and runs the Python-based
 regression test suite, but only the basic (short/fast) regression tests, not the
 extended ones.
 
-### check-functional-longeronly
+### `check-functional-longeronly`
 
 Runs only the longer-running Python tests by running the test_runner.py with
 a `--startfrom=40` option (i.e. only run tests that have been timed previously
 to take longer than 40 seconds).
 
-### check-functional-upgrade-activated
+### `check-functional-upgrade-activated`
 
 Runs the Python regression tests with an option to simulate that thhe next upgrade
 has been activated (currently `--with-phonon-activation` option).
 
-### check-functional-upgrade-activated-extended
+### `check-functional-upgrade-activated-extended`
 
 Similar to `check-functional-upgrade-activated` target, but runs with the `--extended`
 option as well, so executing the full set of Python regression tests while simulating
 that the next upgrade has been activated.
 
-### check-functional-upgrade-activated-longeronly
+### `check-functional-upgrade-activated-longeronly`
 
 Same as above but running long Python regression tests only (`--startfrom=40`).
 
-### coverage-`<target>`
+### `coverage-<target>`
 
-Generate coverage report for <target>. See [generate coverage report](coverage.md).
+Generate coverage report for `<target>`. See [generate coverage report](coverage.md).
 
-### test_bitcoin
+### `test_bitcoin`
 
 Build the core application's C++ unit test runner (executable produced at
 `src/test/test_bitcoin`)
 
-### test_bitcoin-qt
+### `test_bitcoin-qt`
 
 Build the GUI wallet's C++ unit test runner (executable produced at
 `src/qt/test/test_bitcoin-qt`)
 
-### test_bitcoin-seeder
+### `test_bitcoin-seeder`
 
 Build the DNS seeder's C++ unit test runner (executable produced at
 `src/seeder/test/test_bitcoin-seeder`)
 
-### doc-html
+### `doc-html`
 
 Build the [HTML documentation](publishing-documentation.md) in the `doc-html` folder.
 
-### doc-md
+### `doc-md`
 
 Build the Markdown documentation in the `doc-md` folder and generate `mkdocs.yml`. The HTML documentation depends on this.
 
 ## Deployment / installation-related targets
 
-### install
+### `install`
 
 Builds and installs the project.
 
@@ -236,19 +236,19 @@ cmake -DCMAKE_INSTALL_PREFIX=${your_install_root_path} -GNinja ..
 where you can use `$HOME` or `$(pwd)` (if you want to install into your build folder)
 or whatever you prefer for `${your_install_root_path}`.
 
-### package
+### `package`
 
 Creates a versioned tarball package containing the executables, include header
 files, libraries and manual pages.
 
-### package_source
+### `package_source`
 
 Creates a versioned tar.gz archive containing the project source code already
 configured by cmake and ready to be built.
 
 ## Benchmarking targets
 
-### bench-bitcoin
+### `bench-bitcoin`
 
 Builds and executes all application benchmarks. Excludes some library dependency
 benchmarks (eg. secp256k1).
@@ -256,7 +256,7 @@ benchmarks (eg. secp256k1).
 This target results in a comma separated output listing all benchmark names,
 the number of iterations and timings associated with those (these will be machine-specific).
 
-### bench-secp256k1
+### `bench-secp256k1`
 
 Build and run the secp256k1 benchmarks.
 Outputs the benchmark information (names, timings).
@@ -264,7 +264,7 @@ Again, timings will be machine-specific.
 
 ## Fuzzing targets
 
-### bitcoin-fuzzers
+### `bitcoin-fuzzers`
 
 Builds application fuzz testing executables.
 
@@ -272,7 +272,7 @@ See [the fuzzing instructions](fuzzing.md) for more information.
 
 ## Other targets
 
-### asert-testgen
+### `asert-testgen`
 
 Creates test vectors for ASERT difficulty adjustment algorithms. Requires
 define `BUILD_ASERT_TEST_VECTORS=ON`

@@ -94,7 +94,7 @@ The first step is to install the `mingw-w64` cross-compilation tool chain.
     sudo apt install g++-mingw-w64-x86-64
 ```
 
-Next, configure the `mingw-w64` to the posix<sup>[1](#footnote1)</sup> compiler option.
+Next, configure the `mingw-w64` to the posix[¹](#footnote1) compiler option.
 
 ```bash
     sudo update-alternatives --config x86_64-w64-mingw32-g++ # Set the default mingw32 g++ compiler option to posix.
@@ -207,7 +207,7 @@ The first step is to install the `mingw-w64` cross-compilation tool chain.
     sudo apt install g++-mingw-w64-x86-64
 ```
 
-Next, configure the `mingw-w64` to the posix<sup>[1](#footnote1)</sup> compiler option.
+Next, configure the `mingw-w64` to the posix[¹](#footnote1) compiler option.
 
 ```bash
     sudo update-alternatives --config x86_64-w64-mingw32-g++ # Set the default mingw32 g++ compiler option to posix.

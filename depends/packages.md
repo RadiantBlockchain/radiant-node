@@ -163,9 +163,9 @@ possible.
 
 From the [Gentoo Wiki entry](https://wiki.gentoo.org/wiki/Project:Quality_Assurance/Handling_Libtool_Archives):
 
->  Libtool pulls in all direct and indirect dependencies into the .la files it
->  creates. This leads to massive overlinking, which is toxic to the Gentoo
->  ecosystem, as it leads to a massive number of unnecessary rebuilds.
+> Libtool pulls in all direct and indirect dependencies into the .la files it
+> creates. This leads to massive overlinking, which is toxic to the Gentoo
+> ecosystem, as it leads to a massive number of unnecessary rebuilds.
 
 ## Secondary dependencies
 

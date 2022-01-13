@@ -48,7 +48,7 @@ operation.
 By default, the ZeroMQ feature is automatically compiled.
 To disable, use -DBUILD_BITCOIN_ZMQ=OFF to `cmake` when building bitcoind:
 
-    $ cmake -GNinja .. -DBUILD_BITCOIN_ZMQ=OFF [...]
+    cmake -GNinja .. -DBUILD_BITCOIN_ZMQ=OFF [...]
 
 To actually enable operation, one must set the appropriate options on
 the command line or in the configuration file.
@@ -69,8 +69,8 @@ address. The same address can be used in more than one notification.
 
 For instance:
 
-    $ bitcoind -zmqpubhashtx=tcp://127.0.0.1:28332 \
-               -zmqpubrawtx=ipc:///tmp/bitcoind.tx.raw
+    bitcoind -zmqpubhashtx=tcp://127.0.0.1:28332 \
+             -zmqpubrawtx=ipc:///tmp/bitcoind.tx.raw
 
 Each PUB notification has a topic and body, where the header
 corresponds to the notification type. For instance, for the
