@@ -56,6 +56,7 @@
 #include <ui_interface.h>
 #include <util/asmap.h>
 #include <util/moneystr.h>
+#include <util/string.h>
 #include <util/system.h>
 #include <util/threadnames.h>
 #include <validation.h>
@@ -63,7 +64,6 @@
 #include <walletinitinterface.h>
 #include <warnings.h>
 
-#include <boost/algorithm/string/replace.hpp>
 #include <boost/thread.hpp>
 
 #if ENABLE_ZMQ
@@ -1220,7 +1220,7 @@ static void BlockNotifyCallback(bool initialSync,
 
     std::string strCmd = gArgs.GetArg("-blocknotify", "");
     if (!strCmd.empty()) {
-        boost::replace_all(strCmd, "%s", pBlockIndex->GetBlockHash().GetHex());
+        ReplaceAll(strCmd, "%s", pBlockIndex->GetBlockHash().GetHex());
         std::thread t(runCommand, strCmd);
         // thread runs free
         t.detach();

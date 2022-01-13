@@ -13,7 +13,6 @@
 #include <util/string.h>
 #include <util/system.h>
 
-#include <boost/algorithm/string/replace.hpp>
 #include <boost/signals2/signal.hpp>
 
 #include <event2/buffer.h>
@@ -736,7 +735,7 @@ void TorController::protocolinfo_cb(TorControlConnection &_conn,
             if (methods.count("HASHEDPASSWORD")) {
                 LogPrint(BCLog::TOR,
                          "tor: Using HASHEDPASSWORD authentication\n");
-                boost::replace_all(torpassword, "\"", "\\\"");
+                ReplaceAll(torpassword, "\"", "\\\"");
                 _conn.Command("AUTHENTICATE \"" + torpassword + "\"",
                               std::bind(&TorController::auth_cb, this,
                                         std::placeholders::_1,

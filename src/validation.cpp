@@ -47,12 +47,12 @@
 #include <util/defer.h>
 #include <util/moneystr.h>
 #include <util/strencodings.h>
+#include <util/string.h>
 #include <util/system.h>
 #include <util/time.h>
 #include <validationinterface.h>
 #include <warnings.h>
 
-#include <boost/algorithm/string/replace.hpp>
 #include <boost/thread.hpp> // boost::this_thread::interruption_point() (mingw)
 
 #include <algorithm>
@@ -1082,7 +1082,7 @@ static void AlertNotify(const std::string &strMessage) {
     std::string singleQuote("'");
     std::string safeStatus = SanitizeString(strMessage);
     safeStatus = singleQuote + safeStatus + singleQuote;
-    boost::replace_all(strCmd, "%s", safeStatus);
+    ReplaceAll(strCmd, "%s", safeStatus);
 
     std::thread t(runCommand, strCmd);
     // thread runs free
