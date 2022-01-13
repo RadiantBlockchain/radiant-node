@@ -39,7 +39,7 @@ instead of the complete transaction details. The option only affects the JSON re
 
 `GET /rest/headers/<COUNT>/<BLOCK-HASH>.<bin|hex|json>`
 
-Given a block hash: returns <COUNT> amount of blockheaders in upward direction.
+Given a block hash: returns `<COUNT>` amount of blockheaders in upward direction.
 
 ### Chaininfos
 
@@ -48,16 +48,16 @@ Given a block hash: returns <COUNT> amount of blockheaders in upward direction.
 Returns various state info regarding block chain processing.
 Only supports JSON as output format.
 
-* chain : (string) current network name as defined in BIP70 (main, test, regtest)
-* blocks : (numeric) the current number of blocks processed in the server
-* headers : (numeric) the current number of headers we have validated
-* bestblockhash : (string) the hash of the currently best block
-* difficulty : (numeric) the current difficulty
-* verificationprogress : (numeric) estimate of verification progress [0..1]
-* chainwork : (string) total amount of work in active chain, in hexadecimal
-* pruned : (boolean) if the blocks are subject to pruning
-* pruneheight : (numeric) highest block available
-* softforks : (array) status of softforks in progress
+- chain : (string) current network name as defined in BIP70 (main, test, regtest)
+- blocks : (numeric) the current number of blocks processed in the server
+- headers : (numeric) the current number of headers we have validated
+- bestblockhash : (string) the hash of the currently best block
+- difficulty : (numeric) the current difficulty
+- verificationprogress : (numeric) estimate of verification progress [0..1]
+- chainwork : (string) total amount of work in active chain, in hexadecimal
+- pruned : (boolean) if the blocks are subject to pruning
+- pruneheight : (numeric) highest block available
+- softforks : (array) status of softforks in progress
 
 ### Query UTXO set
 
@@ -101,10 +101,10 @@ $ curl localhost:18332/rest/getutxos/checkmempool/b2cdfd7b89def827ff8af7cd9bff76
 Returns various information about the TX mempool.
 Only supports JSON as output format.
 
-* loaded : (boolean) if the mempool is fully loaded
-* size : (numeric) the number of transactions in the TX mempool
-* bytes : (numeric) size of the TX mempool in bytes
-* usage : (numeric) total TX mempool memory usage
+- loaded : (boolean) if the mempool is fully loaded
+- size : (numeric) the number of transactions in the TX mempool
+- bytes : (numeric) size of the TX mempool in bytes
+- usage : (numeric) total TX mempool memory usage
 
 `GET /rest/mempool/contents.json`
 

@@ -66,7 +66,7 @@ for `N` entries in the map:
 ```
 
 where `std::vector<uint8_t> default-encoding` is the default encoding
-one gets when serializing a std::vector<uint8_t> of size `M` bytes through the
+one gets when serializing a `std::vector<uint8_t>` of size `M` bytes through the
 serialization templates usually found in `serialize.h`:
 
 ```
@@ -206,7 +206,7 @@ prefix and the `0x00000000` suffix for the key. The value should
 reflect what version of the spec the client is following and use
 the following formula:
 
-(10000 * major) + (100 * minor) + (1 * revision)
+`(10000 * major) + (100 * minor) + (1 * revision)`
 
 For example: spec version 0.1.0 should have a value of 100.
 

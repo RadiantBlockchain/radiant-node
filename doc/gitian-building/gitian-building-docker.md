@@ -5,7 +5,7 @@ Debian or Mac hardware.
 
 ## Setup
 
-Ensure you have Docker installed.  See https://docs.docker.com/get-docker/ for
+Ensure you have Docker installed.  See <https://docs.docker.com/get-docker/> for
 installation instructions.
 
 If you're using Linux, make sure to go through the Linux post-install

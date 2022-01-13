@@ -131,7 +131,7 @@ BIP32 ("HD keys"). We support these directly by permitting strings
 consisting of an extended public key (commonly referred to as an *xpub*)
 plus derivation path anywhere a public key is expected. The derivation
 path consists of a sequence of 0 or more integers (in the range
-*0..2<sup>31</sup>-1*) each optionally followed by `'` or `h`, and
+*0..2³¹-1*) each optionally followed by `'` or `h`, and
 separated by `/` characters. The string may optionally end with the
 literal `/*` or `/*'` (or `/*h`) to refer to all unhardened or hardened
 child keys instead.

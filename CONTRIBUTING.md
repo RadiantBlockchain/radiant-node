@@ -245,15 +245,15 @@ A typical workflow would be:
 
 - Create a topic branch in Git for your changes
 
-    git checkout -b 'my-topic-branch'
+    `git checkout -b 'my-topic-branch'`
 
 - Make your changes, and commit them
 
-    git commit -a -m 'my-commit'
+    `git commit -a -m 'my-commit'`
 
 - Push the topic branch to your GitLab repository
 
-    git push -u origin my-topic-branch
+    `git push -u origin my-topic-branch`
 
 - Then create a Merge Request (the GitLab equivalent of a Pull Request)
   from that branch in your personal repository. To do this, you need to
