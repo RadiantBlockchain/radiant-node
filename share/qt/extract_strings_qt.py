@@ -6,7 +6,7 @@
 Extract _("...") strings for translation and convert to Qt stringdefs so that
 they can be picked up by Qt linguist.
 '''
-from subprocess import Popen, PIPE
+import subprocess
 import operator
 import os
 import sys
@@ -63,11 +63,8 @@ if not XGETTEXT:
     print('Please install package "gettext" and re-run \'./configure\'.',
           file=sys.stderr)
     sys.exit(1)
-child = Popen([XGETTEXT, '--output=-', '-n',
-               '--keyword=_'] + files, stdout=PIPE)
-(out, err) = child.communicate()
-
-messages = parse_po(out.decode('utf-8'))
+child = subprocess.run([XGETTEXT, '--output=-', '-n', '--keyword=_'] + files, capture_output=True)
+messages = parse_po(child.stdout.decode('utf-8'))
 
 f = open(OUT_CPP, 'w', encoding="utf8")
 f.write("""
