@@ -11,11 +11,10 @@ export LC_ALL=C
 HEADER_ID_PREFIX="BITCOIN_"
 HEADER_ID_SUFFIX="_H"
 
-REGEXP_EXCLUDE_FILES_WITH_PREFIX="src/(crypto/ctaes/|leveldb/|secp256k1/|tinyformat.h|univalue/)"
-
 EXIT_CODE=0
-for HEADER_FILE in $(git ls-files -- "*.h" | grep -vE "^${REGEXP_EXCLUDE_FILES_WITH_PREFIX}")
-do
+
+mapfile -d '' file_list < <(git ls-files -z -- '*.h' ':!:src/crypto/ctaes' ':!:src/leveldb' ':!:src/secp256k1' ':!:src/tinyformat.h' ':!:src/univalue')
+for HEADER_FILE in "${file_list[@]}"; do
     # check for "#pragma once" - if present, don't verify include guard format - but only if preceded by whitespace, i.e. commented pragmas fail the test
     if grep -q '^[[:space:]]*#pragma once' "${HEADER_FILE}"; then
         continue
