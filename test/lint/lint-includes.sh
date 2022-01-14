@@ -9,41 +9,43 @@
 # Check includes: Check for duplicate includes. Enforce bracket syntax includes.
 
 export LC_ALL=C
-IGNORE_REGEXP="/(leveldb|secp256k1|univalue|crc32c)/"
+IGNORES=(':!:src/leveldb' ':!:src/secp256k1' ':!:src/univalue' ':!:src/crc32c')
 
 # cd to root folder of git repo for git ls-files to work properly
 cd "$(dirname "$0")/../.." || exit 1
 
 filter_suffix() {
-    git ls-files | grep -E "^src/.*\.${1}"'$' | grep -Ev "${IGNORE_REGEXP}"
+    git ls-files -z -- "src/*.${1}" "${IGNORES[@]}"
 }
 
 EXIT_CODE=0
 
-for HEADER_FILE in $(filter_suffix h); do
+mapfile -d '' file_list < <(filter_suffix h)
+for HEADER_FILE in "${file_list[@]}"; do
     DUPLICATE_INCLUDES_IN_HEADER_FILE=$(grep -E "^#include " < "${HEADER_FILE}" | sort | uniq -d)
     if [[ ${DUPLICATE_INCLUDES_IN_HEADER_FILE} != "" ]]; then
-        echo "Duplicate include(s) in ${HEADER_FILE}:"
+        echo "Duplicate include(s) in $(printf '%q\n' "${HEADER_FILE}"):"
         echo "${DUPLICATE_INCLUDES_IN_HEADER_FILE}"
         echo
         EXIT_CODE=1
     fi
 done
 
-for CPP_FILE in $(filter_suffix cpp); do
+mapfile -d '' file_list < <(filter_suffix cpp)
+for CPP_FILE in "${file_list[@]}"; do
     DUPLICATE_INCLUDES_IN_CPP_FILE=$(grep -E "^#include " < "${CPP_FILE}" | sort | uniq -d)
     if [[ ${DUPLICATE_INCLUDES_IN_CPP_FILE} != "" ]]; then
-        echo "Duplicate include(s) in ${CPP_FILE}:"
+        echo "Duplicate include(s) in $(printf '%q\n' "${CPP_FILE}"):"
         echo "${DUPLICATE_INCLUDES_IN_CPP_FILE}"
         echo
         EXIT_CODE=1
     fi
 done
 
-INCLUDED_CPP_FILES=$(git grep -E "^#include [<\"][^>\"]+\.cpp[>\"]" -- "*.cpp" "*.h")
-if [[ ${INCLUDED_CPP_FILES} != "" ]]; then
+mapfile -d '' INCLUDED_CPP_FILES < <(git grep -l -z -E "^#include [<\"][^>\"]+\.cpp[>\"]" -- "*.cpp" "*.h")
+if [[ "${#INCLUDED_CPP_FILES[@]}" -ne 0 ]]; then
     echo "The following files #include .cpp files:"
-    echo "${INCLUDED_CPP_FILES}"
+    grep -EHn "^#include [<\"][^>\"]+\.cpp[>\"]" -- "${INCLUDED_CPP_FILES[@]}"
     echo
     EXIT_CODE=1
 fi
@@ -78,7 +80,8 @@ EXPECTED_BOOST_INCLUDES=(
     boost/variant/static_visitor.hpp
 )
 
-for BOOST_INCLUDE in $(git grep '^#include <boost/' -- "*.cpp" "*.h" | cut -f2 -d: | cut -f2 -d'<' | cut -f1 -d'>' | sort -u); do
+file_list=($(git grep '^#include <boost/' -- "*.cpp" "*.h" | cut -f2 -d: | cut -f2 -d'<' | cut -f1 -d'>' | sort -u))
+for BOOST_INCLUDE in "${file_list[@]}"; do
     IS_EXPECTED_INCLUDE=0
     for EXPECTED_BOOST_INCLUDE in "${EXPECTED_BOOST_INCLUDES[@]}"; do
         if [[ "${BOOST_INCLUDE}" == "${EXPECTED_BOOST_INCLUDE}" ]]; then
@@ -104,10 +107,10 @@ for EXPECTED_BOOST_INCLUDE in "${EXPECTED_BOOST_INCLUDES[@]}"; do
     fi
 done
 
-QUOTE_SYNTAX_INCLUDES=$(git grep '^#include "' -- "*.cpp" "*.h" | grep -Ev "${IGNORE_REGEXP}")
-if [[ ${QUOTE_SYNTAX_INCLUDES} != "" ]]; then
+mapfile -d '' QUOTE_SYNTAX_INCLUDES < <(git grep -l -z '^#include "' -- "*.cpp" "*.h" "${IGNORES[@]}")
+if [[ "${#QUOTE_SYNTAX_INCLUDES[@]}" -ne 0 ]]; then
     echo "Please use bracket syntax includes (\"#include <foo.h>\") instead of quote syntax includes:"
-    echo "${QUOTE_SYNTAX_INCLUDES}"
+    grep -Hn '^#include "' -- "${QUOTE_SYNTAX_INCLUDES[@]}"
     echo
     EXIT_CODE=1
 fi

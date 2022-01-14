@@ -19,11 +19,8 @@ fi
 EXIT_CODE=0
 
 # Filter out yaml files belonging to upstream projects.
-FILES=$(
-  git ls-files '*.yml' '*.yaml' '*.yml.in' '*.yaml.in' | \
-  grep -v -e contrib/ -e src/secp256k1/ -e src/leveldb/
-)
-for filename in $FILES; do
+mapfile -d '' FILES < <(git ls-files -z -- '*.yml' '*.yaml' '*.yml.in' '*.yaml.in' ':!:contrib' ':!:src/secp256k1' ':!:src/leveldb')
+for filename in "${FILES[@]}"; do
   echo "Linting $filename"
   if ! yamllint -c "$LINT_CONFIG" -- "$filename"; then
     EXIT_CODE=1
