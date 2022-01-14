@@ -8,8 +8,7 @@ export LC_ALL=C
 
 EXIT_CODE=0
 
-mapfile -d '' file_list < <(git ls-files -z -- '*cpp' '.h' ':!:src/univalue/gen/gen.cpp')
-
+mapfile -d '' file_list < <(git ls-files -z -- '*.cpp' '*.h' ':!:src/univalue' ':!:src/leveldb')
 for f in "${file_list[@]}"; do
     if ! test/lint/lint-format-strings.py "${f}"; then
         echo "^^^ in file ${f}"
