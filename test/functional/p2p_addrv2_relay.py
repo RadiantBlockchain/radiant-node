@@ -41,7 +41,7 @@ class AddrReceiver(P2PInterface):
         self.addrv2_received_and_checked = True
 
     def wait_for_addrv2(self):
-        self.wait_until(lambda: "addrv2" in self.last_message)
+        self.wait_until(lambda: self.addrv2_received_and_checked)
 
 
 class AddrTest(BitcoinTestFramework):
@@ -70,8 +70,6 @@ class AddrTest(BitcoinTestFramework):
             addr_source.send_and_ping(msg)
             self.nodes[0].setmocktime(int(time.time()) + 30 * 60)
             addr_receiver.wait_for_addrv2()
-
-        assert addr_receiver.addrv2_received_and_checked
 
 
 if __name__ == '__main__':
