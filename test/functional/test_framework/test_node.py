@@ -13,6 +13,7 @@ import json
 import logging
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -97,8 +98,9 @@ class TestNode():
 
         if emulator is not None:
             if not os.path.isfile(emulator):
-                raise FileNotFoundError(
-                    "Emulator '{}' could not be found.".format(emulator))
+                emulator = shutil.which(emulator)
+                if not os.path.isfile(emulator):
+                    raise FileNotFoundError("Emulator '{}' could not be found.".format(emulator))
         self.emulator = emulator
 
         if use_cli and not os.path.isfile(bitcoin_cli):
