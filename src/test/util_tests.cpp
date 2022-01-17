@@ -2016,18 +2016,18 @@ BOOST_AUTO_TEST_CASE(test_DirIsWritable) {
     fs::remove(tmpdirname);
 }
 
-template <int F, int T>
-static void CheckConvertBits(const std::vector<uint8_t> &in,
-                             const std::vector<uint8_t> &expected) {
-    std::vector<uint8_t> outpad;
-    bool ret = ConvertBits<F, T, true>([&](uint8_t c) { outpad.push_back(c); },
+template <size_t F, size_t T, typename InT = uint8_t, typename OutT = uint8_t>
+static void CheckConvertBits(const std::vector<InT> &in,
+                             const std::vector<OutT> &expected) {
+    std::vector<OutT> outpad;
+    bool ret = ConvertBits<F, T, true>([&](OutT c) { outpad.push_back(c); },
                                        in.begin(), in.end());
     BOOST_CHECK(ret);
     BOOST_CHECK(outpad == expected);
 
     const bool dopad = (in.size() * F) % T;
-    std::vector<uint8_t> outnopad;
-    ret = ConvertBits<F, T, false>([&](uint8_t c) { outnopad.push_back(c); },
+    std::vector<OutT> outnopad;
+    ret = ConvertBits<F, T, false>([&](OutT c) { outnopad.push_back(c); },
                                    in.begin(), in.end());
     BOOST_CHECK(ret != (dopad && !outpad.empty() && outpad.back()));
 
@@ -2040,13 +2040,13 @@ static void CheckConvertBits(const std::vector<uint8_t> &in,
 
     // Check the other way around.
     // Check with padding. We may get an extra 0 in that case.
-    std::vector<uint8_t> origpad;
-    ret = ConvertBits<T, F, true>([&](uint8_t c) { origpad.push_back(c); },
+    std::vector<InT> origpad;
+    ret = ConvertBits<T, F, true>([&](InT c) { origpad.push_back(c); },
                                   expected.begin(), expected.end());
     BOOST_CHECK(ret);
 
-    std::vector<uint8_t> orignopad;
-    ret = ConvertBits<T, F, false>([&](uint8_t c) { orignopad.push_back(c); },
+    std::vector<InT> orignopad;
+    ret = ConvertBits<T, F, false>([&](InT c) { orignopad.push_back(c); },
                                    expected.begin(), expected.end());
     BOOST_CHECK(ret != ((expected.size() * T) % F && !origpad.empty() &&
                         origpad.back()));
@@ -2079,6 +2079,15 @@ BOOST_AUTO_TEST_CASE(test_ConvertBits) {
     CheckConvertBits<8, 5>({0x00}, {0x00, 0x00});
     CheckConvertBits<8, 5>({0xf8}, {0x1f, 0x00});
     CheckConvertBits<8, 5>({0x00, 0x00}, {0x00, 0x00, 0x00, 0x00});
+
+    // Test operation on values beyond the 8-bit range.
+    CheckConvertBits<12, 16, uint16_t, uint16_t>({0xf2c, 0x486, 0xc8f, 0xafb, 0xfcf, 0xd98, 0x761, 0x010},
+                                                 {0xf2c4, 0x86c8, 0xfafb, 0xfcfd, 0x9876, 0x1010});
+    if constexpr (sizeof(size_t) >= 8) {
+        // 64-bit case, we can go beyond 31 bits
+        CheckConvertBits<16, 32, uint16_t, uint32_t>({0xf2c4, 0x86c8, 0xfafb, 0xfcfd, 0x9876, 0x1},
+                                                     {0xf2c486c8, 0xfafbfcfd, 0x98760001});
+    }
 }
 
 BOOST_AUTO_TEST_CASE(test_ToLower) {

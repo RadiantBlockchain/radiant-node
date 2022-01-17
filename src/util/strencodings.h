@@ -240,14 +240,17 @@ template <typename T> bool TimingResistantEqual(const T &a, const T &b) {
  * If padding is enabled, this always return true. If not, then it returns true
  * of all the bits of the input are encoded in the output.
  */
-template <int frombits, int tobits, bool pad, typename O, typename I>
+template <size_t frombits, size_t tobits, bool pad, typename O, typename I>
 bool ConvertBits(const O &outfn, I it, I end) {
+    constexpr size_t size_t_bits = sizeof(size_t) * 8; // the size of size_t, in bits
+    static_assert(frombits > 0 && tobits > 0 && frombits <= size_t_bits && tobits <= size_t_bits
+                  && frombits + tobits <= size_t_bits, "ConvertBits template argument(s) out of range");
     size_t acc = 0;
     size_t bits = 0;
-    constexpr size_t maxv = (1 << tobits) - 1;
-    constexpr size_t max_acc = (1 << (frombits + tobits - 1)) - 1;
+    constexpr size_t maxv = (size_t{1} << tobits) - 1u;
+    constexpr size_t max_acc = (size_t{1} << (frombits + tobits - 1u)) - 1u;
     while (it != end) {
-        acc = ((acc << frombits) | *it) & max_acc;
+        acc = ((acc << frombits) | static_cast<size_t>(*it)) & max_acc;
         bits += frombits;
         while (bits >= tobits) {
             bits -= tobits;
