@@ -283,7 +283,7 @@ void BanMan::SweepBanned() {
             while (it != m_banned.addresses.end()) {
                 const CNetAddr &addr = it->first;
                 const CBanEntry &ban_entry = it->second;
-                if (now > ban_entry.nBanUntil) {
+                if (!addr.IsValid() || now > ban_entry.nBanUntil) {
                     LogPrint(
                         BCLog::NET,
                         "%s: Removed banned node ip from banlist.dat: %s\n",
