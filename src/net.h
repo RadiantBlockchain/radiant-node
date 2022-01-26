@@ -28,6 +28,7 @@
 #include <uint256.h>
 
 #include <atomic>
+#include <chrono>
 #include <condition_variable>
 #include <cstdint>
 #include <deque>
@@ -764,7 +765,7 @@ public:
     std::vector<BlockHash> vInventoryBlockToSend GUARDED_BY(cs_inventory);
     std::deque<CInv> vInventoryToSend GUARDED_BY(cs_inventory);
     RecursiveMutex cs_inventory;
-    int64_t nNextInvSend{0};
+    std::chrono::microseconds nNextInvSend{0};
     // Used for headers announcements - unfiltered blocks to relay.
     std::vector<BlockHash> vBlockHashesToAnnounce GUARDED_BY(cs_inventory);
     // Used for BIP35 mempool sending.
@@ -920,6 +921,11 @@ public:
  * distributed events.
  */
 int64_t PoissonNextSend(int64_t now, int average_interval_ms);
+
+/** Wrapper to return mockable type */
+inline std::chrono::microseconds PoissonNextSend(std::chrono::microseconds now, std::chrono::milliseconds average_interval_ms) {
+    return std::chrono::microseconds{PoissonNextSend(now.count(), average_interval_ms.count())};
+}
 
 std::string getSubVersionEB(uint64_t MaxBlockSize);
 std::string userAgent(const Config &config);
