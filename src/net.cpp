@@ -78,7 +78,7 @@ enum BindFlags {
 // The sleep time needs to be small to avoid new sockets stalling
 static const uint64_t SELECT_TIMEOUT_MILLISECONDS = 50;
 
-const static std::string NET_MESSAGE_COMMAND_OTHER = "*other*";
+const static std::string NET_MESSAGE_TYPE_OTHER = "*other*";
 
 // SHA256("netgroup")[0:8]
 static const uint64_t RANDOMIZER_ID_NETGROUP = 0x6c0edd8036ef4036ULL;
@@ -524,12 +524,12 @@ void CNode::copyStats(CNodeStats &stats, const std::vector<bool> &m_asmap) {
     stats.nStartingHeight = nStartingHeight;
     {
         LOCK(cs_vSend);
-        stats.mapSendBytesPerMsgCmd = mapSendBytesPerMsgCmd;
+        stats.mapSendBytesPerMsgType = mapSendBytesPerMsgType;
         stats.nSendBytes = nSendBytes;
     }
     {
         LOCK(cs_vRecv);
-        stats.mapRecvBytesPerMsgCmd = mapRecvBytesPerMsgCmd;
+        stats.mapRecvBytesPerMsgType = mapRecvBytesPerMsgType;
         stats.nRecvBytes = nRecvBytes;
     }
     stats.m_legacyWhitelisted = m_legacyWhitelisted;
@@ -613,13 +613,13 @@ bool CNode::ReceiveMsgBytes(const Config &config, const char *pch,
         if (msg.complete()) {
             // Store received bytes per message command to prevent a memory DOS,
             // only allow valid commands.
-            mapMsgCmdSize::iterator i =
-                mapRecvBytesPerMsgCmd.find(msg.hdr.pchCommand.data());
-            if (i == mapRecvBytesPerMsgCmd.end()) {
-                i = mapRecvBytesPerMsgCmd.find(NET_MESSAGE_COMMAND_OTHER);
+            mapMsgTypeSize::iterator i =
+                mapRecvBytesPerMsgType.find(msg.hdr.pchCommand.data());
+            if (i == mapRecvBytesPerMsgType.end()) {
+                i = mapRecvBytesPerMsgType.find(NET_MESSAGE_TYPE_OTHER);
             }
 
-            assert(i != mapRecvBytesPerMsgCmd.end());
+            assert(i != mapRecvBytesPerMsgType.end());
             i->second += msg.hdr.nMessageSize + CMessageHeader::HEADER_SIZE;
 
             msg.nTime = nTimeMicros;
@@ -2812,9 +2812,9 @@ CNode::CNode(NodeId idIn, ServiceFlags nLocalServicesIn,
     pfilter = std::make_unique<CBloomFilter>();
 
     for (const std::string &msg : getAllNetMessageTypes()) {
-        mapRecvBytesPerMsgCmd[msg] = 0;
+        mapRecvBytesPerMsgType[msg] = 0;
     }
-    mapRecvBytesPerMsgCmd[NET_MESSAGE_COMMAND_OTHER] = 0;
+    mapRecvBytesPerMsgType[NET_MESSAGE_TYPE_OTHER] = 0;
 
     if (fLogIPs) {
         LogPrint(BCLog::NET, "Added connection to %s peer=%d\n", addrName, id);
@@ -2851,7 +2851,7 @@ void CConnman::PushMessage(CNode *pnode, CSerializedNetMsg &&msg) {
         bool optimisticSend(pnode->vSendMsg.empty());
 
         // log total amount of bytes per message type
-        pnode->mapSendBytesPerMsgCmd[msg.m_type] += nTotalSize;
+        pnode->mapSendBytesPerMsgType[msg.m_type] += nTotalSize;
         pnode->nSendSize += nTotalSize;
 
         if (pnode->nSendSize > nSendBufferMaxSize) {
@@ -2978,9 +2978,9 @@ void CNode::ReadConfigFromExtversion()
 }
 
 //! Returns the number of bytes enqeueud (and eventually sent) for a particular command
-uint64_t CNode::GetBytesSentForCmd(const std::string &strCommand) const
+uint64_t CNode::GetBytesSentForMsgType(const std::string &msg_type) const
 {
     LOCK(cs_vSend);
-    const auto it = mapSendBytesPerMsgCmd.find(strCommand);
-    return it != mapSendBytesPerMsgCmd.end() ? it->second : 0;
+    const auto it = mapSendBytesPerMsgType.find(msg_type);
+    return it != mapSendBytesPerMsgType.end() ? it->second : 0;
 }

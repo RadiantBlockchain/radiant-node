@@ -215,21 +215,21 @@ static UniValue getpeerinfo(const Config &config,
         obj.emplace_back("permissions", std::move(permissions));
         obj.emplace_back("minfeefilter", ValueFromAmount(stats.minFeeFilter));
 
-        UniValue::Object sendPerMsgCmd;
-        for (const mapMsgCmdSize::value_type &i : stats.mapSendBytesPerMsgCmd) {
+        UniValue::Object sendPerMsgType;
+        for (const mapMsgTypeSize::value_type &i : stats.mapSendBytesPerMsgType) {
             if (i.second > 0) {
-                sendPerMsgCmd.emplace_back(i);
+                sendPerMsgType.emplace_back(i);
             }
         }
-        obj.emplace_back("bytessent_per_msg", std::move(sendPerMsgCmd));
+        obj.emplace_back("bytessent_per_msg", std::move(sendPerMsgType));
 
-        UniValue::Object recvPerMsgCmd;
-        for (const mapMsgCmdSize::value_type &i : stats.mapRecvBytesPerMsgCmd) {
+        UniValue::Object recvPerMsgType;
+        for (const mapMsgTypeSize::value_type &i : stats.mapRecvBytesPerMsgType) {
             if (i.second > 0) {
-                recvPerMsgCmd.emplace_back(i);
+                recvPerMsgType.emplace_back(i);
             }
         }
-        obj.emplace_back("bytesrecv_per_msg", std::move(recvPerMsgCmd));
+        obj.emplace_back("bytesrecv_per_msg", std::move(recvPerMsgType));
 
         ret.emplace_back(obj);
     }

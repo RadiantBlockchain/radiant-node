@@ -48,10 +48,10 @@ const char *const BLOCKTXN = "blocktxn";
 const char *const EXTVERSION = "extversion";
 const char *const DSPROOF = "dsproof-beta";
 
-bool IsBlockLike(const std::string &strCommand) {
-    return strCommand == NetMsgType::BLOCK ||
-           strCommand == NetMsgType::CMPCTBLOCK ||
-           strCommand == NetMsgType::BLOCKTXN;
+bool IsBlockLike(const std::string &msg_type) {
+    return msg_type == NetMsgType::BLOCK ||
+           msg_type == NetMsgType::CMPCTBLOCK ||
+           msg_type == NetMsgType::BLOCKTXN;
 }
 }; // namespace NetMsgType
 

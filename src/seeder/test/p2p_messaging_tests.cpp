@@ -35,9 +35,9 @@ public:
     CSeederNodeTest(const CService &service, std::vector<CAddress> *vAddrIn)
         : CSeederNode(service, vAddrIn) {}
 
-    void TestProcessMessage(const std::string &strCommand, CDataStream &message,
+    void TestProcessMessage(const std::string &msg_type, CDataStream &message,
                             PeerMessagingState expectedState) {
-        PeerMessagingState ret = ProcessMessage(strCommand, message);
+        PeerMessagingState ret = ProcessMessage(msg_type, message);
         BOOST_CHECK_EQUAL(ret, expectedState);
     }
 
