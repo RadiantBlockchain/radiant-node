@@ -33,7 +33,7 @@ VALID_DATA_LIMIT = MAX_PROTOCOL_MESSAGE_LENGTH - 5  # Account for the 5-byte len
 class msg_unrecognized:
     """Nonsensical message. Modeled after similar types in test_framework.messages."""
 
-    command = b'badmsg'
+    msgtype = b'badmsg'
 
     def __init__(self, *, str_data):
         self.str_data = str_data.encode() if not isinstance(str_data, bytes) else str_data
@@ -42,7 +42,7 @@ class msg_unrecognized:
         return ser_string(self.str_data)
 
     def __repr__(self):
-        return "{}(data={})".format(self.command, self.str_data)
+        return "{}(data={})".format(self.msgtype, self.str_data)
 
 
 class InvalidMessagesTest(BitcoinTestFramework):
@@ -119,16 +119,16 @@ class InvalidMessagesTest(BitcoinTestFramework):
         conn = self.nodes[0].add_p2p_connection(P2PDataStore())
         with self.nodes[0].assert_debug_log(['PROCESSMESSAGE: ERRORS IN HEADER']):
             msg = msg_unrecognized(str_data="d")
-            msg.command = b'\xff' * 12
+            msg.msgtype = b'\xff' * 12
             msg = conn.build_message(msg)
-            # Modify command
+            # Modify msgtype
             msg = msg[:7] + b'\x00' + msg[7 + 1:]
             conn.send_raw_message(msg)
             conn.sync_with_ping(timeout=1)
         self.nodes[0].disconnect_p2ps()
 
     def test_oversized_msg(self, msg, size, expected_reason):
-        msg_type = msg.command.decode('ascii')
+        msg_type = msg.msgtype.decode('ascii')
         self.log.info("Test {} message of size {} is logged as misbehaving".format(msg_type, size))
         with self.nodes[0].assert_debug_log(['Misbehaving', 'reason: {}'.format(expected_reason)]):
             self.nodes[0].add_p2p_connection(P2PInterface()).send_and_ping(msg)
