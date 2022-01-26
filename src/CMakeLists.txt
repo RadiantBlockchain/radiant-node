@@ -187,6 +187,13 @@ if(ENABLE_PROFILING MATCHES "gprof")
   add_linker_flags(-pg)
 endif()
 
+if(CMAKE_SYSTEM_PROCESSOR STREQUAL "arm" AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 7)
+	# GCC >= 7 for ARM gives a warning about parameter passing format being changed.
+	# See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=77728
+	# See https://gcc.gnu.org/gcc-7/changes.html
+	add_compiler_flags(-Wno-psabi)
+endif()
+
 # Create a target for OpenSSL
 include(BrewHelper)
 find_brew_prefix(OPENSSL_ROOT_DIR openssl)
