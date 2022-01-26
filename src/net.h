@@ -117,7 +117,7 @@ struct CSerializedNetMsg {
     CSerializedNetMsg &operator=(const CSerializedNetMsg &) = delete;
 
     std::vector<uint8_t> data;
-    std::string command;
+    std::string m_type;
 };
 
 class NetEventsInterface;
