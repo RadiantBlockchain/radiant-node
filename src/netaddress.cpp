@@ -1047,6 +1047,16 @@ bool CSubNet::IsSingleIP() const {
     return 0 == std::memcmp(netmask, pchSingleAddressNetmask, network.m_addr.size());
 }
 
+bool CSubNet::SanityCheck() const {
+    if (!(network.IsIPv4() || network.IsIPv6())) return false;
+
+    for (size_t x = 0; x < network.m_addr.size(); ++x) {
+        if (network.m_addr[x] & ~netmask[x]) return false;
+    }
+
+    return true;
+}
+
 bool operator==(const CSubNet &a, const CSubNet &b) {
     return a.valid == b.valid && a.network == b.network &&
            !std::memcmp(a.netmask, b.netmask, 16);

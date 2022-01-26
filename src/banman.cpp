@@ -264,7 +264,7 @@ void BanMan::SweepBanned() {
             while (it != m_banned.subNets.end()) {
                 const CSubNet &sub_net = it->first;
                 const CBanEntry &ban_entry = it->second;
-                if (now > ban_entry.nBanUntil) {
+                if (!sub_net.IsValid() || now > ban_entry.nBanUntil) {
                     LogPrint(
                         BCLog::NET,
                         "%s: Removed banned subnet from banlist.dat: %s\n",

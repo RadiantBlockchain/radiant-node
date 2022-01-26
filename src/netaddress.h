@@ -453,6 +453,8 @@ protected:
     /// Is this value valid? (only used to signal parse errors)
     bool valid;
 
+    bool SanityCheck() const;
+
     /// Returns the CIDR length e.g. 0, 8, 12, 16, 24, etc
     uint8_t GetCIDRLength() const;
 
@@ -482,7 +484,22 @@ public:
     /// Return the (prefix as CNetAddr, mask length)
     std::pair<CNetAddr, uint8_t> GetCIDR() const;
 
-    SERIALIZE_METHODS(CSubNet, obj) { READWRITE(obj.network, obj.netmask, obj.valid); }
+    SERIALIZE_METHODS(CSubNet, obj) {
+        READWRITE(obj.network);
+        if (obj.network.IsIPv4()) {
+            // Before commit 084265a60d79740d7ee8fa04b4d315ef71c1c21f, CSubNet used the last 4 bytes of netmask
+            // to store the relevant bytes for an IPv4 mask. For compatiblity reasons, keep doing so in
+            // serialized form.
+            unsigned char dummy[12] = {0};
+            READWRITE(dummy);
+            READWRITE(MakeSpan(obj.netmask).first(4));
+        } else {
+            READWRITE(obj.netmask);
+        }
+        READWRITE(obj.valid);
+        // Mark invalid if the result doesn't pass sanity checking.
+        SER_READ(obj, if (obj.valid) obj.valid = obj.SanityCheck());
+    }
 };
 
 /** A combination of a network address (CNetAddr) and a (TCP) port */
