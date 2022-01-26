@@ -16,7 +16,7 @@ from test_framework.messages import (
     CBlock,
     CBlockHeader,
 )
-from test_framework.mininode import (
+from test_framework.p2p import (
     P2PDataStore,
 )
 from test_framework.test_framework import BitcoinTestFramework

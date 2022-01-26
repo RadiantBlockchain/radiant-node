@@ -23,7 +23,7 @@ from test_framework.messages import (
     CTxOut,
     ToHex,
 )
-from test_framework.mininode import (
+from test_framework.p2p import (
     P2PDataStore,
 )
 from test_framework.script import (
@@ -67,7 +67,7 @@ class SegwitRecoveryTest(BitcoinTestFramework):
         #    never accepted into the mempool.
         # 2) node_std (nodes[1]) doesn't accept non-standard txns and
         #    doesn't have us whitelisted. It's used to test for bans, as we
-        #    connect directly to it via mininode and send a segwit spending
+        #    connect directly to it via P2P interface and send a segwit spending
         #    txn. This transaction is non-standard. We check that sending
         #    this transaction doesn't result in a ban.
         # Nodes are connected to each other, so node_std receives blocks and

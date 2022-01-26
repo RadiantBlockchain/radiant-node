@@ -7,7 +7,7 @@ import sys
 if sys.version_info[0] < 3:
     sys.exit("Use Python 3")
 from test_framework.test_framework import BitcoinTestFramework
-from test_framework.mininode import P2PInterface, mininode_lock
+from test_framework.p2p import P2PInterface, p2p_lock
 from test_framework.messages import NODE_NETWORK, msg_version, msg_extversion, msg_verack, MIN_VERSION_SUPPORTED, NODE_EXTVERSION
 from test_framework.util import assert_equal, wait_until
 
@@ -70,15 +70,15 @@ class BaseNode(P2PInterface):
 
     def wait_for_version(self, timeout=5):
         def test_function(): return self.version_received == True
-        wait_until(test_function, timeout=timeout, lock=mininode_lock)
+        wait_until(test_function, timeout=timeout, lock=p2p_lock)
 
     def wait_for_extversion(self, timeout=5):
         def test_function(): return self.extversion_received == True
-        wait_until(test_function, timeout=timeout, lock=mininode_lock)
+        wait_until(test_function, timeout=timeout, lock=p2p_lock)
 
     def wait_for_verack(self, timeout=5):
         def test_function(): return self.verack_received == True
-        wait_until(test_function, timeout=timeout, lock=mininode_lock)
+        wait_until(test_function, timeout=timeout, lock=p2p_lock)
 
 
 class ExtVersionTest(BitcoinTestFramework):

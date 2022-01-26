@@ -30,7 +30,7 @@ from decimal import Decimal
 sys.path.insert(0, os.path.join('..', 'functional'))
 import test_framework.util # noqa: E402
 from test_framework.test_framework import BitcoinTestFramework # noqa: E402
-from test_framework.mininode import P2PInterface # noqa: E402
+from test_framework.p2p import P2PInterface # noqa: E402
 
 
 NUM_NODES = 4

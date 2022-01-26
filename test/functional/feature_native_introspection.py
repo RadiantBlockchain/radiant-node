@@ -30,7 +30,7 @@ from test_framework.messages import (
     FromHex,
     ser_uint256, uint256_from_str
 )
-from test_framework.mininode import (
+from test_framework.p2p import (
     P2PDataStore,
 )
 from test_framework import schnorr

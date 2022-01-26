@@ -27,7 +27,7 @@ from test_framework.messages import (
     CTxOut,
     FromHex,
 )
-from test_framework.mininode import (
+from test_framework.p2p import (
     P2PDataStore,
 )
 from test_framework import schnorr

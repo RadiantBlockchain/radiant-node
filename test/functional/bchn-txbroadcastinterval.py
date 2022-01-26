@@ -11,7 +11,7 @@ The outbound interval should be half of the inbound
 import time
 
 from test_framework.cdefs import MAX_INV_BROADCAST_INTERVAL
-from test_framework.mininode import P2PInterface, mininode_lock
+from test_framework.p2p import P2PInterface, p2p_lock
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import wait_until, connect_nodes, disconnect_nodes
 from scipy import stats
@@ -39,8 +39,8 @@ class InvReceiver(P2PInterface):
 class TxBroadcastIntervalTest(BitcoinTestFramework):
 
     # This test will have a node create a number of transactions and relay them
-    # to the mininode InvReceivers (one inbound and one outbound)
-    # according to test parameters.
+    # to the P2P InvReceivers (one inbound and one outbound) according to test
+    # parameters.
     # A third disconnected node is used only to create signed transactions
 
     # The nodes are configured with "-txbroadcastrate=1" and
@@ -49,8 +49,8 @@ class TxBroadcastIntervalTest(BitcoinTestFramework):
     # (== sample size -1) that we want to send
     # This holds true only for interval values <= 500 ms
 
-    # The mininode InvReceiver just listens and registers the delays between invs
-    # and constructs a sample array from these delays
+    # The P2P InvReceiver just listens and registers the delays between invs and
+    # constructs a sample array from these delays
     # This sample is tested against a reference exponential distribution
     # density with the same parameters with scipy.stats.kstest
     # (See https://en.wikipedia.org/wiki/Kolmogorov%E2%80%93Smirnov_test)
@@ -60,11 +60,13 @@ class TxBroadcastIntervalTest(BitcoinTestFramework):
     # exponential distribution with a probability of at least alpha
     # (pvalue > alpha, default 0.001)
 
-    # There is one mininode that connects directly to the node that generates transactions.
+    # There is one P2P interface that connects directly to the node that
+    # generates transactions.
     # This tests the *inbound* connection interval.
     # The first node creates an outbound connection to the second node,
     # which relays the transactions instantly (-txbroadcastinterval=1)
-    # to the second mininode, which tests the *outbound* connection interval (= 1/2 of the inbound).
+    # to the second P2P interface, which tests the *outbound* connection
+    # interval (= 1/2 of the inbound).
     # (but is less reliable for small values of the -txbroadcastinterval)
 
     def skip_test_if_missing_module(self):
@@ -121,11 +123,11 @@ class TxBroadcastIntervalTest(BitcoinTestFramework):
 
         wait_until(
             lambda: len(inboundReceiver.invTimes) == self.options.samplesize,
-            lock=mininode_lock,
+            lock=p2p_lock,
             timeout=self.options.samplesize * self.options.interval / 1000 * 2)
         wait_until(
             lambda: len(outboundReceiver.invTimes) == self.options.samplesize,
-            lock=mininode_lock,
+            lock=p2p_lock,
             timeout=self.options.samplesize * self.options.interval / 1000)
 
         inboundkstestresult = stats.kstest(inboundReceiver.invDelays, stats.expon(scale=self.scale).cdf)
