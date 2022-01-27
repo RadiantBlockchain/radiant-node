@@ -87,7 +87,7 @@ struct BanTables {
         for (const auto &entry : addresses) {
             const SerPair pair{
                 std::piecewise_construct,
-                std::forward_as_tuple(CSubNet{entry.first}),
+                std::forward_as_tuple(entry.first),
                 std::forward_as_tuple(entry.second)
             };
             ::Serialize(s, pair);

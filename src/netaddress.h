@@ -490,7 +490,7 @@ public:
             // Before commit 084265a60d79740d7ee8fa04b4d315ef71c1c21f, CSubNet used the last 4 bytes of netmask
             // to store the relevant bytes for an IPv4 mask. For compatiblity reasons, keep doing so in
             // serialized form.
-            unsigned char dummy[12] = {0};
+            uint8_t dummy[12] = {0};
             READWRITE(dummy);
             READWRITE(MakeSpan(obj.netmask).first(4));
         } else {
