@@ -2243,6 +2243,11 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
             extversion::Message xver;
             xver.SetVersion(); // called with no args = set it to our version defined at compile-time.
 
+            // Note: Some types, like CAddress (see protocol.h), are sensitive to serialization version and serialize
+            // differently if serializing with INIT_PROTO_VERSION versus PROTOCOL_VERSION. We would need to take that
+            // into account here if we were to ever send things like CAddress instances or other such objects in our
+            // extversion message.
+
             connman->PushMessage(pfrom, CNetMsgMaker(INIT_PROTO_VERSION).Make(NetMsgType::EXTVERSION, xver));
             pfrom->extversionExpected = true;
         } else {
