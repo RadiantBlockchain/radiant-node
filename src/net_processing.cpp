@@ -2052,8 +2052,8 @@ static void PushGetAddrOnceIfAfterVerAck(CConnman *connman, CNode *pfrom) {
     if ( !pfrom->fInbound
          && (pfrom->fOneShot || pfrom->nVersion >= CADDR_TIME_VERSION
              || connman->GetAddressCount() < 1000)
-         && pfrom->GetBytesSentForCmd(NetMsgType::VERACK) > 0
-         && pfrom->GetBytesSentForCmd(NetMsgType::GETADDR) == 0)
+         && pfrom->GetBytesSentForMsgType(NetMsgType::VERACK) > 0
+         && pfrom->GetBytesSentForMsgType(NetMsgType::GETADDR) == 0)
     {
         connman->PushMessage(
             pfrom,

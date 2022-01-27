@@ -559,8 +559,8 @@ extern RecursiveMutex cs_mapLocalHost;
 extern std::map<CNetAddr, LocalServiceInfo>
     mapLocalHost GUARDED_BY(cs_mapLocalHost);
 
-// Command, total bytes
-typedef std::map<std::string, uint64_t> mapMsgCmdSize;
+// Message type, total bytes
+typedef std::map<std::string, uint64_t> mapMsgTypeSize;
 
 /**
  * POD that contains various stats about a node.
@@ -582,9 +582,9 @@ struct CNodeStats {
     bool m_manual_connection;
     int nStartingHeight;
     uint64_t nSendBytes;
-    mapMsgCmdSize mapSendBytesPerMsgCmd;
+    mapMsgTypeSize mapSendBytesPerMsgType;
     uint64_t nRecvBytes;
-    mapMsgCmdSize mapRecvBytesPerMsgCmd;
+    mapMsgTypeSize mapRecvBytesPerMsgType;
     NetPermissionFlags m_permissionFlags;
     bool m_legacyWhitelisted;
     double dPingTime;
@@ -740,8 +740,8 @@ public:
     std::atomic_bool extversionExpected{false};
 
 protected:
-    mapMsgCmdSize mapSendBytesPerMsgCmd;
-    mapMsgCmdSize mapRecvBytesPerMsgCmd GUARDED_BY(cs_vRecv);
+    mapMsgTypeSize mapSendBytesPerMsgType;
+    mapMsgTypeSize mapRecvBytesPerMsgType GUARDED_BY(cs_vRecv);
 
 public:
     BlockHash hashContinue;
@@ -913,7 +913,7 @@ public:
     void ReadConfigFromExtversion() EXCLUSIVE_LOCKS_REQUIRED(cs_extversion);
 
     //! Returns the number of bytes enqeueud (and eventually sent) for a particular command
-    uint64_t GetBytesSentForCmd(const std::string &strCommand) const;
+    uint64_t GetBytesSentForMsgType(const std::string &msg_type) const;
 };
 
 /**

@@ -265,7 +265,7 @@ extern const char *const DSPROOF;
  * These messages can be significantly larger than usual messages and therefore
  * may need to be processed differently.
  */
-bool IsBlockLike(const std::string &strCommand);
+bool IsBlockLike(const std::string &msg_type);
 }; // namespace NetMsgType
 
 /* Get a vector of all valid message types (see above) */

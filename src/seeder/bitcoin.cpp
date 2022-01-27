@@ -94,11 +94,11 @@ void CSeederNode::PushVersion() {
     EndMessage();
 }
 
-PeerMessagingState CSeederNode::ProcessMessage(const std::string &strCommand,
+PeerMessagingState CSeederNode::ProcessMessage(const std::string &msg_type,
                                                CDataStream &recv) {
     // std::fprintf(stdout, "%s: RECV %s\n", ToString(you).c_str(),
-    //              strCommand.c_str());
-    if (strCommand == "version") {
+    //              msg_type.c_str());
+    if (msg_type == "version") {
         int64_t nTime;
         CAddress addrMe;
         CAddress addrFrom;
@@ -116,7 +116,7 @@ PeerMessagingState CSeederNode::ProcessMessage(const std::string &strCommand,
         return PeerMessagingState::AwaitingMessages;
     }
 
-    if (strCommand == "verack") {
+    if (msg_type == "verack") {
         vRecv.SetVersion(std::min(nVersion, PROTOCOL_VERSION));
         // std::fprintf(stdout, "\n%s: version %i\n", ToString(you).c_str(),
         //              nVersion);
@@ -137,7 +137,7 @@ PeerMessagingState CSeederNode::ProcessMessage(const std::string &strCommand,
         return PeerMessagingState::AwaitingMessages;
     }
 
-    if (strCommand == "addr" && vAddr) {
+    if (msg_type == "addr" && vAddr) {
         std::vector<CAddress> vAddrNew;
         recv >> vAddrNew;
         // std::fprintf(stdout, "%s: got %i addresses\n", ToString(you).c_str(),
@@ -172,7 +172,7 @@ PeerMessagingState CSeederNode::ProcessMessage(const std::string &strCommand,
         return PeerMessagingState::AwaitingMessages;
     }
 
-    if (strCommand == NetMsgType::HEADERS) {
+    if (msg_type == NetMsgType::HEADERS) {
         unsigned int nCount = ReadCompactSize(recv);
         if (nCount > MAX_HEADERS_RESULTS) {
             // std::fprintf(stdout, "%s: BAD \"%s\" (too many headers)\n",
@@ -231,7 +231,7 @@ bool CSeederNode::ProcessMessages() {
             ban = 100000;
             return true;
         }
-        std::string strCommand = hdr.GetCommand();
+        std::string msg_type = hdr.GetCommand();
         unsigned int nMessageSize = hdr.nMessageSize;
         if (nMessageSize > MAX_SIZE) {
             // std::fprintf(stdout, "%s: BAD (message too large)\n",
@@ -253,12 +253,12 @@ bool CSeederNode::ProcessMessages() {
         CDataStream vMsg(vRecv.begin(), vRecv.begin() + nMessageSize,
                          vRecv.GetType(), vRecv.GetVersion());
         vRecv.ignore(nMessageSize);
-        if (ProcessMessage(strCommand, vMsg) == PeerMessagingState::Finished) {
+        if (ProcessMessage(msg_type, vMsg) == PeerMessagingState::Finished) {
             return true;
         }
         // std::fprintf(stdout, "%s: done processing %s\n",
         //              ToString(you).c_str(),
-        //              strCommand.c_str());
+        //              msg_type.c_str());
     } while (1);
     return false;
 }
