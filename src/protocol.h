@@ -398,6 +398,12 @@ public:
             // After the version handshake, serialization version is >=
             // MIN_PEER_PROTO_VERSION and all ADDR messages are serialized with
             // nTime.
+            // Note: The extversion phase (optional) of protocol negotiation
+            // uses INIT_PROTO_VERSION. Currently extversion in BCHN does not
+            // send CAddress instances in the extversion message, but if it
+            // were to do so in some hypothetical future change, then it should
+            // take into account the behavior here, and be sure not to use
+            // INIT_PROTO_VERSION if it wished to serialize nTime.
             READWRITE(obj.nTime);
         }
         READWRITE(Using<CustomUintFormatter<8>>(obj.nServices));
