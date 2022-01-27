@@ -455,7 +455,7 @@ static bool WriteBinaryFile(const fs::path &filename, const std::string &data) {
 
 /**
  * Controller that connects to Tor control socket, authenticate, then create
- * and maintain an ephemeral hidden service.
+ * and maintain an ephemeral onion service.
  */
 class TorController {
 public:
@@ -599,7 +599,7 @@ void TorController::auth_cb(TorControlConnection &_conn,
             // Explicitly request RSA1024 - see issue #9214
             private_key = "NEW:RSA1024";
         }
-        // Request hidden service, redirect port.
+        // Request onion service, redirect port.
         // Note that the 'virtual' port is always the default port to avoid decloaking nodes using other ports.
         _conn.Command(
             strprintf("ADD_ONION %s Port=%i,127.0.0.1:%i", private_key, Params().GetDefaultPort(), GetListenPort()),

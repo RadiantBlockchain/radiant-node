@@ -1,6 +1,6 @@
 # TOR SUPPORT IN BITCOIN
 
-It is possible to run Bitcoin Cash Node as a Tor hidden service, and connect to
+It is possible to run Bitcoin Cash Node as a Tor onion service, and connect to
 such services.
 
 The following directions assume you have a Tor proxy running on port 9050. Many
@@ -17,12 +17,12 @@ anonymize all outgoing connections, but more is possible.
     -proxy=ip:port  Set the proxy server. If SOCKS5 is selected (default), this proxy
                     server will be used to try to reach .onion addresses as well.
 
-    -onion=ip:port  Set the proxy server to use for Tor hidden services. You do not
+    -onion=ip:port  Set the proxy server to use for Tor onion services. You do not
                     need to set this if it's the same as -proxy. You can use -noonion
-                    to explicitly disable access to hidden service.
+                    to explicitly disable access to onion service.
 
     -listen         When using -proxy, listening is disabled by default. If you want
-                    to run a hidden service (see next section), you'll need to enable
+                    to run a onion service (see next section), you'll need to enable
                     it explicitly.
 
     -connect=X      When behind a Tor proxy, you can specify .onion addresses instead
@@ -92,11 +92,11 @@ for normal IPv4/IPv6 communication, use:
 ## 3. Automatically listen on Tor
 
 Starting with Tor version 0.2.7.1 it is possible, through Tor's control socket
-API, to create and destroy 'ephemeral' hidden services programmatically.
+API, to create and destroy 'ephemeral' onion services programmatically.
 Bitcoin Core has been updated to make use of this.
 
 This means that if Tor is running (and proper authentication has been configured),
-Bitcoin Core automatically creates a hidden service to listen on. This will positively
+Bitcoin Core automatically creates an onion service to listen on. This will positively
 affect the number of available .onion nodes.
 
 This new feature is enabled by default if Bitcoin Cash Node is listening (`-listen`),
@@ -107,7 +107,7 @@ and requires a Tor connection to work. It can be explicitly disabled with
 Connecting to Tor's control socket API requires one of two authentication methods
 to be configured. For cookie authentication the user running bitcoind must have
 write access to the `CookieAuthFile` specified in Tor configuration. In some cases,
-this is preconfigured and the creation of a hidden service is automatic. If
+this is preconfigured and the creation of a onion service is automatic. If
 permission problems are seen with `-debug=tor` they can be resolved by adding both
 the user running Tor and the user running bitcoind to the same group and setting
 permissions appropriately. On Debian-based systems the user running bitcoind can
@@ -117,9 +117,9 @@ alternative authentication method is the use of the `-torpassword` flag and a
 
 ## 4. Privacy recommendations
 
-- Do not add anything but Bitcoin Cash Node ports to the hidden service created
+- Do not add anything but Bitcoin Cash Node ports to the onion service created
   in section 2.
-  If you run a web service too, create a new hidden service for that.
+  If you run a web service too, create a new onion service for that.
   Otherwise it is trivial to link them, which may reduce privacy. Hidden
   services created automatically (as in section 3) always have only one port
   open.

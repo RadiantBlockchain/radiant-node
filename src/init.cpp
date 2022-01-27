@@ -669,11 +669,9 @@ void SetupServerArgs() {
         "-listen",
         "Accept connections from outside (default: 1 if no -proxy or -connect)",
         ArgsManager::ALLOW_ANY, OptionsCategory::CONNECTION);
-    gArgs.AddArg(
-        "-listenonion",
-        strprintf("Automatically create Tor hidden service (default: %d)",
-                  DEFAULT_LISTEN_ONION),
-        ArgsManager::ALLOW_ANY, OptionsCategory::CONNECTION);
+    gArgs.AddArg("-listenonion",
+                 strprintf("Automatically create Tor onion service (default: %d)", DEFAULT_LISTEN_ONION),
+                 ArgsManager::ALLOW_ANY, OptionsCategory::CONNECTION);
     gArgs.AddArg(
         "-maxconnections=<n>",
         strprintf("Maintain at most <n> connections to peers (default: %u)",
@@ -698,9 +696,7 @@ void SetupServerArgs() {
                   DEFAULT_MAX_TIME_ADJUSTMENT),
         ArgsManager::ALLOW_ANY, OptionsCategory::CONNECTION);
     gArgs.AddArg("-onion=<ip:port>",
-                 strprintf("Use separate SOCKS5 proxy to reach peers via Tor "
-                           "hidden services (default: %s)",
-                           "-proxy"),
+                 strprintf("Use separate SOCKS5 proxy to reach peers via Tor onion services (default: %s)", "-proxy"),
                  ArgsManager::ALLOW_ANY, OptionsCategory::CONNECTION);
     gArgs.AddArg("-onlynet=<net>",
                  "Only connect to nodes in network <net> (ipv4, ipv6 or onion)",
