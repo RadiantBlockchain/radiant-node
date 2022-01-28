@@ -195,6 +195,12 @@ public:
     bool IsRoutable() const;
     bool IsInternal() const;
     bool IsValid() const;
+
+    /**
+     * Check if the current object can be serialized in pre-ADDRv2/BIP155 format.
+     */
+    bool IsAddrV1Compatible() const;
+
     enum Network GetNetwork() const;
     std::string ToString() const;
     std::string ToStringIP() const;
@@ -215,7 +221,7 @@ public:
 
     std::vector<uint8_t> GetGroup(const std::vector<bool> &asmap) const;
     // This will return the address as a serialized V1 vector (size: 16 bytes).
-    std::vector<uint8_t> GetAddrBytes() const { return SerializeV1Array(); }
+    std::vector<uint8_t> GetAddrBytes() const;
     int GetReachabilityFrom(const CNetAddr *paddrPartner = nullptr) const;
 
     bool GetIn6Addr(struct in6_addr *pipv6Addr) const;

@@ -32,6 +32,7 @@
 #include <random.h>
 #include <reverse_iterator.h>
 #include <scheduler.h>
+#include <streams.h>
 #include <tinyformat.h>
 #include <txmempool.h>
 #include <ui_interface.h>
@@ -2057,6 +2058,19 @@ static void PushGetAddrOnceIfAfterVerAck(CConnman *connman, CNode *pfrom) {
     }
 }
 
+//! Called from 3 places in this file; ensuring:
+//! - VERACK is sent
+//! - SENDADDRV2 is sent
+static void PushVerACK(CConnman *connman, CNode *pfrom) {
+    const CNetMsgMaker msg_maker(INIT_PROTO_VERSION);
+
+    // Signal ADDRv2 support (BIP155).
+    connman->PushMessage(pfrom, msg_maker.Make(NetMsgType::SENDADDRV2));
+
+    // Send VERACK handshake message
+    connman->PushMessage(pfrom, msg_maker.Make(NetMsgType::VERACK));
+}
+
 static bool ProcessMessage(const Config &config, CNode *pfrom,
                            const std::string &msg_type, CDataStream &vRecv,
                            int64_t nTimeReceived, CConnman *connman,
@@ -2238,6 +2252,8 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
 
         pfrom->nServices = nServices;
 
+        const CNetMsgMaker msg_maker(INIT_PROTO_VERSION);
+
         if (nServices & NODE_EXTVERSION && connman->GetLocalServices() & NODE_EXTVERSION) {
             // This node + peer both support extversion, so use that handshake.
             // Prepare extversion message. This must be sent before we send a verack message if extversion is enabled
@@ -2253,7 +2269,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
             pfrom->extversionExpected = true;
         } else {
             // Send VERACK handshake message (regular non-extversion peer)
-            connman->PushMessage(pfrom, CNetMsgMaker(INIT_PROTO_VERSION).Make(NetMsgType::VERACK));
+            PushVerACK(connman, pfrom);
         }
 
         pfrom->SetAddrLocal(addrMe);
@@ -2366,8 +2382,9 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
             pfrom->ReadConfigFromExtversion();
         }
 
+        const CNetMsgMaker msg_maker(INIT_PROTO_VERSION);
         // Finish EXTVERSION handshake with a regular VERACK
-        connman->PushMessage(pfrom, CNetMsgMaker(INIT_PROTO_VERSION).Make(NetMsgType::VERACK));
+        PushVerACK(connman, pfrom);
         // Finish by (maybe) sending GETADDR
         PushGetAddrOnceIfAfterVerAck(connman, pfrom);
 
@@ -2398,7 +2415,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
             // If we expected extversion but got a verack it is possible there is a service bit
             // mismatch so we should send a verack response because the peer might not
             // support extversion
-            connman->PushMessage(pfrom, CNetMsgMaker(INIT_PROTO_VERSION).Make(NetMsgType::VERACK));
+            PushVerACK(connman, pfrom);
             // Finish by (maybe) sending GETADDR
             PushGetAddrOnceIfAfterVerAck(connman, pfrom);
         }
@@ -2425,6 +2442,17 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         return true;
     }
 
+    if (msg_type == NetMsgType::SENDADDRV2) {
+        if (pfrom->fSuccessfullyConnected) {
+            // Disconnect peers that send SENDADDRV2 message after VERACK; this
+            // must be negotiated between VERSION and VERACK.
+            pfrom->fDisconnect = true;
+            return false;
+        }
+        pfrom->m_wants_addrv2 = true;
+        return true;
+    }
+
     if (!pfrom->fSuccessfullyConnected) {
         // Must have a verack message before anything else
         LOCK(cs_main);
@@ -2432,14 +2460,23 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         return false;
     }
 
-    if (msg_type == NetMsgType::ADDR) {
+    if (msg_type == NetMsgType::ADDR || msg_type == NetMsgType::ADDRV2) {
+        int stream_version = vRecv.GetVersion();
+        if (msg_type == NetMsgType::ADDRV2) {
+            // Add ADDRV2_FORMAT to the version so that the CNetAddr and CAddress
+            // unserialize methods know that an address in v2 format is coming.
+            stream_version |= ADDRV2_FORMAT;
+        }
+
+        OverrideStream<CDataStream> s(&vRecv, vRecv.GetType(), stream_version);
         std::vector<CAddress> vAddr;
-        vRecv >> vAddr;
+
+        s >> vAddr;
 
         if (vAddr.size() > 1000) {
             LOCK(cs_main);
             Misbehaving(pfrom, 20, "oversized-addr");
-            return error("message addr size() = %u", vAddr.size());
+            return error("%s message size = %u", msg_type, vAddr.size());
         }
 
         // Store the new addresses
@@ -4299,21 +4336,31 @@ bool PeerLogicValidation::SendMessages(const Config &config, CNode *pto,
         pto->m_next_addr_send = PoissonNextSend(current_time, AVG_ADDRESS_BROADCAST_INTERVAL);
         std::vector<CAddress> vAddr;
         vAddr.reserve(pto->vAddrToSend.size());
+
+        const char *msg_type;
+        int make_flags;
+        if (pto->m_wants_addrv2) {
+            msg_type = NetMsgType::ADDRV2;
+            make_flags = ADDRV2_FORMAT;
+        } else {
+            msg_type = NetMsgType::ADDR;
+            make_flags = 0;
+        }
+
         for (const CAddress &addr : pto->vAddrToSend) {
             if (!pto->addrKnown.contains(addr.GetKey())) {
                 pto->addrKnown.insert(addr.GetKey());
                 vAddr.push_back(addr);
                 // receiver rejects addr messages larger than 1000
                 if (vAddr.size() >= 1000) {
-                    connman->PushMessage(
-                        pto, msgMaker.Make(NetMsgType::ADDR, vAddr));
+                    connman->PushMessage(pto, msgMaker.Make(make_flags, msg_type, vAddr));
                     vAddr.clear();
                 }
             }
         }
         pto->vAddrToSend.clear();
         if (!vAddr.empty()) {
-            connman->PushMessage(pto, msgMaker.Make(NetMsgType::ADDR, vAddr));
+            connman->PushMessage(pto, msgMaker.Make(make_flags, msg_type, vAddr));
         }
 
         // we only send the big addr message once
