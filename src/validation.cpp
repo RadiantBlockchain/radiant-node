@@ -2710,7 +2710,7 @@ CBlockIndex *CChainState::FindMostWorkChain() {
                     case 3:
                     case 2:
                         pindexExtraPow = pindexExtraPow->pprev;
-                    // FALLTHROUGH
+                        [[fallthrough]];
                     case 1: {
                         const arith_uint256 deltaWork =
                             pindexExtraPow->nChainWork - pindexFork->nChainWork;

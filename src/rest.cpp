@@ -495,7 +495,7 @@ static bool rest_getutxos(Config &config, HTTPRequest *req,
             std::vector<uint8_t> strRequestV = ParseHex(strRequestMutable);
             strRequestMutable.assign(strRequestV.begin(), strRequestV.end());
         }
-        // FALLTHROUGH
+        [[fallthrough]];
         case RetFormat::BINARY: {
             try {
                 // deserialize only if user sent a request
