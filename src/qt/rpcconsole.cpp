@@ -278,7 +278,7 @@ bool RPCConsole::RPCParseCommandLine(interfaces::Node *node,
                     break;
                 }
             }
-            // FALLTHROUGH
+            [[fallthrough]];
             case STATE_ARGUMENT: // In or after argument
             case STATE_EATING_SPACES_IN_ARG:
             case STATE_EATING_SPACES_IN_BRACKETS:
@@ -430,7 +430,7 @@ bool RPCConsole::RPCParseCommandLine(interfaces::Node *node,
             } else {
                 strResult = UniValue::stringify(lastResult, 2);
             }
-        // FALLTHROUGH
+            [[fallthrough]];
         case STATE_ARGUMENT:
         case STATE_EATING_SPACES:
             return true;
