@@ -2454,10 +2454,9 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
     }
 
     if (!pfrom->fSuccessfullyConnected) {
-        // Must have a verack message before anything else
-        LOCK(cs_main);
-        Misbehaving(pfrom, 10, "missing-verack");
-        return false;
+        LogPrint(BCLog::NET, "Unsupported message \"%s\" prior to verack from peer=%d\n", SanitizeString(msg_type),
+                 pfrom->GetId());
+        return true;
     }
 
     if (msg_type == NetMsgType::ADDR || msg_type == NetMsgType::ADDRV2) {
