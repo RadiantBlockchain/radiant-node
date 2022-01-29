@@ -19,6 +19,7 @@ from test_framework.messages import (
     msg_ping,
     MSG_TX,
     ser_string,
+    MY_SUBVERSION
 )
 from test_framework.p2p import (
     P2PDataStore,
@@ -27,6 +28,7 @@ from test_framework.p2p import (
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import (
     assert_equal,
+    assert_greater_than,
     hex_str_to_bytes,
     wait_until,
 )
@@ -73,6 +75,7 @@ class InvalidMessagesTest(BitcoinTestFramework):
         self.test_oversized_getdata_msg()
         self.test_oversized_headers_msg()
         self.test_resource_exhaustion()
+        self.test_tolerate_unknown_msg_before_verack()
 
     def test_buffer(self):
         self.log.info("Test message with header split across two buffers is received")
@@ -265,6 +268,38 @@ class InvalidMessagesTest(BitcoinTestFramework):
         assert conn.is_connected
         assert conn2.is_connected
         self.nodes[0].disconnect_p2ps()
+
+    def test_tolerate_unknown_msg_before_verack(self):
+        self.log.info("Test that the node tolerates and ignores unknown messages before verack")
+        node = self.nodes[0]
+
+        class SenderOfUnrecognizedBeforeVerack(P2PInterface):
+            did_send = False
+
+            def on_version(self, message):
+                self.send_message(msg_unrecognized(str_data=b"hello"))
+                self.did_send = True
+                super().on_version(message)
+
+        # Create a p2p connection to the node and send it a message it doesn't know about before verack
+        msg_type_str = msg_unrecognized.msgtype.decode("utf-8")
+        with node.assert_debug_log([f'Unsupported message "{msg_type_str}" prior to verack from peer']):
+            conn = node.add_p2p_connection(SenderOfUnrecognizedBeforeVerack(), wait_for_verack=True)
+        assert conn.did_send
+
+        # Ensure that the message was seen and that ban score is 0
+        info = node.getpeerinfo()
+        found = False
+        for peer in info:
+            # Find self in peer list
+            if peer["subver"] == MY_SUBVERSION.decode('utf-8'):
+                found = True
+                # Ensure the above message was seen
+                assert_greater_than(peer["bytesrecv_per_msg"].get("*other*", 0), 0)
+                # Ensure we didn't get a "Misbehaving" ban score for our above unknown message
+                assert_equal(peer["banscore"], 0)
+        assert found
+        node.disconnect_p2ps()
 
 
 if __name__ == '__main__':

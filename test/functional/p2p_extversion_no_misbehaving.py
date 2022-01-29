@@ -26,6 +26,7 @@ class ExtVersionNoMisbehavingTest(BitcoinTestFramework):
         ]
         must_not_exist = [
             re.compile(r'Misbehaving: .* [(]0 -> 10[)] reason: missing-verack'),
+            re.compile(r'Unsupported message "[^"]*" prior to verack'),
         ]
         for node in self.nodes:
             assert node.is_node_stopped()
