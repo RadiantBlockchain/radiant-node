@@ -7,7 +7,7 @@
 /**
  * network protocol versioning
  */
-static const int PROTOCOL_VERSION = 70015;
+static const int PROTOCOL_VERSION = 70016;
 
 //! initial proto version, to be increased after version/verack negotiation
 static const int INIT_PROTO_VERSION = 209;
@@ -35,5 +35,14 @@ static const int SHORT_IDS_BLOCKS_VERSION = 70014;
 
 //! not banning for invalid compact blocks starts with this version
 static const int INVALID_CB_NO_BAN_VERSION = 70015;
+
+//! This is the first version of the software that accepts receiving unknown
+//! messages before verack, without applying a banscore penalty, as part of
+//! protocol feature negotiation. Versions before this will add +10 to banscore
+//! if they are sent unknown messages before verack. This constant was added
+//! for BIP155 "sendaddrv2" support, and is used there, but can be used to
+//! conditionally omit sending any such "before verack" feature negotiation
+//! messages to peers running earlier versions.
+static const int FEATURE_NEGOTIATION_BEFORE_VERACK_VERSION = 70016;
 
 // Make sure that none of the values above collide with `ADDRV2_FORMAT`.

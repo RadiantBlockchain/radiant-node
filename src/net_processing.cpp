@@ -2059,13 +2059,19 @@ static void PushGetAddrOnceIfAfterVerAck(CConnman *connman, CNode *pfrom) {
 }
 
 //! Called from 3 places in this file; ensuring:
+//! Feature negotiation messages are sent, but only if nVersion >= FEATURE_NEGOTIATION_BEFORE_VERACK_VERSION:
+//! - SENDADDRV2
+//! Finally, after any feature negotiation messages are sent:
 //! - VERACK is sent
-//! - SENDADDRV2 is sent
-static void PushVerACK(CConnman *connman, CNode *pfrom) {
+static void PushVerACK(CConnman *connman, CNode *pfrom, int nVersion = 0 /* 0 = read from pfrom */) {
     const CNetMsgMaker msg_maker(INIT_PROTO_VERSION);
 
-    // Signal ADDRv2 support (BIP155).
-    connman->PushMessage(pfrom, msg_maker.Make(NetMsgType::SENDADDRV2));
+    if (nVersion == 0) nVersion = pfrom->nVersion;
+
+    if (nVersion >= FEATURE_NEGOTIATION_BEFORE_VERACK_VERSION) {
+        // Signal ADDRv2 support (BIP155), but only if version >= FEATURE_NEGOTIATION_BEFORE_VERACK_VERSION
+        connman->PushMessage(pfrom, msg_maker.Make(NetMsgType::SENDADDRV2));
+    }
 
     // Send VERACK handshake message
     connman->PushMessage(pfrom, msg_maker.Make(NetMsgType::VERACK));
@@ -2269,7 +2275,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
             pfrom->extversionExpected = true;
         } else {
             // Send VERACK handshake message (regular non-extversion peer)
-            PushVerACK(connman, pfrom);
+            PushVerACK(connman, pfrom, nVersion);
         }
 
         pfrom->SetAddrLocal(addrMe);
