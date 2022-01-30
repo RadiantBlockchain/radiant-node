@@ -5,6 +5,7 @@
 #include <seeder/bitcoin.h>
 
 #include <chainparams.h>
+#include <compat.h>
 #include <hash.h>
 #include <netbase.h>
 #include <primitives/blockhash.h>
@@ -19,6 +20,15 @@
 #include <cstdio>
 #include <cstring>
 #include <ctime>
+
+#ifdef USE_POLL /* USE_POLL comes from compat.h */
+#  if __has_include(<poll.h>)
+#    include <poll.h>
+#  else
+#    undef USE_POLL
+#  endif
+#endif
+
 
 #define BITCOIN_SEED_NONCE 0x0539a019ca550825ULL
 
@@ -319,6 +329,15 @@ bool CSeederNode::Run() {
     };
     while (Predicate()) {
         char pchBuf[0x10000];
+#ifdef USE_POLL
+        /* Linux */
+        struct pollfd pfd = {};
+        pfd.fd = sock;
+        pfd.events = POLLIN | POLLERR;
+        const int pollTimeoutMsec = 1000 * (doneAfter ? static_cast<int>(doneAfter - now) : GetTimeout());
+        const int ret = ::poll(&pfd, 1, pollTimeoutMsec);
+#else
+        /* OSX, BSD, Win32 */
         fd_set fdsetRecv;
         fd_set fdsetError;
         FD_ZERO(&fdsetRecv);
@@ -327,21 +346,22 @@ bool CSeederNode::Run() {
         FD_SET(sock, &fdsetError);
         struct timeval wa;
         if (doneAfter) {
-            wa.tv_sec = doneAfter - now;
+            wa.tv_sec = static_cast<int>(doneAfter - now);
             wa.tv_usec = 0;
         } else {
             wa.tv_sec = GetTimeout();
             wa.tv_usec = 0;
         }
-        int ret = select(sock + 1, &fdsetRecv, nullptr, &fdsetError, &wa);
+        const int ret = ::select(sock + 1, &fdsetRecv, nullptr, &fdsetError, &wa);
+#endif
         if (ret != 1) {
             if (!doneAfter) {
                 res = false;
             }
             break;
         }
-        int nBytes = recv(sock, pchBuf, sizeof(pchBuf), 0);
-        int nPos = vRecv.size();
+        const int nBytes = ::recv(sock, pchBuf, sizeof(pchBuf), 0);
+        const size_t nPos = vRecv.size();
         if (nBytes > 0) {
             vRecv.resize(nPos + nBytes);
             std::memcpy(&vRecv[nPos], pchBuf, nBytes);
