@@ -455,6 +455,7 @@ private:
         std::chrono::microseconds m_update_addr_response{0};
     };
 
+    RecursiveMutex cs_addr_response_caches;
     /**
      * Addr responses stored in different caches
      * per network prevent cross-network node identification.
@@ -465,7 +466,7 @@ private:
      * distinct Network (up to 5) we have/had an inbound peer from,
      * resulting in at most ~160 KB.
      */
-    std::map<Network, CachedAddrResponse> m_addr_response_caches;
+    std::map<Network, CachedAddrResponse> m_addr_response_caches GUARDED_BY(cs_addr_response_caches);
 
     /** Services this instance offers */
     ServiceFlags nLocalServices;

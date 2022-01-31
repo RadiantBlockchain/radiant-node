@@ -2594,14 +2594,18 @@ std::vector<CAddress> CConnman::GetAddresses() {
 }
 
 std::vector<CAddress> CConnman::GetAddresses(Network requestor_network) {
+    LOCK(cs_addr_response_caches);
     const auto current_time = GetTime<std::chrono::microseconds>();
-    if (m_addr_response_caches.find(requestor_network) == m_addr_response_caches.end() ||
-        m_addr_response_caches[requestor_network].m_update_addr_response < current_time) {
-        m_addr_response_caches[requestor_network].m_addrs_response_cache = GetAddresses();
-        m_addr_response_caches[requestor_network].m_update_addr_response =
-            current_time + std::chrono::hours(21) + GetRandMillis(std::chrono::hours(6));
+
+    // Either emplace a new default-constructed CachedAddrResponse (with m_update_addr_response == 0),
+    // or lookup an existing one.
+    CachedAddrResponse & cached = m_addr_response_caches.try_emplace(requestor_network).first->second;
+
+    if (cached.m_update_addr_response < current_time || cached.m_addrs_response_cache.empty()) {
+        cached.m_addrs_response_cache = GetAddresses();
+        cached.m_update_addr_response = current_time + std::chrono::hours(21) + GetRandMillis(std::chrono::hours(6));
     }
-    return m_addr_response_caches[requestor_network].m_addrs_response_cache;
+    return cached.m_addrs_response_cache;
 }
 
 bool CConnman::AddNode(const std::string &strNode) {
