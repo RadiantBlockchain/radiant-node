@@ -74,19 +74,25 @@ void GetRandBytes(uint8_t *buf, int num) noexcept;
 uint64_t GetRand(uint64_t nMax) noexcept;
 /** Generate a uniform random integer in the full 64-bit range */
 uint64_t GetRand64() noexcept;
-/** Generate a uniform random duration in the range [0..max). Precondition: max.count() > 0 */
-template <typename D>
-D GetRandomDuration(typename std::common_type<D>::type max) noexcept
-// Having the compiler infer the template argument from the function argument
-// is dangerous, because the desired return value generally has a different
-// type than the function argument. So std::common_type is used to force the
-// call site to specify the type of the return value.
-{
-    assert(max.count() > 0);
-    return D{GetRand(max.count())};
-};
-constexpr auto GetRandMicros = GetRandomDuration<std::chrono::microseconds>;
-constexpr auto GetRandMillis = GetRandomDuration<std::chrono::milliseconds>;
+/** Generate a uniform random duration in the range [0..max), scaled to duration Ret. */
+template <typename Ret, typename Rep, typename Period>
+Ret GetRandomDuration(std::chrono::duration<Rep, Period> max) noexcept {
+    // explicitly use duration_cast here to require Ret to be a std::chrono::duration, otherwise fail at compile-time.
+    const Ret scaledMax = std::chrono::duration_cast<Ret>(max);
+    if (const uint64_t val = scaledMax.count(); val > 0) { // GetRand() doesn't like 0 as input argument
+        return Ret{static_cast<typename Ret::rep>(GetRand(val))};
+    } else {
+        return Ret{static_cast<typename Ret::rep>(0)};
+    }
+}
+template <typename Rep, typename Period>
+std::chrono::microseconds GetRandMicros(std::chrono::duration<Rep, Period> max) noexcept {
+    return GetRandomDuration<std::chrono::microseconds>(max);
+}
+template <typename Rep, typename Period>
+std::chrono::milliseconds GetRandMillis(std::chrono::duration<Rep, Period> max) noexcept {
+    return GetRandomDuration<std::chrono::milliseconds>(max);
+}
 int GetRandInt(int nMax) noexcept;
 uint256 GetRandHash() noexcept;
 
