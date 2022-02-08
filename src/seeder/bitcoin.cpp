@@ -5,6 +5,7 @@
 #include <seeder/bitcoin.h>
 
 #include <chainparams.h>
+#include <clientversion.h>
 #include <compat.h>
 #include <hash.h>
 #include <netbase.h>
@@ -61,7 +62,7 @@ void CSeederNode::EndMessage() {
     std::memcpy((char *)&vSend[nHeaderStart] +
                     offsetof(CMessageHeader, nMessageSize),
                 &nSize, sizeof(nSize));
-    if (vSend.GetVersion() >= 209) {
+    if (vSend.GetVersion() >= INIT_PROTO_VERSION) {
         uint256 hash = Hash(MakeSpan(vSend).subspan(nMessageStart));
         unsigned int nChecksum = 0;
         std::memcpy(&nChecksum, &hash, sizeof(nChecksum));
@@ -95,9 +96,10 @@ void CSeederNode::PushVersion() {
     const uint64_t nLocalNonce = BITCOIN_SEED_NONCE;
     const int64_t nLocalServices = 0;
     const CAddress me(CService{}, ServiceFlags(NODE_NETWORK | NODE_BITCOIN_CASH));
-    BeginMessage("version");
+    BeginMessage(NetMsgType::VERSION);
     const int nBestHeight = GetRequireHeight();
-    const std::string ver = "/bitcoin-cash-seeder:0.15/";
+    const std::string ver = strprintf("/bitcoin-cash-seeder:%i.%i.%i/",
+                                      CLIENT_VERSION_MAJOR, CLIENT_VERSION_MINOR, CLIENT_VERSION_REVISION);
     const uint8_t fRelayTxs = 0;
     vSend << PROTOCOL_VERSION << nLocalServices << nTime << you << me
           << nLocalNonce << ver << nBestHeight << fRelayTxs;
@@ -108,7 +110,7 @@ PeerMessagingState CSeederNode::ProcessMessage(const std::string &msg_type,
                                                CDataStream &recv) {
     // std::fprintf(stdout, "%s: RECV %s\n", ToString(you).c_str(),
     //              msg_type.c_str());
-    if (msg_type == "version") {
+    if (msg_type == NetMsgType::VERSION) {
         int64_t nTime;
         CAddress addrMe;
         CAddress addrFrom;
@@ -120,18 +122,27 @@ PeerMessagingState CSeederNode::ProcessMessage(const std::string &msg_type,
         recv >> strSubVer;
         recv >> nStartingHeight;
 
-        BeginMessage("verack");
+        if (nVersion >= FEATURE_NEGOTIATION_BEFORE_VERACK_VERSION) {
+            // Send BIP155 "sendaddrv2" message *before* verack, in order to signal the other side that we accept v2
+            // addresses. Note that no versions before 70016 supported this message, so we won't bother to send it to
+            // earlier software, as a courtesy. This guard is also in case some other implementations disconnect on
+            // unknown message type.
+            BeginMessage(NetMsgType::SENDADDRV2);
+            EndMessage();
+        }
+
+        BeginMessage(NetMsgType::VERACK);
         EndMessage();
         vSend.SetVersion(std::min(nVersion, PROTOCOL_VERSION));
         return PeerMessagingState::AwaitingMessages;
     }
 
-    if (msg_type == "verack") {
+    if (msg_type == NetMsgType::VERACK) {
         vRecv.SetVersion(std::min(nVersion, PROTOCOL_VERSION));
         // std::fprintf(stdout, "\n%s: version %i\n", ToString(you).c_str(),
         //              nVersion);
         if (vAddr) {
-            BeginMessage("getaddr");
+            BeginMessage(NetMsgType::GETADDR);
             EndMessage();
             // request headers starting after last checkpoint (only if we have checkpoints for this network)
             if (const auto &mapCheckpoints = Params().Checkpoints().mapCheckpoints; !mapCheckpoints.empty()) {
@@ -147,11 +158,16 @@ PeerMessagingState CSeederNode::ProcessMessage(const std::string &msg_type,
         return PeerMessagingState::AwaitingMessages;
     }
 
-    if (msg_type == "addr" && vAddr) {
+    if (bool isV2{}; vAddr && (msg_type == NetMsgType::ADDR || (isV2 = (msg_type == NetMsgType::ADDRV2)))) {
         std::vector<CAddress> vAddrNew;
-        recv >> vAddrNew;
-        // std::fprintf(stdout, "%s: got %i addresses\n", ToString(you).c_str(),
-        //              (int)vAddrNew.size());
+        {
+            // If message is ADDRV2, add ADDRV2_FORMAT to the OverrideStream version so that the CNetAddr and CAddress
+            // unserialize methods know that an address in v2 format is coming.
+            OverrideStream s(&recv, recv.GetType(), recv.GetVersion() | (isV2 ? ADDRV2_FORMAT : 0));
+            s >> vAddrNew;
+        }
+        // std::fprintf(stdout, "%s: got %i addresses in %s format\n", ToString(you).c_str(),
+        //              (int)vAddrNew.size(), isV2 ? "V2" : "V1");
         int64_t now = std::time(nullptr);
         std::vector<CAddress>::iterator it = vAddrNew.begin();
         if (vAddrNew.size() > 1) {
@@ -161,9 +177,7 @@ PeerMessagingState CSeederNode::ProcessMessage(const std::string &msg_type,
         }
         while (it != vAddrNew.end()) {
             CAddress &addr = *it;
-            // std::fprintf(stdout, "%s: got address %s\n",
-            //              ToString(you).c_str(),
-            //              addr.ToString().c_str(), (int)(vAddr->size()));
+            // std::fprintf(stdout, "%s: got address %s\n", ToString(you).c_str(), addr.ToString().c_str());
             it++;
             if (addr.nTime <= 100000000 || addr.nTime > now + 600) {
                 addr.nTime = now - 5 * 86400;
@@ -253,7 +267,7 @@ bool CSeederNode::ProcessMessages() {
             vRecv.insert(vRecv.begin(), vHeaderSave.begin(), vHeaderSave.end());
             break;
         }
-        if (vRecv.GetVersion() >= 209) {
+        if (vRecv.GetVersion() >= INIT_PROTO_VERSION) {
             uint256 hash = Hash(MakeSpan(vRecv).first(nMessageSize));
             if (std::memcmp(hash.begin(), hdr.pchChecksum,
                             CMessageHeader::CHECKSUM_SIZE) != 0) {
@@ -279,8 +293,8 @@ CSeederNode::CSeederNode(const CService &ip, std::vector<CAddress> *vAddrIn)
       vAddr(vAddrIn), ban(0), doneAfter(0),
       you(ip, ServiceFlags(NODE_NETWORK | NODE_BITCOIN_CASH)) {
     if (std::time(nullptr) > 1329696000) {
-        vSend.SetVersion(209);
-        vRecv.SetVersion(209);
+        vSend.SetVersion(INIT_PROTO_VERSION);
+        vRecv.SetVersion(INIT_PROTO_VERSION);
     }
 }
 
