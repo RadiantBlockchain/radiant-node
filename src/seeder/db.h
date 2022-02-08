@@ -329,6 +329,9 @@ public:
         return ret;
     }
 
+    static constexpr int firstAddrV2Version = 1;
+    static constexpr int currentVersion = 1;
+
     // serialization code
     // format:
     //   nVersion (0 for now)
@@ -338,11 +341,11 @@ public:
     // acquires a shared lock (this does not suffice for read mode, but we
     // assume that only happens at startup, single-threaded) this way, dumping
     // does not interfere with GetIPs_, which is called from the DNS thread
-    template <typename Stream> void Serialize(Stream &s) const {
+    template <typename Stream> void Serialize(Stream &s_) const {
         LOCK(cs);
 
-        int nVersion = 0;
-        s << nVersion;
+        OverrideStream s(&s_, s_.GetType(), s_.GetVersion() | ADDRV2_FORMAT); // force serialize with V2 format
+        s << currentVersion;
 
         CAddrDb *db = const_cast<CAddrDb *>(this);
         int n = ourId.size() + unkId.size();
@@ -360,11 +363,14 @@ public:
         s << banned;
     }
 
-    template <typename Stream> void Unserialize(Stream &s) {
+    template <typename Stream> void Unserialize(Stream &s_) {
         LOCK(cs);
 
         int nVersion;
-        s >> nVersion;
+        s_ >> nVersion;
+
+        // Override the stream to specify V2 format for reading if version was >= 1
+        OverrideStream s(&s_, s_.GetType(), s_.GetVersion() | (nVersion >= firstAddrV2Version ? ADDRV2_FORMAT : 0));
 
         CAddrDb *db = const_cast<CAddrDb *>(this);
         db->nId = 0;

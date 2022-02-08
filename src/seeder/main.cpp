@@ -23,6 +23,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
+#include <stdexcept>
+#include <typeinfo>
 
 #include <pthread.h>
 #include <strings.h> // for strcasecmp
@@ -369,11 +371,16 @@ extern "C" void *ThreadDumper(void *) {
             std::sort(v.begin(), v.end(), StatCompare);
             FILE *f = fsbridge::fopen("dnsseed.dat.new", "w+");
             if (f) {
-                {
-                    CAutoFile cf(f, SER_DISK, CLIENT_VERSION);
-                    cf << db;
+                try {
+                    {
+                        CAutoFile cf(f, SER_DISK, CLIENT_VERSION);
+                        cf << db;
+                    }
+                    std::rename("dnsseed.dat.new", "dnsseed.dat");
+                } catch (const std::exception &e) {
+                    std::fprintf(stderr, "WARNING: Unable to save dnsseed.dat, caught exception (%s): %s\n",
+                                 typeid(e).name(), e.what());
                 }
-                std::rename("dnsseed.dat.new", "dnsseed.dat");
             }
             FILE *d = fsbridge::fopen("dnsseed.dump", "w");
             std::fprintf(d, "# address                                        good  "
@@ -536,17 +543,25 @@ int main(int argc, char **argv) {
     FILE *f = fsbridge::fopen("dnsseed.dat", "r");
     if (f) {
         std::fprintf(stdout, "Loading dnsseed.dat...");
-        CAutoFile cf(f, SER_DISK, CLIENT_VERSION);
-        cf >> db;
-        if (opts.fWipeBan) {
-            db.banned.clear();
-            std::fprintf(stdout, "Ban list wiped...");
+        try {
+            CAutoFile cf(f, SER_DISK, CLIENT_VERSION);
+            cf >> db;
+            if (opts.fWipeBan) {
+                db.banned.clear();
+                std::fprintf(stdout, "Ban list wiped...");
+            }
+            if (opts.fWipeIgnore) {
+                db.ResetIgnores();
+                std::fprintf(stdout, "Ignore list wiped...");
+            }
+            std::fprintf(stdout, "done\n");
+        } catch (const std::exception &e) {
+            std::fprintf(stderr, "WARNING: Unable to load dnsseed.dat, caught exception (%s): %s\n",
+                         typeid(e).name(), e.what());
+            std::fprintf(stdout, "dnsseed.dat is either from a different version of this program or is corrupted.\n"
+                                 "Please delele all data files to wipe the seeder database and restart.\n");
+            return EXIT_FAILURE;
         }
-        if (opts.fWipeIgnore) {
-            db.ResetIgnores();
-            std::fprintf(stdout, "Ignore list wiped...");
-        }
-        std::fprintf(stdout, "done\n");
     }
     CAddrDbStats dbStats;
     db.GetStats(dbStats);
