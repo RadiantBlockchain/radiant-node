@@ -170,7 +170,7 @@ Some issues could not be closed in time for release, but we are tracking all of 
 
 ### New documents
 
-- [doc/build-unix-alpine.md](doc/build-unix-alpine.md): Alpine Linux build instructions.
+- [doc/build-unix-alpine.md](../build-unix-alpine.md): Alpine Linux build instructions.
 
 ### Removed documents
 
