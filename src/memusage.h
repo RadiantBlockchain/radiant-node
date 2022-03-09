@@ -34,10 +34,9 @@ inline constexpr size_t MallocUsage(size_t alloc) {
     static_assert(sizeof(void *) == 8 || sizeof(void *) == 4);
     if constexpr (sizeof(void *) == 8) {
         return ((alloc + 31) >> 4) << 4;
-    } else if constexpr (sizeof(void *) == 4) {
+    } else { // sizeof(void *) == 4
         return ((alloc + 15) >> 3) << 3;
     }
-    // not reachable due to static_assert above
 }
 
 // STL data structures
