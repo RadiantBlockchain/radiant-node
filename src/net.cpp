@@ -2593,7 +2593,7 @@ std::vector<CAddress> CConnman::GetAddresses() {
     return addresses;
 }
 
-std::vector<CAddress> CConnman::GetAddresses(Network requestor_network) {
+std::vector<CAddress> CConnman::GetAddressesUntrusted(Network requestor_network) {
     LOCK(cs_addr_response_caches);
     const auto current_time = GetTime<std::chrono::microseconds>();
 

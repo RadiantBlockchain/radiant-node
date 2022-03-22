@@ -3607,7 +3607,8 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         if (pfrom->HasPermission(PF_ADDR)) {
             vAddr = connman->GetAddresses();
         } else {
-            vAddr = connman->GetAddresses(pfrom->addr.GetNetwork());
+            // send a cached set of addresses so as to prevent topology leaks
+            vAddr = connman->GetAddressesUntrusted(pfrom->addr.GetNetwork());
         }
         FastRandomContext insecure_rand;
         for (const CAddress &addr : vAddr) {
