@@ -261,6 +261,20 @@ BOOST_FIXTURE_TEST_CASE(importwallet_rescan, TestChain100Setup) {
     SetMockTime(0);
 }
 
+// Verify that dumpwallet without a wallet loaded throws the correct RPC error.
+BOOST_AUTO_TEST_CASE(no_wallet) {
+    try {
+        std::string backup_file = (SetDataDir("no_wallet") / "wallet.backup").string();
+        JSONRPCRequest request;
+        request.params.setArray().emplace_back(backup_file);
+        ::dumpwallet(GetConfig(), request);
+        BOOST_CHECK(false); // should never be reached because we expect the above to always throw
+    } catch (const JSONRPCError &error) {
+        BOOST_CHECK_EQUAL(error.code, RPC_METHOD_NOT_FOUND);
+        BOOST_CHECK_EQUAL(error.message, "Method not found (wallet method is disabled because no wallet is loaded)");
+    }
+}
+
 // Check that GetImmatureCredit() returns a newly calculated value instead of
 // the cached value after a MarkDirty() call.
 //
