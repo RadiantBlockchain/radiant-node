@@ -9,6 +9,7 @@
 #include <crypto/common.h>
 #include <uint256.h>
 
+#include <chrono>
 #include <cstdint>
 #include <limits>
 
@@ -69,8 +70,29 @@
  * Thread-safe.
  */
 void GetRandBytes(uint8_t *buf, int num) noexcept;
+/** Generate a uniform random integer in the range [0..nMax). Precondition: nMax > 0 */
 uint64_t GetRand(uint64_t nMax) noexcept;
-uint64_t GetRand64() noexcept; ///< Like above, but returns a random number over the full 64-bit range
+/** Generate a uniform random integer in the full 64-bit range */
+uint64_t GetRand64() noexcept;
+/** Generate a uniform random duration in the range [0..max), scaled to duration Ret. */
+template <typename Ret, typename Rep, typename Period>
+Ret GetRandomDuration(std::chrono::duration<Rep, Period> max) noexcept {
+    // explicitly use duration_cast here to require Ret to be a std::chrono::duration, otherwise fail at compile-time.
+    const Ret scaledMax = std::chrono::duration_cast<Ret>(max);
+    if (const uint64_t val = scaledMax.count(); val > 0) { // GetRand() doesn't like 0 as input argument
+        return Ret{static_cast<typename Ret::rep>(GetRand(val))};
+    } else {
+        return Ret{static_cast<typename Ret::rep>(0)};
+    }
+}
+template <typename Rep, typename Period>
+std::chrono::microseconds GetRandMicros(std::chrono::duration<Rep, Period> max) noexcept {
+    return GetRandomDuration<std::chrono::microseconds>(max);
+}
+template <typename Rep, typename Period>
+std::chrono::milliseconds GetRandMillis(std::chrono::duration<Rep, Period> max) noexcept {
+    return GetRandomDuration<std::chrono::milliseconds>(max);
+}
 int GetRandInt(int nMax) noexcept;
 uint256 GetRandHash() noexcept;
 
