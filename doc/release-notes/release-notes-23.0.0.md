@@ -321,11 +321,11 @@ all of them on our GitLab repository.
 
 The following are new documents in the BCHN software repository:
 
-- [doc/dsproof-implementation-notes.md](doc/dsproof-implementation-notes.md): Technical notes about the
+- [doc/dsproof-implementation-notes.md](../dsproof-implementation-notes.md): Technical notes about the
   implementation of the Double Spend Proofs in the BCHN software
-- [doc/linting.md](doc/linting.md): Information for developers about the linting of BCHN
+- [doc/linting.md](../linting.md): Information for developers about the linting of BCHN
   software and some package dependencies needed for this
-- [doc/release-notes/release-notes-22.2.0.md](doc/release-notes/release-notes-22.2.0.md): The previous Release Notes
+- [doc/release-notes/release-notes-22.2.0.md](release-notes-22.2.0.md): The previous Release Notes
 
 ### Removed documents
 

@@ -214,8 +214,8 @@ Some issues could not be closed in time for release, but we are tracking all of 
 
 The following are new documents in the BCHN software repository:
 
-- [doc/gitian-building/gitian-building-docker.md](doc/gitian-building/gitian-building-docker.md): Adds a new streamlined Gitian setup guide tailored for Ubuntu/Debian users with Docker
-- [doc/release-notes/release-notes-23.1.0.md](doc/release-notes/release-notes-23.1.0.md): The previous Release Notes
+- [doc/gitian-building/gitian-building-docker.md](../gitian-building/gitian-building-docker.md): Adds a new streamlined Gitian setup guide tailored for Ubuntu/Debian users with Docker
+- [doc/release-notes/release-notes-23.1.0.md](release-notes-23.1.0.md): The previous Release Notes
 
 ### Removed documents
 
