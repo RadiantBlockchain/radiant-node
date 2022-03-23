@@ -204,8 +204,6 @@ public:
         vSeeds.emplace_back("dnsseed.electroncash.de");
         // C3 Soft (NilacTheGrim)
         vSeeds.emplace_back("bchseed.c3-soft.com");
-        // Jason Dreyzehner
-        vSeeds.emplace_back("bch.bitjson.com");
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<uint8_t>(1, 0);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<uint8_t>(1, 5);
@@ -401,8 +399,6 @@ public:
         vFixedSeeds.clear();
         vSeeds.clear();
         // nodes with support for servicebits filtering should be at the top
-        // bitcoinforks seeders
-        vSeeds.emplace_back("testnet-seed-bch.bitcoinforks.org");
         // BCHD
         vSeeds.emplace_back("testnet-seed.bchd.cash");
         // Loping.net
@@ -578,7 +574,6 @@ public:
         vFixedSeeds.clear();
         vSeeds.clear();
         // nodes with support for servicebits filtering should be at the top
-        vSeeds.emplace_back("testnet4-seed-bch.bitcoinforks.org");
         vSeeds.emplace_back("testnet4-seed-bch.toom.im");
         // Loping.net
         vSeeds.emplace_back("seed.tbch4.loping.net");
@@ -730,8 +725,6 @@ public:
         vFixedSeeds.clear();
         vSeeds.clear();
         // nodes with support for servicebits filtering should be at the top
-        // bitcoinforks seeders
-        vSeeds.emplace_back("scalenet-seed-bch.bitcoinforks.org");
         vSeeds.emplace_back("scalenet-seed-bch.toom.im");
         // Loping.net
         vSeeds.emplace_back("seed.sbch.loping.net");
