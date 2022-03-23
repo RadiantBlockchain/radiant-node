@@ -8,8 +8,7 @@
 #include <amount.h>
 #include <feerate.h>
 #include <policy/policy.h>
-
-#include <boost/noncopyable.hpp>
+#include <util/noncopyable.h>
 
 #include <cstdint>
 #include <memory>
@@ -21,7 +20,7 @@ static constexpr bool DEFAULT_USE_CASHADDR = true;
 
 class CChainParams;
 
-class Config : public boost::noncopyable {
+class Config : public NonCopyable {
 public:
     /** The largest block size this node will accept. */
     virtual bool SetExcessiveBlockSize(uint64_t maxBlockSize) = 0;

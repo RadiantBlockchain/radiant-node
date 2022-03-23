@@ -5,8 +5,7 @@
 #pragma once
 
 #include <univalue.h>
-
-#include <boost/noncopyable.hpp>
+#include <util/noncopyable.h>
 
 #include <string>
 
@@ -18,7 +17,7 @@ class JSONRPCRequest;
  * necessary.  For more typical cases where only request arguments are
  * required, see the RPCCommandWithArgsContext class.
  */
-class RPCCommand : public boost::noncopyable {
+class RPCCommand : public NonCopyable {
 private:
     const std::string name;
 
