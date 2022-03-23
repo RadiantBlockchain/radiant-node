@@ -22,16 +22,19 @@ namespace {
  * again when accepted into the block chain)
  */
 class CSignatureCache {
-private:
     //! Entries are SHA256(nonce || signature hash || public key || signature):
     uint256 nonce;
-    typedef CuckooCache::cache<CuckooCache::KeyOnly<uint256>,
-                               SignatureCacheHasher>
-        map_type;
+    using map_type = CuckooCache::cache<CuckooCache::KeyOnly<uint256>, SignatureCacheHasher>;
     map_type setValid;
     boost::shared_mutex cs_sigcache;
 
     bool ready = false;
+
+    void Reset() {
+        setValid.~map_type(); // manually destroy the cache
+        new (&setValid) map_type(); // replace cache with placement new
+        ready = false;
+    }
 
 public:
     CSignatureCache() { GetRandBytes(nonce.begin(), 32); }
@@ -59,14 +62,10 @@ public:
         setValid.insert(entry);
     }
     uint32_t setup_bytes(size_t n) {
-        assert(!ready); // CuckooCache.setup() should only be called once.
+        Reset();
+        const uint32_t ret = setValid.setup_bytes(n);
         ready = true;
-        return setValid.setup_bytes(n);
-    }
-    void Reset() {
-        setValid.~map_type(); // manually destroy the cache
-        new (&setValid) map_type(); // replace cache with placement new
-        ready = false;
+        return ret;
     }
 };
 
@@ -80,9 +79,6 @@ public:
 static CSignatureCache signatureCache;
 } // namespace
 
-// To be called once in AppInitMain/BasicTestingSetup to initialize the
-// signatureCache.  Should not be called more than once in the program;
-// to reset the cache, use ResetSignatureCache() instead.
 void InitSignatureCache() {
     // nMaxCacheSize is unsigned. If -maxsigcachesize is set to zero,
     // setup_bytes creates the minimum possible cache (2 elements).
@@ -95,11 +91,6 @@ void InitSignatureCache() {
     LogPrintf("Using %zu MiB out of %zu requested for signature cache, able to "
               "store %zu elements\n",
               (nElems * sizeof(uint256)) >> 20, nMaxCacheSize >> 20, nElems);
-}
-
-void ResetSignatureCache() {
-    signatureCache.Reset();
-    InitSignatureCache();
 }
 
 template <typename F>
