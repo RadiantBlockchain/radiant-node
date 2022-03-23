@@ -151,6 +151,7 @@ public:
         std::vector<NetWhitelistPermissions> vWhitelistedRange;
         std::vector<NetWhitebindPermissions> vWhiteBinds;
         std::vector<CService> vBinds;
+        std::vector<CService> onion_binds;
         bool m_use_addrman_outgoing = true;
         std::vector<std::string> m_specified_outgoing;
         std::vector<std::string> m_added_nodes;
@@ -358,8 +359,8 @@ private:
                         NetPermissionFlags permissions);
     bool Bind(const CService &addr, unsigned int flags,
               NetPermissionFlags permissions);
-    bool InitBinds(const std::vector<CService> &binds,
-                   const std::vector<NetWhitebindPermissions> &whiteBinds);
+    bool InitBinds(const std::vector<CService> &binds, const std::vector<NetWhitebindPermissions> &whiteBinds,
+                   const std::vector<CService> &onion_binds);
     void ThreadOpenAddedConnections();
     void AddOneShot(const std::string &strDest);
     void ProcessOneShot();
