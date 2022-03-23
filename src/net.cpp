@@ -2583,7 +2583,29 @@ void CConnman::AddNewAddresses(const std::vector<CAddress> &vAddr,
 }
 
 std::vector<CAddress> CConnman::GetAddresses() {
-    return addrman.GetAddr();
+    auto addresses = addrman.GetAddr();
+    if (m_banman) {
+        auto toBeRemoved = [this](const CAddress &addr) {
+            return m_banman->IsDiscouraged(addr) || m_banman->IsBanned(addr);
+        };
+        addresses.erase(std::remove_if(addresses.begin(), addresses.end(), toBeRemoved), addresses.end());
+    }
+    return addresses;
+}
+
+std::vector<CAddress> CConnman::GetAddressesUntrusted(Network requestor_network) {
+    LOCK(cs_addr_response_caches);
+    const auto current_time = GetTime<std::chrono::microseconds>();
+
+    // Either emplace a new default-constructed CachedAddrResponse (with m_update_addr_response == 0),
+    // or lookup an existing one.
+    CachedAddrResponse & cached = m_addr_response_caches.try_emplace(requestor_network).first->second;
+
+    if (cached.m_update_addr_response < current_time || cached.m_addrs_response_cache.empty()) {
+        cached.m_addrs_response_cache = GetAddresses();
+        cached.m_update_addr_response = current_time + std::chrono::hours(21) + GetRandMillis(std::chrono::hours(6));
+    }
+    return cached.m_addrs_response_cache;
 }
 
 bool CConnman::AddNode(const std::string &strNode) {

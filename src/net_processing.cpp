@@ -2478,7 +2478,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
 
         s >> vAddr;
 
-        if (vAddr.size() > 1000) {
+        if (vAddr.size() > MAX_ADDR_TO_SEND) {
             LOCK(cs_main);
             Misbehaving(pfrom, 20, "oversized-addr");
             return error("%s message size = %u", msg_type, vAddr.size());
@@ -3603,13 +3603,15 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
         pfrom->fSentAddr = true;
 
         pfrom->vAddrToSend.clear();
-        std::vector<CAddress> vAddr = connman->GetAddresses();
+        std::vector<CAddress> vAddr;
+        if (pfrom->HasPermission(PF_ADDR)) {
+            vAddr = connman->GetAddresses();
+        } else {
+            // send a cached set of addresses so as to prevent topology leaks
+            vAddr = connman->GetAddressesUntrusted(pfrom->addr.GetNetwork());
+        }
         FastRandomContext insecure_rand;
         for (const CAddress &addr : vAddr) {
-            if (g_banman && (g_banman->IsDiscouraged(addr) || g_banman->IsBanned(addr))) {
-                // Do not gossip about discouraged or banned addresses
-                continue;
-            }
             pfrom->PushAddress(addr, insecure_rand);
         }
         return true;
@@ -4356,8 +4358,8 @@ bool PeerLogicValidation::SendMessages(const Config &config, CNode *pto,
             if (!pto->addrKnown.contains(addr.GetKey())) {
                 pto->addrKnown.insert(addr.GetKey());
                 vAddr.push_back(addr);
-                // receiver rejects addr messages larger than 1000
-                if (vAddr.size() >= 1000) {
+                // receiver rejects addr messages larger than MAX_ADDR_TO_SEND
+                if (vAddr.size() >= MAX_ADDR_TO_SEND) {
                     connman->PushMessage(pto, msgMaker.Make(make_flags, msg_type, vAddr));
                     vAddr.clear();
                 }
