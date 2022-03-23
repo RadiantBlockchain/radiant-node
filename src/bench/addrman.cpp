@@ -96,7 +96,7 @@ static void AddrManGetAddr(benchmark::State &state) {
     FillAddrMan(addrman);
 
     while (state.KeepRunning()) {
-        const auto &addresses = addrman.GetAddr();
+        const auto& addresses = addrman.GetAddr(2500, 23);
         assert(addresses.size() > 0);
     }
 }

@@ -793,8 +793,7 @@ static UniValue getnodeaddresses(const Config &config,
             "\nReturn known addresses which can potentially be used to find new nodes in the network\n",
             {
                 {"count", RPCArg::Type::NUM, /* opt */ true, /* default_val */ "1",
-                 "How many addresses to return. Limited to the smaller of " + std::to_string(ADDRMAN_GETADDR_MAX) + " or " +
-                 std::to_string(ADDRMAN_GETADDR_MAX_PCT) + "% of all known addresses."},
+                 "The maximum number of addresses to return. Specify 0 to return all known addresses."},
             },
             RPCResult{
                 "[\n"
@@ -820,19 +819,18 @@ static UniValue getnodeaddresses(const Config &config,
     int count = 1;
     if (!request.params[0].isNull()) {
         count = request.params[0].get_int();
-        if (count <= 0) {
+        if (count < 0) {
             throw JSONRPCError(RPC_INVALID_PARAMETER,
                                "Address count out of range");
         }
     }
 
     // returns a shuffled list of CAddress
-    std::vector<CAddress> vAddr = g_connman->GetAddresses();
+    std::vector<CAddress> vAddr = g_connman->GetAddresses(count, /* max_pct */ 0);
     int address_return_count = std::min<int>(count, vAddr.size());
     UniValue::Array ret;
     ret.reserve(address_return_count);
-    for (int i = 0; i < address_return_count; ++i) {
-        const CAddress &addr = vAddr[i];
+    for (const CAddress& addr : vAddr) {
         UniValue::Object obj;
         obj.reserve(4);
         obj.emplace_back("time", addr.nTime);
@@ -842,6 +840,52 @@ static UniValue getnodeaddresses(const Config &config,
         ret.emplace_back(std::move(obj));
     }
     return ret;
+}
+
+static UniValue addpeeraddress(const Config &config, const JSONRPCRequest &request) {
+    if (request.fHelp || request.params.size() > 2) {
+        throw std::runtime_error(RPCHelpMan{
+            "addpeeraddress",
+            "\nAdd the address of a potential peer to the address manager. This RPC is for testing only.\n",
+            {
+                {"address", RPCArg::Type::STR, /* opt */ false, /* default_val */ "", "The IP address of the peer"},
+                {"port", RPCArg::Type::NUM, /* opt */ false, /* default_val */ "", "The port of the peer"},
+            },
+            RPCResult{
+                "{\n"
+                "  \"success\": true|false,      (numeric) whether the peer address was successfully added to the address manager\n"
+                "}\n"},
+            RPCExamples{HelpExampleCli("addpeeraddress", "\"1.2.3.4\" 8333") +
+                        HelpExampleRpc("addpeeraddress", "\"1.2.3.4\", 8333")},
+        }.ToStringWithResultsAndExamples());
+    }
+
+    if (!g_connman) {
+        throw JSONRPCError(RPC_CLIENT_P2P_DISABLED, "Error: Peer-to-peer functionality missing or disabled");
+    }
+
+    UniValue::Object obj;
+    obj.reserve(1);
+
+    std::string addr_string = request.params[0].get_str();
+    uint16_t port = request.params[1].get_int();
+
+    CNetAddr net_addr;
+    if (!LookupHost(addr_string, net_addr, false)) {
+        obj.emplace_back("success", false);
+        return obj;
+    }
+    CAddress address = CAddress({net_addr, port}, ServiceFlags(NODE_NETWORK));
+    address.nTime = GetAdjustedTime();
+    // The source address is set equal to the address. This is equivalent to the peer
+    // announcing itself.
+    if (!g_connman->AddNewAddresses({address}, address)) {
+        obj.emplace_back("success", false);
+        return obj;
+    }
+
+    obj.emplace_back("success", true);
+    return obj;
 }
 
 // clang-format off
@@ -861,6 +905,7 @@ static const ContextFreeRPCCommand commands[] = {
     { "network",            "clearbanned",            clearbanned,            {"manual", "automatic"} },
     { "network",            "setnetworkactive",       setnetworkactive,       {"state"} },
     { "network",            "getnodeaddresses",       getnodeaddresses,       {"count"} },
+    { "hidden",             "addpeeraddress",         addpeeraddress,         {"address", "port"} },
 };
 // clang-format on
 
