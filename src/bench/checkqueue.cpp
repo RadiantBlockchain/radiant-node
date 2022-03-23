@@ -82,7 +82,7 @@ static void CCheckQueue_RealData32MB(bool cacheSigs, benchmark::State &state) {
 
     // Step 1: Setup everything -- read all the block tx's and create a CScriptCheck "work" unit for each
     //         of the inputs with all the coins we read in above.
-    InitSignatureCache(); // just to be consistent -- ensure signature cache is empty
+    ResetSignatureCache(); // ensure signature cache is empty, for multiple evaluations
     std::vector<std::vector<CScriptCheck>> vChecksPerTx;
     struct UnlimitedSigChecks : TxSigCheckLimiter {
         UnlimitedSigChecks() { remaining = std::numeric_limits<int64_t>::max(); }
