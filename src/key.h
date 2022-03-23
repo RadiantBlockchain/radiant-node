@@ -151,9 +151,9 @@ public:
 };
 
 struct CExtKey {
-    uint8_t nDepth;
-    uint8_t vchFingerprint[4];
-    unsigned int nChild;
+    uint8_t nDepth = 0;
+    uint8_t vchFingerprint[4] = {};
+    unsigned int nChild = 0;
     ChainCode chaincode;
     CKey key;
 
