@@ -12,6 +12,7 @@
 #include <rpc/protocol.h>
 #include <rwcollection.h>
 #include <uint256.h>
+#include <util/noncopyable.h>
 #include <util/system.h>
 
 #include <cstdint>
@@ -20,7 +21,6 @@
 #include <map>
 #include <string>
 
-#include <boost/noncopyable.hpp>
 #include <univalue.h>
 
 static const unsigned int DEFAULT_RPC_SERIALIZE_VERSION = 1;
@@ -39,7 +39,7 @@ typedef std::map<std::string, std::unique_ptr<RPCCommand>> RPCCommandMap;
 /**
  * Class for registering and managing all RPC calls.
  */
-class RPCServer : public boost::noncopyable {
+class RPCServer : public NonCopyable {
 private:
     RWCollection<RPCCommandMap> commands;
 

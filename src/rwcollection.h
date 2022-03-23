@@ -5,8 +5,8 @@
 #pragma once
 
 #include <threadsafety.h>
+#include <util/noncopyable.h>
 
-#include <boost/noncopyable.hpp>
 #include <boost/range/iterator.hpp>
 #include <boost/thread/locks.hpp>
 #include <boost/thread/shared_mutex.hpp>
@@ -15,7 +15,7 @@
 #include <type_traits>
 #include <utility>
 
-template <typename T, typename L> class RWCollectionView : boost::noncopyable {
+template <typename T, typename L> class RWCollectionView : NonCopyable {
 private:
     L lock;
     T *collection;
