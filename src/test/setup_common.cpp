@@ -66,7 +66,7 @@ BasicTestingSetup::BasicTestingSetup(const std::string &chainName)
     ECC_Start();
     SetupEnvironment();
     SetupNetworking();
-    InitSignatureCache();
+    ResetSignatureCache();
     InitScriptExecutionCache();
 
     fCheckBlockIndex = true;

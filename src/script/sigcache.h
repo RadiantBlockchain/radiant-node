@@ -61,3 +61,4 @@ public:
 };
 
 void InitSignatureCache();
+void ResetSignatureCache();

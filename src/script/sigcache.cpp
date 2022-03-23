@@ -31,6 +31,8 @@ private:
     map_type setValid;
     boost::shared_mutex cs_sigcache;
 
+    bool ready = false;
+
 public:
     CSignatureCache() { GetRandBytes(nonce.begin(), 32); }
 
@@ -46,15 +48,26 @@ public:
     }
 
     bool Get(const uint256 &entry, const bool erase) {
+        assert(ready);
         boost::shared_lock<boost::shared_mutex> lock(cs_sigcache);
         return setValid.contains(entry, erase);
     }
 
     void Set(uint256 &entry) {
+        assert(ready);
         boost::unique_lock<boost::shared_mutex> lock(cs_sigcache);
         setValid.insert(entry);
     }
-    uint32_t setup_bytes(size_t n) { return setValid.setup_bytes(n); }
+    uint32_t setup_bytes(size_t n) {
+        assert(!ready); // CuckooCache.setup() should only be called once.
+        ready = true;
+        return setValid.setup_bytes(n);
+    }
+    void Reset() {
+        setValid.~map_type(); // manually destroy the cache
+        new (&setValid) map_type(); // replace cache with placement new
+        ready = false;
+    }
 };
 
 /**
@@ -68,7 +81,8 @@ static CSignatureCache signatureCache;
 } // namespace
 
 // To be called once in AppInitMain/BasicTestingSetup to initialize the
-// signatureCache.
+// signatureCache.  Should not be called more than once in the program;
+// to reset the cache, use ResetSignatureCache() instead.
 void InitSignatureCache() {
     // nMaxCacheSize is unsigned. If -maxsigcachesize is set to zero,
     // setup_bytes creates the minimum possible cache (2 elements).
@@ -81,6 +95,11 @@ void InitSignatureCache() {
     LogPrintf("Using %zu MiB out of %zu requested for signature cache, able to "
               "store %zu elements\n",
               (nElems * sizeof(uint256)) >> 20, nMaxCacheSize >> 20, nElems);
+}
+
+void ResetSignatureCache() {
+    signatureCache.Reset();
+    InitSignatureCache();
 }
 
 template <typename F>
