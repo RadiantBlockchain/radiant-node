@@ -60,5 +60,11 @@ public:
     friend class TestCachingTransactionSignatureChecker;
 };
 
+/**
+ * Initialize the signature cache. Must be called once in
+ * AppInitMain/BasicTestingSetup to initialize the signatureCache. Subsequent
+ * calls will reset the cache and clear it. (Re)Initialization of the cache
+ * should happen in the main thread before other threads are started since
+ * this function takes no locks.
+ */
 void InitSignatureCache();
-void ResetSignatureCache();
