@@ -29,25 +29,22 @@ void benchmark::ConsolePrinter::result(const State &state) {
     double total = state.m_num_iters *
                    std::accumulate(results.begin(), results.end(), 0.0);
 
-    double front = 0;
-    double back = 0;
+    double min    = 0;
+    double max    = 0;
     double median = 0;
 
     if (!results.empty()) {
-        front = results.front();
-        back = results.back();
+        min = results.front();
+        max = results.back();
 
         size_t mid = results.size() / 2;
-        median = results[mid];
-        if (0 == results.size() % 2) {
-            median = (results[mid] + results[mid + 1]) / 2;
-        }
+        median = results.size() % 2 ? results[mid] : (results[mid - 1] + results[mid]) / 2.0;
     }
 
-    std::cout << std::setprecision(6);
-    std::cout << state.m_name << ", " << state.m_num_evals << ", "
-              << state.m_num_iters << ", " << total << ", " << front << ", "
-              << back << ", " << median << std::endl;
+    std::cout << std::setprecision(6)
+              << state.m_name << ", " << state.m_num_evals << ", "
+              << state.m_num_iters << ", " << total << ", " << min << ", "
+              << max << ", " << median << std::endl;
 }
 
 void benchmark::ConsolePrinter::footer() {}
