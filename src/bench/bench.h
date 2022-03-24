@@ -14,9 +14,6 @@
 #include <utility>
 #include <vector>
 
-#include <boost/preprocessor/cat.hpp>
-#include <boost/preprocessor/stringize.hpp>
-
 // Simple micro-benchmarking framework; API mostly matches a subset of the
 // Google Benchmark framework (see https://github.com/google/benchmark)
 // Why not use the Google Benchmark framework? Because adding Yet Another
@@ -167,6 +164,11 @@ constexpr void NoOptimize(Args && ...args) noexcept {
 // that all benchmarks should take approximately
 // the same time, and scaling factor can be used that the total time is
 // appropriate for your system.
+
+#define CAT(a, b) CAT_I(a, b)
+#define CAT_I(a, b) a ## b
+#define STRINGIZE_TEXT(...) #__VA_ARGS__
+
 #define BENCHMARK(n, num_iters_for_one_second)                                 \
-    benchmark::BenchRunner BOOST_PP_CAT(bench_, BOOST_PP_CAT(__LINE__, n))(    \
-        BOOST_PP_STRINGIZE(n), n, (num_iters_for_one_second));
+    benchmark::BenchRunner CAT(bench_, CAT(__LINE__, n))(                      \
+        STRINGIZE_TEXT(n), n, (num_iters_for_one_second));
