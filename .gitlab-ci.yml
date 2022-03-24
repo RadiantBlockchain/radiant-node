@@ -754,7 +754,7 @@ pages:
         paths:
             - .cache/pip
     before_script:
-        - pip3 install mkdocs mkdocs-material
+        - pip3 install jinja2==3.0.0 mkdocs mkdocs-material
     script:
         - (cd build; ninja -t restat)
         - (cd build; ninja doc-html)
