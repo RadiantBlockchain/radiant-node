@@ -52,7 +52,6 @@ fi
 
 EXPECTED_BOOST_INCLUDES=(
     boost/chrono/chrono.hpp
-    boost/cstdlib.hpp
     boost/date_time/posix_time/posix_time.hpp
     boost/filesystem.hpp
     boost/filesystem/fstream.hpp
