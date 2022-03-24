@@ -7,8 +7,6 @@
 #include <tinyformat.h> // for strprintf()
 #include <util/defer.h> // for Defer
 
-#include <boost/cstdlib.hpp> // for boost::exit_test_failure
-
 #include <algorithm>
 #include <array>
 #include <atomic>
@@ -55,7 +53,8 @@
 
 CheckAssertResult CheckAssert(std::function<void()> func, std::string_view expectMessage) {
 #ifdef IS_SUPPORTED
-    constexpr int exit_status_cannot_dup2 = 120, exit_status_aborted = boost::exit_test_failure;
+    constexpr int exit_status_cannot_dup2 = 120;
+    constexpr int exit_status_aborted = 201; // boost::exit_test_failure value
     static_assert(exit_status_cannot_dup2 != exit_status_aborted);
     std::array<int, 2> pipe_stdout{{-1, -1}}, pipe_stderr{{-1, -1}};
     Defer pipeCloser([&pipe_stdout, &pipe_stderr]{
