@@ -29,6 +29,24 @@ This version contains further corrections and improvements, such as:
   `onion_v3_private_key`, e.g.
   `cp -f onion_private_key onion_v3_private_key`.
 
+- If using the `-listenonion=1` option (default: 1 if unspecified), then an
+  additional new bind `address:port` will be used for hidden-service-only incoming
+  .onion connections. On mainnet, this will be 127.0.0.1:8334. This bind address
+  is in **addition** to any `-bind=` options specified on the CLI and/or in the
+  config file.
+  - To specify the local onion port to bind to explicitly, use the new syntax,
+    `-bind=<HOST>:<PORT>=onion`. See `bitcoind -help` for more information on
+    the new `=onion` syntax which is used to specify local tor listening ports.
+  - To not create an additional bind endpoint for tor, and/or to disable tor
+    hidden service support, use `-listenonion=0`.
+
+  Note: As before, tor hidden services are always advertised publicly using a
+  "generic" port for maximal anonymity (such as 8333 on mainnet, 18333 on
+  testnet3, and so on). The `-bind=<HOST>:<PORT>=onion` syntax is to simply
+  specify the local bind address which is connected-to privately by the
+  local `tor` process when a remote node connects to your .onion hidden
+  service.
+
 ## Added functionality
 
 - Added a new logging option, `-debug=httptrace` which logs all HTTP data to/from the internal JSON-RPC and REST server, including HTTP content.
