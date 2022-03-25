@@ -16,18 +16,22 @@ class OnionPortTest(BitcoinTestFramework):
         self.setup_clean_chain = False
         self.num_nodes = 1
 
-    def run_test(self):
-        onion_port = p2p_port(MAX_NODES-1)
-        self.log.info(f"Restarting node 0 with an extra onion port {onion_port}")
-        self.stop_node(0)
+    def setup_network(self):
+        self.setup_nodes()
+
+    def setup_nodes(self):
+        self.onion_port = p2p_port(MAX_NODES-1)
+        self.log.info(f"Starting node 0 with an extra onion port {self.onion_port}")
         # Create an additional port aside from the normal bind p2p port, for onion incoming connections.
         # We leverage the p2p_port() function to get a unique port guaranteed to be available.
-        assert_not_equal(onion_port, p2p_port(0))
-        self.start_node(0, ["-listenonion=1", f"-bind=127.0.0.1:{onion_port}=onion"])
+        assert_not_equal(self.onion_port, p2p_port(0))
+        self.add_nodes(self.num_nodes, [["-listenonion=1", f"-bind=127.0.0.1:{self.onion_port}=onion"]])
+        self.start_nodes()
 
+    def run_test(self):
         self.log.info('Creating a p2p connection for the regular port and the onion port')
         node = self.nodes[0]
-        ports = (node.p2p_port, onion_port)
+        ports = (node.p2p_port, self.onion_port)
         assert_not_equal(ports[0], ports[1])
         for port in ports:
             p2p = P2PInterface()
@@ -37,7 +41,7 @@ class OnionPortTest(BitcoinTestFramework):
             assert_equal(len(peers), 1)
             bindport = int(peers[0]["addrbind"].split(':')[-1])
             assert_equal(bindport, port)
-            if port == onion_port:
+            if port == self.onion_port:
                 # Ensure onion port has PF_NONE
                 assert_equal(len(peers[0]["permissions"]), 0)
             p2p.peer_disconnect()
