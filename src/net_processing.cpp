@@ -3613,7 +3613,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
             vAddr = connman->GetAddresses(MAX_ADDR_TO_SEND, MAX_PCT_ADDR_TO_SEND);
         } else {
             // send a cached set of addresses so as to prevent topology leaks
-            vAddr = connman->GetAddressesUntrusted(pfrom->addr.GetNetwork(), MAX_ADDR_TO_SEND, MAX_PCT_ADDR_TO_SEND);
+            vAddr = connman->GetAddressesUntrusted(*pfrom, MAX_ADDR_TO_SEND, MAX_PCT_ADDR_TO_SEND);
         }
         FastRandomContext insecure_rand;
         for (const CAddress &addr : vAddr) {
