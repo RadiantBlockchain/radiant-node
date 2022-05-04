@@ -116,6 +116,9 @@ test/config.ini
 test/cache/*
 
 !src/leveldb*/Makefile
+src/leveldb/CONTRIBUTING.md
+src/leveldb/NEWS
+src/leveldb/TODO
 
 /doc/doxygen/
 
