@@ -91,8 +91,8 @@ contact at dagurval at pvv dot ntnu dot no
 
 ```
 Bitcoin Cash Node Developer and Maintainer
-contact at imaginary dot username dot btc at gmail dot com
-9ACAD88350645C0D7781337D451A17BA597CF529
+contact at im_uname at bitcoincashnode dot org
+B645B35C2B1D9AAC4D166E251BE4DFC04D72C281
 ```
 
 ### Calin Culianu
