@@ -1,6 +1,6 @@
-This issue tracker is only for technical issues related to Bitcoin Cash Node.
+This issue tracker is only for technical issues related to Radiant Node.
 
-General Bitcoin Cash questions and/or support requests and are best directed to the [Bitcoin StackExchange](https://bitcoin.stackexchange.com).
+General Radiant questions and/or support requests and are best directed to the [Bitcoin StackExchange](https://bitcoin.stackexchange.com).
 
 For reporting security issues, please see [DISCLOSURE_POLICY](DISCLOSURE_POLICY.md).
 
@@ -21,8 +21,8 @@ Tell us what happens instead
 # Screenshots
 If the issue is related to the GUI, you can attach screenshots to your issue.
 
-# Bitcoin Cash Node version
-List the Bitcoin Cash Node version number or commit ID, and whether it is an official binary, self-compiled, or a distribution package such as PPA.
+# Radiant Node version
+List the Radiant Node version number or commit ID, and whether it is an official binary, self-compiled, or a distribution package such as PPA.
 
 # Machine specs
 - OS:

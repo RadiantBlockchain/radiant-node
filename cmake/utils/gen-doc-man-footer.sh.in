@@ -11,6 +11,6 @@ set -e
     echo "-N"
     echo "--version-string=v@CMAKE_PROJECT_VERSION@"
     echo "[COPYRIGHT]"
-    ../../src/bitcoind -version | sed -n '1!p'
+    ../../src/radiantd -version | sed -n '1!p'
 } > footer.h2m
 

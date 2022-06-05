@@ -11,8 +11,56 @@
 #include <primitives/txid.h>
 #include <script/script.h>
 #include <serialize.h>
+#include "hash.h"
 
 static const int SERIALIZE_TRANSACTION = 0x00;
+
+/**
+ * The transaction id preimage is constituted from the parts of a transaction.
+ * This is a more compact representation of the parts of a transaction. 
+ * 
+ * The key innovation is that we compress the inputs, prevouts, and outputs into a constant size data structure
+ * This allows arbitrary induction proofs by checking the parent and grand parent transactions.
+ * 
+ * Make note that the 'hashOutputs' is not the same as the Sighash.Preimage, below it is the sha256 hash
+ * of the concatentation of the individual sha256 hashes of each output. This is done so that a smart contract
+ * can optionally verify a smaller set of data instead of requiring all complete outputs.
+ * 
+ */
+class CTransactionHashPreimage {
+public:
+    int32_t nVersion;           // Tx version
+    uint32_t nTotalInputs;      // Total number of inputs
+    uint256 hashPrevoutInputs;  // sha256 hash of the complete inputs  
+    uint256 hashSequence;       // sha256 hash of the input sequences
+    uint32_t nTotalOutputs;     // Total number of outputs
+    uint256 hashOutputHashes;   // sha256 hash of the concat of the sha256 hash of each output and it's pushrefs/contents
+    uint32_t nLockTime;         // Tx lock time
+
+    CTransactionHashPreimage() { SetNull(); }
+ 
+    SERIALIZE_METHODS(CTransactionHashPreimage, obj) {
+        READWRITE(
+            obj.nVersion, 
+            obj.nTotalInputs, 
+            obj.hashPrevoutInputs, 
+            obj.hashSequence, 
+            obj.nTotalOutputs,
+            obj.hashOutputHashes,
+            obj.nLockTime
+        );
+    }
+
+    void SetNull() {
+        nVersion = 0;
+        nTotalInputs = 0;
+        hashPrevoutInputs.SetNull();
+        hashSequence.SetNull();
+        nTotalOutputs = 0;
+        hashOutputHashes.SetNull();
+        nLockTime = 0;
+    }
+};
 
 /**
  * An outpoint - a combination of a transaction hash and an index n into its
@@ -340,7 +388,7 @@ static inline CTransactionRef MakeTransactionRef(Tx &&txIn) {
 
 /** Precompute sighash midstate to avoid quadratic hashing */
 struct PrecomputedTransactionData {
-    uint256 hashPrevouts, hashSequence, hashOutputs;
+    uint256 hashPrevouts, hashSequence, hashOutputs, hashOutputHashes;
 
     PrecomputedTransactionData() = default;
 

@@ -15,7 +15,7 @@ NOTE: Since alpine 3.12, `ninja` was replaced with `samurai`, which is not fully
 the build system, hence the need for installing it with `pip`
 
 You can do without the `db-dev`, `miniupnpc-dev`, `zeromq-dev`, and `help2man & bash` packages, then you
-just need to respectively pass `-DBUILD_BITCOIN_WALLET=OFF`, `-DENABLE_UPNP=OFF`, `-DBUILD_BITCOIN_ZMQ=OFF`,
+just need to respectively pass `-DBUILD_RADIANT_WALLET=OFF`, `-DENABLE_UPNP=OFF`, `-DBUILD_BITCOIN_ZMQ=OFF`,
 or `-DENABLE_MAN=OFF` on the `cmake` command line.
 
 If you want to build the GUI client `bitcoin-qt` Qt 5 is necessary.
@@ -31,18 +31,18 @@ the `cmake` command line.
 ## Building
 
 Once you have installed the required dependencies (see sections above), you can
-build Bitcoin Cash Node as such:
+build Radiant Node as such:
 
 First fetch the code (if you haven't done so already).
 
 ```sh
-git clone https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node.git
+git clone https://gitlab.com/radiant-node/radiant-node.git
 ```
 
 Change to the BCN directory, make `build` dir, and change to that directory
 
 ```sh
-cd bitcoin-cash-node/
+cd radiant-node/
 mkdir build
 cd build
 ```
@@ -54,12 +54,12 @@ or the node and the QT client.
 
 ```sh
 # to build just the node, no wallet functionality, choose this:
-cmake -GNinja .. -DBUILD_BITCOIN_WALLET=OFF -DBUILD_BITCOIN_QT=OFF
+cmake -GNinja .. -DBUILD_RADIANT_WALLET=OFF -DBUILD_RADIANT_QT=OFF
 ```
 
 ```sh
 # to build the node, with wallet functionality, but without GUI, choose this:
-cmake -GNinja .. -DBUILD_BITCOIN_QT=OFF
+cmake -GNinja .. -DBUILD_RADIANT_QT=OFF
 ```
 
 ```sh
@@ -73,7 +73,7 @@ Next, finish the build
 ninja
 ```
 
-You will find the `bitcoind`, `bitcoin-cli`, `bitcoin-tx` (and optionally `bitcoin-qt`)
+You will find the `radiantd`, `radiant-cli`, `radiant-tx` (and optionally `radiant-qt`)
 binaries in `/build/src/(qt)`.
 
 Optionally, run the tests
@@ -86,7 +86,7 @@ export MUSL_LOCPATH=/usr/local/share/i18n/locales/musl
 apk add --update git cmake make musl-dev gcc gettext-dev libintl
 cd /tmp && git clone https://gitlab.com/rilian-la-te/musl-locales
 cd /tmp/musl-locales && cmake . && make && make install && cd .. && rm -r musl-locales
-# Go back to bitcoin-cash-node/build directory
+# Go back to build directory
 ```
 
 ```sh

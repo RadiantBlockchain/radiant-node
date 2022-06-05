@@ -26,7 +26,7 @@ public:
      * Can be used with is().
      *
      * Numeric values differ from the upstream UniValue API.
-     * VFALSE and VTRUE are Bitcoin Cash Node extensions of the UniValue API (replacing VBOOL).
+     * VFALSE and VTRUE are Radiant Node extensions of the UniValue API (replacing VBOOL).
      */
     enum VType {
         VNULL  = 1 << 0,
@@ -42,7 +42,7 @@ public:
      * Type bitmask shorthand for VFALSE|VTRUE.
      * Can be used with is().
      *
-     * This is a Bitcoin Cash Node extension of the UniValue API.
+     * This is a Radiant Node extension of the UniValue API.
      */
     constexpr static auto MBOOL = VFALSE | VTRUE;
 
@@ -623,7 +623,7 @@ public:
      *
      * Complexity: linear in the amount of data to compare.
      *
-     * This is a Bitcoin Cash Node extension of the UniValue API.
+     * This is a Radiant Node extension of the UniValue API.
      */
     [[nodiscard]]
     bool operator==(const UniValue& other) const noexcept;
@@ -634,7 +634,7 @@ public:
      *
      * Complexity: linear in the amount of data to compare.
      *
-     * This is a Bitcoin Cash Node extension of the UniValue API.
+     * This is a Radiant Node extension of the UniValue API.
      */
     [[nodiscard]]
     bool operator!=(const UniValue& other) const noexcept { return !(*this == other); }
@@ -650,7 +650,7 @@ public:
      *
      * Complexity: constant.
      *
-     * This is a Bitcoin Cash Node extension of the UniValue API.
+     * This is a Radiant Node extension of the UniValue API.
      */
     [[nodiscard]]
     const UniValue& front() const noexcept;
@@ -666,7 +666,7 @@ public:
      *
      * Complexity: constant.
      *
-     * This is a Bitcoin Cash Node extension of the UniValue API.
+     * This is a Radiant Node extension of the UniValue API.
      */
     [[nodiscard]]
     const UniValue& back() const noexcept;
@@ -680,7 +680,7 @@ public:
      *
      * Complexity: linear in the number of elements.
      *
-     * This is a Bitcoin Cash Node extension of the UniValue API.
+     * This is a Radiant Node extension of the UniValue API.
      *
      * If you want to treat missing keys as null values, please use the [] operator instead.
      * If you want an exception thrown on missing keys, please use at() instead.
@@ -699,7 +699,7 @@ public:
      *
      * Complexity: linear in number of elements.
      *
-     * This is a Bitcoin Cash Node extension of the UniValue API.
+     * This is a Radiant Node extension of the UniValue API.
      *
      * If you don't want an exception thrown, please use locate() or the [] operator instead.
      */
@@ -717,7 +717,7 @@ public:
      *
      * Complexity: constant.
      *
-     * This is a Bitcoin Cash Node extension of the UniValue API.
+     * This is a Radiant Node extension of the UniValue API.
      *
      * If you don't want an exception thrown, please use the [] operator instead.
      */
@@ -730,7 +730,7 @@ public:
      *
      * Complexity: constant.
      *
-     * This is a Bitcoin Cash Node extension of the UniValue API.
+     * This is a Radiant Node extension of the UniValue API.
      */
     [[nodiscard]]
     constexpr bool is(int types) const noexcept { return typ & types; }
@@ -762,7 +762,7 @@ public:
      * Use 0 (default) to disable pretty formatting and use compact formatting instead.
      * Note that pretty formatting only affects arrays and objects.
      *
-     * This is a Bitcoin Cash Node extension of the UniValue API.
+     * This is a Radiant Node extension of the UniValue API.
      */
     template<typename Value>
     static std::string stringify(const Value& value, unsigned int prettyIndent = 0) {
@@ -841,7 +841,7 @@ public:
      * Complexity: constant.
      *
      * Compatible with the upstream UniValue API.
-     * Non-const overload is a Bitcoin Cash Node extension.
+     * Non-const overload is a Radiant Node extension.
      */
     const std::string& get_str() const;
     std::string& get_str();
@@ -857,7 +857,7 @@ public:
      *
      * Compatible with the upstream UniValue API,
      * but with a different return type.
-     * Non-const overload is a Bitcoin Cash Node extension.
+     * Non-const overload is a Radiant Node extension.
      */
     const Object& get_obj() const;
     Object& get_obj();
@@ -873,7 +873,7 @@ public:
      *
      * Compatible with the upstream UniValue API,
      * but with a different return type.
-     * Non-const overload is a Bitcoin Cash Node extension.
+     * Non-const overload is a Radiant Node extension.
      */
     const Array& get_array() const;
     Array& get_array();
@@ -912,7 +912,7 @@ extern const char *uvTypeName(UniValue::VType t) noexcept;
  * Returns the human-readable name of the composite JSON value type bitmask.
  * Argument must be a bitmask consisting of one or more UniValue::VType elements.
  *
- * This is a Bitcoin Cash Node extension of the UniValue API.
+ * This is a Radiant Node extension of the UniValue API.
  */
 [[nodiscard]]
 extern std::string uvTypeName(int t);

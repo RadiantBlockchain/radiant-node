@@ -9,7 +9,8 @@
 #include <primitives/transaction.h>
 #include <serialize.h>
 #include <uint256.h>
-
+#include <boost/algorithm/hex.hpp>
+#include <iostream>
 /**
  * Nodes collect new transactions into a block, hash them into a hash tree, and
  * scan through nonce values to make the block's hash satisfy proof-of-work
@@ -114,4 +115,30 @@ struct CBlockLocator {
     void SetNull() { vHave.clear(); }
 
     bool IsNull() const { return vHave.empty(); }
+};
+
+
+#define ENABLE_SHA512_256_HEADER_DEBUG false
+
+/** Calculate sha512/256 hash from block header */
+class BlockHashCalculator {
+ 
+public:
+ 
+    static uint256 CalculateBlockHashFromHeader_sha512_256(const CBlockHeader& header) {
+        std::stringstream ss;
+        ::Serialize(ss, header);
+        std::string rawByteStr = ss.str();
+        // Double sha512/256 of the blockheader
+        std::string sha512_256dHash = sha512_256(boost::algorithm::unhex(sha512_256(rawByteStr)));
+        std::string sha512_256dHashHex = boost::algorithm::unhex(sha512_256dHash);
+        std::string reversed = std::string(sha512_256dHashHex.rbegin(), sha512_256dHashHex.rend());
+        uint256 blockhash = uint256S(boost::algorithm::hex(reversed));
+        if (ENABLE_SHA512_256_HEADER_DEBUG) {
+            std::cerr << "Checking Blockheader: " << boost::algorithm::hex(rawByteStr) << std::endl; 
+            std::cerr << "Checking Blockhash Hex: " << blockhash.GetHex() << std::endl;
+        }
+        return blockhash;
+    }
+
 };

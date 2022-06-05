@@ -12,8 +12,8 @@ DUMMY_ACTIVATION_TIME = 2000000000
 
 # Warning should show up this many seconds before activation.
 OUTDATED_WARN_START = 3600 * 24 * 30  # 30 days.
-WARNING_TEXT_SOON = "Warning: This version of Bitcoin Cash Node is old and may fall out of network consensus in"
-WARNING_TEXT_EXPIRED = "Warning: This version of Bitcoin Cash Node is old and may have fallen out of network consensus 2 day(s) ago"
+WARNING_TEXT_SOON = "Warning: This version of Radiant Node is old and may fall out of network consensus in"
+WARNING_TEXT_EXPIRED = "Warning: This version of Radiant Node is old and may have fallen out of network consensus 2 day(s) ago"
 # The amount of "lead" time we give the goodNode below before it expires.
 # It is necessary to use this mechanism because the scheduler does not
 # use mocktime -- so we must actually wait for it to expire.
@@ -21,33 +21,7 @@ FUZZ_TIME = 15.0
 
 
 class WarnOnOutdatedTest(BitcoinTestFramework):
-
-    def set_test_params(self):
-        """
-        This test spins up four nodes.
-        Node #0 has NO mock time and is started FUZZ_TIME seconds before warning shall be shown.
-        Node #1 has mock time set to the exact time warning is to be shown.
-        Node #2 has mock time set to the exact time warning is to be shown,
-                but has suppressed it with "-noexpire".
-        Node #3 has mock time 2 days after tentative network upgrade.
-        """
-
-        warningTime = DUMMY_ACTIVATION_TIME - OUTDATED_WARN_START
-        afterUpgradeTime = DUMMY_ACTIVATION_TIME + 3600 * 24 * 2
-
-        common = [
-            "-upgrade9activationtime={}".format(DUMMY_ACTIVATION_TIME),
-            "-noexpirerpc"
-        ]
-
-        self.extra_args = [
-            ["-upgrade9activationtime={}".format(time.time() + OUTDATED_WARN_START + FUZZ_TIME), "-noexpirerpc"],
-            common + ["-mocktime={}".format(warningTime), ],
-            common + ["-mocktime={}".format(warningTime), "-noexpire"],
-            common + ["-mocktime={}".format(afterUpgradeTime), ],
-        ]
-        self.num_nodes = 4
-
+ 
     def run_test(self):
         goodNode = self.nodes[0]
         outdatedNode = self.nodes[1]

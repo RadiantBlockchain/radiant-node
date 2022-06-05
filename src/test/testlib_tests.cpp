@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE(check_assert_test) {
                 == CheckAssertResult::NoAssertEncountered);
 
     // check that the macro works
-    BCHN_CHECK_ASSERT(assert(!"expected message"), "expected message");
+    RADN_CHECK_ASSERT(assert(!"expected message"), "expected message");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

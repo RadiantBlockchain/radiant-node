@@ -65,7 +65,7 @@ macro(add_functional_test_check TARGET COMMENT)
   list(APPEND listDepends "bitcoind"
                           "bitcoin-cli"
                           ${CMAKE_CURRENT_BINARY_DIR}/functional/test_runner.py)
-  if(BUILD_BITCOIN_WALLET)
+  if(BUILD_RADIANT_WALLET)
       list(APPEND listDepends "bitcoin-wallet")
   endif()
   add_test_custom_target(${TARGET}
@@ -98,7 +98,7 @@ add_functional_test_check(check-functional-extended
 )
 add_dependencies(check-extended check-functional-extended)
 
-set(TEST_SUITE_NAME_UPGRADE_ACTIVATED "Bitcoin Cash Node functional tests with the next upgrade activated")
+set(TEST_SUITE_NAME_UPGRADE_ACTIVATED "Radiant Node functional tests with the next upgrade activated")
 
 add_functional_test_check(check-functional-upgrade-activated
   "Run the functional tests with the upgrade activated"
@@ -130,7 +130,7 @@ add_functional_test_check(check-functional-upgrade-activated-longeronly
 )
 
 
-if(BUILD_BITCOIN_TX)
+if(BUILD_RADIANT_TX)
   add_test_custom_target(check-bitcoin-util
     TEST_COMMAND
       "${EATMYDATA_EXECUTABLE}"

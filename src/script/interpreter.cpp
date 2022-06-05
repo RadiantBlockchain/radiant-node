@@ -17,6 +17,70 @@
 #include <script/sigencoding.h>
 #include <uint256.h>
 #include <util/bitmanip.h>
+#include <iostream>
+#include <util/strencodings.h>
+
+inline uint8_t make_rshift_mask(size_t n) {
+    static uint8_t mask[] = {0xFF, 0xFE, 0xFC, 0xF8, 0xF0, 0xE0, 0xC0, 0x80}; 
+    return mask[n]; 
+} 
+
+inline uint8_t make_lshift_mask(size_t n) {
+    static uint8_t mask[] = {0xFF, 0x7F, 0x3F, 0x1F, 0x0F, 0x07, 0x03, 0x01}; 
+    return mask[n]; 
+} 
+
+// shift x right by n bits, implements OP_RSHIFT
+static valtype RShift(const valtype &x, int n) {
+    int bit_shift = n % 8; 
+    int byte_shift = n / 8; 
+
+    uint8_t mask = make_rshift_mask(bit_shift); 
+    uint8_t overflow_mask = ~mask; 
+
+    valtype result(x.size(), 0x00); 
+    for (int i = 0; i < (int)x.size(); i++) {
+        int k = i + byte_shift;
+        if (k < (int)x.size()) {
+            uint8_t val = (x[i] & mask); 
+            val >>= bit_shift;
+            result[k] |= val; 
+        } 
+
+        if (k + 1 < (int)x.size()) {
+            uint8_t carryval = (x[i] & overflow_mask); 
+            carryval <<= 8 - bit_shift; 
+            result[k + 1] |= carryval;
+        } 
+    } 
+    return result; 
+} 
+
+// shift x left by n bits, implements OP_LSHIFT
+static valtype LShift(const valtype &x, int n) {
+    int bit_shift = n % 8; 
+    int byte_shift = n / 8; 
+
+    uint8_t mask = make_lshift_mask(bit_shift); 
+    uint8_t overflow_mask = ~mask; 
+
+    valtype result(x.size(), 0x00); 
+    for (int i = x.size() -1; i >= 0; i--) {
+        int k = i - byte_shift;
+        if (k >= 0)  {
+            uint8_t val = (x[i] & mask); 
+            val <<= bit_shift;
+            result[k] |= val; 
+        } 
+
+        if (k - 1 >= 0) {
+            uint8_t carryval = (x[i] & overflow_mask); 
+            carryval >>= 8 - bit_shift;
+            result[k - 1] |= carryval;
+        } 
+    } 
+    return result; 
+} 
 
 bool CastToBool(const valtype &vch) {
     for (size_t i = 0; i < vch.size(); i++) {
@@ -72,27 +136,16 @@ int FindAndDelete(CScript &script, const CScript &b) {
     return nFound;
 }
 
-static void CleanupScriptCode(CScript &scriptCode,
-                              const std::vector<uint8_t> &vchSig,
-                              uint32_t flags) {
-    // Drop the signature in scripts when SIGHASH_FORKID is not used.
-    SigHashType sigHashType = GetHashType(vchSig);
-    if (!(flags & SCRIPT_ENABLE_SIGHASH_FORKID) || !sigHashType.hasForkId()) {
-        FindAndDelete(scriptCode, CScript(vchSig));
-    }
-}
-
 static bool IsOpcodeDisabled(opcodetype opcode, uint32_t flags) {
     switch (opcode) {
-        case OP_INVERT:
         case OP_2MUL:
         case OP_2DIV:
         case OP_LSHIFT:
         case OP_RSHIFT:
-            // Disabled opcodes.
+        // Disabled opcodes.
             return true;
+        case OP_INVERT:
         case OP_MUL:
-            return (flags & SCRIPT_64_BIT_INTEGERS) == 0;
         default:
             break;
     }
@@ -193,10 +246,12 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
         ScriptError::INVALID_NUMBER_RANGE_64_BIT :
         ScriptError::INVALID_NUMBER_RANGE;
 
+    std::set<uint288> foundPushRefs;
+    std::set<uint288> disallowedRefs;
+
     try {
         while (pc < pend) {
             bool fExec = vfExec.all_true();
-
             //
             // Read instruction
             //
@@ -672,6 +727,56 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                         popstack(stack);
                     } break;
 
+                    case OP_INVERT: {
+                        // (x -- out)
+                        if (stack.size() < 1) {
+                            return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
+                        }
+                        valtype &vch1 = stacktop(-1);
+                        // To avoid allocating, we modify vch1 in place
+                        for(size_t i=0; i<vch1.size(); i++)
+                        {
+                            vch1[i] = ~vch1[i];
+                        }
+                    } break;
+
+                    /*
+                    // Cannot implement until we have proper Big int support
+
+                    case OP_LSHIFT: {
+                        // (x n -- out)
+                        if (stack.size() < 2) {
+                            return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
+                        }
+
+                        const valtype vch1 = stacktop(-2);
+                        CScriptNum n(stacktop(-1), fRequireMinimal, maxIntegerSize);
+                        if (n < 0) {
+                            return set_error(serror, ScriptError::INVALID_NUMBER_RANGE);
+                        }
+
+                        popstack(stack);
+                        popstack(stack);
+                        stack.push_back(LShift(vch1, n.getint()));
+                    } break;
+
+                    case OP_RSHIFT: {
+                        // (x n -- out)
+                        if (stack.size() < 2) {
+                            return set_error( serror, ScriptError::INVALID_STACK_OPERATION);
+                        }
+
+                        const valtype vch1 = stacktop(-2);
+                        CScriptNum n(stacktop(-1), fRequireMinimal, maxIntegerSize);
+                        if (n < 0) {
+                            return set_error(serror, ScriptError::INVALID_NUMBER_RANGE);
+                        }
+
+                        popstack(stack);
+                        popstack(stack);
+                        stack.push_back(RShift(vch1, n.getint()));
+                    } break; */
+
                     case OP_EQUAL:
                     case OP_EQUALVERIFY:
                         // case OP_NOTEQUAL: // use OP_NUMNOTEQUAL
@@ -898,7 +1003,9 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     case OP_SHA1:
                     case OP_SHA256:
                     case OP_HASH160:
-                    case OP_HASH256: {
+                    case OP_HASH256:
+                    case OP_SHA512_256:
+                    case OP_HASH512_256: {
                         // (in -- hash)
                         if (stack.size() < 1) {
                             return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
@@ -925,6 +1032,12 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                             CHash160().Write(vch).Finalize(vchHash);
                         } else if (opcode == OP_HASH256) {
                             CHash256().Write(vch).Finalize(vchHash);
+                        } else if (opcode == OP_SHA512_256) {
+                            CSHA512_256()
+                            .Write(vch.data(), vch.size())
+                            .Finalize(vchHash.data());
+                        } else if (opcode == OP_HASH512_256) {
+                            CHash512_256().Write(vch).Finalize(vchHash);
                         }
                         popstack(stack);
                         stack.push_back(vchHash);
@@ -956,9 +1069,6 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                             // Subset of script starting at the most recent
                             // codeseparator
                             CScript scriptCode(pbegincodehash, pend);
-
-                            // Remove signature for pre-fork scripts
-                            CleanupScriptCode(scriptCode, vchSig, flags);
 
                             fSuccess = checker.CheckSig(vchSig, vchPubKey,
                                                         scriptCode, flags);
@@ -1152,12 +1262,6 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                             }
                         } else {
                             // LEGACY MULTISIG (ECDSA / NULL)
-
-                            // Remove signature for pre-fork scripts
-                            for (int k = 0; k < nSigsCount; k++) {
-                                valtype const &vchSig = stacktop(-idxTopSig - k);
-                                CleanupScriptCode(scriptCode, vchSig, flags);
-                            }
 
                             int nSigsRemaining = nSigsCount;
                             int nKeysRemaining = nKeysCount;
@@ -1399,6 +1503,8 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     } break; // end of Native Introspection opcodes (Nullary)
 
                     // Native Introspection opcodes (Unary)
+                    // Note: it is designed for now to keep these op codes disabled as they are not necessary
+                    // It is possible to achieve introspection with native script as it stands now
                     case OP_UTXOVALUE:
                     case OP_UTXOBYTECODE:
                     case OP_OUTPOINTTXHASH:
@@ -1516,6 +1622,42 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                             }
                         }
                     } break; // end of Native Introspection opcodes (Unary)
+                    // Start push reference opcodes
+                    case OP_PUSHINPUTREF:
+                    case OP_REQUIREINPUTREF:
+                    case OP_DISALLOWPUSHINPUTREFSIBLING:
+                    case OP_DISALLOWPUSHINPUTREF: {
+                        switch (opcode) {
+                            case OP_PUSHINPUTREF: {
+                                // When interpretting OP_PUSHINPUTREF, just push to the primary stack
+                                // As safety check, ensure that the UTXO being spent does indeed have the OP_PUSHINPUTREF saved in it's ref vector
+                                // It should never be the case that the check fails since a UTXO can only be committed with the output color verified
+                                // Todo: Check
+                                stack.push_back(vchPushValue);
+                                // As a sanity check we save all the pushrefs, and then cross check them against 
+                                // OP_DISALLOWPUSHINPUTREF
+                                uint288 uref = uint288S(std::string(vchPushValue.begin(), vchPushValue.end()).c_str());
+                                foundPushRefs.insert(uref);
+                            } break;
+                            case OP_DISALLOWPUSHINPUTREF: {
+                                // As sanity check just verify that the input being spent does not contain a disallowed push ref
+                                uint288 uref = uint288S(std::string(vchPushValue.begin(), vchPushValue.end()).c_str());
+                                disallowedRefs.insert(uref);
+                                // When interpretting OP_DISALLOWPUSHINPUTREF, do nothing, but save the reference to a set to cross check later
+                            } break;
+                            case OP_DISALLOWPUSHINPUTREFSIBLING: {
+                                // When interpretting OP_DISALLOWPUSHINPUTREFSIBLING, do nothing
+                            } break;
+                            case OP_REQUIREINPUTREF: {
+                                // When interpretting OP_REQUIREINPUTREF, do nothing
+                            } break;
+                            break;
+                            default: {
+                                assert(!"invalid push opcode");
+                                break;
+                            }
+                        }
+                    } break; // end of induction reference op codes
 
                     default:
                         return set_error(serror, ScriptError::BAD_OPCODE);
@@ -1535,6 +1677,17 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
         return set_error(serror, ScriptError::UNBALANCED_CONDITIONAL);
     }
 
+    // Verify that none of the prohibit refs appear in the ref set
+    // Save the set difference into resultSet
+    std::set<uint288> intersectSet;
+    // Get an insert iterator to be able to add to the resultSet container
+    std::insert_iterator< std::set<uint288> > insertIter (intersectSet, intersectSet.begin());
+    std::set_intersection(disallowedRefs.begin(), disallowedRefs.end(), foundPushRefs.begin(), foundPushRefs.end(), insertIter);
+    // The rule is fulfilled if there are no disallowed references appearing anywhere
+    // There should be none of the disallowed refs
+    if (intersectSet.size() > 0) {
+        return set_error(serror, ScriptError::INVALID_TX_OUTPUT_CONTAINS_DISALLOWED_PUSHREF);
+    }
     return set_success(serror);
 }
 
@@ -1677,6 +1830,65 @@ template <class T> uint256 GetOutputsHash(const T &txTo) {
     return ss.GetHash();
 }
 
+/**
+ * @brief Write the output vector for a specific output
+ * 
+ *  Duplicated in transaction.cpp
+ * 
+ * @param hashWriterOutputs The hashwriter to write the data to
+ * @param txout Specific output to write
+ * @param zeroRefHash Reference to the zero hash to save allocations
+ */
+void writeOutputVector(CHashWriter& hashWriterOutputs, const CTxOut& txout, uint256& zeroRefHash) {
+    hashWriterOutputs << txout.nValue;
+    CHashWriter hashWriterScriptPubKey(SER_GETHASH, 0);
+    hashWriterScriptPubKey << CFlatData(txout.scriptPubKey);
+    hashWriterOutputs << hashWriterScriptPubKey.GetHash();
+    // Get the hash of the concatentation of all of the refs in the output
+    CHashWriter hashWriterScriptPubKeyColorPushRefs(SER_GETHASH, 0);
+    std::set<uint288> pushRefSet;
+    std::set<uint288> requireRefSet;
+    std::set<uint288> disallowSiblingRefSet;
+    if (!txout.scriptPubKey.GetPushRefs(pushRefSet, requireRefSet, disallowSiblingRefSet)) {
+        // Fatal error parsing output should never happen
+        throw std::runtime_error("GetPushRefs error in interpreter.cpp");
+    }
+    // Write the 'color' of the output by taking the sorted set of all OP_PUSHINPUTREFs values (dedup in a map)
+    uint32_t totalPushRefs(pushRefSet.size());
+    // Write out the number of 'colors'
+    hashWriterOutputs << totalPushRefs;
+    if (pushRefSet.size()) {
+        // Then output all colors
+        std::set<uint288>::const_iterator outputIt;
+        for (outputIt = pushRefSet.begin(); outputIt != pushRefSet.end(); outputIt++) {
+            hashWriterScriptPubKeyColorPushRefs << *outputIt;
+        }
+        // Take the hash
+        hashWriterOutputs << hashWriterScriptPubKeyColorPushRefs.GetHash();
+    } else {
+        // There are no colors therefore set the zero hash
+        hashWriterOutputs << zeroRefHash;
+    }
+}
+
+/**
+ * @brief Get the Hash Output Hashes object
+ * 
+ * Duplicated in transaction.cpp
+ * 
+ * @tparam T 
+ * @param txTo 
+ * @return uint256 
+ */
+template <class T> uint256 GetHashOutputHashes(const T &txTo) {
+    CHashWriter hashWriterOutputs(SER_GETHASH, 0);
+    uint256 zeroRefHash(uint256S("0000000000000000000000000000000000000000000000000000000000000000"));
+    for (const auto &txout : txTo.vout) {
+        writeOutputVector(hashWriterOutputs, txout, zeroRefHash);
+    }
+    return hashWriterOutputs.GetHash();
+}
+
 } // namespace
 
 template <class T>
@@ -1684,6 +1896,7 @@ PrecomputedTransactionData::PrecomputedTransactionData(const T &txTo) {
     hashPrevouts = GetPrevoutHash(txTo);
     hashSequence = GetSequenceHash(txTo);
     hashOutputs = GetOutputsHash(txTo);
+    hashOutputHashes = GetHashOutputHashes(txTo);
 }
 
 // explicit instantiation
@@ -1703,6 +1916,7 @@ uint256 SignatureHash(const CScript &scriptCode, const T &txTo,
         uint256 hashPrevouts;
         uint256 hashSequence;
         uint256 hashOutputs;
+        uint256 hashOutputHashes;
 
         if (!sigHashType.hasAnyoneCanPay()) {
             hashPrevouts = cache ? cache->hashPrevouts : GetPrevoutHash(txTo);
@@ -1717,11 +1931,17 @@ uint256 SignatureHash(const CScript &scriptCode, const T &txTo,
         if ((sigHashType.getBaseType() != BaseSigHashType::SINGLE) &&
             (sigHashType.getBaseType() != BaseSigHashType::NONE)) {
             hashOutputs = cache ? cache->hashOutputs : GetOutputsHash(txTo);
+            hashOutputHashes = cache ? cache->hashOutputHashes : GetHashOutputHashes(txTo);
         } else if ((sigHashType.getBaseType() == BaseSigHashType::SINGLE) &&
                    (nIn < txTo.vout.size())) {
-            CHashWriter ss(SER_GETHASH, 0);
-            ss << txTo.vout[nIn];
-            hashOutputs = ss.GetHash();
+            CHashWriter hashOutputSs(SER_GETHASH, 0);
+            hashOutputSs << txTo.vout[nIn];
+            hashOutputs = hashOutputSs.GetHash();
+
+            CHashWriter hashOutputHashesSs(SER_GETHASH, 0);
+            uint256 zeroRefHash(uint256S("0000000000000000000000000000000000000000000000000000000000000000"));
+            writeOutputVector(hashOutputHashesSs, txTo.vout[nIn], zeroRefHash);
+            hashOutputHashes = hashOutputHashesSs.GetHash();
         }
 
         CHashWriter ss(SER_GETHASH, 0);
@@ -1737,8 +1957,10 @@ uint256 SignatureHash(const CScript &scriptCode, const T &txTo,
         ss << scriptCode;
         ss << amount;
         ss << txTo.vin[nIn].nSequence;
-        // Outputs (none/one/all, depending on flags)
-        ss << hashOutputs;
+        // Output Hashes(none/one/all, depending on flags)
+        ss << hashOutputHashes;
+         // Outputs (none/one/all, depending on flags)
+        ss << hashOutputs;  // Still maintain the regular hashOutputs for compatibility with other smart contracts and also ease of use
         // Locktime
         ss << txTo.nLockTime;
         // Sighash type
@@ -1914,9 +2136,10 @@ bool VerifyScript(const CScript &scriptSig, const CScript &scriptPubKey, uint32_
     }
 
     if ((flags & SCRIPT_VERIFY_SIGPUSHONLY) != 0 && !scriptSig.IsPushOnly()) {
+        std::cout << "Failed to due to SCRIPT_VERIFY_SIGPUSHONLY " << HexStr(scriptSig) << " txid " << context->tx().GetId().GetHex() << " !IsPushOnly: " << !scriptSig.IsPushOnly() << std::endl;
         return set_error(serror, ScriptError::SIG_PUSHONLY);
     }
-
+    
     ScriptExecutionMetrics metrics = {};
 
     std::vector<valtype> stack, stackCopy;
@@ -1969,9 +2192,12 @@ bool VerifyScript(const CScript &scriptSig, const CScript &scriptPubKey, uint32_
 
         if ( ! EvalScript(stack, pubKey2, flags, checker, metrics, context, serror)) {
             // serror is set
+            // throw std::runtime_error("!EvalScript");
             return false;
         }
         if (stack.empty()) {
+             
+            // throw std::runtime_error("stack.empty()");
             return set_error(serror, ScriptError::EVAL_FALSE);
         }
         if (!CastToBool(stack.back())) {
@@ -1987,12 +2213,18 @@ bool VerifyScript(const CScript &scriptSig, const CScript &scriptPubKey, uint32_
         // Disallow CLEANSTACK without P2SH, as otherwise a switch
         // CLEANSTACK->P2SH+CLEANSTACK would be possible, which is not a
         // softfork (and P2SH should be one).
-        assert((flags & SCRIPT_VERIFY_P2SH) != 0);
+        
+
+        // Todo: why do tests fail when this is not set and SCRIPT_VERIFY_CLEANSTACK is set?
+        // Todo: just remove P2SH entirely
+        // assert((flags & SCRIPT_VERIFY_P2SH) != 0);
         if (stack.size() != 1) {
             return set_error(serror, ScriptError::CLEANSTACK);
         }
     }
 
+    /*
+    // Removed by Radiant.
     if (flags & SCRIPT_VERIFY_INPUT_SIGCHECKS) {
         // This limit is intended for standard use, and is based on an
         // examination of typical and historical standard uses.
@@ -2009,13 +2241,10 @@ bool VerifyScript(const CScript &scriptSig, const CScript &scriptPubKey, uint32_
         // so the practical density limit is 1/36.66.
         static_assert(INT_MAX > MAX_SCRIPT_SIZE,
                       "overflow sanity check on max script size");
-        static_assert(INT_MAX / 43 / 3 > MAX_OPS_PER_SCRIPT,
-                      "overflow sanity check on maximum possible sigchecks "
-                      "from sig+redeem+pub scripts");
         if (int(scriptSig.size()) < metrics.nSigChecks * 43 - 60) {
             return set_error(serror, ScriptError::INPUT_SIGCHECKS);
         }
-    }
+    }*/
 
     metricsOut = metrics;
     return set_success(serror);

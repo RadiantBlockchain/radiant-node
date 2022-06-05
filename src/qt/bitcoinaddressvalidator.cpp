@@ -139,10 +139,6 @@ bool BitcoinAddressCheckValidator::GetLegacyAddressUseAuth(const CTxDestination 
     QSettings settings;
     LegacyAddressType addressType = LegacyAddressType::P2PKH;
     bool allowed = settings.value("fAllowLegacyP2PKH").toBool();
-    if (destination.which() == 2) {
-        addressType = LegacyAddressType::P2SH;
-        allowed = settings.value("fAllowLegacyP2SH").toBool();
-    }
     if (allowed) {
         // Give warning and allow the user to proceed
         LegacyAddressWarnDialog dlg(parentWidget());

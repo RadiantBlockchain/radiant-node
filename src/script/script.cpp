@@ -8,8 +8,9 @@
 #include <script/script_flags.h>
 #include <tinyformat.h>
 #include <util/strencodings.h>
-
+#include <iostream>
 #include <algorithm>
+
 
 const char *GetOpName(opcodetype opcode) {
     switch (opcode) {
@@ -287,10 +288,10 @@ const char *GetOpName(opcodetype opcode) {
             return "OP_OUTPUTVALUE";
         case OP_OUTPUTBYTECODE:
             return "OP_OUTPUTBYTECODE";
-        case OP_RESERVED3:
-            return "OP_RESERVED3";
-        case OP_RESERVED4:
-            return "OP_RESERVED4";
+        case OP_SHA512_256:
+            return "OP_SHA512_256";
+        case OP_HASH512_256:
+            return "OP_HASH512_256";
 
         default:
             return "OP_UNKNOWN";
@@ -478,6 +479,67 @@ bool CScript::IsPushOnly(const_iterator pc) const {
     return true;
 }
 
+bool CScript::GetPushRefs(
+    const_iterator pc, 
+    std::set<uint288> &pushRefSet,
+    std::set<uint288> &requireRefSet,
+    std::set<uint288> &disallowedSiblingsRefSet
+) const {
+
+    std::set<uint288> foundDisallowedRefs;
+    std::set<uint288> foundDisallowedSiblingRefs;
+    std::set<uint288> foundPushRefs;
+    std::set<uint288> foundRequiredRefs;
+
+    while (pc < end()) {
+        opcodetype opcode;
+        std::vector<uint8_t> ret;
+        if (!GetOp(pc, opcode, ret)) {
+            return false;
+        }
+        if (opcode == OP_PUSHINPUTREF ||
+            opcode == OP_REQUIREINPUTREF ||
+            opcode == OP_DISALLOWPUSHINPUTREF ||
+            opcode == OP_DISALLOWPUSHINPUTREFSIBLING) {
+            std::vector<unsigned char> refId(ret.cbegin(), ret.cend());
+            uint288 refIdUint288 = uint288(refId);
+            if (opcode == OP_PUSHINPUTREF) {
+                foundPushRefs.insert(refIdUint288);
+            } else if (opcode == OP_REQUIREINPUTREF) {
+                foundRequiredRefs.insert(refIdUint288);
+            } else if (opcode == OP_DISALLOWPUSHINPUTREF) {
+                foundDisallowedRefs.insert(refIdUint288);
+            } else if (opcode == OP_DISALLOWPUSHINPUTREFSIBLING) {
+                foundDisallowedSiblingRefs.insert(refIdUint288);
+            } 
+        }
+    }
+    // Verify that none of the prohibit refs appear in the ref set
+    // Save the set difference into resultSet
+    std::set<uint288> setOfDisallowedRefs;
+    std::insert_iterator< std::set<uint288> > insertIter(setOfDisallowedRefs, setOfDisallowedRefs.begin());
+    std::set_intersection(foundDisallowedRefs.begin(), foundDisallowedRefs.end(), foundPushRefs.begin(), foundPushRefs.end(), insertIter);
+    // The rule is fulfilled if there are no prohibited references appearing anywhere
+    // There should be none of the prohibit refs
+    if (setOfDisallowedRefs.size() > 0) {
+        return false;
+    }
+    // Merge in the found refs now that they are okay
+    pushRefSet.insert(foundPushRefs.begin(), foundPushRefs.end());
+    requireRefSet.insert(foundRequiredRefs.begin(), foundRequiredRefs.end());
+    disallowedSiblingsRefSet.insert(foundDisallowedSiblingRefs.begin(), foundDisallowedSiblingRefs.end());
+    return true;
+}
+
+bool CScript::GetPushRefs(
+    std::set<uint288> &pushRefSet,
+    std::set<uint288> &requireRefSet,
+    std::set<uint288> &disallowedSiblingsRefSet
+) const {
+    std::string str(begin(), end());
+    return this->GetPushRefs(begin(), pushRefSet, requireRefSet, disallowedSiblingsRefSet);
+}
+
 bool CScript::IsPushOnly() const {
     return this->IsPushOnly(begin());
 }
@@ -530,8 +592,19 @@ bool GetScriptOp(CScriptBase::const_iterator &pc,
             pvchRet->assign(pc, pc + nSize);
         }
         pc += nSize;
+    } else if (opcode == OP_PUSHINPUTREF || opcode == OP_REQUIREINPUTREF || opcode == OP_DISALLOWPUSHINPUTREF || opcode == OP_DISALLOWPUSHINPUTREFSIBLING ) {
+        // The program counter is incremented for the payload 36 byte arg
+        if (end - pc < 36) {
+            return false;
+        }
+        if (end - pc < 0 || uint32_t(end - pc) < 36) {
+            return false;
+        }
+        if (pvchRet) {
+            pvchRet->assign(pc, pc + 36);
+        }
+        pc += 36;
     }
-
     opcodeRet = static_cast<opcodetype>(opcode);
     return true;
 }

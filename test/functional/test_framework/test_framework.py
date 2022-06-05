@@ -336,9 +336,6 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
                 use_cli=self.options.usecli,
                 emulator=self.options.emulator,
             ))
-            if self.options.upgrade8activation:
-                self.nodes[i].extend_default_args(
-                    ["-upgrade8activationtime={}".format(TIMESTAMP_IN_THE_PAST)])
             if len(self.options.extra_bitcoind_args):
                 self.nodes[i].extend_default_args(
                     self.options.extra_bitcoind_args.split(","))
@@ -554,9 +551,6 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
                 if i > 0:
                     self.nodes[i].extend_default_args(
                         ["-connect=127.0.0.1:" + str(p2p_port(0))])
-                if self.options.upgrade8activation:
-                    self.nodes[i].extend_default_args(
-                        ["-upgrade8activationtime={}".format(TIMESTAMP_IN_THE_PAST)])
                 self.start_node(i)
 
             # Wait for RPC connections to be ready

@@ -1,10 +1,10 @@
 # Package options
 set(CPACK_PACKAGE_VENDOR "${COPYRIGHT_HOLDERS_FINAL}")
-set(CPACK_PACKAGE_DESCRIPTION "Bitcoin Cash Node is a Bitcoin Cash full node implementation.")
+set(CPACK_PACKAGE_DESCRIPTION "Radiant Node is a Radiant full node implementation.")
 set(CPACK_PACKAGE_HOMEPAGE_URL "${PROJECT_HOMEPAGE_URL}")
-set(CPACK_PACKAGE_CONTACT "info@bitcoincashnode.org")
+set(CPACK_PACKAGE_CONTACT "info@radiantblockchain.org")
 
-set(CPACK_PACKAGE_INSTALL_DIRECTORY "Bitcoin-Cash-Node")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "radiant-node")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/COPYING")
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_SOURCE_DIR}/doc/README_windows.txt")
 
@@ -57,7 +57,7 @@ macro(add_start_menu_link LINK_NAME EXE PARAMETERS ICON_EXE ICON_INDEX)
 	)
 endmacro()
 
-set(CPACK_NSIS_MENU_LINKS "${CMAKE_INSTALL_BINDIR}/${_nsis_bitcoin_qt}" "Bitcoin Cash Node")
+set(CPACK_NSIS_MENU_LINKS "${CMAKE_INSTALL_BINDIR}/${_nsis_bitcoin_qt}" "Radiant Node")
 add_start_menu_link("${PACKAGE_NAME} (testnet)"
 	"${_nsis_bitcoin_qt}"
 	"-testnet"

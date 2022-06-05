@@ -71,13 +71,13 @@ pkg install help2man
 If not installed, manpage generation should be disabled by passing `-DENABLE_MAN=OFF`
 to `cmake`.
 
-## Building Bitcoin Cash Node
+## Building Radiant Node
 
 Download the source code:
 
 ```bash
-git clone https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node.git
-cd bitcoin-cash-node/
+git clone https://gitlab.com/radiant-node/radiant-node.git
+cd radiant-node/
 ```
 
 To build with wallet:
@@ -85,7 +85,7 @@ To build with wallet:
 ```bash
 mkdir build
 cd build
-cmake -GNinja -DBUILD_BITCOIN_QT=OFF ..
+cmake -GNinja -DBUILD_RADIANT_QT=OFF ..
 ninja
 ninja check # recommended
 ```
@@ -95,7 +95,7 @@ To build without wallet:
 ```bash
 mkdir build
 cd build
-cmake -GNinja -DBUILD_BITCOIN_QT=OFF -DBUILD_BITCOIN_WALLET=OFF ..
+cmake -GNinja -DBUILD_RADIANT_QT=OFF -DBUILD_RADIANT_WALLET=OFF ..
 ninja
 ninja check # recommended
 ```

@@ -35,18 +35,18 @@ on the cmake command line.
 ## Building
 
 Once you have installed the required dependencies (see sections above), you can
-build Bitcoin Cash Node as such:
+build Radiant Node as such:
 
 First fetch the code (if you haven't done so already).
 
 ```bash
-git clone https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node.git
+git clone https://gitlab.com/radiant-node/radiant-node.git
 ```
 
 Change to the BCN directory, make `build` dir, and change to that directory
 
 ```bash
-cd bitcoin-cash-node/
+cd radiant-node/
 mkdir build
 cd build
 ```
@@ -58,12 +58,12 @@ support, or the node and the QT client.
 
 ```bash
 # to build just the node, no wallet functionality, choose this:
-cmake -GNinja .. -DBUILD_BITCOIN_WALLET=OFF -DBUILD_BITCOIN_QT=OFF
+cmake -GNinja .. -DBUILD_RADIANT_WALLET=OFF -DBUILD_RADIANT_QT=OFF
 ```
 
 ```bash
 # to build the node, with wallet functionality, but without GUI, choose this:
-cmake -GNinja .. -DBUILD_BITCOIN_QT=OFF
+cmake -GNinja .. -DBUILD_RADIANT_QT=OFF
 ```
 
 ```bash

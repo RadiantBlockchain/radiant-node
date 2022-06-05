@@ -7,8 +7,7 @@
 #include <QDialog>
 
 enum LegacyAddressType {
-    P2PKH,
-    P2SH
+    P2PKH
 };
 
 namespace Ui {

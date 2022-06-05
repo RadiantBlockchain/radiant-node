@@ -18,21 +18,25 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <uint256.h>
+
+// Maximum number of bytes pushable to the stack legacy 
+static constexpr unsigned int MAX_SCRIPT_ELEMENT_SIZE_LEGACY = 520;
 
 // Maximum number of bytes pushable to the stack
-static constexpr unsigned int MAX_SCRIPT_ELEMENT_SIZE = 520;
+static constexpr unsigned int MAX_SCRIPT_ELEMENT_SIZE = 2000000;
 
 // Maximum number of non-push operations per script
-static const int MAX_OPS_PER_SCRIPT = 201;
+static const int MAX_OPS_PER_SCRIPT = 2000000;
 
 // Maximum number of public keys per multisig
 static const int MAX_PUBKEYS_PER_MULTISIG = 20;
 
 // Maximum script length in bytes
-static const int MAX_SCRIPT_SIZE = 10000;
+static const int MAX_SCRIPT_SIZE = 2000000;
 
 // Maximum number of values on script interpreter stack
-static const int MAX_STACK_SIZE = 1000;
+static const int MAX_STACK_SIZE = 2000000;
 
 // Threshold for nLockTime: below this value it is interpreted as block number,
 // otherwise as UNIX timestamp. Thresold is Tue Nov 5 00:53:20 1985 UTC
@@ -191,6 +195,8 @@ enum opcodetype {
     // 0xbf,
 
     // Native Introspection opcodes
+    // These are disabled in Radiant since we do not need them
+    // However they can be enabled if required
     OP_INPUTINDEX = 0xc0,
     OP_ACTIVEBYTECODE = 0xc1,
     OP_TXVERSION = 0xc2,
@@ -206,9 +212,21 @@ enum opcodetype {
     OP_OUTPUTVALUE = 0xcc,
     OP_OUTPUTBYTECODE = 0xcd,
 
-    OP_RESERVED3 = 0xce,
-    OP_RESERVED4 = 0xcf,
+    // Radiant specific OP codes
+    // SHA 512/256 functions
+    OP_SHA512_256 = 0xce,    
+    OP_HASH512_256 = 0xcf,
 
+    // OP_PUSHINPUTREF is a stack push operation that can only succeed if at least one of the inputs
+    // has the same outpoint (36 bytes) as being indicated with the push, OR:
+    // at least one of the inputs' output script already contains OP_PUSHINPUTREF of the indicated outpoint.
+    OP_PUSHINPUTREF = 0xd0,
+    // OP_REQUIREINPUTREF requires the same rules as OP_PUSHINPUTREF, but does not carry on the reference to the output it appears
+    OP_REQUIREINPUTREF = 0xd1,
+    // OP_DISALLOWPUSHINPUTREF prevents a specific reference from being used anywhere in the output
+    OP_DISALLOWPUSHINPUTREF = 0xd2,
+    // OP_DISALLOWPUSHINPUTREFSIBLING prevents a specific reference from being used anywhere in another output
+    OP_DISALLOWPUSHINPUTREFSIBLING = 0xd3,
     // The first op_code value after all defined opcodes
     FIRST_UNDEFINED_OP_VALUE,
 
@@ -778,8 +796,8 @@ public:
      * entering the UTXO set.
      */
     bool IsUnspendable() const {
-        return (size() > 0 && *begin() == OP_RETURN) ||
-               (size() > MAX_SCRIPT_SIZE);
+        // We currently only detect OP_FALSE OP_RETURN as provably unspendable.
+        return  (size() > 1 && *begin() == OP_FALSE && *(begin() + 1) == OP_RETURN);
     }
 
     void clear() {
@@ -787,6 +805,19 @@ public:
         CScriptBase::clear();
         shrink_to_fit();
     }
+
+    bool GetPushRefs(
+        const_iterator pc, 
+        std::set<uint288> &pushRefs,
+        std::set<uint288> &requireRefs,
+        std::set<uint288> &disallowedSiblingsRefSet
+    ) const;
+    
+    bool GetPushRefs(
+        std::set<uint288> &pushRefs,
+        std::set<uint288> &requireRefs,
+        std::set<uint288> &disallowedSiblingsRefSet
+    ) const;
 };
 
 class CReserveScript {

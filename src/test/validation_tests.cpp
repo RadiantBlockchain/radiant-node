@@ -27,7 +27,7 @@ BOOST_FIXTURE_TEST_SUITE(validation_tests, TestingSetup)
 
 static void TestBlockSubsidyHalvings(const Consensus::Params &consensusParams) {
     int maxHalvings = 64;
-    Amount nInitialSubsidy = 50 * COIN;
+    Amount nInitialSubsidy = 50000 * COIN;
 
     // for height == 0
     Amount nPreviousSubsidy = 2 * nInitialSubsidy;
@@ -66,11 +66,11 @@ BOOST_AUTO_TEST_CASE(subsidy_limit_test) {
     Amount nSum = Amount::zero();
     for (int nHeight = 0; nHeight < 14000000; nHeight += 1000) {
         Amount nSubsidy = GetBlockSubsidy(nHeight, chainParams->GetConsensus());
-        BOOST_CHECK(nSubsidy <= 50 * COIN);
+        BOOST_CHECK(nSubsidy <= 50000 * COIN);
         nSum += 1000 * nSubsidy;
         BOOST_CHECK(MoneyRange(nSum));
     }
-    BOOST_CHECK_EQUAL(nSum, int64_t(2099999997690000LL) * SATOSHI);
+    BOOST_CHECK_EQUAL(nSum, int64_t(2099999999997060000LL) * SATOSHI);
 }
 
 static CBlock makeLargeDummyBlock(const size_t num_tx) {
@@ -111,11 +111,11 @@ BOOST_AUTO_TEST_CASE(validation_load_external_block_file) {
     const auto &empty_tx = CTransaction::null;
     size_t empty_tx_size = GetSerializeSize(empty_tx, CLIENT_VERSION);
 
-    size_t num_tx = (10 * MAX_TX_SIZE) / empty_tx_size;
+    size_t num_tx = (10 * MAX_TX_SIZE_CONSENSUS_LEGACY) / empty_tx_size;
 
     CBlock block = makeLargeDummyBlock(num_tx);
 
-    BOOST_CHECK(GetSerializeSize(block, CLIENT_VERSION) > 2 * MAX_TX_SIZE);
+    BOOST_CHECK(GetSerializeSize(block, CLIENT_VERSION) > 2 * MAX_TX_SIZE_CONSENSUS_LEGACY);
 
     unsigned int size = GetSerializeSize(block, CLIENT_VERSION);
     {

@@ -173,11 +173,11 @@ BOOST_AUTO_TEST_CASE(bitwise_opcodes_test) {
     RunTestForAllBitwiseOpcodes({}, {}, {}, {}, {});
 
     // Run all variations of zeros and ones.
-    valtype allzeros(MAX_SCRIPT_ELEMENT_SIZE, 0);
-    valtype allones(MAX_SCRIPT_ELEMENT_SIZE, 0xff);
+    valtype allzeros(MAX_SCRIPT_ELEMENT_SIZE_LEGACY, 0);
+    valtype allones(MAX_SCRIPT_ELEMENT_SIZE_LEGACY, 0xff);
 
-    BOOST_CHECK_EQUAL(allzeros.size(), MAX_SCRIPT_ELEMENT_SIZE);
-    BOOST_CHECK_EQUAL(allones.size(), MAX_SCRIPT_ELEMENT_SIZE);
+    BOOST_CHECK_EQUAL(allzeros.size(), MAX_SCRIPT_ELEMENT_SIZE_LEGACY);
+    BOOST_CHECK_EQUAL(allones.size(), MAX_SCRIPT_ELEMENT_SIZE_LEGACY);
 
     TestBitwiseOpcodes(allzeros, allzeros, allzeros, allzeros);
     TestBitwiseOpcodes(allzeros, allones, allzeros, allones);
@@ -275,8 +275,8 @@ BOOST_AUTO_TEST_CASE(bitwise_opcodes_test) {
         0xc9, 0x4d, 0xb9, 0x07, 0x71, 0x6d, 0xd1, 0x96, 0xc3, 0x88, 0xb6, 0xe6,
         0x0e, 0x8a, 0x8a, 0xd7};
 
-    BOOST_CHECK_EQUAL(a.size(), MAX_SCRIPT_ELEMENT_SIZE);
-    BOOST_CHECK_EQUAL(b.size(), MAX_SCRIPT_ELEMENT_SIZE);
+    BOOST_CHECK_EQUAL(a.size(), MAX_SCRIPT_ELEMENT_SIZE_LEGACY);
+    BOOST_CHECK_EQUAL(b.size(), MAX_SCRIPT_ELEMENT_SIZE_LEGACY);
 
     valtype aandb{
         0x10, 0x0e, 0x18, 0x01, 0x83, 0x00, 0x1a, 0x00, 0x41, 0x8c, 0x00, 0x00,
@@ -425,7 +425,6 @@ static void CheckStringOp(const valtype &a, const valtype &b,
 BOOST_AUTO_TEST_CASE(string_opcodes_test) {
     // Check for empty string.
     CheckStringOp({}, {}, {});
-
     // Check for simple concats.
     CheckStringOp({0x00}, {0x00}, {0x00, 0x00});
     CheckStringOp({0xab}, {0xcd}, {0xab, 0xcd});
@@ -477,26 +476,8 @@ BOOST_AUTO_TEST_CASE(string_opcodes_test) {
         0xbe, 0x6b, 0xb1, 0x4c, 0x46, 0x2a, 0x86, 0xd9, 0x2d, 0x20, 0x29, 0xb4,
         0x44, 0x15, 0xb2, 0x7e};
 
-    BOOST_CHECK_EQUAL(n.size(), MAX_SCRIPT_ELEMENT_SIZE);
-
-    for (size_t i = 0; i <= MAX_SCRIPT_ELEMENT_SIZE; i++) {
-        valtype a(n.begin(), n.begin() + i);
-        valtype b(n.begin() + i, n.end());
-
-        CheckStringOp(a, b, n);
-
-        // One more char and we are oversize.
-        valtype extraA = a;
-        extraA.push_back(0xaf);
-
-        valtype extraB = b;
-        extraB.push_back(0xad);
-
-        CheckOpError({extraA, b}, OP_CAT, ScriptError::PUSH_SIZE);
-        CheckOpError({a, extraB}, OP_CAT, ScriptError::PUSH_SIZE);
-        CheckOpError({extraA, extraB}, OP_CAT, ScriptError::PUSH_SIZE);
-    }
-
+    BOOST_CHECK_EQUAL(n.size(), MAX_SCRIPT_ELEMENT_SIZE_LEGACY);
+ 
     // Check error conditions.
     CheckOpError({}, OP_CAT, ScriptError::INVALID_STACK_OPERATION);
     CheckOpError({}, OP_SPLIT, ScriptError::INVALID_STACK_OPERATION);
@@ -529,14 +510,14 @@ static void CheckTypeConversionOp(const valtype &bin, const valtype &num) {
     // Grow and shrink back down using NUM2BIN.
     CheckTestResultForAllFlags({bin},
                                CScript()
-                                   << ScriptInt::fromIntUnchecked(MAX_SCRIPT_ELEMENT_SIZE)
+                                   << ScriptInt::fromIntUnchecked(MAX_SCRIPT_ELEMENT_SIZE_LEGACY)
                                    << OP_NUM2BIN
                                    << ScriptInt::fromIntUnchecked(bin.size())
                                    << OP_NUM2BIN,
                                {rebuilt_bin});
     CheckTestResultForAllFlags({num},
                                CScript()
-                                   << ScriptInt::fromIntUnchecked(MAX_SCRIPT_ELEMENT_SIZE)
+                                   << ScriptInt::fromIntUnchecked(MAX_SCRIPT_ELEMENT_SIZE_LEGACY)
                                    << OP_NUM2BIN
                                    << ScriptInt::fromIntUnchecked(bin.size())
                                    << OP_NUM2BIN,
@@ -559,7 +540,7 @@ BOOST_AUTO_TEST_CASE(type_conversion_test) {
     CheckTypeConversionOp(empty, empty);
 
     valtype paddedzero, paddednegzero;
-    for (size_t i = 0; i < MAX_SCRIPT_ELEMENT_SIZE; i++) {
+    for (size_t i = 0; i < MAX_SCRIPT_ELEMENT_SIZE_LEGACY; i++) {
         CheckTypeConversionOp(paddedzero, empty);
         paddedzero.push_back(0x00);
 
@@ -567,11 +548,11 @@ BOOST_AUTO_TEST_CASE(type_conversion_test) {
         CheckTypeConversionOp(paddednegzero, empty);
         paddednegzero[paddednegzero.size() - 1] = 0x00;
     }
-
+ 
     // Merge leading byte when sign bit isn't used.
     std::vector<uint8_t> k{0x7f}, negk{0xff};
     std::vector<uint8_t> kpadded = k, negkpadded = negk;
-    for (size_t i = 0; i < MAX_SCRIPT_ELEMENT_SIZE; i++) {
+    for (size_t i = 0; i < MAX_SCRIPT_ELEMENT_SIZE_LEGACY; i++) {
         CheckTypeConversionOp(kpadded, k);
         kpadded.push_back(0x00);
 
@@ -579,10 +560,12 @@ BOOST_AUTO_TEST_CASE(type_conversion_test) {
         negkpadded[negkpadded.size() - 1] &= 0x7f;
         negkpadded.push_back(0x80);
     }
-
+ 
     // Some known values.
     CheckTypeConversionOp({0xab, 0xcd, 0xef, 0x00}, {0xab, 0xcd, 0xef, 0x00});
     CheckTypeConversionOp({0xab, 0xcd, 0x7f, 0x00}, {0xab, 0xcd, 0x7f});
+
+ 
 
     // Reductions
     CheckTypeConversionOp({0xab, 0xcd, 0xef, 0x42, 0x80},
@@ -590,6 +573,7 @@ BOOST_AUTO_TEST_CASE(type_conversion_test) {
     CheckTypeConversionOp({0xab, 0xcd, 0x7f, 0x42, 0x00},
                           {0xab, 0xcd, 0x7f, 0x42});
 
+ 
     // Empty stack is an error.
     CheckBin2NumError({}, ScriptError::INVALID_STACK_OPERATION);
     CheckNum2BinError({}, ScriptError::INVALID_STACK_OPERATION);
@@ -603,11 +587,9 @@ BOOST_AUTO_TEST_CASE(type_conversion_test) {
     CheckBin2NumError({{0x00, 0x00, 0x00, 0x80, 0x80}}, ScriptError::INVALID_NUMBER_RANGE);
 
     // NUM2BIN must not generate oversized push.
-    valtype largezero(MAX_SCRIPT_ELEMENT_SIZE, 0);
-    BOOST_CHECK_EQUAL(largezero.size(), MAX_SCRIPT_ELEMENT_SIZE);
+    valtype largezero(MAX_SCRIPT_ELEMENT_SIZE_LEGACY, 0);
+    BOOST_CHECK_EQUAL(largezero.size(), MAX_SCRIPT_ELEMENT_SIZE_LEGACY);
     CheckTypeConversionOp(largezero, {});
-
-    CheckNum2BinError({{}, {0x09, 0x02}}, ScriptError::PUSH_SIZE);
 
     // Check that the requested encoding is possible.
     CheckNum2BinError({{0xab, 0xcd, 0xef, 0x80}, {0x03}}, ScriptError::IMPOSSIBLE_ENCODING);

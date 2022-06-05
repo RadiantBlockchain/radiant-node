@@ -3,7 +3,7 @@
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-"""This is a BCHN-specific test which builds 2 chains on 2 disconnected
+"""This is a RADN-specific test which builds 2 chains on 2 disconnected
    nodes.  After the nodes are reconnected (and put on the same chain)
    they both end up with a view of 1 active and 1 inactive chain.
 

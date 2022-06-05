@@ -41,16 +41,16 @@ If you want to run ZMQ tests with the test framework, you need the zmq python mo
 pip3 install pyzmq
 ```
 
-Build Bitcoin Cash Node
+Build Radiant Node
 ------------------------
 
 Before you start building, please make sure that your compiler supports C++17.
 
-Clone the Bitcoin Cash Node source code and cd into `bitcoin-cash-node`
+Clone the Radiant Node source code and cd into `radiant-node`
 
 ```
-git clone https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node.git
-cd bitcoin-cash-node
+git clone https://gitlab.com/radiant-node/radiant-node.git
+cd radiant-node
 ```
 
 Create a build directory to build out-of-tree.
@@ -60,9 +60,9 @@ mkdir build
 cd build
 ```
 
-Configure and build the headless Bitcoin Cash Node binaries, as well as the GUI.
+Configure and build the headless Radiant Node binaries, as well as the GUI.
 
-You can disable the GUI build by passing `-DBUILD_BITCOIN_QT=OFF` to `cmake`.
+You can disable the GUI build by passing `-DBUILD_RADIANT_QT=OFF` to `cmake`.
 
 ```
 cmake -GNinja ..
@@ -81,7 +81,7 @@ You can create a .dmg that contains the .app bundle (optional):
 ninja osx-dmg
 ```
 
-After building the Bitcoin Cash Node binaries are available
+After building the Radiant Node binaries are available
 at `./src/bitcoind`. You can install to the system with
 
 ```
@@ -91,11 +91,11 @@ sudo ninja install
 Disable-wallet mode
 --------------------
 
-When the intention is to run only a P2P node without a wallet, Bitcoin Cash Node
+When the intention is to run only a P2P node without a wallet, Radiant Node
 may be compiled in disable-wallet mode with:
 
 ```
-cmake -GNinja .. -DBUILD_BITCOIN_WALLET=OFF -DBUILD_BITCOIN_QT=OFF
+cmake -GNinja .. -DBUILD_RADIANT_WALLET=OFF -DBUILD_RADIANT_QT=OFF
 ninja
 ninja check
 ```

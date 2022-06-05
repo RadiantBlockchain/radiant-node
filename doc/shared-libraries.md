@@ -3,7 +3,7 @@
 ## bitcoinconsensus
 
 The purpose of this library is to make the verification functionality that is
-critical to Bitcoin Cash's consensus available to other applications, e.g. to
+critical to Radiant's consensus available to other applications, e.g. to
 language bindings.
 
 ### API
@@ -47,7 +47,7 @@ It will be `1` if the input script correctly spends the previous output `scriptP
   ([BIP112](https://github.com/bitcoin/bips/blob/master/bip-0112.mediawiki))
 - `bitcoinconsensus_SCRIPT_FLAGS_VERIFY_WITNESS` - Enable WITNESS ([BIP141](https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki))
 - `bitcoinconsensus_SCRIPT_ENABLE_SIGHASH_FORKID` - Enable SIGHASH_FORKID replay
-  protection ([UAHF](https://gitlab.com/bitcoin-cash-node/bchn-sw/bitcoincash-upgrade-specifications/-/blob/master/spec/uahf-technical-spec.md#req-6-2-mandatory-signature-shift-via-hash-type))
+  protection ([UAHF](https://gitlab.com/radiant-node/radn-sw/bitcoincash-upgrade-specifications/-/blob/master/spec/uahf-technical-spec.md#req-6-2-mandatory-signature-shift-via-hash-type))
 
 ##### Errors
 
@@ -62,10 +62,9 @@ It will be `1` if the input script correctly spends the previous output `scriptP
 
 ### Example Implementations
 
-- [Bitcoin Cash Node (BCHN)](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/blob/master/src/script/bitcoinconsensus.h)
-- [Bitcoin Unlimited (BUCash)](https://github.com/BitcoinUnlimited/BitcoinUnlimited/blob/release/src/script/bitcoinconsensus.h)
-
-### Historic Example Implementations in Bitcoin (pre-dating Bitcoin Cash)
+- [Radiant Node (RADN)](https://gitlab.com/radiant-node/radiant-node/-/blob/master/src/script/bitcoinconsensus.h)
+ 
+### Historic Example Implementations in Bitcoin (pre-dating Radiant)
 
 - [Bitcoin Core](https://github.com/bitcoin/bitcoin/blob/master/src/script/bitcoinconsensus.h)
 - [NBitcoin](https://github.com/NicolasDorier/NBitcoin/blob/master/NBitcoin/Script.cs#L814)

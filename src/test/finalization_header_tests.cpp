@@ -37,7 +37,7 @@ static CBlock GetBlock(const Config &config, CBlockIndex *pindexPrev) {
     tx.vin.resize(1);
     tx.vin[0].scriptSig.resize(10);
     tx.vout.resize(1);
-    tx.vout[0].nValue = 50 * COIN;
+    tx.vout[0].nValue = 50000 * COIN;
     block.vtx.resize(2);
     block.vtx[0] = MakeTransactionRef(tx);
     tx.vin[0].prevout = InsecureRandOutPoint();

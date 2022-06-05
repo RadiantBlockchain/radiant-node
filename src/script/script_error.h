@@ -89,6 +89,9 @@ enum class ScriptError {
     INVALID_TX_OUTPUT_INDEX,
 
     ERROR_COUNT,
+    /* Invalid output disallow additional refs*/
+    INVALID_TX_OUTPUT_CONTAINS_DISALLOWED_PUSHREF,
+    
 };
 
 #define SCRIPT_ERR_LAST ScriptError::ERROR_COUNT

@@ -12,7 +12,7 @@
       <bool>true</bool>
      </property>
      <property name="text">
-      <string>You have entered a legacy 'P2PKH' Bitcoin address.&lt;br/&gt;&lt;br/&gt;This type of address is no longer supported by Bitcoin Cash Node because of the risk of loss of funds.&lt;br/&gt;&lt;br/&gt;Please ask the recipient to provide a valid Bitcoin Cash address (in the CashAddr format).&lt;br/&gt;&lt;br/&gt;Or, if you are sure that the address you entered is valid on the Bitcoin Cash chain, you can bypass this check by turning on the "Allow legacy P2PKH addresses" setting under Options > Wallet in the settings dialog.</string>
+      <string>You have entered a legacy 'P2PKH' Bitcoin address.&lt;br/&gt;&lt;br/&gt;This type of address is no longer supported by Radiant Node because of the risk of loss of funds.&lt;br/&gt;&lt;br/&gt;Please ask the recipient to provide a valid Radiant address (in the CashAddr format).&lt;br/&gt;&lt;br/&gt;Or, if you are sure that the address you entered is valid on the Radiant chain, you can bypass this check by turning on the "Allow legacy P2PKH addresses" setting under Options > Wallet in the settings dialog.</string>
      </property>
      <property name="visible">
       <bool>false</bool>
@@ -25,7 +25,7 @@
       <bool>true</bool>
      </property>
      <property name="text">
-      <string>You have entered a legacy 'P2SH' Bitcoin address.&lt;br/&gt;&lt;br/&gt;This type of address is no longer supported by Bitcoin Cash Node because of the risk of loss of funds.&lt;br/&gt;&lt;br/&gt;Please ask the recipient to provide a valid Bitcoin Cash address (in the CashAddr format).</string>
+      <string>You have entered a legacy 'P2SH' Bitcoin address.&lt;br/&gt;&lt;br/&gt;This type of address is no longer supported by Radiant Node because of the risk of loss of funds.&lt;br/&gt;&lt;br/&gt;Please ask the recipient to provide a valid Radiant address (in the CashAddr format).</string>
      </property>
      <property name="visible">
       <bool>false</bool>

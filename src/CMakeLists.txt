@@ -10,13 +10,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_VISIBILITY_PRESET hidden)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
-option(BUILD_BITCOIN_DAEMON "Build bitcoind" ON)
-option(BUILD_BITCOIN_WALLET "Activate the wallet functionality" ON)
-option(BUILD_BITCOIN_ZMQ "Activate the ZeroMQ functionalities" ON)
-option(BUILD_BITCOIN_CLI "Build bitcoin-cli" ON)
-option(BUILD_BITCOIN_TX "Build bitcoin-tx" ON)
-option(BUILD_BITCOIN_QT "Build bitcoin-qt" ON)
-option(BUILD_BITCOIN_SEEDER "Build bitcoin-seeder" ON)
+option(BUILD_RADIANT_DAEMON "Build radiantd" ON)
+option(BUILD_RADIANT_WALLET "Activate the wallet functionality" ON)
+option(BUILD_RADIANT_ZMQ "Activate the ZeroMQ functionalities" ON)
+option(BUILD_RADIANT_CLI "Build radiant-cli" ON)
+option(BUILD_RADIANT_TX "Build radiant-tx" ON)
+option(BUILD_RADIANT_QT "Build radiant-qt" ON)
+option(BUILD_RADIANT_SEEDER "Build radiant-seeder" ON)
 option(BUILD_LIBBITCOINCONSENSUS "Build the bitcoinconsenus shared library" ON)
 option(ENABLE_BIP70 "Enable BIP70 (payment protocol) support in GUI" ON)
 option(ENABLE_HARDENING "Harden the executables" ON)
@@ -28,7 +28,7 @@ option(ENABLE_QRCODE "Enable QR code display" ON)
 option(ENABLE_UPNP "Enable UPnP support" ON)
 option(ENABLE_WERROR "Promote some compiler warnings to errors" OFF)
 option(START_WITH_UPNP "Make UPnP the default to map ports" OFF)
-option(ENABLE_CLANG_TIDY "Enable clang-tidy checks for Bitcoin Cash Node" OFF)
+option(ENABLE_CLANG_TIDY "Enable clang-tidy checks for Radiant Node" OFF)
 option(ENABLE_PROFILING "Select the profiling tool to use" OFF)
 option(USE_JEMALLOC_EXPERIMENTAL "Use jemalloc as an allocation library (experimental)" OFF)
 
@@ -48,9 +48,9 @@ endif(CCACHE)
 # Disable what we do not need for the native build.
 include(NativeExecutable)
 native_add_cmake_flags(
-  "-DBUILD_BITCOIN_WALLET=OFF"
-  "-DBUILD_BITCOIN_QT=OFF"
-  "-DBUILD_BITCOIN_ZMQ=OFF"
+  "-DBUILD_RADIANT_WALLET=OFF"
+  "-DBUILD_RADIANT_QT=OFF"
+  "-DBUILD_RADIANT_ZMQ=OFF"
   "-DENABLE_QRCODE=OFF"
   "-DENABLE_UPNP=OFF"
   # Forward the current setting for clang-tidy
@@ -347,7 +347,7 @@ add_custom_command(
     ${CMAKE_COMMAND} -E remove "${BUILD_HEADER_TMP}"
 )
 
-# Because the Bitcoin Cash Node source code is disorganised, we
+# Because the Radiant Node source code is disorganised, we
 # end up with a bunch of libraries without any apparent
 # cohesive structure. This is inherited from Bitcoin Core
 # and reflecting this.
@@ -620,31 +620,31 @@ add_subdirectory(bench)
 include(BinaryTest)
 
 # Wallet
-if(BUILD_BITCOIN_WALLET)
+if(BUILD_RADIANT_WALLET)
   add_subdirectory(wallet)
   target_link_libraries(server wallet)
   # There is a circular dependency between wallet and server, see:
   # https://github.com/bitcoin/bitcoin/pull/14437#discussion_r226237048
   target_link_libraries(wallet server)
 
-  # bitcoin-wallet
-  add_executable(bitcoin-wallet bitcoin-wallet.cpp)
+  # radiant-wallet
+  add_executable(radiant-wallet bitcoin-wallet.cpp)
   if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    target_sources(bitcoin-wallet PRIVATE bitcoin-wallet-res.rc)
+    target_sources(radiant-wallet PRIVATE radiant-wallet-res.rc)
   endif()
 
-  target_link_libraries(bitcoin-wallet wallet-tool server common bitcoinconsensus util)
+  target_link_libraries(radiant-wallet wallet-tool server common bitcoinconsensus util)
 
-  add_to_symbols_check(bitcoin-wallet)
-  add_to_security_check(bitcoin-wallet)
+  add_to_symbols_check(radiant-wallet)
+  add_to_security_check(radiant-wallet)
 
-  install_target(bitcoin-wallet)
+  install_target(radiant-wallet)
 else()
   target_sources(server PRIVATE dummywallet.cpp)
 endif()
 
 # ZeroMQ
-if(BUILD_BITCOIN_ZMQ)
+if(BUILD_RADIANT_ZMQ)
   add_subdirectory(zmq)
   target_link_libraries(server zmq)
 endif()
@@ -658,51 +658,51 @@ if(BUILD_BITCOIN_SEEDER)
   add_subdirectory(seeder)
 endif()
 
-# bitcoin-cli
-if(BUILD_BITCOIN_CLI)
-  add_executable(bitcoin-cli bitcoin-cli.cpp)
+# radiant-cli
+if(BUILD_RADIANT_CLI)
+  add_executable(radiant-cli bitcoin-cli.cpp)
   if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    target_sources(bitcoin-cli PRIVATE bitcoin-cli-res.rc)
+    target_sources(radiant-cli PRIVATE radiant-cli-res.rc)
   endif()
 
-  target_link_libraries(bitcoin-cli common rpcclient Event::event)
+  target_link_libraries(radiant-cli common rpcclient Event::event)
 
-  add_to_symbols_check(bitcoin-cli)
-  add_to_security_check(bitcoin-cli)
+  add_to_symbols_check(radiant-cli)
+  add_to_security_check(radiant-cli)
 
-  install_target(bitcoin-cli)
+  install_target(radiant-cli)
 endif()
 
-# bitcoin-tx
-if(BUILD_BITCOIN_TX)
-  add_executable(bitcoin-tx bitcoin-tx.cpp)
+# radiant-tx
+if(BUILD_RADIANT_TX)
+  add_executable(radiant-tx bitcoin-tx.cpp)
   if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    target_sources(bitcoin-tx PRIVATE bitcoin-tx-res.rc)
+    target_sources(radiant-tx PRIVATE radiant-tx-res.rc)
   endif()
 
-  target_link_libraries(bitcoin-tx bitcoinconsensus)
+  target_link_libraries(radiant-tx bitcoinconsensus)
 
-  add_to_symbols_check(bitcoin-tx)
-  add_to_security_check(bitcoin-tx)
+  add_to_symbols_check(radiant-tx)
+  add_to_security_check(radiant-tx)
 
-  install_target(bitcoin-tx)
+  install_target(radiant-tx)
 endif()
 
-# bitcoind
-if(BUILD_BITCOIN_DAEMON)
-  add_executable(bitcoind bitcoind.cpp)
-  target_link_libraries(bitcoind server)
+# radiantd
+if(BUILD_RADIANT_DAEMON)
+  add_executable(radiantd bitcoind.cpp)
+  target_link_libraries(radiantd server)
   if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    target_sources(bitcoind PRIVATE bitcoind-res.rc)
+    target_sources(radiantd PRIVATE bitcoind-res.rc)
   endif()
 
-  add_to_symbols_check(bitcoind)
-  add_to_security_check(bitcoind)
+  add_to_symbols_check(radiantd)
+  add_to_security_check(radiantd)
 
-  install_target(bitcoind)
+  install_target(radiantd)
 endif()
 
 # Bitcoin-qt
-if(BUILD_BITCOIN_QT)
+if(BUILD_RADIANT_QT)
   add_subdirectory(qt)
 endif()

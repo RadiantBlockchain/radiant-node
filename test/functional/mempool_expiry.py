@@ -22,7 +22,7 @@ from test_framework.util import (
 )
 
 # DEFAULT_MEMPOOL_EXPIRY defined in src/validation.h
-DEFAULT_MEMPOOL_EXPIRY = 336  # hours
+DEFAULT_MEMPOOL_EXPIRY = 16  # hours
 CUSTOM_MEMPOOL_EXPIRY = 10  # hours
 
 

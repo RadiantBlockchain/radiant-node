@@ -61,7 +61,7 @@ add_executable(bench_bitcoin
 
 target_link_libraries(bench_bitcoin common bitcoinconsensus server)
 
-if(BUILD_BITCOIN_WALLET)
+if(BUILD_RADIANT_WALLET)
 	target_sources(bench_bitcoin PRIVATE coin_selection.cpp keypool.cpp)
 	target_link_libraries(bench_bitcoin wallet)
 endif()

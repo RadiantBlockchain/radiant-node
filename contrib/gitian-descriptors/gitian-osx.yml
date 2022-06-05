@@ -1,5 +1,5 @@
 ---
-name: "bitcoin-cash-node-osx"
+name: "radiant-node-osx"
 enable_cache: true
 distro: "debian"
 suites:
@@ -45,7 +45,7 @@ packages:
 - "protobuf-compiler"
 - "qttools5-dev"
 remotes:
-- "url": "https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node.git"
+- "url": "https://gitlab.com/radiant-node/radiant-node.git"
   "dir": "bitcoin"
 files:
 - "MacOSX10.14.sdk.tar.xz"
@@ -133,7 +133,7 @@ script: |
 
   # Also generate manpages here, because they cannot be generated during cross-compilation
   ninja package_source doc-man
-  SOURCEDIST=`echo bitcoin-cash-node-*.tar.gz`
+  SOURCEDIST=`echo radiant-node-*.tar.gz`
   mv ${SOURCEDIST} ..
   mkdir ../doc/man
   mv doc/man/*.1 ../doc/man
@@ -144,7 +144,7 @@ script: |
   mkdir -p temp
   pushd temp
   tar xf ../$SOURCEDIST
-  find bitcoin-cash-node-* | sort | tar --no-recursion --mode='u+rw,go+r-w,a+X' --owner=0 --group=0 -c -T - | gzip -9n > ../$SOURCEDIST
+  find radiant-node-* | sort | tar --no-recursion --mode='u+rw,go+r-w,a+X' --owner=0 --group=0 -c -T - | gzip -9n > ../$SOURCEDIST
   popd
 
   ORIGPATH="$PATH"

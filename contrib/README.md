@@ -27,7 +27,7 @@ Notes on getting Gitian builds up and running using KVM.
 
 ### [Gitian-keys](gitian-signing/) ###
 
-PGP keys used for signing Bitcoin Cash Node [Gitian release](../doc/release-process.md) results.
+PGP keys used for signing Radiant Node [Gitian release](../doc/release-process.md) results.
 
 ### [MacDeploy](macdeploy/) ###
 

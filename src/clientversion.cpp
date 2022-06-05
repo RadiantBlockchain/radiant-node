@@ -13,7 +13,7 @@
  * for both bitcoind and bitcoin-qt, to make it harder for attackers to
  * target servers or GUI users specifically.
  */
-const std::string CLIENT_NAME("Bitcoin Cash Node");
+const std::string CLIENT_NAME("Radiant Node");
 
 /**
  * Client version number

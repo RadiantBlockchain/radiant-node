@@ -91,8 +91,6 @@ static constexpr bool DEFAULT_WALLETBROADCAST = true;
 static constexpr bool DEFAULT_DISABLE_WALLET = false;
 //! Default for -usebip69
 static constexpr bool DEFAULT_USE_BIP69 = true;
-//! Default for -allowlegacyp2sh
-static constexpr bool DEFAULT_ALLOW_LEGACY_P2SH = false;
 //! Default for the RPC option "include_unsafe"
 static constexpr bool DEFAULT_INCLUDE_UNSAFE_INPUTS = false;
 

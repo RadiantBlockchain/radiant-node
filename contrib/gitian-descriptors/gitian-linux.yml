@@ -1,5 +1,5 @@
 ---
-name: "bitcoin-cash-node-linux"
+name: "radiant-node-linux"
 enable_cache: true
 distro: "debian"
 suites:
@@ -35,12 +35,12 @@ packages:
 - "python3"
 # FIXME: these dependencies are only required to make CMake happy when building
 # native tools. They can be removed when the `NativeExecutable.cmake` gets
-# improved to avoid requiring all the bitcoin-cash-node dependencies.
+# improved to avoid requiring all the radiant-node dependencies.
 - "libboost-all-dev"
 - "libevent-dev"
 - "libssl-dev"
 remotes:
-- "url": "https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node.git"
+- "url": "https://gitlab.com/radiant-node/radiant-node.git"
   "dir": "bitcoin"
 files: []
 script: |
@@ -130,19 +130,19 @@ script: |
   mkdir -p source_package
   pushd source_package
   cmake -GNinja .. \
-    -DBUILD_BITCOIN_WALLET=OFF \
+    -DBUILD_RADIANT_WALLET=OFF \
     -DBUILD_BITCOIN_ZMQ=OFF \
     -DBUILD_BITCOIN_SEEDER=OFF \
-    -DBUILD_BITCOIN_CLI=OFF \
-    -DBUILD_BITCOIN_TX=OFF \
-    -DBUILD_BITCOIN_QT=OFF \
+    -DBUILD_RADIANT_CLI=OFF \
+    -DBUILD_RADIANT_TX=OFF \
+    -DBUILD_RADIANT_QT=OFF \
     -DBUILD_LIBBITCOINCONSENSUS=OFF \
     -DENABLE_CLANG_TIDY=OFF \
     -DENABLE_QRCODE=OFF \
     -DENABLE_UPNP=OFF
 
   ninja package_source
-  SOURCEDIST=`echo bitcoin-cash-node-*.tar.gz`
+  SOURCEDIST=`echo radiant-node-*.tar.gz`
   mv ${SOURCEDIST} ..
   popd
   DISTNAME=`echo ${SOURCEDIST} | sed 's/.tar.*//'`
@@ -151,7 +151,7 @@ script: |
   mkdir -p temp
   pushd temp
   tar xf ../$SOURCEDIST
-  find bitcoin-cash-node-* | sort | tar --no-recursion --mode='u+rw,go+r-w,a+X' --owner=0 --group=0 -c -T - | gzip -9n > ../$SOURCEDIST
+  find radiant-node-* | sort | tar --no-recursion --mode='u+rw,go+r-w,a+X' --owner=0 --group=0 -c -T - | gzip -9n > ../$SOURCEDIST
   popd
 
   ORIGPATH="$PATH"

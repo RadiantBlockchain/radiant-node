@@ -597,12 +597,12 @@ BOOST_AUTO_TEST_CASE(test_userAgent) {
     gArgs.ForceSetMultiArg("-uacomment", uacomment);
 
     const std::string versionMessage =
-        "/Bitcoin Cash Node:" + std::to_string(CLIENT_VERSION_MAJOR) + "." +
+        "/Radiant Node:" + std::to_string(CLIENT_VERSION_MAJOR) + "." +
         std::to_string(CLIENT_VERSION_MINOR) + "." +
         std::to_string(CLIENT_VERSION_REVISION) + "(EB8.0; " + uacomment + ")/";
 
     const std::string versionMessage_strprintf =
-        strprintf("/Bitcoin Cash Node:%d.%d.%d(EB8.0; %s)/", CLIENT_VERSION_MAJOR, CLIENT_VERSION_MINOR, CLIENT_VERSION_REVISION, uacomment);
+        strprintf("/Radiant Node:%d.%d.%d(EB8.0; %s)/", CLIENT_VERSION_MAJOR, CLIENT_VERSION_MINOR, CLIENT_VERSION_REVISION, uacomment);
 
     BOOST_CHECK_EQUAL(versionMessage, versionMessage_strprintf); // verify our test methodology is sound - std::to_string is locale-dependent
     BOOST_CHECK_EQUAL(userAgent(config), versionMessage);

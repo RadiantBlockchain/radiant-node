@@ -290,7 +290,7 @@ class MiningTest(BitcoinTestFramework):
         self.nodes[1].disconnect_p2ps()
         self.stop_node(1)
         assert_raises_rpc_error(-9,  # RPC_CLIENT_NOT_CONNECTED
-                                "Bitcoin is not connected!",
+                                "Radiant is not connected!",
                                 node.getblocktemplate)
 
 

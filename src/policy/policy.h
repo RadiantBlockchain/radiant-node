@@ -31,7 +31,7 @@ static constexpr int64_t DEFAULT_MAX_INITIAL_GBT_TIME = 0;
  * Default for -blockmintxfee, which sets the minimum feerate for a transaction
  * in blocks created by mining code.
  */
-static constexpr Amount DEFAULT_BLOCK_MIN_TX_FEE_PER_KB(1000 * SATOSHI);
+static constexpr Amount DEFAULT_BLOCK_MIN_TX_FEE_PER_KB(1000000 * SATOSHI);
 /**
  * Default for -gbtcheckvalidity, which determines whether we call
  * TestBlockValidity() on the generated block template.
@@ -40,7 +40,7 @@ static constexpr bool DEFAULT_GBT_CHECK_VALIDITY = true;
 /**
  * The maximum size for transactions we're willing to relay/mine.
  */
-static constexpr unsigned int MAX_STANDARD_TX_SIZE = 100000;
+static constexpr unsigned int MAX_STANDARD_TX_SIZE = 2000000;
 
 /**
  * Biggest 'standard' txin is a 15-of-15 P2SH multisig with compressed
@@ -57,16 +57,16 @@ static constexpr unsigned int MAX_TX_IN_SCRIPT_SIG_SIZE = 1650;
  * default value for for -maxmempool. A value of 10 here with a 32 MB excessive block size setting results in a 320 MB
  * maximum mempool size.
  */
-static constexpr unsigned int DEFAULT_MAX_MEMPOOL_SIZE_PER_MB = 10;
+static constexpr unsigned int DEFAULT_MAX_MEMPOOL_SIZE_PER_MB = 5;
 /**
  * Default for -incrementalrelayfee, which sets the minimum feerate increase for
  * mempool limiting or BIP 125 replacement.
  */
-static constexpr CFeeRate MEMPOOL_FULL_FEE_INCREMENT(1000 * SATOSHI);
+static constexpr CFeeRate MEMPOOL_FULL_FEE_INCREMENT(100 * SATOSHI);
 /**
  * Default for -bytespersigocheck.
  */
-static constexpr unsigned int DEFAULT_BYTES_PER_SIGCHECK = 50;
+static constexpr unsigned int DEFAULT_BYTES_PER_SIGCHECK = 1;
 /**
  * Min feerate for defining dust. Historically this has been the same as the
  * minRelayTxFee, however changing the dust limit changes which transactions are
@@ -74,7 +74,7 @@ static constexpr unsigned int DEFAULT_BYTES_PER_SIGCHECK = 50;
  * only increase the dust limit after prior releases were already not creating
  * outputs below the new threshold.
  */
-static constexpr Amount DUST_RELAY_TX_FEE(1000 * SATOSHI);
+static constexpr Amount DUST_RELAY_TX_FEE(1 * SATOSHI);
 
 /**
  * The maximum value we accept for configuration of the -txbroadcastinterval
@@ -95,7 +95,7 @@ inline constexpr unsigned int MAX_INV_BROADCAST_RATE = 1'000'000;
  * (see CheckInputs).
  */
 static constexpr uint32_t MANDATORY_SCRIPT_VERIFY_FLAGS =
-    SCRIPT_VERIFY_P2SH | SCRIPT_VERIFY_STRICTENC |
+    SCRIPT_VERIFY_STRICTENC |
     SCRIPT_ENABLE_SIGHASH_FORKID | SCRIPT_VERIFY_LOW_S |
     SCRIPT_VERIFY_NULLFAIL | SCRIPT_VERIFY_MINIMALDATA |
     SCRIPT_ENABLE_SCHNORR_MULTISIG | SCRIPT_ENFORCE_SIGCHECKS;

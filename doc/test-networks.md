@@ -1,10 +1,10 @@
 Test Networks
 =============
 
-This document describes the Bitcoin Cash test networks supported by the
-BCHN software.
+This document describes the Radiant test networks supported by the
+RADN software.
 
-There are currently three test networks that you can access with BCHN:
+There are currently three test networks that you can access with RADN:
 
 - testnet3 (historical testnet)
 - testnet4
@@ -16,8 +16,8 @@ of protocol developers. They can be accessed by running the software
 arguments, respectively.
 
 Other software clients may have additional test network definitions compiled
-into them but these are not currently supported by BCHN and could not be
-accessed without further modifications to the software. If you wish BCHN
+into them but these are not currently supported by RADN and could not be
+accessed without further modifications to the software. If you wish RADN
 to access a test network not listed above, please raise a support request.
 
 Below, we give a brief description and an overview table for these networks.
@@ -25,7 +25,7 @@ Below, we give a brief description and an overview table for these networks.
 Testnet3
 --------
 
-This is the historical testnet in Bitcoin Cash, maintained as a fork from
+This is the historical testnet in Radiant, maintained as a fork from
 BTC's testnet3 since 2017. It has grown substantially in size
 (2020/Oct/15: 44GB), in part due to scaling tests that deposited a number
 of 32MB blocks, and due to the resulting time to sync a test node from
@@ -65,7 +65,7 @@ or a $500 desktop computer for the near future. Any tests that target higher
 performance levels are encouraged to do so by forking off of scalenet or
 creating their own private testnets or regtest networks.
 
-Overview Table for BCHN-supported Test Networks
+Overview Table for RADN-supported Test Networks
 -----------------------------------------------
 
 | Attribute/Network            |  testnet3   |   testnet4   |  scalenet   |
@@ -98,7 +98,7 @@ Overview Table for BCHN-supported Test Networks
 | Base58 p: ext. pubkey        |  0x043587cf |  0x043587cf  |  0x043587cf |
 | Base58 p: ext. seckey        |  0x04358394 |  0x04358394  |  0x04358394 |
 
-Note 1: set to 0 because historical sigop code has been removed from BCHN
+Note 1: set to 0 because historical sigop code has been removed from RADN
         See chainparams.cpp for more detailed comments.
 
 Note 2: scalenet is intended to be periodically reorganized down to a

@@ -84,7 +84,7 @@ class InvalidTxRequestTest(BitcoinTestFramework):
         # and we get disconnected immediately
         self.log.info('Test a transaction that is rejected')
         tx1 = create_tx_with_script(
-            block1.vtx[0], 0, script_sig=b'\x64' * 35, amount=50 * COIN - 12000)
+            block1.vtx[0], 0, script_sig=b'\x64' * 35, amount=50000 * COIN - 12000)
         node.p2p.send_txs_and_test(
             [tx1], node, success=False, expect_disconnect=True)
 
@@ -101,7 +101,7 @@ class InvalidTxRequestTest(BitcoinTestFramework):
         tx_withhold.vin.append(
             CTxIn(outpoint=COutPoint(block1.vtx[0].sha256, 0)))
         tx_withhold.vout.append(
-            CTxOut(nValue=50 * COIN - 12000, scriptPubKey=SCRIPT_PUB_KEY_OP_TRUE))
+            CTxOut(nValue=50000 * COIN - 12000, scriptPubKey=SCRIPT_PUB_KEY_OP_TRUE))
         pad_tx(tx_withhold)
         tx_withhold.calc_sha256()
 

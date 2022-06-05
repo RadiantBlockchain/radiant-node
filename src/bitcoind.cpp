@@ -35,10 +35,10 @@ const std::function<std::string(const char *)> G_TRANSLATION_FUN = nullptr;
  *
  * \section intro_sec Introduction
  *
- * This is the developer documentation of Bitcoin Cash Node
- * (https://www.bitcoincashnode.org/). Bitcoin Cash Node is a client for the
- * digital currency called Bitcoin Cash (https://www.bitcoincash.org/), which
- * enables instant payments to anyone, anywhere in the world. Bitcoin Cash uses
+ * This is the developer documentation of Radiant Node
+ * (https://www.radiantblockchain.org/). Radiant Node is a client for the
+ * digital currency called Radiant (https://www.radiantblockchain.org/), which
+ * enables instant payments to anyone, anywhere in the world. Radiant uses
  * peer-to-peer technology to operate with no central authority: managing
  * transactions and issuing money are carried out collectively by the network.
  *
@@ -144,7 +144,7 @@ static bool AppInit(int argc, char *argv[]) {
             if (!IsSwitchChar(argv[i][0])) {
                 fprintf(stderr,
                         "Error: Command line contains unexpected token '%s', "
-                        "see bitcoind -h for a list of options.\n",
+                        "see radiantd -h for a list of options.\n",
                         argv[i]);
                 return false;
             }

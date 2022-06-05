@@ -8,6 +8,8 @@
 #include <crypto/common.h>
 #include <crypto/ripemd160.h>
 #include <crypto/sha256.h>
+#include <crypto/sha512_256.h>
+#include <crypto/sha512.h>
 #include <crypto/siphash.h>
 #include <prevector.h>
 #include <serialize.h>
@@ -33,12 +35,43 @@ public:
         sha.Reset().Write(buf, CSHA256::OUTPUT_SIZE).Finalize(output.data());
     }
 
+    void FinalizeSHA256(Span<uint8_t> output) {
+        assert(output.size() == OUTPUT_SIZE);
+        sha.Finalize(output.data());
+    }
+
     CHash256 &Write(Span<const uint8_t> input) {
         sha.Write(input.data(), input.size());
         return *this;
     }
 
     CHash256 &Reset() {
+        sha.Reset();
+        return *this;
+    }
+};
+
+/** A hasher class for 512/256-bit hash (double SHA-512/256). */
+class CHash512_256 {
+private:
+    CSHA512_256 sha;
+
+public:
+    static const size_t OUTPUT_SIZE = CSHA512_256::OUTPUT_SIZE;
+
+    void Finalize(Span<uint8_t> output) {
+        assert(output.size() == OUTPUT_SIZE);
+        uint8_t buf[CSHA512_256::OUTPUT_SIZE];
+        sha.Finalize(buf);
+        sha.Reset().Write(buf, CSHA512_256::OUTPUT_SIZE).Finalize(output.data());
+    }
+
+    CHash512_256 &Write(Span<const uint8_t> input) {
+        sha.Write(input.data(), input.size());
+        return *this;
+    }
+
+    CHash512_256 &Reset() {
         sha.Reset();
         return *this;
     }
@@ -135,6 +168,7 @@ public:
         return (*this);
     }
 };
+ 
 
 /**
  * Reads data from an underlying stream, while hashing the read data.

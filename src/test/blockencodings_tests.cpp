@@ -496,7 +496,7 @@ BOOST_AUTO_TEST_CASE(ToStringTest) {
     CBlock block;
 
     BOOST_CHECK_EQUAL(block.ToString(),
-        "CBlock(hash=14508459b221041eab257d2baaa7459775ba748246c8403609eb708f0e57e74b, ver=0x00000000, "
+        "CBlock(hash=2ff97f8eb07a08353484279ae423259df458899f0a0c8bcb5dbde3da05006745, ver=0x00000000, "
         "hashPrevBlock=0000000000000000000000000000000000000000000000000000000000000000, "
         "hashMerkleRoot=0000000000000000000000000000000000000000000000000000000000000000, "
         "nTime=0, nBits=00000000, nNonce=0, vtx=0)\n");
@@ -523,7 +523,7 @@ BOOST_AUTO_TEST_CASE(ToStringTest) {
     block.vtx[2] = MakeTransactionRef(tx);
 
     BOOST_CHECK_EQUAL(block.ToString(),
-        "CBlock(hash=edad8495e648009f06ad566e3246c4cc0530a633c35fd0cf71b450110885b635, ver=0x0000002a, "
+        "CBlock(hash=92b84416a6c2b4f6f6e46c6b994d0de22390b8d22fd787858da299ad52098e23, ver=0x0000002a, "
         "hashPrevBlock=00000000000000000000000000000000000000000000000000000000499602d2, "
         "hashMerkleRoot=0000000000000000000000000000000000000000000000000000000000000000, nTime=0, nBits=207fffff, nNonce=0, vtx=3)"
         "\n  CTransaction(txid=f598013009, ver=2, vin.size=1, vout.size=1, nLockTime=0)"
@@ -559,9 +559,9 @@ BOOST_AUTO_TEST_CASE(ToStringTest) {
         ++block.nNonce;
     }
     BOOST_CHECK_EQUAL(block.ToString(),
-        "CBlock(hash=54bd6ad7054552d536c0bb793164b8410f5f58f10d9340a97a5f31e088917462, ver=0x0000002a, "
+        "CBlock(hash=4357d906ebec4ac2ee6361b3cfbc2854104ef04c379e441066569f658cf55a51, ver=0x0000002a, "
         "hashPrevBlock=00000000000000000000000000000000000000000000000000000000499602d2, "
-        "hashMerkleRoot=3c29ff8818239743c8999bf24edd3436f3c79f1f8421a0f767ba7bc05e541d53, nTime=0, nBits=207fffff, nNonce=2, vtx=3)"
+        "hashMerkleRoot=3c29ff8818239743c8999bf24edd3436f3c79f1f8421a0f767ba7bc05e541d53, nTime=0, nBits=207fffff, nNonce=0, vtx=3)"
         "\n  CTransaction(txid=f598013009, ver=2, vin.size=1, vout.size=1, nLockTime=0)"
         "\n    CTxIn(COutPoint(0000000000, 4294967295), coinbase 00000000000000000000)"
         "\n    CTxOut(nValue=0.00000042, scriptPubKey=)"

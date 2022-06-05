@@ -50,8 +50,8 @@ class GetBlockTemplateTest(BitcoinTestFramework):
         # when they don't know if they're on the latest tip
         # and/or can't propagate blocks
         disconnect_nodes(self.nodes[0], self.nodes[1])
-        assert_raises_rpc_error(-9, "Bitcoin is not connected!", self.nodes[0].getblocktemplate)
-        assert_raises_rpc_error(-9, "Bitcoin is not connected!", self.nodes[1].getblocktemplate)
+        assert_raises_rpc_error(-9, "Radiant is not connected!", self.nodes[0].getblocktemplate)
+        assert_raises_rpc_error(-9, "Radiant is not connected!", self.nodes[1].getblocktemplate)
 
         # Reconnect the nodes and check that getblocktemplate works again
         # and that they're in sync

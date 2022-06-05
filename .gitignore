@@ -7,6 +7,12 @@ src/bitcoin-cli
 src/bitcoin-seeder
 src/bitcoin-tx
 src/bitcoin-wallet
+src/radiant
+src/radiantd
+src/radiant-cli
+src/radiant-seeder
+src/radiant-tx
+src/radiant-wallet
 src/test/test_bitcoin
 src/test/test_bitcoin_fuzzy
 src/qt/test/test_bitcoin-qt

@@ -20,7 +20,7 @@ public:
 
 void DummyWalletInit::AddWalletOptions() const {
     std::vector<std::string> opts = {
-        "-allowlegacyp2sh", "-avoidpartialspends", "-disablewallet",
+        "-avoidpartialspends", "-disablewallet",
         "-fallbackfee=<amt>", "-keypool=<n>", "-maxtxfee=<amt>",
         "-mintxfee=<amt>", "-paytxfee=<amt>", "-rescan", "-salvagewallet",
         "-spendzeroconfchange", "-upgradewallet", "-wallet=<path>",

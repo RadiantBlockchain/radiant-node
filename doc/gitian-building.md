@@ -1,6 +1,6 @@
 # Gitian building
 
-*Setup instructions for a Gitian build of Bitcoin Cash Node using a VM or
+*Setup instructions for a Gitian build of Radiant Node using a VM or
 physical system.*
 
 Gitian is the deterministic build process that is used to build the Bitcoin
@@ -11,7 +11,7 @@ that the same, tested dependencies are used and statically built into the execut
 Multiple developers build the source code by following a specific descriptor
 ("recipe"), cryptographically sign the result, and upload the resulting signature.
 These results are compared and only if they match, the build is accepted and
-uploaded to bitcoincashnode.org.
+uploaded to radiantblockchain.org.
 
 More independent Gitian builders are needed, which is why this guide exists.
 It is preferred you follow these steps yourself instead of using someone else's
@@ -74,7 +74,7 @@ The `gitian-build.py` script will checkout different release tags, so it's best
 to copy it:
 
 ```bash
-cp bitcoin-cash-node/contrib/gitian-build.py .
+cp radiant-node/contrib/gitian-build.py .
 ```
 
 You only need to do this once:
@@ -109,11 +109,11 @@ E.g.:
 ```
 [...]
 Generating report
-4dcfd0b27ff21736483f22aba1f6c4bd8845f0b2582f2f6c4314bd90488dddd1  bitcoin-cash-node-23.1.0-win-unsigned.tar.gz
-1c2e737651b69f46cb2ab4e28d8da34168274d526330569c1b2f4d0dff4e11da  bitcoin-cash-node-23.1.0-win64-debug.zip
-8f68a567d257107ba33c494c49e151d38678891de853eddc0ad2f391ae1c254e  bitcoin-cash-node-23.1.0-win64-setup-unsigned.exe
-c73136187dcbbf124088029bd65e6303118563d1d04c5fca464f9492cd365e69  bitcoin-cash-node-23.1.0-win64.zip
-0356cf228afb7da3bf945198f27fdadd972e1c5e5f6df57d863bb4c16e2836e0  src/bitcoin-cash-node-23.1.0.tar.gz
+4dcfd0b27ff21736483f22aba1f6c4bd8845f0b2582f2f6c4314bd90488dddd1  radiant-node-23.1.0-win-unsigned.tar.gz
+1c2e737651b69f46cb2ab4e28d8da34168274d526330569c1b2f4d0dff4e11da  radiant-node-23.1.0-win64-debug.zip
+8f68a567d257107ba33c494c49e151d38678891de853eddc0ad2f391ae1c254e  radiant-node-23.1.0-win64-setup-unsigned.exe
+c73136187dcbbf124088029bd65e6303118563d1d04c5fca464f9492cd365e69  radiant-node-23.1.0-win64.zip
+0356cf228afb7da3bf945198f27fdadd972e1c5e5f6df57d863bb4c16e2836e0  src/radiant-node-23.1.0.tar.gz
 ```
 
 Confirm with other developers that the hashes match with theirs.

@@ -13,10 +13,10 @@ manual intervention. Also optionally follow the next step: 'Seed the Gitian sour
 and offline git repositories' which will fetch the remaining files required for building
 offline.
 
-Building Bitcoin Cash Node
+Building Radiant Node
 --------------------------
 
-To build Bitcoin Cash Node (for Linux, OS X and Windows) just follow the steps under 'perform
+To build Radiant Node (for Linux, OS X and Windows) just follow the steps under 'perform
 Gitian builds' in [https://github.com/bitcoin/bitcoin/blob/master/doc/release-process.md](https://github.com/bitcoin/bitcoin/blob/master/doc/release-process.md#setup-and-perform-gitian-builds) in the bitcoin repository.
 
 This may take some time as it will build all the dependencies needed for each descriptor.
@@ -37,7 +37,7 @@ remote: Counting objects: 57959, done.
 remote: Total 57959 (delta 0), reused 0 (delta 0), pack-reused 57958
 Receiving objects: 100% (57959/57959), 53.76 MiB | 484.00 KiB/s, done.
 Resolving deltas: 100% (41590/41590), done.
-From https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node.git
+From https://gitlab.com/radiant-node/radiant-node.git
 ... (new tags, new branch etc)
 --- Building for trusty amd64 ---
 Stopping target if it is up
@@ -65,11 +65,11 @@ and inputs.
 For example:
 
 ```bash
-URL=https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node.git
+URL=https://gitlab.com/radiant-node/radiant-node.git
 COMMIT=v0.18.5
-./bin/gbuild --commit bitcoin=${COMMIT} --url bitcoin=${URL} ../bitcoin-cash-node/contrib/gitian-descriptors/gitian-linux.yml
-./bin/gbuild --commit bitcoin=${COMMIT} --url bitcoin=${URL} ../bitcoin-cash-node/contrib/gitian-descriptors/gitian-win.yml
-./bin/gbuild --commit bitcoin=${COMMIT} --url bitcoin=${URL} ../bitcoin-cash-node/contrib/gitian-descriptors/gitian-osx.yml
+./bin/gbuild --commit bitcoin=${COMMIT} --url bitcoin=${URL} ../radiant-node/contrib/gitian-descriptors/gitian-linux.yml
+./bin/gbuild --commit bitcoin=${COMMIT} --url bitcoin=${URL} ../radiant-node/contrib/gitian-descriptors/gitian-win.yml
+./bin/gbuild --commit bitcoin=${COMMIT} --url bitcoin=${URL} ../radiant-node/contrib/gitian-descriptors/gitian-osx.yml
 ```
 
 Building fully offline
@@ -96,7 +96,7 @@ LXC_ARCH=amd64 LXC_SUITE=buster on-target -u root dpkg --add-architecture i386
 LXC_ARCH=amd64 LXC_SUITE=buster on-target -u root apt-get update
 LXC_ARCH=amd64 LXC_SUITE=buster on-target -u root \
   -e DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends -y install \
-  $( sed -ne '/^packages:/,/^[^-]/ {/^- .*/{s/"//g;s/- //;p}}' ../bitcoin-cash-node/contrib/gitian-descriptors/*|sort|uniq )
+  $( sed -ne '/^packages:/,/^[^-]/ {/^- .*/{s/"//g;s/- //;p}}' ../radiant-node/contrib/gitian-descriptors/*|sort|uniq )
 LXC_ARCH=amd64 LXC_SUITE=buster on-target -u root apt-get -q -y purge grub
 LXC_ARCH=amd64 LXC_SUITE=buster on-target -u root -e DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade
 ```
@@ -116,7 +116,7 @@ Then when building, override the remote URLs that gbuild would otherwise pull fr
 
 ```bash
 cd ~
-export URL=${HOME}/bitcoin-cash-node
+export URL=${HOME}/radiant-node
 export COMMIT=<commmit hash or tag>
 
 ./bin/gbuild --commit bitcoin=${COMMIT} --url bitcoin=${URL} ${URL}/contrib/gitian-descriptors/gitian-win.yml

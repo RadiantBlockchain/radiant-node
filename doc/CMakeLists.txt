@@ -12,10 +12,10 @@ configure_file(
 )
 add_custom_target(doc-md
 	COMMENT "Building Markdown documentation..."
-	DEPENDS bitcoind
-	DEPENDS bitcoin-qt
-	DEPENDS bitcoin-cli
-	DEPENDS bitcoin-tx
+	DEPENDS radiantd
+	DEPENDS radiant-qt
+	DEPENDS radiant-cli
+	DEPENDS radiant-tx
 	DEPENDS bitcoin-seeder
 	DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/gen-doc-md.sh"
 	COMMAND "${CMAKE_CURRENT_BINARY_DIR}/gen-doc-md.sh"
@@ -28,7 +28,7 @@ add_custom_target(doc-html
 )
 
 option(ENABLE_MAN "Enable manpages" ON)
-if(ENABLE_MAN AND BUILD_BITCOIN_DAEMON)
+if(ENABLE_MAN AND BUILD_RADIANT_DAEMON)
 	configure_file(
 		../cmake/utils/gen-doc-man-footer.sh.in
 		man/gen-doc-man-footer.sh
@@ -36,7 +36,7 @@ if(ENABLE_MAN AND BUILD_BITCOIN_DAEMON)
 	)
 	add_custom_command(
 		OUTPUT man/footer.h2m
-		DEPENDS bitcoind
+		DEPENDS radiantd
 		DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/man/gen-doc-man-footer.sh"
 		WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/man"
 		COMMAND ./gen-doc-man-footer.sh
@@ -49,77 +49,77 @@ if(ENABLE_MAN AND BUILD_BITCOIN_DAEMON)
 	include(GNUInstallDirs)
 	set(MAN_DESTINATION "${CMAKE_INSTALL_MANDIR}/man1")
 	add_custom_command(
-		OUTPUT man/bitcoind.1
-		DEPENDS bitcoind
+		OUTPUT man/radiantd.1
+		DEPENDS radiantd
 		DEPENDS man/footer.h2m
 		DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/man/gen-doc-man.sh"
 		WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/man"
-		COMMAND ./gen-doc-man.sh bitcoind
+		COMMAND ./gen-doc-man.sh radiantd
 	)
-	add_custom_target(doc-man-bitcoind
+	add_custom_target(doc-man-radiantd
 		ALL
-		DEPENDS man/bitcoind.1
+		DEPENDS man/radiantd.1
 	)
 	install(
-		FILES "${CMAKE_CURRENT_BINARY_DIR}/man/bitcoind.1"
+		FILES "${CMAKE_CURRENT_BINARY_DIR}/man/radiantd.1"
 		DESTINATION "${MAN_DESTINATION}"
-		COMPONENT bitcoind
+		COMPONENT radiantd
 	)
-	if(BUILD_BITCOIN_QT)
+	if(BUILD_RADIANT_QT)
 		add_custom_command(
-			OUTPUT man/bitcoin-qt.1
-			DEPENDS bitcoin-qt
+			OUTPUT man/radiant-qt.1
+			DEPENDS radiant-qt
 			DEPENDS man/footer.h2m
 			DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/man/gen-doc-man.sh"
 			WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/man"
-			COMMAND ./gen-doc-man.sh qt/bitcoin-qt
+			COMMAND ./gen-doc-man.sh qt/radiant-qt
 		)
-		add_custom_target(doc-man-bitcoin-qt
+		add_custom_target(doc-man-radiant-qt
 			ALL
-			DEPENDS man/bitcoin-qt.1
+			DEPENDS man/radiant-qt.1
 		)
 		install(
-			FILES "${CMAKE_CURRENT_BINARY_DIR}/man/bitcoin-qt.1"
+			FILES "${CMAKE_CURRENT_BINARY_DIR}/man/radiant-qt.1"
 			DESTINATION "${MAN_DESTINATION}"
-			COMPONENT bitcoin-qt
+			COMPONENT radiant-qt
 		)
 	endif()
-	if(BUILD_BITCOIN_CLI)
+	if(BUILD_RADIANT_CLI)
 		add_custom_command(
-			OUTPUT man/bitcoin-cli.1
-			DEPENDS bitcoin-cli
+			OUTPUT man/radiant-cli.1
+			DEPENDS radiant-cli
 			DEPENDS man/footer.h2m
 			DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/man/gen-doc-man.sh"
 			WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/man"
-			COMMAND ./gen-doc-man.sh bitcoin-cli
+			COMMAND ./gen-doc-man.sh radiant-cli
 		)
-		add_custom_target(doc-man-bitcoin-cli
+		add_custom_target(doc-man-radiant-cli
 			ALL
-			DEPENDS man/bitcoin-cli.1
+			DEPENDS man/radiant-cli.1
 		)
 		install(
-			FILES "${CMAKE_CURRENT_BINARY_DIR}/man/bitcoin-cli.1"
+			FILES "${CMAKE_CURRENT_BINARY_DIR}/man/radiant-cli.1"
 			DESTINATION "${MAN_DESTINATION}"
-			COMPONENT bitcoind
+			COMPONENT radiantd
 		)
 	endif()
-	if(BUILD_BITCOIN_TX)
+	if(BUILD_RADIANT_TX)
 		add_custom_command(
-			OUTPUT man/bitcoin-tx.1
-			DEPENDS bitcoin-tx
+			OUTPUT man/radiant-tx.1
+			DEPENDS radiant-tx
 			DEPENDS man/footer.h2m
 			DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/man/gen-doc-man.sh"
 			WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/man"
-			COMMAND ./gen-doc-man.sh bitcoin-tx
+			COMMAND ./gen-doc-man.sh radiant-tx
 		)
-		add_custom_target(doc-man-bitcoin-tx
+		add_custom_target(doc-man-radiant-tx
 			ALL
-			DEPENDS man/bitcoin-tx.1
+			DEPENDS man/radiant-tx.1
 		)
 		install(
-			FILES "${CMAKE_CURRENT_BINARY_DIR}/man/bitcoin-tx.1"
+			FILES "${CMAKE_CURRENT_BINARY_DIR}/man/radiant-tx.1"
 			DESTINATION "${MAN_DESTINATION}"
-			COMPONENT bitcoind
+			COMPONENT radiantd
 		)
 	endif()
 	if(BUILD_BITCOIN_SEEDER)
@@ -141,10 +141,10 @@ if(ENABLE_MAN AND BUILD_BITCOIN_DAEMON)
 		)
 	endif()
 	add_custom_target(doc-man
-		DEPENDS doc-man-bitcoind
-		DEPENDS doc-man-bitcoin-qt
-		DEPENDS doc-man-bitcoin-cli
-		DEPENDS doc-man-bitcoin-tx
+		DEPENDS doc-man-radiantd
+		DEPENDS doc-man-radiant-qt
+		DEPENDS doc-man-radiant-cli
+		DEPENDS doc-man-radiant-tx
 		DEPENDS doc-man-bitcoin-seeder
 	)
 endif()

@@ -167,7 +167,7 @@ WalletModel::prepareTransaction(WalletModelTransaction &transaction,
             total += subtotal;
         }
 
-        // User-entered Bitcoin Cash address / amount:
+        // User-entered Radiant address / amount:
         else
 #endif
         {

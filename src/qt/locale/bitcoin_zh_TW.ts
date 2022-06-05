@@ -85,12 +85,12 @@
     </message>
     <message>
       <location line="+8"/>
-      <source>These are your Bitcoin Cash addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
+      <source>These are your Radiant addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
       <translation type="unfinished"/>
     </message>
     <message>
       <location line="+8"/>
-      <source>These are your Bitcoin Cash addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
+      <source>These are your Radiant addresses for receiving payments. It is recommended to use a new receiving address for each transaction.</source>
       <translation type="unfinished"/>
     </message>
     <message>
@@ -325,7 +325,7 @@
     </message>
     <message>
       <location line="+8"/>
-      <source>Send coins to a Bitcoin Cash address</source>
+      <source>Send coins to a Radiant address</source>
       <translation type="unfinished"/>
     </message>
     <message>
@@ -400,12 +400,12 @@
     </message>
     <message>
       <location line="+7"/>
-      <source>Sign messages with your Bitcoin Cash addresses to prove you own them</source>
+      <source>Sign messages with your Radiant addresses to prove you own them</source>
       <translation type="unfinished"/>
     </message>
     <message>
       <location line="+5"/>
-      <source>Verify messages to ensure they were signed with specified Bitcoin Cash addresses</source>
+      <source>Verify messages to ensure they were signed with specified Radiant addresses</source>
       <translation type="unfinished"/>
     </message>
     <message>
@@ -993,7 +993,7 @@
     </message>
     <message>
       <location line="-11"/>
-      <source>The entered address &quot;%1&quot; is not a valid Bitcoin Cash address.</source>
+      <source>The entered address &quot;%1&quot; is not a valid Radiant address.</source>
       <translation type="unfinished"/>
     </message>
     <message>
@@ -1731,7 +1731,7 @@
     </message>
     <message>
       <location line="+8"/>
-      <source>URI cannot be parsed! This can be caused by an invalid Bitcoin Cash address or malformed URI parameters.</source>
+      <source>URI cannot be parsed! This can be caused by an invalid Radiant address or malformed URI parameters.</source>
       <translation type="unfinished"/>
     </message>
     <message>
@@ -1913,7 +1913,7 @@
     </message>
     <message>
       <location line="-773"/>
-      <source>Enter a Bitcoin Cash address (e.g. %1)</source>
+      <source>Enter a Radiant address (e.g. %1)</source>
       <translation type="unfinished"/>
     </message>
     <message numerus="yes">
@@ -2966,7 +2966,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of &quot;100 satos
     </message>
     <message>
       <location line="+101"/>
-      <source>Warning: Invalid Bitcoin Cash address</source>
+      <source>Warning: Invalid Radiant address</source>
       <translation type="unfinished"/>
     </message>
     <message>
@@ -3011,7 +3011,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of &quot;100 satos
     </message>
     <message>
       <location line="+18"/>
-      <source>The Bitcoin Cash address to send the payment to</source>
+      <source>The Radiant address to send the payment to</source>
       <translation type="unfinished"/>
     </message>
     <message>
@@ -3150,7 +3150,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of &quot;100 satos
     </message>
     <message>
       <location line="+18"/>
-      <source>The Bitcoin Cash address to sign the message with</source>
+      <source>The Radiant address to sign the message with</source>
       <translation type="unfinished"/>
     </message>
     <message>
@@ -3192,17 +3192,17 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of &quot;100 satos
     </message>
     <message>
       <location line="+21"/>
-      <source>Sign the message to prove you own this Bitcoin Cash address</source>
+      <source>Sign the message to prove you own this Radiant address</source>
       <translation type="unfinished"/>
     </message>
     <message>
       <location line="+106"/>
-      <source>The Bitcoin Cash address the message was signed with</source>
+      <source>The Radiant address the message was signed with</source>
       <translation type="unfinished"/>
     </message>
     <message>
       <location line="+37"/>
-      <source>Verify the message to ensure it was signed with the specified Bitcoin Cash address</source>
+      <source>Verify the message to ensure it was signed with the specified Radiant address</source>
       <translation type="unfinished"/>
     </message>
     <message>
@@ -3977,7 +3977,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of &quot;100 satos
     </message>
   </context>
   <context>
-    <name>bitcoin-cash-node</name>
+    <name>radiant-node</name>
     <message>
       <location filename="../bitcoinstrings.cpp" line="+28"/>
       <source>Distributed under the MIT software license, see the accompanying file %s or %s</source>

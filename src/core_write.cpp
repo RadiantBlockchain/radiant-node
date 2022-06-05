@@ -223,12 +223,6 @@ UniValue::Object ScriptPubKeyToUniv(const Config &config, const CScript &scriptP
         out.emplace_back("addresses", std::move(a));
     }
 
-    if (fIncludeP2SH && type != TX_SCRIPTHASH) {
-        // P2SH cannot be wrapped in a P2SH. If this script is already a P2SH,
-        // don't return the address for a P2SH of the P2SH.
-        out.emplace_back("p2sh", EncodeDestination(CScriptID(scriptPubKey), config));
-    }
-
     return out;
 }
 

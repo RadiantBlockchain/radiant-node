@@ -275,7 +275,7 @@ static UniValue getmininginfo(const Config &config,
     return obj;
 }
 
-// NOTE: Unlike wallet RPC (which use BCH values), mining RPCs follow GBT (BIP
+// NOTE: Unlike wallet RPC (which use RAD values), mining RPCs follow GBT (BIP
 // 22) in using satoshi amounts
 static UniValue prioritisetransaction(const Config &config,
                                       const JSONRPCRequest &request) {
@@ -448,12 +448,12 @@ static UniValue getblocktemplatecommon(bool fLight, const Config &config, const 
 
     if (g_connman->GetNodeCount(CConnman::CONNECTIONS_ALL) == 0) {
         throw JSONRPCError(RPC_CLIENT_NOT_CONNECTED,
-                           "Bitcoin is not connected!");
+                           "Radiant is not connected!");
     }
 
     if (IsInitialBlockDownload()) {
         throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD,
-                           "Bitcoin is downloading blocks...");
+                           "Radiant is downloading blocks...");
     }
 
     static unsigned int nTransactionsUpdatedLast;
@@ -600,14 +600,6 @@ static UniValue getblocktemplatecommon(bool fLight, const Config &config, const 
                 }
             }
             LogPrint(BCLog::RPC, "added %d additional_txs to block template\n", size);
-            const Consensus::Params &consensusParams = config.GetChainParams().GetConsensus();
-            if (IsMagneticAnomalyEnabled(consensusParams, pindexPrev)) {
-                auto start = pvtx->front()->IsCoinBase() ? std::next(pvtx->begin()) : pvtx->begin();
-                std::sort(start, pvtx->end(),
-                          [](const CTransactionRef &a, const CTransactionRef &b) -> bool {
-                              return a->GetId() < b->GetId();
-                          });
-            }
             // From this point forward the fLight code below must operate on the pvtx (private copy) of the tx set,
             // and not pblock->vtx.
         }

@@ -23,7 +23,7 @@ from .messages import (
 )
 
 
-MAX_SCRIPT_ELEMENT_SIZE = 520
+MAX_SCRIPT_ELEMENT_SIZE_LEGACY = 520
 
 OPCODE_NAMES = {}  # type: Dict[CScriptOp, str]
 

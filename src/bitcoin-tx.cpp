@@ -339,19 +339,6 @@ static void MutateTxAddOutPubKey(CMutableTransaction &tx,
 
     CScript scriptPubKey = GetScriptForRawPubKey(pubkey);
 
-    // Extract and validate FLAGS
-    bool bScriptHash = false;
-    if (vStrInputParts.size() == 3) {
-        std::string flags = vStrInputParts[2];
-        bScriptHash = (flags.find('S') != std::string::npos);
-    }
-
-    if (bScriptHash) {
-        // Get the ID for the script, and then construct a P2SH destination for
-        // it.
-        scriptPubKey = GetScriptForDestination(CScriptID(scriptPubKey));
-    }
-
     // construct TxOut, append to transaction output list
     CTxOut txout(value, scriptPubKey);
     tx.vout.push_back(txout);
@@ -401,27 +388,12 @@ static void MutateTxAddOutMultiSig(CMutableTransaction &tx,
     }
 
     // Extract FLAGS
-    bool bScriptHash = false;
-    if (vStrInputParts.size() == numkeys + 4) {
-        std::string flags = vStrInputParts.back();
-        bScriptHash = (flags.find('S') != std::string::npos);
-    } else if (vStrInputParts.size() > numkeys + 4) {
+    if (vStrInputParts.size() > numkeys + 4) {
         // Validate that there were no more parameters passed
         throw std::runtime_error("Too many parameters");
     }
 
     CScript scriptPubKey = GetScriptForMultisig(required, pubkeys);
-
-    if (bScriptHash) {
-        if (scriptPubKey.size() > MAX_SCRIPT_ELEMENT_SIZE) {
-            throw std::runtime_error(
-                strprintf("redeemScript exceeds size limit: %d > %d",
-                          scriptPubKey.size(), MAX_SCRIPT_ELEMENT_SIZE));
-        }
-        // Get the ID for the script, and then construct a P2SH destination for
-        // it.
-        scriptPubKey = GetScriptForDestination(CScriptID(scriptPubKey));
-    }
 
     // construct TxOut, append to transaction output list
     CTxOut txout(value, scriptPubKey);

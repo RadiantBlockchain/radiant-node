@@ -1,6 +1,6 @@
 # TOR SUPPORT IN BITCOIN
 
-It is possible to run Bitcoin Cash Node as a Tor onion service, and connect to
+It is possible to run Radiant Node as a Tor onion service, and connect to
 such services.
 
 The following directions assume you have a Tor proxy running on port 9050. Many
@@ -9,9 +9,9 @@ may not. In particular, the Tor Browser Bundle defaults to listening on port 915
 See [Tor Project FAQ:TBBSocksPort](https://www.torproject.org/docs/faq.html.en#TBBSocksPort)
 for how to properly configure Tor.
 
-## 1. Run Bitcoin Cash Node behind a Tor proxy
+## 1. Run Radiant Node behind a Tor proxy
 
-The first step is running Bitcoin Cash Node behind a Tor proxy. This will already
+The first step is running Radiant Node behind a Tor proxy. This will already
 anonymize all outgoing connections, but more is possible.
 
     -proxy=ip:port  Set the proxy server. If SOCKS5 is selected (default), this proxy
@@ -34,7 +34,7 @@ In a typical situation, this suffices to run behind a Tor proxy:
 
     ./bitcoind -proxy=127.0.0.1:9050
 
-## 2. Run a Bitcoin Cash Node hidden server
+## 2. Run a Radiant Node hidden server
 
 If you configure your Tor system accordingly, it is possible to make your node also
 reachable from the Tor network. Add these lines to your /etc/tor/torrc (or equivalent
@@ -100,7 +100,7 @@ This means that if Tor is running (and proper authentication has been configured
 Bitcoin Core automatically creates an onion service to listen on. This will positively
 affect the number of available .onion nodes.
 
-This new feature is enabled by default if Bitcoin Cash Node is listening (`-listen`),
+This new feature is enabled by default if Radiant Node is listening (`-listen`),
 and requires a Tor connection to work. It can be explicitly disabled with
 `-listenonion=0` and, if not disabled, configured using the `-torcontrol` and
 `-torpassword` settings. To show verbose debugging information, pass `-debug=tor`.
@@ -118,7 +118,7 @@ alternative authentication method is the use of the `-torpassword` flag and a
 
 ## 4. Privacy recommendations
 
-- Do not add anything but Bitcoin Cash Node ports to the onion service created
+- Do not add anything but Radiant Node ports to the onion service created
   in section 2.
   If you run a web service too, create a new onion service for that.
   Otherwise it is trivial to link them, which may reduce privacy. Hidden

@@ -10,7 +10,7 @@
 # The test vectors must be in 'run*' text files in the current directory.
 # These run files are produced by the gen_asert_test_vectors program
 # which can be built using the Makefile in this folder (you will first
-# need to do a build of BCHN itself. See the description in the Makefile.
+# need to do a build of RADN itself. See the description in the Makefile.
 #
 # If arguments are given, they must be the names of run* files in the
 # current directory.

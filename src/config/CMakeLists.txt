@@ -8,9 +8,9 @@ include(CheckSymbolExists)
 include(CheckCXXSourceCompiles)
 
 # Version
-set(CLIENT_VERSION_MAJOR ${bitcoin-cash-node_VERSION_MAJOR})
-set(CLIENT_VERSION_MINOR ${bitcoin-cash-node_VERSION_MINOR})
-set(CLIENT_VERSION_REVISION ${bitcoin-cash-node_VERSION_PATCH})
+set(CLIENT_VERSION_MAJOR ${radiant-node_VERSION_MAJOR})
+set(CLIENT_VERSION_MINOR ${radiant-node_VERSION_MINOR})
+set(CLIENT_VERSION_REVISION ${radiant-node_VERSION_PATCH})
 
 option(CLIENT_VERSION_IS_RELEASE "Build a release version" OFF)
 
@@ -197,14 +197,14 @@ else()
 endif()
 
 # Activate wallet
-set(ENABLE_WALLET ${BUILD_BITCOIN_WALLET})
+set(ENABLE_WALLET ${BUILD_RADIANT_WALLET})
 
 # Activate ZeroMQ
 set(ENABLE_ZMQ ${BUILD_BITCOIN_ZMQ})
 
 # Try to find libqrencode
 # Only used in the wallet GUI
-if(ENABLE_QRCODE AND BUILD_BITCOIN_WALLET AND BUILD_BITCOIN_QT)
+if(ENABLE_QRCODE AND BUILD_RADIANT_WALLET AND BUILD_RADIANT_QT)
 	set(USE_QRCODE 1 CACHE INTERNAL "QR code is enabled")
 endif()
 

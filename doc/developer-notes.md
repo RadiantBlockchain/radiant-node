@@ -231,7 +231,7 @@ for tests that run in `-regtest` mode.
 
 ### DEBUG_LOCKORDER
 
-Bitcoin Cash Node is a multi-threaded application, and deadlocks or other
+Radiant Node is a multi-threaded application, and deadlocks or other
 multi-threading bugs can be very difficult to track down.
 The `-DCMAKE_BUILD_TYPE=Debug` cmake option adds `-DDEBUG_LOCKORDER` to the
 compiler flags. This inserts run-time checks to keep track of which locks are
@@ -278,7 +278,7 @@ to the `cmake` command line.
 
 ### Sanitizers
 
-Bitcoin Cash Node can be compiled with various "sanitizers" enabled, which add
+Radiant Node can be compiled with various "sanitizers" enabled, which add
 instrumentation for issues regarding things like memory safety, thread race
 conditions, or undefined behavior. This is controlled with the
 `-DENABLE_SANITIZERS` cmake flag, which should be a semicolon separated list of
@@ -415,7 +415,7 @@ and its `cs_KeyStore` lock for example).
 In closed-source environments in which everyone uses the same IDE it is common
 to add temporary files it produces to the project-wide `.gitignore` file.
 
-However, in open source software such as Bitcoin Cash Node, where everyone uses
+However, in open source software such as Radiant Node, where everyone uses
 their own editors/IDE/tools, it is less common. Only you know what files your
 editor produces and this may change from version to version. The canonical way
 to do this is thus to create your local gitignore. Add this to `~/.gitconfig`:
@@ -445,7 +445,7 @@ and commit them.
 ## Development guidelines
 
 A few non-style-related recommendations for developers, as well as points to
-pay attention to for reviewers of Bitcoin Cash Node code.
+pay attention to for reviewers of Radiant Node code.
 
 ### Wallet
 
@@ -730,7 +730,7 @@ Current subtrees include:
     - Upstream at [https://github.com/bitcoin-core/ctaes](https://github.com/bitcoin-core/ctaes);
       actively maintained by Core contributors.
 - src/univalue
-    - BCHN no longer has a single upstream for `src/univalue`, but maintains its
+    - RADN no longer has a single upstream for `src/univalue`, but maintains its
       own univalue code based on fixes from several repositories, namely [https://github.com/jgarzik/univalue](https://github.com/jgarzik/univalue),
       Bitcoin Core's fork of univalue and the Bitcoin ABC repository.
 
@@ -784,7 +784,7 @@ changes affecting what data is returned from LevelDB queries.
 
 - See CONTRIBUTING.md for instructions on setting up your repo correctly.
 
-- Your git remote origin should be set to: `git@gitlab.com:username/bitcoin-cash-node.git`
+- Your git remote origin should be set to: `git@gitlab.com:username/radiant-node.git`
   where `username` is your account name on GitLab. See CONTRIBUTING.md for details.
 
 - For resolving merge/rebase conflicts, it can be useful to enable diff3 style using
@@ -834,7 +834,7 @@ changes affecting what data is returned from LevelDB queries.
 
   ```
   [remote "upstream-merges"]
-          url = git@gitlab.com:bitcoin-cash-node/bitcoin-cash-node.git
+          url = git@gitlab.com:radiant-node/radiant-node.git
           fetch = +refs/merge-requests/*/head:refs/remotes/upstream-merges/merge-requests/*
   ```
 

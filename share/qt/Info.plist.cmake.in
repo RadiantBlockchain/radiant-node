@@ -60,7 +60,7 @@
       <key>UTTypeIdentifier</key>
       <string>org.bitcoincash.paymentrequest</string>
       <key>UTTypeDescription</key>
-      <string>Bitcoin Cash payment request</string>
+      <string>Radiant payment request</string>
       <key>UTTypeConformsTo</key>
       <array>
         <string>public.data</string>

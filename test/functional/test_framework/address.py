@@ -2,7 +2,7 @@
 # Copyright (c) 2016-2019 The Bitcoin Core developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
-"""Encode and decode BASE58, P2PKH and P2SH addresses."""
+"""Encode and decode BASE58, P2PKH addresses."""
 
 import unittest
 
@@ -102,22 +102,9 @@ def keyhash_to_p2pkh(hash, main=False):
     version = 0 if main else 111
     return byte_to_base58(hash, version)
 
-
-def scripthash_to_p2sh(hash, main=False):
-    assert (len(hash) == 20)
-    version = 5 if main else 196
-    return byte_to_base58(hash, version)
-
-
 def key_to_p2pkh(key, main=False):
     key = check_key(key)
     return keyhash_to_p2pkh(hash160(key), main)
-
-
-def script_to_p2sh(script, main=False):
-    script = check_script(script)
-    return scripthash_to_p2sh(hash160(script), main)
-
 
 def check_key(key):
     if (isinstance(key, str)):

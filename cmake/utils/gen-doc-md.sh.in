@@ -43,21 +43,21 @@ sed -i s/\]\(COPYING\)/\]\(COPYING.md\)/ md/README.md
 
 # Generate command-line interface documentation.
 mkdir -p md/doc/cli
-"@CMAKE_SOURCE_DIR@/contrib/devtools/cli-help-to-markdown.py" "$(../src/bitcoind -??)" > md/doc/cli/bitcoind.md
+"@CMAKE_SOURCE_DIR@/contrib/devtools/cli-help-to-markdown.py" "$(../src/radiantd -??)" > md/doc/cli/radiantd.md
 if [ "@CMAKE_SYSTEM_NAME@" == "Darwin" ]; then
   "@CMAKE_SOURCE_DIR@/contrib/devtools/cli-help-to-markdown.py" "$("../src/qt/@BITCOIN_QT_OSX_BUNDLE_NAME@.app/Contents/MacOS/@BITCOIN_QT_OSX_BUNDLE_NAME@" -??)" > md/doc/cli/bitcoin-qt.md
 else
   "@CMAKE_SOURCE_DIR@/contrib/devtools/cli-help-to-markdown.py" "$(../src/qt/bitcoin-qt -??)" > md/doc/cli/bitcoin-qt.md
 fi
-"@CMAKE_SOURCE_DIR@/contrib/devtools/cli-help-to-markdown.py" "$(../src/bitcoin-cli -?)" > md/doc/cli/bitcoin-cli.md
-"@CMAKE_SOURCE_DIR@/contrib/devtools/cli-help-to-markdown.py" "$(../src/bitcoin-tx -?)" > md/doc/cli/bitcoin-tx.md
-"@CMAKE_SOURCE_DIR@/contrib/devtools/cli-help-to-markdown.py" "$(../src/seeder/bitcoin-seeder -?)" > md/doc/cli/bitcoin-seeder.md
+"@CMAKE_SOURCE_DIR@/contrib/devtools/cli-help-to-markdown.py" "$(../src/radiant-cli -?)" > md/doc/cli/radiant-cli.md
+"@CMAKE_SOURCE_DIR@/contrib/devtools/cli-help-to-markdown.py" "$(../src/radiant-tx -?)" > md/doc/cli/radiant-tx.md
+"@CMAKE_SOURCE_DIR@/contrib/devtools/cli-help-to-markdown.py" "$(../src/seeder/radiant-seeder -?)" > md/doc/cli/radiant-seeder.md
 
 # Start a regtest node in a temporary data directory.
 mkdir -p md/doc/json-rpc/tmp
-../src/bitcoind -daemon -debuglogfile=0 -regtest -datadir="@CMAKE_CURRENT_BINARY_DIR@/md/doc/json-rpc/tmp" -rpcuser=gen-manpages -rpcpassword=gen-manpages
+../src/radiantd -daemon -debuglogfile=0 -regtest -datadir="@CMAKE_CURRENT_BINARY_DIR@/md/doc/json-rpc/tmp" -rpcuser=gen-manpages -rpcpassword=gen-manpages
 # Get daemon version which will be included in footer.
-version="$(../src/bitcoind -version | head -n1)"
+version="$(../src/radiantd -version | head -n1)"
 # Iterate over the existing mkdocs file and locate the entry for json-rpc/README.md.
 while IFS= read -r line; do
   # Copy existing mkdocs entries into the new mkdocs file.
@@ -71,10 +71,10 @@ while IFS= read -r line; do
     # The list of RPC commands will be inserted into the new mkdocs file below the readme entry.
     # Get the list of RPC commands from the node and process it.
     {
-        echo "Bitcoin Cash Node JSON-RPC commands"
+        echo "Radiant Node JSON-RPC commands"
         echo "==================================="
     } > md/doc/json-rpc/README.md
-    ../src/bitcoin-cli -rpcwait -regtest -datadir="@CMAKE_CURRENT_BINARY_DIR@/md/doc/json-rpc/tmp" -rpcuser=gen-manpages -rpcpassword=gen-manpages help | while read -r helpline; do
+    ../src/radiant-cli -rpcwait -regtest -datadir="@CMAKE_CURRENT_BINARY_DIR@/md/doc/json-rpc/tmp" -rpcuser=gen-manpages -rpcpassword=gen-manpages help | while read -r helpline; do
       if [ -n "$helpline" ]; then
         if [[ "$helpline" =~ ^==[[:space:]](.*)[[:space:]]==$ ]]; then
           # Found a category.
@@ -93,7 +93,7 @@ while IFS= read -r line; do
           # Write command to new mkdocs file.
           echo "$indentation    - $command: doc/json-rpc/$command.md" >> mkdocs.yml
           # Create command help page.
-          "@CMAKE_SOURCE_DIR@/contrib/devtools/rpc-help-to-markdown.py" "$(../src/bitcoin-cli -rpcwait -regtest -datadir="@CMAKE_CURRENT_BINARY_DIR@/md/doc/json-rpc/tmp" -rpcuser=gen-manpages -rpcpassword=gen-manpages help $command)" > "md/doc/json-rpc/$command.md"
+          "@CMAKE_SOURCE_DIR@/contrib/devtools/rpc-help-to-markdown.py" "$(../src/radiant-cli -rpcwait -regtest -datadir="@CMAKE_CURRENT_BINARY_DIR@/md/doc/json-rpc/tmp" -rpcuser=gen-manpages -rpcpassword=gen-manpages help $command)" > "md/doc/json-rpc/$command.md"
           {
               echo
               echo "***"
@@ -118,7 +118,7 @@ while IFS= read -r line; do
   fi
 done < "@CMAKE_CURRENT_SOURCE_DIR@/mkdocs.yml.in"
 # Stop the regtest node.
-../src/bitcoin-cli -rpcwait -regtest -datadir="@CMAKE_CURRENT_BINARY_DIR@/md/doc/json-rpc/tmp" -rpcuser=gen-manpages -rpcpassword=gen-manpages stop
+../src/radiant-cli -rpcwait -regtest -datadir="@CMAKE_CURRENT_BINARY_DIR@/md/doc/json-rpc/tmp" -rpcuser=gen-manpages -rpcpassword=gen-manpages stop
 # Remove the temporary node data directory.
 rm -r md/doc/json-rpc/tmp
 
@@ -142,7 +142,7 @@ else
   for md in "${file_list[@]}"; do
     {
         echo ""
-        echo "<small>Documentation on docs.bitcoincashnode.org reflects the current master branch in Git, and may include API changes that are not yet present in the latest release.</small>"
+        echo "<small>Documentation on docs.radiantblockchain.org reflects the current master branch in Git, and may include API changes that are not yet present in the latest release.</small>"
     } >> "$md"
   done
 fi

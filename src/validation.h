@@ -64,7 +64,7 @@ struct Params;
     (::GetSerializeSize(CTransaction::null, PROTOCOL_VERSION))
 
 /** Default for -minrelaytxfee, minimum relay fee for transactions */
-static constexpr Amount DEFAULT_MIN_RELAY_TX_FEE_PER_KB(1000 * SATOSHI);
+static constexpr Amount DEFAULT_MIN_RELAY_TX_FEE_PER_KB(100 * SATOSHI);
 /** Default for -excessutxocharge for transactions transactions */
 static constexpr Amount DEFAULT_UTXO_FEE = Amount::zero();
 //! -maxtxfee default
@@ -79,7 +79,7 @@ static constexpr Amount HIGH_MAX_TX_FEE(100 * HIGH_TX_FEE_PER_KB);
  * Default for -mempoolexpiry, expiration time for mempool transactions in
  * hours.
  */
-static constexpr unsigned int DEFAULT_MEMPOOL_EXPIRY = 336;
+static constexpr unsigned int DEFAULT_MEMPOOL_EXPIRY = 16;
 /**
  *  Default for -mempoolexpiryperiod, execute the mempool transaction expiration
  *  this often (in hours).
@@ -152,7 +152,7 @@ static constexpr int64_t MAX_FEE_ESTIMATION_TIP_AGE = 3 * 60 * 60;
 /** Default for -permitbaremultisig */
 static constexpr bool DEFAULT_PERMIT_BAREMULTISIG = true;
 static constexpr bool DEFAULT_CHECKPOINTS_ENABLED = true;
-static constexpr bool DEFAULT_TXINDEX = false;
+static constexpr bool DEFAULT_TXINDEX = true;
 static constexpr unsigned int DEFAULT_BANSCORE_THRESHOLD = 100;
 
 /** Default for -persistmempool */
@@ -816,3 +816,226 @@ bool LoadDSProofs(CTxMemPool &pool);
 
 //! Check whether the block associated with this index entry is pruned or not.
 bool IsBlockPruned(const CBlockIndex *pblockindex);
+
+class Converters {
+
+    public:
+    static void uint32_to_ByteArrayLE (uint32_t x, uint8_t* byteArray)
+    {
+    // explicit casts will prevent implicit conversion warnings:
+    byteArray[0] = (uint8_t)(x >>  0);
+    byteArray[1] = (uint8_t)(x >>  8);
+    byteArray[2] = (uint8_t)(x >> 16);
+    byteArray[3] = (uint8_t)(x >> 24);
+    }
+
+    static void ByteArrayLE_to_uint32 (const uint8_t* byteArray, uint32_t* x)
+    {
+    /* casts -before- shifting are necessary to prevent integer promotion 
+        and to make the code portable no matter integer size: */
+
+    *x = (uint32_t)byteArray[0] <<  0 | 
+        (uint32_t)byteArray[1] <<  8 | 
+        (uint32_t)byteArray[2] << 16 | 
+        (uint32_t)byteArray[3] << 24;
+    }
+
+    static uint288 fromOutpoint(const COutPoint& outpoint) {
+        TxId txid = outpoint.GetTxId();
+        std::vector<uint8_t> assetId;
+        // Copy the transaction id
+        for (uint8_t* ptr = txid.begin(); ptr != txid.end(); ptr++) {
+            assetId.push_back(*ptr);
+        }
+        // Get the LE of the 4 byte vout N
+        uint32_t n = outpoint.GetN();
+        uint8_t arr[4];
+        Converters::uint32_to_ByteArrayLE(n, arr);
+        assetId.push_back(arr[0]);
+        assetId.push_back(arr[1]);
+        assetId.push_back(arr[2]);
+        assetId.push_back(arr[3]);
+        return uint288(assetId);
+    }
+
+    static COutPoint toOutpoint(uint288& val) {
+        int counter = 0;
+        std::vector<uint8_t> txid;
+        for (counter = 0; counter < 32; counter++) {
+            txid.push_back(( *(val.begin() + counter)));
+        }
+        uint32_t u32;
+        Converters::ByteArrayLE_to_uint32(val.begin() + 32, &u32);
+        return COutPoint(TxId(uint256(txid)), u32);
+    }
+};
+
+/**
+ * @brief Contains the logic for the induction proofs using the OP_PUSHINPUTREF, OP_REQUIREINPUTREFs, etc codes.
+ * 
+ */
+class ReferenceParser {
+
+    public:
+
+    /**
+     * @brief Get the push, required and disallowed refs from a script
+     * 
+     * @param script the script to scan
+     * @param pushRefSet The found push refs
+     * @param requireRefSet The found require refs
+     * @param disallowSiblingsRefSet The found disallowed sibling refs
+     * @return true 
+     * @return false 
+     */
+    static bool buildRefSetFromScript(const CScript& script, std::set<uint288> &pushRefSet, std::set<uint288> &requireRefSet, std::set<uint288> &disallowSiblingsRefSet) {
+        return script.GetPushRefs(pushRefSet, requireRefSet, disallowSiblingsRefSet);
+    }
+    /**
+     * @brief Validates that the push and require refs are present in the inputs for the outputs
+     * 
+     * @param inputRefSet The input ref set to check
+     * @param outputPushRefSet The output refs requied from the input ref set
+     * @return true 
+     * @return false 
+     */
+    static bool validatePushRefRule(const std::set<uint288> &inputRefSet, const std::set<uint288> &outputPushRefSet) {
+        // Save the push ref set difference into pushRefResultSet
+        std::set<uint288> pushRefResultSet;
+        // Get an insert iterator to be able to add to the pushRefResultSet container
+        std::insert_iterator< std::set<uint288> > insertPushIter (pushRefResultSet, pushRefResultSet.begin());
+        std::set_difference(outputPushRefSet.begin(), outputPushRefSet.end(), inputRefSet.begin(), inputRefSet.end(), insertPushIter);
+        
+        // ReferenceParser::pushRefPrinter(inputRefSet, std::string("Inputs"));
+        // ReferenceParser::pushRefPrinter(outputPushRefSet, std::string("Outputs"));
+
+        // The rule is fulfilled if all the set elements outputPushRefSet appear in the inputRefSet
+        if (pushRefResultSet.size() != 0) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @brief Validate that no disallowed reference is present in a sibling output.
+     * 
+     * This function runs in linear time in the number of push reference instances
+     * 
+     * @param outputVec Vector of sets of push refs per output index. There are exactly the same number of elements as outputs in the tx
+     * @param onlyAllowedMap The mapping of push refs to allowable output index
+     * @return true 
+     * @return false 
+     */
+    static bool validateDisallowedSiblingsRefRule(const std::vector<std::set<uint288>>& outputVec, const std::map<uint288, size_t> &onlyAllowedMap) {
+        // The strategy is to loop over all found push refs in each output and then cross check it against whether it is in the onlyAllowedMap
+        // The onlyAllowedMap is built up to specify the only possible potential output index a push ref could appear
+        std::vector<std::set<uint288>>::const_iterator outputVecIt;
+        size_t i = 0;   // Track which index we are iterating over
+        for (outputVecIt = outputVec.begin(); outputVecIt != outputVec.end(); outputVecIt++) {
+            std::set<uint288>::const_iterator setIt;
+            // For each ref in the outputVector, check it against the onlyAllowedMap
+            for (setIt = (*outputVecIt).begin(); setIt != (*outputVecIt).end(); setIt++) {
+                // Do a find, if it's returned then we will need to cross check to make sure this reference appears only in the designated allowed output
+                std::map<uint288, size_t>::const_iterator onlyAllowedIndexIt = onlyAllowedMap.find(*setIt);
+                if (onlyAllowedIndexIt != onlyAllowedMap.end()) {
+                    // We have a current reference that is designed to be allowed to appear in only a specific output.
+                    // Check it.
+                    if (onlyAllowedIndexIt->second != i) {
+                        // No, it is not allowed to be here since the current output index i is not in the onlyAllowedMap
+                        return false;
+                    }
+                } 
+            }
+            i++;
+        }
+        return true;
+    }
+
+    /**
+     * @brief Utility function to print out references (used for debugging only)
+     * 
+     * @param pushRefSet 
+     * @param prefix 
+     */
+    static void pushRefPrinter(const std::set<uint288> &pushRefSet, const std::string& prefix) {
+        std::set<uint288>::iterator inputIt;
+        for (inputIt = pushRefSet.begin(); inputIt != pushRefSet.end(); inputIt++) {
+            std::cerr << prefix << " : " << inputIt->GetHex() << std::endl; 
+        }
+    }
+
+    /**
+     * @brief Validate the induction rules for OP_PUSHINPUTREF, OP_REQUIREINPUTREF, and OP_DISALLOWPUSHINPUTREFSIBLING
+     * 
+     * @param tx Transaction to validate
+     * @param view Lookup the prev inputs outputs
+     * @return true 
+     * @return false 
+     */
+    static bool validateTransactionReferenceOperations(const CTransaction &tx, CCoinsViewCache &view) {
+        if (tx.IsCoinBase()) {
+            return false;
+        }
+
+        std::set<uint288> outputPushRefSet;
+        std::set<uint288> outputRequireRefSet;
+        std::map<uint288, size_t> onlyAllowedRefMap;  // Store the only allowed references in a map from ref->outputIndex (generate from OP_DISALLOWPUSHREFSIBLING)
+        std::vector<std::set<uint288>> outputVec;
+        for (size_t o = 0; o < tx.vout.size(); o++) {
+            std::set<uint288> outputDisallowSiblingRefSet;
+            std::set<uint288> outputPushRefSetLocal;
+            if (!ReferenceParser::buildRefSetFromScript(tx.vout[o].scriptPubKey, outputPushRefSetLocal, outputRequireRefSet, outputDisallowSiblingRefSet)) {
+                return false;
+            }
+            // The following section is for the maintenance of OP_DISALLOWPUSHREFSIBLING data to be used to check further below
+            // If there are any outputDisallowSiblingRefSet, then it means only the *current* output is potentially allowed to have references, none other
+            // The reason for this data struture is we can quickly look up whether an output is disallowed or not
+            std::set<uint288>::const_iterator disallowIt;
+            for (disallowIt = outputDisallowSiblingRefSet.begin(); disallowIt != outputDisallowSiblingRefSet.end(); disallowIt++) {
+                // The OP_DISALLOWPUSHREFSIBLING cannot appear in more that one output
+                if (onlyAllowedRefMap.find(*disallowIt) != onlyAllowedRefMap.end()) {
+                    // Just fail if it was found in another place too
+                    return false;
+                }
+                // Designate the reference as only possible to be allowed in the *current* input, by definition
+                // Later we use the onlyAllowedRefMap to cross check if there is a violation and those refs were used in other outputs where they should not
+                onlyAllowedRefMap.insert(std::make_pair(*disallowIt, o));
+            }
+            // For the current output we save all of the references found
+            outputVec.push_back(outputPushRefSetLocal);
+            // The code above in this for-loop is for the maintenance of OP_DISALLOWPUSHREFSIBLING data
+
+            // Finish up....
+            // Merge in the local outputPushRefSetLocal to the outputPushRefSet
+            outputPushRefSet.insert(outputPushRefSetLocal.begin(), outputPushRefSetLocal.end());
+        }
+
+        // If there are no push and require refs, then this automatically succeeds
+        if (!outputPushRefSet.size() && !outputRequireRefSet.size()) {
+            return true;
+        }
+
+        std::set<uint288> inputPushRefSet;
+        std::set<uint288> inputRequireRefSet;           // Not used, but we save it anyways
+        std::set<uint288> inputDisallowSiblingRefSet;   // Not used, but we save it anyways
+        for (uint32_t i = 0; i < tx.vin.size(); i++) {
+            // Add the parent input outpoint 
+            COutPoint prevOutpoint(tx.vin[i].prevout.GetTxId(), tx.vin[i].prevout.GetN());
+            inputPushRefSet.insert(Converters::fromOutpoint(prevOutpoint));
+            // Scan the parent input output's script
+            auto output = view.GetOutputFor(tx.vin[i]);
+            if (!ReferenceParser::buildRefSetFromScript(output.scriptPubKey, inputPushRefSet, inputRequireRefSet, inputDisallowSiblingRefSet)) {
+                return false;
+            }
+        }
+        // Verify that every push ref in an output is found in the input script (or matches the input outpoint being spent)
+        bool pushRefSatisfied = ReferenceParser::validatePushRefRule(inputPushRefSet, outputPushRefSet);
+        // Verify that every require ref in an output is found in the input script (or matches the input outpoint being spent)
+        bool requireRefSatisfied = ReferenceParser::validatePushRefRule(inputPushRefSet, outputRequireRefSet);
+        // Verify that any disallowed sibling references are not found in a sibling output
+        // Practically this means we can have singleton like outputs and ensure a reference is only passed on in one output even when using SIGHASH_SINGLE
+        bool disallowSiblingRefSatisfied = ReferenceParser::validateDisallowedSiblingsRefRule(outputVec, onlyAllowedRefMap);
+        return pushRefSatisfied && requireRefSatisfied && disallowSiblingRefSatisfied;
+    }
+
+};
