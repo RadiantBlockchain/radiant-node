@@ -14,7 +14,6 @@
 
 static std::map<std::string, uint32_t> mapFlagNames = {
     {"NONE", SCRIPT_VERIFY_NONE},
-    {"P2SH", SCRIPT_VERIFY_P2SH},
     {"STRICTENC", SCRIPT_VERIFY_STRICTENC},
     {"DERSIG", SCRIPT_VERIFY_DERSIG},
     {"LOW_S", SCRIPT_VERIFY_LOW_S},

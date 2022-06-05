@@ -249,7 +249,7 @@ void UniValue::operator=(double val_)
     // C-locale since it's a global object and is not thread-safe.
     //
     // So, for doubles we must fall-back to using the (slower) std::ostringstream.
-    // See BCHN issue #137.
+    // See RADN issue #137.
     std::ostringstream oss;
     oss.imbue(std::locale::classic());
     oss << std::setprecision(16) << val_;

@@ -12,7 +12,7 @@
     - Run `arc lint $(find contrib/)` and check there is no linter error
     - Run `arc lint *.md $(find doc/)` from top level folder and check there
       are no new linter error (except a suggestion to fix 'reenable' spelling
-      in an URL in `doc/bch-upgrades.md`, a suggestion which should be ignored.
+      in an URL in `doc/rad-upgrades.md`, a suggestion which should be ignored.
     - Run `arc lint` on any Markdown or other text documents within `src/`
       and `depends/` which are not from third-party sources.
       "Our" documents within `src/` and `depends/` should all be clean.
@@ -22,7 +22,7 @@
       Manually test bitcoin-qt by sending some transactions and navigating
       through the menus.
 3. Update the documents / code which needs to be updated every release
-    - Update [bips.md](bips.md) and [bch-upgrades.md](bch-upgrades.md) to account
+    - Update [bips.md](bips.md) and [rad-upgrades.md](rad-upgrades.md) to account
       for changes since the last release.
     - (major releases) Update [`BLOCK_CHAIN_SIZE`](../src/qt/intro.cpp) to the
       current size plus some overhead.
@@ -54,20 +54,20 @@
 1. Create Gitian Builds (see [gitian-building.md](gitian-building.md))
 2. Verify matching Gitian Builds, gather signatures
 3. Verify IBD bith with and without `-checkpoints=0 -assumevalid=0`
-4. Upload Gitian Builds to [bitcoincashnode.org](https://bitcoincashnode.org/)
-5. Create a [release](https://github.com/bitcoin-cash-node/bitcoin-cash-node)
+4. Upload Gitian Builds to [radiantblockchain.org](https://radiantblockchain.org/)
+5. Create a [release](https://github.com/radiantblockchain/radiant-node)
    on our GitHub mirror: `contrib/release/github-release.sh -a <path to release binaries> -t <release tag> -o <file containing your Github OAuth token>`
-6. Create [Ubuntu PPA packages](https://launchpad.net/~bitcoin-cash-node/+archive/ubuntu/ppa):
-   Maintainers need to clone [packaging](https://gitlab.com/bitcoin-cash-node/bchn-sw/packaging)
+6. Create [Ubuntu PPA packages](https://launchpad.net/~radiant-node/+archive/ubuntu/ppa):
+   Maintainers need to clone [packaging](https://github.com/radiantblockchain/radn-sw/packaging)
    and follow instructions to run `debian-packaging.sh` in that repository.
 7. Notify maintainers of AUR and Docker images to build their packages.
    They should be given 1-day advance notice if possible.
 
 ## After Release
 
-1. Update version number on www.bitcoincashnode.org
+1. Update version number on www.radiantblockchain.org
 2. Publish signed checksums (various places, e.g. blog, reddit, etc. etc.)
 3. Announce Release:
-    - [Reddit](https://www.reddit.com/r/bitcoincashnode/)
-    - Twitter @bitcoincashnode
-    - Public slack channels friendly to Bitcoin Cash Node announcements
+    - [Reddit](https://www.reddit.com/r/radiantnode/)
+    - Twitter @radiantlayerone
+    - Public slack channels friendly to Radiant Node announcements

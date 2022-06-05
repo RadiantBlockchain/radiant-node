@@ -3,7 +3,7 @@
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 '''
-bchn-feature-txbroadcastinterval -- test that -txbroadcastinterval has no regressions and roughly works as expected
+radn-feature-txbroadcastinterval -- test that -txbroadcastinterval has no regressions and roughly works as expected
 '''
 
 import math

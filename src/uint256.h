@@ -169,3 +169,43 @@ inline uint160 uint160S(const std::string &str) noexcept {
     rv.SetHex(str);
     return rv;
 }
+
+/**
+ * 288-bit opaque blob.
+ * @note It is an opaque blob of 288 bits and has no integer operations. Used for outpoint/assetId (36 bytes)
+ */
+class uint288 : public base_blob<288> {
+public:
+    using base_blob<288>::base_blob; ///< inherit constructors
+};
+
+/**
+ * uint288 from const char *.
+ * This is a separate function because the constructor uint288(const char*) can
+ * result in dangerously catching uint288(0).
+ */
+inline uint288 uint288S(const char *str) noexcept {
+    uint288 rv{uint288::Uninitialized};
+    rv.SetHex(str);
+    return rv;
+}
+
+/**
+ * 512-bit opaque blob.
+ * @note It is an opaque blob of 512 bits and has no integer operations.  
+ */
+class uint512 : public base_blob<512> {
+public:
+    using base_blob<512>::base_blob; ///< inherit constructors
+};
+
+/**
+ * uint512 from const char *.
+ * This is a separate function because the constructor uint512(const char*) can
+ * result in dangerously catching uint512(0).
+ */
+inline uint512 uint512S(const char *str) noexcept {
+    uint512 rv{uint512::Uninitialized};
+    rv.SetHex(str);
+    return rv;
+}

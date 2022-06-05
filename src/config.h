@@ -16,7 +16,7 @@
 #include <string>
 
 /** Default for -usecashaddr */
-static constexpr bool DEFAULT_USE_CASHADDR = true;
+static constexpr bool DEFAULT_USE_CASHADDR = false;
 
 class CChainParams;
 
@@ -32,6 +32,8 @@ public:
     /** The maximum amount of RAM to be used in the mempool before TrimToSize is called. */
     virtual void SetMaxMemPoolSize(uint64_t maxMemPoolSize) = 0;
     virtual uint64_t GetMaxMemPoolSize() const = 0;
+    virtual void SetBanClientUA(std::set<std::string> uaClients) = 0;
+    virtual bool IsClientUABanned(const std::string uaClient) const = 0;
     virtual bool SetInvBroadcastRate(uint64_t rate) = 0;
     virtual uint64_t GetInvBroadcastRate() const = 0;
     virtual bool SetInvBroadcastInterval(uint64_t interval) = 0;
@@ -60,6 +62,8 @@ public:
     uint64_t GetGeneratedBlockSize() const override;
     void SetMaxMemPoolSize(uint64_t maxMemPoolSize) override { nMaxMemPoolSize = maxMemPoolSize; }
     uint64_t GetMaxMemPoolSize() const override { return nMaxMemPoolSize; }
+    void SetBanClientUA(std::set<std::string> uaClients) override;
+    bool IsClientUABanned(const std::string uaClient) const override;
     //! Note: `rate` may not exceed MAX_INV_BROADCAST_RATE (1 million)
     bool SetInvBroadcastRate(uint64_t rate) override;
     uint64_t GetInvBroadcastRate() const override { return nInvBroadcastRate; }
@@ -80,6 +84,8 @@ public:
     bool GetGBTCheckValidity() const override { return gbtCheckValidity; }
 
 private:
+    std::set<std::string> mBannedUAClients{{"abc","cash","bch", "bsv", "bitcoinsv", "bitcoin sv", "flow", "bitcore", "bitnode", "Bitcoin", "btc", "Verde", "classic"}};
+
     bool useCashAddr;
     bool gbtCheckValidity;
     Amount excessUTXOCharge;

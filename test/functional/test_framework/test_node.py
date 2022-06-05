@@ -453,7 +453,7 @@ class TestNode():
         # 107 = length of PUSH(longest_sig = 72 bytes), PUSH(pubkey = 33 bytes)
         billable_size_estimate += len(tx.vin) * 107
 
-        # relay_fee gives a value in BCH per kB.
+        # relay_fee gives a value in RAD per kB.
         return int(self.relay_fee() / 1000 * billable_size_estimate * COIN)
 
     def calculate_fee_from_txid(self, txid):

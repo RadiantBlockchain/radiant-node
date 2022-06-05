@@ -29,7 +29,7 @@ enum class CheckAssertResult {
 CheckAssertResult CheckAssert(std::function<void()> func, std::string_view expectMessage = "");
 
 /** Checks if an expression results in an assert() being raised. */
-#define BCHN_CHECK_ASSERT(stmt, expectMessage) \
+#define RADN_CHECK_ASSERT(stmt, expectMessage) \
     do { \
         const auto res = CheckAssert([&]{ stmt; }, expectMessage); \
         if (res == CheckAssertResult::Unsupported) { \

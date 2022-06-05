@@ -500,6 +500,6 @@ Alihkan fail data ke dalam tab semasa</translation>
     </message>
     </context>
 <context>
-    <name>bitcoin-cash-node</name>
+    <name>radiant-node</name>
     </context>
 </TS>

@@ -20,9 +20,6 @@ void LegacyAddressStopDialog::SetAddressType(LegacyAddressType type) {
     case P2PKH:
         ui->p2pkh_label->show();
         break;
-    case P2SH:
-        ui->p2sh_label->show();
-        break;
     }
     adjustSize();
 }
@@ -40,9 +37,6 @@ void LegacyAddressWarnDialog::SetAddressType(LegacyAddressType type) {
     switch(type) {
     case P2PKH:
         ui->p2pkh_label->show();
-        break;
-    case P2SH:
-        ui->p2sh_label->show();
         break;
     }
     adjustSize();

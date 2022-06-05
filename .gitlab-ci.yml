@@ -338,7 +338,7 @@ build-debian-nowallet:
     extends: .cache-debian
     needs: []
     script:
-        - (cd build; cmake -GNinja .. -DENABLE_MAN=OFF -DBUILD_BITCOIN_WALLET=OFF)
+        - (cd build; cmake -GNinja .. -DENABLE_MAN=OFF -DBUILD_RADIANT_WALLET=OFF)
         - (cd build; ninja)
 
     artifacts:
@@ -610,7 +610,7 @@ build-win-64:
     script:
         - cd build
         - cmake -GNinja .. -DENABLE_MAN=OFF
-                           -DBUILD_BITCOIN_QT=OFF
+                           -DBUILD_RADIANT_QT=OFF
                            -DBUILD_BITCOIN_SEEDER=OFF
                            -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/Win64.cmake
         - ninja
@@ -637,7 +637,7 @@ build-arm:
     script:
         - cd build
         - cmake -GNinja .. -DENABLE_MAN=OFF
-                           -DBUILD_BITCOIN_QT=OFF
+                           -DBUILD_RADIANT_QT=OFF
                            -DBUILD_BITCOIN_SEEDER=OFF
                            -DENABLE_GLIBC_BACK_COMPAT=ON
                            -DENABLE_STATIC_LIBSTDCXX=ON
@@ -665,12 +665,12 @@ build-aarch64:
     script:
         - cd build
         # The following tests are excluded:
-        # - bchn-rpc-getblocktemplate-sigops - OOM issues for aarch64 (see #211)
+        # - radn-rpc-getblocktemplate-sigops - OOM issues for aarch64 (see #211)
         - cmake -GNinja .. -DENABLE_MAN=OFF
                            -DBUILD_BITCOIN_ZMQ=OFF
                            -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/LinuxAArch64.cmake
                            -DCMAKE_CROSSCOMPILING_EMULATOR=$(command -v qemu-aarch64-static)
-                           -DEXCLUDE_FUNCTIONAL_TESTS=bchn-rpc-getblocktemplate-sigops
+                           -DEXCLUDE_FUNCTIONAL_TESTS=radn-rpc-getblocktemplate-sigops
         - ninja
     dependencies:
         - build-aarch64-depends
@@ -737,7 +737,7 @@ fuzz-libfuzzer:
     rules:
         - if: $CI_COMMIT_BRANCH == "master"
     script:
-        - git clone --branch master --single-branch --depth=1 https://gitlab.com/bitcoin-cash-node/bchn-sw/qa-assets
+        - git clone --branch master --single-branch --depth=1 https://gitlab.com/radiant-node/radn-sw/qa-assets
         - mkdir buildFuzzer
         - cd buildFuzzer
         - cmake -GNinja .. -DENABLE_MAN=OFF -DCCACHE=OFF -DENABLE_SANITIZERS="fuzzer;address"

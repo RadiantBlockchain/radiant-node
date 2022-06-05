@@ -123,7 +123,7 @@ std::string BasicTestingSetup::GetUserNameFromEnv() {
 fs::path BasicTestingSetup::MakePathRoot() {
     // Note: It's important to make the test dir basename depend on username to avoid
     // concurrent users on the same system from clobbering each other's dirs and/or
-    // causing permissions issues with each other. See BCHN issue #43.
+    // causing permissions issues with each other. See RADN issue #43.
     std::string baseName = "test_common_" + GetUserNameFromEnv() + "_" + PACKAGE_NAME;
     baseName = SanitizeString(baseName, SAFE_CHARS_FILENAME);
 
@@ -250,12 +250,13 @@ CBlock TestChain100Setup::CreateAndProcessBlock(
         block.vtx.push_back(MakeTransactionRef(tx));
     }
 
+    /*
     // Order transactions by canonical order
     std::sort(std::begin(block.vtx) + 1, std::end(block.vtx),
               [](const std::shared_ptr<const CTransaction> &txa,
                  const std::shared_ptr<const CTransaction> &txb) -> bool {
                   return txa->GetId() < txb->GetId();
-              });
+              });*/
 
     // IncrementExtraNonce creates a valid coinbase and merkleRoot
     {

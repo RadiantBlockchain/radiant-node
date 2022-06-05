@@ -45,14 +45,13 @@ include(TestSuite)
 create_test_suite(bitcoin)
 add_dependencies(check check-bitcoin)
 
-if(BUILD_BITCOIN_WALLET)
+if(BUILD_RADIANT_WALLET)
   set(BITCOIN_WALLET_TEST_FIXTURE
     ../wallet/test/init_test_fixture.cpp
     ../wallet/test/wallet_test_fixture.cpp
   )
   set(BITCOIN_WALLET_TESTS
     ../wallet/test/db_tests.cpp
-    ../wallet/test/coinselector_tests.cpp
     ../wallet/test/init_tests.cpp
     ../wallet/test/psbt_wallet_tests.cpp
     ../wallet/test/wallet_tests.cpp
@@ -178,7 +177,6 @@ add_boost_unit_tests_to_suite(bitcoin test_bitcoin
     native_introspection_tests.cpp
     netbase_tests.cpp
     net_tests.cpp
-    op_reversebytes_tests.cpp
     pmt_tests.cpp
     policyestimator_tests.cpp
     pow_tests.cpp
@@ -195,7 +193,6 @@ add_boost_unit_tests_to_suite(bitcoin test_bitcoin
     script_bitfield_tests.cpp
     script_commitment_tests.cpp
     scriptnum_tests.cpp
-    script_p2sh_tests.cpp
     script_standard_tests.cpp
     script_tests.cpp
     seedspec6_tests.cpp
@@ -211,7 +208,6 @@ add_boost_unit_tests_to_suite(bitcoin test_bitcoin
     testlib_tests.cpp
     timedata_tests.cpp
     torcontrol_tests.cpp
-    transaction_tests.cpp
     txindex_tests.cpp
     txvalidationcache_tests.cpp
     txvalidation_tests.cpp
@@ -253,14 +249,6 @@ function(add_boost_test_runners_with_upgrade_activated SUITE EXECUTABLE)
   get_target_from_suite(${SUITE} SUITE_TARGET)
   get_target_property(BOOST_TESTS ${SUITE_TARGET} UNIT_TESTS)
 
-  foreach(_test_name ${BOOST_TESTS})
-    add_test_runner(
-      ${SUITE_UPGRADE_ACTIVATED}
-      "${_test_name}"
-      ${EXECUTABLE} -t "${_test_name}"
-      -- -upgrade8activationtime=1652616000
-    )
-  endforeach()
 endfunction()
 
 add_boost_test_runners_with_upgrade_activated(bitcoin test_bitcoin)

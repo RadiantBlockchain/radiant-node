@@ -1312,7 +1312,7 @@
     <name>WalletView</name>
     </context>
 <context>
-    <name>bitcoin-cash-node</name>
+    <name>radiant-node</name>
     <message>
         <source>Options:</source>
         <translation>Agordoj:</translation>
@@ -1338,7 +1338,7 @@
         <translation>Ruli fone kiel demono kaj akcepti komandojn</translation>
     </message>
     <message>
-        <source>Bitcoin Cash Node</source>
+        <source>Radiant Node</source>
         <translation>Cash Node Bitmono</translation>
     </message>
     <message>

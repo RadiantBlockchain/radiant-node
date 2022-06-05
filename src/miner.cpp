@@ -159,6 +159,7 @@ BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn, double timeLimitSe
     // addTxs(). addTxsFrac stores an exponential moving average of what fraction of previous CreateNewBlock
     // run times addTxs() was responsible for. This fraction can change depending on the transaction mix (e.g.
     // tx size, tx chain length).
+ 
     static double addTxsFrac GUARDED_BY(cs_main) = 0.5; // initial value: 50%
     // Clamp to sane range: [10% - 100%]
     addTxsFrac = std::clamp(addTxsFrac, 0.1, 1.);
@@ -173,15 +174,6 @@ BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn, double timeLimitSe
     addTxs(nAddTxsTimeLimit);
 
     const int64_t nTime0 = GetTimeMicros();
-
-    if (IsMagneticAnomalyEnabled(consensusParams, pindexPrev)) {
-        // If magnetic anomaly is enabled, we make sure transaction are
-        // canonically ordered.
-        std::sort(std::begin(pblocktemplate->entries) + 1,
-                  std::end(pblocktemplate->entries),
-                  [](const CBlockTemplateEntry &a, const CBlockTemplateEntry &b)
-                      -> bool { return a.tx->GetId() < b.tx->GetId(); });
-    }
 
     // Copy all the transactions refs into the block
     pblock->vtx.reserve(pblocktemplate->entries.size());
@@ -201,7 +193,7 @@ BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn, double timeLimitSe
     coinbaseTx.vout.resize(1);
     coinbaseTx.vout[0].scriptPubKey = scriptPubKeyIn;
     coinbaseTx.vout[0].nValue = nFees + GetBlockSubsidy(nHeight, consensusParams);
-    coinbaseTx.vin[0].scriptSig = CScript() << ScriptInt::fromIntUnchecked(nHeight) << OP_0;
+    coinbaseTx.vin[0].scriptSig = CScript() << ScriptInt::fromIntUnchecked(nHeight); // << OP_0;
 
     // Make sure the coinbase is big enough.
     uint64_t coinbaseSize = ::GetSerializeSize(coinbaseTx, PROTOCOL_VERSION);
@@ -238,6 +230,7 @@ BlockAssembler::CreateNewBlock(const CScript &scriptPubKeyIn, double timeLimitSe
                                                FormatStateMessage(state)));
         }
     }
+
     const int64_t nTime2 = GetTimeMicros();
 
     // Save time taken by addTxs() vs total time taken

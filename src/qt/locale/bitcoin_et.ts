@@ -1732,7 +1732,7 @@
     <name>WalletView</name>
     </context>
 <context>
-    <name>bitcoin-cash-node</name>
+    <name>radiant-node</name>
     <message>
         <source>Options:</source>
         <translation>Valikud:</translation>
@@ -1758,7 +1758,7 @@
         <translation>Tööta taustal ning aktsepteeri käsklusi</translation>
     </message>
     <message>
-        <source>Bitcoin Cash Node</source>
+        <source>Radiant Node</source>
         <translation>Bitcoini Cash Node</translation>
     </message>
     <message>

@@ -1,6 +1,6 @@
 # UNIX BUILD NOTES
 
-Some notes on how to build Bitcoin Cash Node in Unix.
+Some notes on how to build Radiant Node in Unix.
 
 * For Ubuntu & Debian specific instructions, see [build-unix-deb.md](build-unix-deb.md)
   in this directory.
@@ -15,7 +15,7 @@ Some notes on how to build Bitcoin Cash Node in Unix.
 
 ## To Build
 
-To build Bitcoin Cash Node you first need to install all the needed dependencies.
+To build Radiant Node you first need to install all the needed dependencies.
 See [dependencies.md](dependencies.md) or your OS specific guide in build-*.md.
 If you wish to compile the dependencies from source yourself, please see
 instructions in [depends](/depends/README.md).
@@ -26,8 +26,8 @@ Assuming you have all the necessary dependencies installed the commands below wi
 build the node, with the `bitcoin-qt` GUI-client as well.
 
 ```bash
-git clone https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node.git
-cd bitcoin-cash-node/
+git clone https://github.com/radiantblockchain/radiant-node.git
+cd radiant-node/
 mkdir build
 cd build
 cmake -GNinja ..
@@ -46,8 +46,8 @@ ninja install #optional
 
 ### Disable-wallet mode
 
-When the intention is to run only a P2P node without a wallet, Bitcoin Cash Node
-may be compiled in disable-wallet mode by passing `-DBUILD_BITCOIN_WALLET=OFF`
+When the intention is to run only a P2P node without a wallet, Radiant Node
+may be compiled in disable-wallet mode by passing `-DBUILD_RADIANT_WALLET=OFF`
 on the `cmake` command line.
 
 Mining is also possible in disable-wallet mode using the `getblocktemplate` RPC call.
@@ -122,7 +122,7 @@ From the build subdirectory (see above), run `cmake -LH ..`.
 ### Memory Requirements
 
 C++ compilers are memory-hungry. It is recommended to have at least 1.5 GB of
-memory available when compiling Bitcoin Cash Node. On systems with less, gcc can
+memory available when compiling Radiant Node. On systems with less, gcc can
 be tuned to conserve memory with additional CXXFLAGS:
 
 ```bash
@@ -148,7 +148,7 @@ START_WITH_UPNP        UPnP support turned on by default at runtime (default OFF
 
 ## Security
 
-To help make your Bitcoin Cash Node installation more secure by making certain
+To help make your Radiant Node installation more secure by making certain
 attacks impossible to exploit even if a vulnerability is found, binaries are hardened
 by default. This can be disabled by passing `-DENABLE_HARDENING=OFF`.
 

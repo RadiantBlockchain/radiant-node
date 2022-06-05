@@ -8,19 +8,19 @@ set(CMAKE_USER_MAKE_RULES_OVERRIDE
 	"${CMAKE_SOURCE_DIR}/cmake/modules/OverrideInitFlags.cmake"
 )
 
-project(bitcoin-cash-node
-	VERSION 24.0.1
-	DESCRIPTION "Bitcoin Cash Node is a full node implementation of the Bitcoin Cash protocol."
-	HOMEPAGE_URL "https://www.bitcoincashnode.org"
+project(radiant-node
+	VERSION 1.1.3
+	DESCRIPTION "Radiant Node (RADN) is a full node implementation of the Radiant Blockchain protocol."
+	HOMEPAGE_URL "https://radiantblockchain.org"
 )
 
 # Package information
-set(PACKAGE_NAME "Bitcoin Cash Node")
+set(PACKAGE_NAME "Radiant Node")
 
 # Copyright
 set(COPYRIGHT_YEAR 2022)
 set(COPYRIGHT_HOLDERS "The %s developers")
-set(COPYRIGHT_HOLDERS_SUBSTITUTION Bitcoin)
+set(COPYRIGHT_HOLDERS_SUBSTITUTION Radiant)
 string(REPLACE "%s" ${COPYRIGHT_HOLDERS_SUBSTITUTION} COPYRIGHT_HOLDERS_FINAL ${COPYRIGHT_HOLDERS})
 
 # Add path for custom modules
@@ -36,7 +36,7 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(__NO_USER_CMAKE_BUILD_TYPE ON CACHE BOOL "True if the user didn't set a build type on the command line")
 endif()
 
-set(BITCOIN_QT_OSX_BUNDLE_NAME "BitcoinCashNode-Qt")
+set(BITCOIN_QT_OSX_BUNDLE_NAME "RadiantNode-Qt")
 
 # Find the python interpreter. This is required for several targets.
 find_package(Python 3.6 COMPONENTS Interpreter REQUIRED)

@@ -1732,7 +1732,7 @@
     </message>
     </context>
 <context>
-    <name>bitcoin-cash-node</name>
+    <name>radiant-node</name>
     <message>
         <source>Options:</source>
         <translation>Asetukset:</translation>
@@ -1790,8 +1790,8 @@
         <translation>HTTP-palvelinta ei voitu käynnistää. Katso debug-lokista lisätietoja.</translation>
     </message>
     <message>
-        <source>Bitcoin Cash Node</source>
-        <translation>Bbitcoin-cash-node</translation>
+        <source>Radiant Node</source>
+        <translation>Bradiant-node</translation>
     </message>
     <message>
         <source>The %s developers</source>

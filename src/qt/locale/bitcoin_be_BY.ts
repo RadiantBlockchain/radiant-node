@@ -1240,7 +1240,7 @@
     </message>
     </context>
 <context>
-    <name>bitcoin-cash-node</name>
+    <name>radiant-node</name>
     <message>
         <source>Options:</source>
         <translation>Опцыі:</translation>
@@ -1258,8 +1258,8 @@
         <translation>Запусціць у фоне як дэман і прымаць каманды</translation>
     </message>
     <message>
-        <source>Bitcoin Cash Node</source>
-        <translation>Bitcoin Cash Node</translation>
+        <source>Radiant Node</source>
+        <translation>Radiant Node</translation>
     </message>
     <message>
         <source>Do you want to rebuild the block database now?</source>

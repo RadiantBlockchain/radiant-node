@@ -75,6 +75,6 @@ void test_one_input(std::vector<uint8_t> buffer) {
 }
 
 static bool IsValidFlagCombination(uint32_t flags) {
-    // If the CLEANSTACK flag is set, then P2SH should also be set
-    return (~flags & SCRIPT_VERIFY_CLEANSTACK) || (flags & SCRIPT_VERIFY_P2SH);
+    // All combinations are valid
+    return true;
 }

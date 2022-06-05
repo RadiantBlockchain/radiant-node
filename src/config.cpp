@@ -7,7 +7,7 @@
 #include <chainparams.h>
 #include <consensus/consensus.h> // DEFAULT_EXCESSIVE_BLOCK_SIZE, MAX_EXCESSIVE_BLOCK_SIZE
 #include <policy/policy.h> // MAX_INV_BROADCAST_*
-
+#include <boost/algorithm/string/predicate.hpp>
 #include <algorithm>
 
 GlobalConfig::GlobalConfig()
@@ -49,6 +49,28 @@ bool GlobalConfig::SetGeneratedBlockSize(uint64_t blockSize) {
 
     nGeneratedBlockSize = blockSize;
     return true;
+}
+
+bool GlobalConfig::IsClientUABanned(const std::string uaClient) const
+{
+    auto matchClient =  [&uaClient](std::string const & s)
+            {
+                return boost::icontains(uaClient,s);
+            };
+    auto searchForMatch = [&matchClient](auto const & container)
+            {
+                return std::find_if(container.cbegin(), container.cend(), matchClient) != container.cend();
+            };
+
+    if (searchForMatch(mBannedUAClients)) {
+        return true;
+    }
+    return false;
+}
+
+void GlobalConfig::SetBanClientUA(const std::set<std::string> uaClients)
+{
+    mBannedUAClients = std::move(uaClients);
 }
 
 bool GlobalConfig::SetInvBroadcastRate(uint64_t rate) {

@@ -51,6 +51,7 @@ void CheckPassWithFlags(uint32_t flags, stacktype const& original_stack, CScript
     ScriptError err = ScriptError::OK;
     stacktype stack{original_stack};
     bool r = EvalScript(stack, script, flags, sigchecker, context, &err);
+
     BOOST_CHECK(r);
     BOOST_CHECK(err == ScriptError::OK);
     BOOST_CHECK(stack == expected);
@@ -243,7 +244,9 @@ BOOST_AUTO_TEST_CASE(opcodes_basic) {
         CheckPassWithFlags(flags, {}, bytecode3, context[oversized_in], {expected3b, CScriptNum::fromIntUnchecked(1).getvch()});
 
         // failure (MAX_SCRIPT_ELEMENT_SIZE exceeded)
-        CheckErrorWithFlags(flags, {}, bytecode4, context[oversized_in], ScriptError::PUSH_SIZE);
+        // Do not check that MAX_SCRIPT_ELEMENT_SIZE is met since it is now very large. Added by Radiant
+        // CheckErrorWithFlags(flags, {}, bytecode4, context[oversized_in], ScriptError::PUSH_SIZE);
+        
         // failure (no context)
         CheckErrorWithFlags(flags, {}, bytecode1, {}, ScriptError::CONTEXT_NOT_PRESENT);
         // failure (not activated)

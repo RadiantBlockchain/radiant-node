@@ -11,7 +11,7 @@ CMake is used to generate Ninja build files.
 
 Please briefly acquaint yourself with the Ninja documentation at <https://ninja-build.org/manual.html>
 
-## Setting up an out-of-tree Ninja build of Bitcoin Cash Node
+## Setting up an out-of-tree Ninja build of Radiant Node
 
 An out-of-tree build creates build products in a separate folder where they do
 not interfere with the source code working area.
@@ -316,4 +316,4 @@ All these options are passed via `-D` (defines) to the `cmake` command.
 
 - -DENABLE_MAN=OFF # Disable manpage generation/installation
 
-- -DDOC_ONLINE=ON # Adapt Markdown and HTML documentation for publication on docs.bitcoincashnode.org
+- -DDOC_ONLINE=ON # Adapt Markdown and HTML documentation for publication on docs.radiantblockchain.org

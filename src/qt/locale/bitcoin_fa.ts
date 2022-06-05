@@ -1572,7 +1572,7 @@
     <name>WalletView</name>
     </context>
 <context>
-    <name>bitcoin-cash-node</name>
+    <name>radiant-node</name>
     <message>
         <source>Options:</source>
         <translation>گزینه‌ها:</translation>
@@ -1598,7 +1598,7 @@
         <translation>اجرا در پشت زمینه به‌صورت یک سرویس و پذیرش دستورات</translation>
     </message>
     <message>
-        <source>Bitcoin Cash Node</source>
+        <source>Radiant Node</source>
         <translation> Cash Node Bitcoin </translation>
     </message>
     <message>

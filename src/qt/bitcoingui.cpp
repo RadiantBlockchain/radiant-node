@@ -251,7 +251,7 @@ void BitcoinGUI::createActions() {
 
     sendCoinsAction = new QAction(
         platformStyle->SingleColorIcon(":/icons/send"), tr("&Send"), this);
-    sendCoinsAction->setStatusTip(tr("Send coins to a Bitcoin Cash address"));
+    sendCoinsAction->setStatusTip(tr("Send coins to a Radiant address"));
     sendCoinsAction->setToolTip(sendCoinsAction->statusTip());
     sendCoinsAction->setCheckable(true);
     sendCoinsAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_2));
@@ -366,12 +366,12 @@ void BitcoinGUI::createActions() {
         new QAction(platformStyle->TextColorIcon(":/icons/edit"),
                     tr("Sign &Message..."), this);
     signMessageAction->setStatusTip(
-        tr("Sign messages with your Bitcoin Cash addresses to prove you own them"));
+        tr("Sign messages with your Radiant addresses to prove you own them"));
     verifyMessageAction =
         new QAction(platformStyle->TextColorIcon(":/icons/verify"),
                     tr("&Verify Message..."), this);
     verifyMessageAction->setStatusTip(
-        tr("Verify messages to ensure they were signed with specified Bitcoin Cash addresses"));
+        tr("Verify messages to ensure they were signed with specified Radiant addresses"));
 
     openRPCConsoleAction =
         new QAction(platformStyle->TextColorIcon(":/icons/debugwindow"),

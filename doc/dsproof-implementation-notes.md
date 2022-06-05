@@ -1,9 +1,9 @@
-Double Spend Proofs - BCHN Implementation Notes
+Double Spend Proofs - RADN Implementation Notes
 ===============================================
 
 This document serves a two-fold purpose:
 
-1. To give information to users of the BCHN software about expected behavior
+1. To give information to users of the RADN software about expected behavior
    of the DSProof feature which is not fully addressed in the current
    specification.
 
@@ -11,11 +11,11 @@ This document serves a two-fold purpose:
    specification in instances where more clarity is deemed useful -
    for anyone trying to understand or implement the specification.
 
-DSProof implementation behavior in BCHN
+DSProof implementation behavior in RADN
 ---------------------------------------
 
 We are providing here
-some additional notes on the BCHN implementation of this feature.
+some additional notes on the RADN implementation of this feature.
 
 1. The DSProof functionality is enabled by default, this means
    DS proofs are created and relayed. Both creation and relay  can
@@ -74,7 +74,7 @@ Notes on the DSProof specification
 ----------------------------------
 
 1. A copy of the specification can be found at
-   <https://upgradespecs.bitcoincashnode.org/dsproof/>.
+   <https://upgradespecs.radiantblockchain.org/dsproof/>.
 
 2. The sizes of the `FirstSpender` and `DoubleSpender` fields are variable.
 

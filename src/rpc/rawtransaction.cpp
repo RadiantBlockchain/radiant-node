@@ -130,7 +130,7 @@ static UniValue getrawtransaction(const Config &config,
             "         \"type\" : \"pubkeyhash\",  (string) The type, eg "
             "'pubkeyhash'\n"
             "         \"addresses\" : [           (json array of string)\n"
-            "           \"address\"        (string) Bitcoin Cash address\n"
+            "           \"address\"        (string) Radiant address\n"
             "           ,...\n"
             "         ]\n"
             "       }\n"
@@ -492,7 +492,7 @@ CMutableTransaction ConstructTransaction(const CChainParams &params,
             CTxDestination destination = DecodeDestination(entry.first, params);
             if (!IsValidDestination(destination)) {
                 throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY,
-                                   std::string("Invalid Bitcoin Cash address: ") +
+                                   std::string("Invalid Radiant address: ") +
                                        entry.first);
             }
 
@@ -543,7 +543,7 @@ static UniValue createrawtransaction(const Config &config,
                         {
                             {"", RPCArg::Type::OBJ, /* opt */ true, /* default_val */ "", "",
                                 {
-                                    {"address", RPCArg::Type::AMOUNT, /* opt */ false, /* default_val */ "", "A key-value pair. The key (string) is the Bitcoin Cash address, the value (float or string) is the amount in " + CURRENCY_UNIT},
+                                    {"address", RPCArg::Type::AMOUNT, /* opt */ false, /* default_val */ "", "A key-value pair. The key (string) is the Radiant address, the value (float or string) is the amount in " + CURRENCY_UNIT},
                                 },
                                 },
                             {"", RPCArg::Type::OBJ, /* opt */ true, /* default_val */ "", "",
@@ -622,7 +622,7 @@ static UniValue decoderawtransaction(const Config &config,
             "'pubkeyhash'\n"
             "         \"addresses\" : [           (json array of string)\n"
             "           \"12tvKAXCxZjSmdNbao16dKXC8tRWfcF5oc\"   (string) "
-            "Bitcoin Cash address\n"
+            "Radiant address\n"
             "           ,...\n"
             "         ]\n"
             "       }\n"
@@ -663,7 +663,7 @@ static UniValue decodescript(const Config &config,
             "  \"type\":\"type\", (string) The output type\n"
             "  \"reqSigs\": n,    (numeric) The required signatures\n"
             "  \"addresses\": [   (json array of string)\n"
-            "     \"address\"     (string) Bitcoin Cash address\n"
+            "     \"address\"     (string) Radiant address\n"
             "     ,...\n"
             "  ],\n"
             "  \"p2sh\",\"address\" (string) address of P2SH script wrapping "
@@ -1237,7 +1237,7 @@ static UniValue decodepsbt(const Config &config,
             "          \"hex\" : \"hex\",            (string) The hex\n"
             "          \"type\" : \"pubkeyhash\",    (string) The type, eg "
             "'pubkeyhash'\n"
-            "          \"address\" : \"address\"     (string) Bitcoin Cash address "
+            "          \"address\" : \"address\"     (string) Radiant address "
             "if there is one\n"
             "        }\n"
             "      },\n"
@@ -1637,7 +1637,7 @@ static UniValue createpsbt(const Config &config,
                         {
                             {"", RPCArg::Type::OBJ, /* opt */ true, /* default_val */ "", "",
                                 {
-                                    {"address", RPCArg::Type::AMOUNT, /* opt */ false, /* default_val */ "", "A key-value pair. The key (string) is the Bitcoin Cash address, the value (float or string) is the amount in " + CURRENCY_UNIT},
+                                    {"address", RPCArg::Type::AMOUNT, /* opt */ false, /* default_val */ "", "A key-value pair. The key (string) is the Radiant address, the value (float or string) is the amount in " + CURRENCY_UNIT},
                                 },
                                 },
                             {"", RPCArg::Type::OBJ, /* opt */ true, /* default_val */ "", "",

@@ -6,12 +6,12 @@
 #
 #     ninja doc/html
 
-site_name: Bitcoin Cash Node documentation
-site_description: Documentation for the Bitcoin Cash Node project
+site_name: Radiant Node documentation
+site_description: Documentation for the Radiant Node project
 site_author: The Bitcoin developers
 site_dir: html
 
-repo_url: https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node
+repo_url: https://github.com/radiantblockchain/radiant-node
 edit_uri: ""
 
 docs_dir: md
@@ -32,131 +32,6 @@ nav:
   - Setup instructions: doc/README.md
   - Release notes:
       - Current release notes: doc/release-notes.md
-      - Bitcoin Cash Node v24.0.0: doc/release-notes/release-notes-24.0.0.md
-      - Bitcoin Cash Node v23.1.0: doc/release-notes/release-notes-23.1.0.md
-      - Bitcoin Cash Node v23.0.0: doc/release-notes/release-notes-23.0.0.md
-      - Bitcoin Cash Node v22.2.0: doc/release-notes/release-notes-22.2.0.md
-      - Bitcoin Cash Node v22.1.0: doc/release-notes/release-notes-22.1.0.md
-      - Bitcoin Cash Node v22.0.0: doc/release-notes/release-notes-22.0.0.md
-      - Bitcoin Cash Node v0.21.2: doc/release-notes/release-notes-0.21.2.md
-      - Bitcoin Cash Node v0.21.1: doc/release-notes/release-notes-0.21.1.md
-      - Bitcoin Cash Node v0.21.0: doc/release-notes/release-notes-0.21.0.md
-      - Bitcoin ABC v0.14.1-v0.20:
-          - Bitcoin ABC v0.20.12: doc/release-notes/release-notes-0.20.12.md
-          - Bitcoin ABC v0.20.11: doc/release-notes/release-notes-0.20.11.md
-          - Bitcoin ABC v0.20.10: doc/release-notes/release-notes-0.20.10.md
-          - Bitcoin ABC v0.20.9: doc/release-notes/release-notes-0.20.9.md
-          - Bitcoin ABC v0.20.8: doc/release-notes/release-notes-0.20.8.md
-          - Bitcoin ABC v0.20.7: doc/release-notes/release-notes-0.20.7.md
-          - Bitcoin ABC v0.20.6: doc/release-notes/release-notes-0.20.6.md
-          - Bitcoin ABC v0.20.5: doc/release-notes/release-notes-0.20.5.md
-          - Bitcoin ABC v0.20.4: doc/release-notes/release-notes-0.20.4.md
-          - Bitcoin ABC v0.20.3: doc/release-notes/release-notes-0.20.3.md
-          - Bitcoin ABC v0.20.2: doc/release-notes/release-notes-0.20.2.md
-          - Bitcoin ABC v0.20.1: doc/release-notes/release-notes-0.20.1.md
-          - Bitcoin ABC v0.20.0: doc/release-notes/release-notes-0.20.0.md
-          - Bitcoin ABC v0.19.12: doc/release-notes/release-notes-0.19.12.md
-          - Bitcoin ABC v0.19.11: doc/release-notes/release-notes-0.19.11.md
-          - Bitcoin ABC v0.19.10: doc/release-notes/release-notes-0.19.10.md
-          - Bitcoin ABC v0.19.9: doc/release-notes/release-notes-0.19.9.md
-          - Bitcoin ABC v0.19.8: doc/release-notes/release-notes-0.19.8.md
-          - Bitcoin ABC v0.19.7: doc/release-notes/release-notes-0.19.7.md
-          - Bitcoin ABC v0.19.6: doc/release-notes/release-notes-0.19.6.md
-          - Bitcoin ABC v0.19.5: doc/release-notes/release-notes-0.19.5.md
-          - Bitcoin ABC v0.19.4: doc/release-notes/release-notes-0.19.4.md
-          - Bitcoin ABC v0.19.3: doc/release-notes/release-notes-0.19.3.md
-          - Bitcoin ABC v0.19.2: doc/release-notes/release-notes-0.19.2.md
-          - Bitcoin ABC v0.19.1: doc/release-notes/release-notes-0.19.1.md
-          - Bitcoin ABC v0.19.0: doc/release-notes/release-notes-0.19.0.md
-          - Bitcoin ABC v0.18.8: doc/release-notes/release-notes-0.18.8.md
-          - Bitcoin ABC v0.18.7: doc/release-notes/release-notes-0.18.7.md
-          - Bitcoin ABC v0.18.6: doc/release-notes/release-notes-0.18.6.md
-          - Bitcoin ABC v0.18.5: doc/release-notes/release-notes-0.18.5.md
-          - Bitcoin ABC v0.18.4: doc/release-notes/release-notes-0.18.4.md
-          - Bitcoin ABC v0.18.3: doc/release-notes/release-notes-0.18.3.md
-          - Bitcoin ABC v0.18.2: doc/release-notes/release-notes-0.18.2.md
-          - Bitcoin ABC v0.18.1: doc/release-notes/release-notes-0.18.1.md
-          - Bitcoin ABC v0.18.0: doc/release-notes/release-notes-0.18.0.md
-          - Bitcoin ABC v0.17.2: doc/release-notes/release-notes-0.17.2.md
-          - Bitcoin ABC v0.17.1: doc/release-notes/release-notes-0.17.1.md
-          - Bitcoin ABC v0.17.0: doc/release-notes/release-notes-0.17.0.md
-          - Bitcoin ABC v0.16.2: doc/release-notes/release-notes-0.16.2.md
-          - Bitcoin ABC v0.16.1: doc/release-notes/release-notes-0.16.1.md
-          - Bitcoin ABC v0.16.0: doc/release-notes/release-notes-0.16.0.md
-          - Bitcoin ABC v0.15.1: doc/release-notes/release-notes-0.15.1.md
-          - Bitcoin ABC v0.15.0: doc/release-notes/release-notes-0.15.0.md
-          - Bitcoin ABC v0.14.6: doc/release-notes/release-notes-0.14.6.md
-          - Bitcoin ABC v0.14.5: doc/release-notes/release-notes-0.14.5.md
-          - Bitcoin ABC v0.14.4: doc/release-notes/release-notes-0.14.4.md
-          - Bitcoin ABC v0.14.3: doc/release-notes/release-notes-0.14.3.md
-          - Bitcoin ABC v0.14.2: doc/release-notes/release-notes-0.14.2.md
-          - Bitcoin ABC v0.14.1: doc/release-notes/release-notes-0.14.1.md
-      - Bitcoin Core v0.9-v0.14.0:
-          - Bitcoin Core v0.14.0: doc/release-notes/release-notes-0.14.0.md
-          - Bitcoin Core v0.13.2: doc/release-notes/release-notes-0.13.2.md
-          - Bitcoin Core v0.13.1: doc/release-notes/release-notes-0.13.1.md
-          - Bitcoin Core v0.13.0: doc/release-notes/release-notes-0.13.0.md
-          - Bitcoin Core v0.12.1: doc/release-notes/release-notes-0.12.1.md
-          - Bitcoin Core v0.12.0: doc/release-notes/release-notes-0.12.0.md
-          - Bitcoin Core v0.11.2: doc/release-notes/release-notes-0.11.2.md
-          - Bitcoin Core v0.11.1: doc/release-notes/release-notes-0.11.1.md
-          - Bitcoin Core v0.11.0: doc/release-notes/release-notes-0.11.0.md
-          - Bitcoin Core v0.10.4: doc/release-notes/release-notes-0.10.4.md
-          - Bitcoin Core v0.10.3: doc/release-notes/release-notes-0.10.3.md
-          - Bitcoin Core v0.10.2: doc/release-notes/release-notes-0.10.2.md
-          - Bitcoin Core v0.10.1: doc/release-notes/release-notes-0.10.1.md
-          - Bitcoin Core v0.10.0: doc/release-notes/release-notes-0.10.0.md
-          - Bitcoin Core v0.9.5: doc/release-notes/release-notes-0.9.5.md
-          - Bitcoin Core v0.9.4: doc/release-notes/release-notes-0.9.4.md
-          - Bitcoin Core v0.9.3: doc/release-notes/release-notes-0.9.3.md
-          - Bitcoin Core v0.9.2.1: doc/release-notes/release-notes-0.9.2.1.md
-          - Bitcoin Core v0.9.2: doc/release-notes/release-notes-0.9.2.md
-          - Bitcoin Core v0.9.1: doc/release-notes/release-notes-0.9.1.md
-          - Bitcoin Core v0.9.0: doc/release-notes/release-notes-0.9.0.md
-      - Bitcoin-Qt v0.5-v0.8:
-          - Bitcoin-Qt v0.8.6: doc/release-notes/release-notes-0.8.6.md
-          - Bitcoin-Qt v0.8.5: doc/release-notes/release-notes-0.8.5.md
-          - Bitcoin-Qt v0.8.4: doc/release-notes/release-notes-0.8.4.md
-          - Bitcoin-Qt v0.8.3: doc/release-notes/release-notes-0.8.3.md
-          - Bitcoin-Qt v0.8.2: doc/release-notes/release-notes-0.8.2.md
-          - Bitcoin-Qt v0.8.1: doc/release-notes/release-notes-0.8.1.md
-          - Bitcoin-Qt v0.8.0: doc/release-notes/release-notes-0.8.0.md
-          - Bitcoin-Qt v0.7.2: doc/release-notes/release-notes-0.7.2.md
-          - Bitcoin-Qt v0.7.1: doc/release-notes/release-notes-0.7.1.md
-          - Bitcoin-Qt v0.7.0: doc/release-notes/release-notes-0.7.0.md
-          - Bitcoin-Qt v0.6.3: doc/release-notes/release-notes-0.6.3.md
-          - Bitcoin-Qt v0.6.2: doc/release-notes/release-notes-0.6.2.md
-          - Bitcoin-Qt v0.6.1: doc/release-notes/release-notes-0.6.1.md
-          - Bitcoin-Qt v0.6.0: doc/release-notes/release-notes-0.6.0.md
-          - Bitcoin-Qt v0.5.5: doc/release-notes/release-notes-0.5.5.md
-          - Bitcoin-Qt v0.5.4: doc/release-notes/release-notes-0.5.4.md
-          - Bitcoin-Qt v0.5.3: doc/release-notes/release-notes-0.5.3.md
-          - Bitcoin-Qt v0.5.2: doc/release-notes/release-notes-0.5.2.md
-          - Bitcoin-Qt v0.5.1: doc/release-notes/release-notes-0.5.1.md
-          - Bitcoin-Qt v0.5.0: doc/release-notes/release-notes-0.5.0.md
-      - Bitcoin v0.1-v0.4:
-          - Bitcoin v0.4.6: doc/release-notes/release-notes-0.4.6.md
-          - Bitcoin v0.4.5: doc/release-notes/release-notes-0.4.5.md
-          - Bitcoin v0.4.4: doc/release-notes/release-notes-0.4.4.md
-          - Bitcoin v0.4.3: doc/release-notes/release-notes-0.4.3.md
-          - Bitcoin v0.4.2: doc/release-notes/release-notes-0.4.2.md
-          - Bitcoin v0.4.1: doc/release-notes/release-notes-0.4.1.md
-          - Bitcoin v0.4.0: doc/release-notes/release-notes-0.4.0.md
-          - Bitcoin v0.3.24: doc/release-notes/release-notes-0.3.24.md
-          - Bitcoin v0.3.23: doc/release-notes/release-notes-0.3.23.md
-          - Bitcoin v0.3.22: doc/release-notes/release-notes-0.3.22.md
-          - Bitcoin v0.3.21: doc/release-notes/release-notes-0.3.21.md
-          - Bitcoin v0.3.20.2: doc/release-notes/release-notes-0.3.20.2.md
-          - Bitcoin v0.3.20.1: doc/release-notes/release-notes-0.3.20.1.md
-          - Bitcoin v0.3.20: doc/release-notes/release-notes-0.3.20.md
-          - Bitcoin v0.3.19: doc/release-notes/release-notes-0.3.19.md
-          - Bitcoin v0.3.18: doc/release-notes/release-notes-0.3.18.md
-          - Bitcoin v0.3.17: doc/release-notes/release-notes-0.3.17.md
-          - Bitcoin v0.3.16: doc/release-notes/release-notes-0.3.16.md
-          - Bitcoin v0.3.15: doc/release-notes/release-notes-0.3.15.md
-          - Bitcoin v0.3.14: doc/release-notes/release-notes-0.3.14.md
-          - Bitcoin v0.3.13: doc/release-notes/release-notes-0.3.13.md
-          - Bitcoin v0.3.12: doc/release-notes/release-notes-0.3.12.md
   - Build guides:
       - doc/dependencies.md
       - Linux build guides:
@@ -190,13 +65,13 @@ nav:
       - ZeroMQ: doc/zmq.md
   - Technical standards:
       - BIPs: doc/bips.md
-      - Bitcoin Cash upgrades: doc/bch-upgrades.md
+      - Radiant Node upgrades: doc/rad-upgrades.md
       - getblocktemplatelight: doc/getblocktemplatelight.md
       - XVersionMessage: doc/xversionmessage.md
       - DSProof implementation notes: doc/dsproof-implementation-notes.md
   - Development:
       - Contributing: CONTRIBUTING.md
-      - GitLab rules & guidelines: doc/bchn-gitlab-usage-rules-and-guidelines.md
+      - GitLab rules & guidelines: doc/radn-gitlab-usage-rules-and-guidelines.md
       - doc/developer-notes.md
       - doc/ninja_targets.md
       - Internationalization: doc/translation_strings_policy.md

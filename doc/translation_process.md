@@ -1,33 +1,33 @@
 # Translations
 
-The Bitcoin Cash Node graphical user interface is translated on Crowdin:
+The Radiant Node graphical user interface is translated on Crowdin:
 
-  <https://crowdin.com/project/bitcoin-cash-node>
+  <https://crowdin.com/project/radiant-node>
 
 ## Contributing to translations
 
 ### Step 1: Join the Crowdin project
 
 To contribute to translations, you must create a Crowdin account and join the
-[BCHN project on Crowdin](https://crowdin.com/project/bitcoin-cash-node).
+[RADN project on Crowdin](https://crowdin.com/project/radiant-node).
 
 ### Step 2: Activate your language
 
 If you already see your language in the
-[BCHN project on Crowdin](https://crowdin.com/project/bitcoin-cash-node), you
+[RADN project on Crowdin](https://crowdin.com/project/radiant-node), you
 can proceed with the next step.
 
 If not, then a maintainer first needs to turn on your language in the Crowdin
 project. To do so, we need at least one proofreader for the language (see
 *Proofread translations* below).
 
-Note that the BCHN software contains translations in languages that are not
+Note that the RADN software contains translations in languages that are not
 currently active in Crowdin. Software users can still use those translations,
 but at the moment they are not maintained.
 
 ### Step 3: Translate strings
 
-On [Crowdin](https://crowdin.com/project/bitcoin-cash-node), click on your
+On [Crowdin](https://crowdin.com/project/radiant-node), click on your
 language and then on `bitcoin_en.ts` to begin translating. Select a source
 string you want to translate and enter your translation.
 
@@ -35,8 +35,8 @@ At the bottom of the screen, you will find helpful automatic suggestions. Click
 on a suggestion to use it, and adapt it as needed. The suggestions consist of
 translation memory and machine translations. Translation memory is previous
 translations of similar source strings, which includes other translations within
-BCHN,
-[imported translations from Bitcoin Core](https://crowdin.com/project/bchn-copy-of-bitcoin-core),
+RADN,
+[imported translations from Bitcoin Core](https://crowdin.com/project/radn-copy-of-bitcoin-core),
 and other translations from other software projects on Crowdin. Machine
 translations are computer-generated suggestions.
 
@@ -49,9 +49,9 @@ in other sentences in the same language.
 ### Step 4: Proofread translations
 
 For quality assurance purposes, every proposed translation must be verified by a
-proofreader before it can be included in the BCHN software. To do so, you first
+proofreader before it can be included in the RADN software. To do so, you first
 need to obtain the proofreader permission for your language. Contact us if you
-are a member of the Bitcoin Cash community we can trust and you want to be a
+are a member of the Radiant community we can trust and you want to be a
 proofreader for a particular language.
 
 As a proofreader, you can click the checkmark to mark a translation as verified.
@@ -87,7 +87,7 @@ git commit
 ```
 
 On Crowdin, go to
-[*Settings*, *Files*](https://crowdin.com/project/bitcoin-cash-node/settings#files),
+[*Settings*, *Files*](https://crowdin.com/project/radiant-node/settings#files),
 click *Update*, and upload the new version of `bitcoin_en.ts` you just
 generated. Translators can now begin translating new/modified source strings.
 
@@ -124,7 +124,7 @@ following steps:
 ### Importing verified translations from Crowdin into Git
 
 On Crowdin, go to
-[*Settings*, *Translations*](https://crowdin.com/project/bitcoin-cash-node/settings#translations),
+[*Settings*, *Translations*](https://crowdin.com/project/radiant-node/settings#translations),
 and click *Build & Download*. Replace the files in the `src/qt/locale/`
 directory with the files you just downloaded from Crowdin (some may need to be
 renamed). Commit the changes and submit them as a Merge Request.
@@ -135,22 +135,22 @@ settings, any unverified translations won’t be included in your download.
 ### Updating Bitcoin Core translation memory in Crowdin
 
 In order to provide translators with helpful automatic suggestions based on
-previous translation work in Bitcoin Core, BCHN maintains a copy of Bitcoin
+previous translation work in Bitcoin Core, RADN maintains a copy of Bitcoin
 Core’s translations in a separate Crowdin project:
 
-  <https://crowdin.com/project/bchn-copy-of-bitcoin-core>
+  <https://crowdin.com/project/radn-copy-of-bitcoin-core>
 
 To update these:
 
 1. Go to
-   [*Settings*, *Files*](https://crowdin.com/project/bchn-copy-of-bitcoin-core/settings#files),
+   [*Settings*, *Files*](https://crowdin.com/project/radn-copy-of-bitcoin-core/settings#files),
    and upload `src/qt/locale/bitcoin_en.ts` from the
    [Bitcoin Core Git repository](https://github.com/bitcoin/bitcoin).
 2. Go to
-   [*Settings*, *Translations*](https://crowdin.com/project/bchn-copy-of-bitcoin-core/settings#translations),
+   [*Settings*, *Translations*](https://crowdin.com/project/radn-copy-of-bitcoin-core/settings#translations),
    and upload the other `src/qt/locale/bitcoin_*.ts` files.
 3. Go to
-   [*Settings*, *General*](https://crowdin.com/project/bchn-copy-of-bitcoin-core/settings#general)
+   [*Settings*, *General*](https://crowdin.com/project/radn-copy-of-bitcoin-core/settings#general)
    and change the version number to the last Bitcoin Core release.
 
 ### Registering languages in Bitcoin-Qt

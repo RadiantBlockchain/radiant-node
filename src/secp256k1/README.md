@@ -3,10 +3,10 @@ libsecp256k1
 
 Optimized C library for cryptographic operations on curve secp256k1.
 
-This library is used for consensus critical cryptographic operations on the Bitcoin Cash network. It is maintained within the Bitcoin Cash Node repository while following upstream sources which include Bitcoin Core and Bitcoin ABC.
-Developers who want to contribute may do so either through the Bitcoin Cash Node project, or at [reviews.bitcoinabc.org](https://reviews.bitcoinabc.org/), or through Bitcoin Core. Use at your own risk.
+This library is used for consensus critical cryptographic operations on the Radiant network. It is maintained within the Radiant Node repository while following upstream sources which include Bitcoin Core and Bitcoin ABC.
+Developers who want to contribute may do so either through the Radiant Node project, or at [reviews.bitcoinabc.org](https://reviews.bitcoinabc.org/), or through Bitcoin Core. Use at your own risk.
 
-This library is intended to be the highest quality publicly available library for cryptography on the secp256k1 curve. However, the primary focus of its development has been for usage in the Bitcoin Cash system and usage unlike Bitcoin's may be less well tested, verified, or suffer from a less well thought out interface. Correct usage requires some care and consideration that the library is fit for your application's purpose.
+This library is intended to be the highest quality publicly available library for cryptography on the secp256k1 curve. However, the primary focus of its development has been for usage in the Radiant system and usage unlike Bitcoin's may be less well tested, verified, or suffer from a less well thought out interface. Correct usage requires some care and consideration that the library is fit for your application's purpose.
 
 Features:
 * secp256k1 ECDSA signing/verification and key generation.

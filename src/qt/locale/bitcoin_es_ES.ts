@@ -2864,7 +2864,7 @@
     </message>
 </context>
 <context>
-    <name>bitcoin-cash-node</name>
+    <name>radiant-node</name>
     <message>
         <source>Options:</source>
         <translation>Opciones:
@@ -2925,8 +2925,8 @@
         <translation>No se ha podido comenzar el servidor HTTP. Ver debug log para detalles.</translation>
     </message>
     <message>
-        <source>Bitcoin Cash Node</source>
-        <translation>Bitcoin Cash Node</translation>
+        <source>Radiant Node</source>
+        <translation>Radiant Node</translation>
     </message>
     <message>
         <source>The %s developers</source>

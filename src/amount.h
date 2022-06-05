@@ -30,7 +30,7 @@ public:
         amount = other.amount;
         return *this;
     }
-
+    static constexpr Amount max() { return Amount(2100000000000000000ULL); }
     static constexpr Amount zero() { return Amount(0); }
     static constexpr Amount satoshi() { return Amount(1); }
 
@@ -146,19 +146,19 @@ inline constexpr Amount SATOSHI = Amount::satoshi();
 inline constexpr Amount CASH = 100 * SATOSHI;
 inline constexpr Amount COIN = 100'000'000 * SATOSHI;
 
-inline const std::string CURRENCY_UNIT = "BCH";
+inline const std::string CURRENCY_UNIT = "RAD";
 
 /**
  * No amount larger than this (in satoshi) is valid.
  *
  * Note that this constant is *not* the total money supply, which in Bitcoin
- * currently happens to be less than 21,000,000 BCH for various reasons, but
+ * currently happens to be less than 21,000,000,000 RAD for various reasons, but
  * rather a sanity check. As this sanity check is used by consensus-critical
  * validation code, the exact value of the MAX_MONEY constant is consensus
  * critical; in unusual circumstances like a(nother) overflow bug that allowed
  * for the creation of coins out of thin air modification could lead to a fork.
  */
-inline constexpr Amount MAX_MONEY = 21'000'000 * COIN;
+inline constexpr Amount MAX_MONEY = Amount::max(); 
 inline bool MoneyRange(const Amount nValue) {
     return nValue >= Amount::zero() && nValue <= MAX_MONEY;
 }

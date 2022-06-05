@@ -439,7 +439,7 @@ void SetupServerArgs() {
     gArgs.AddArg("-conf=<file>",
                  strprintf("Specify configuration file. Relative paths will be "
                            "prefixed by datadir location. (default: %s)",
-                           BITCOIN_CONF_FILENAME),
+                           RADIANT_CONF_FILENAME),
                  ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     gArgs.AddArg("-datadir=<dir>", "Specify data directory", ArgsManager::ALLOW_ANY,
                  OptionsCategory::OPTIONS);
@@ -534,15 +534,6 @@ void SetupServerArgs() {
             testnetChainParams->GetConsensus().nMinimumChainWork.GetHex()),
         ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::OPTIONS);
     gArgs.AddArg(
-        "-expire",
-        strprintf(
-            "Limit functionality of this node after the tentative upgrade "
-            "date of May 15, 2023 (date can be set with "
-            "-upgrade9activationtime=<n>). To avoid inadvertently using the "
-            "wrong chain, the RPC interface will be disabled at that time. "
-            "(default: %d)", software_outdated::DEFAULT_EXPIRE),
-        ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
-    gArgs.AddArg(
         "-par=<n>",
         strprintf("Set the number of script verification threads (up to %d, 0 "
                   "= auto, <0 = leave that many cores free, default: %d)",
@@ -602,17 +593,6 @@ void SetupServerArgs() {
                            "getrawtransaction rpc call (default: %d)",
                            DEFAULT_TXINDEX),
                  ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
-    gArgs.AddArg(
-        "-usecashaddr",
-        strprintf("Use CashAddr address format for destination encoding "
-                  "instead of the legacy base58 format (default: %d). "
-                  "Warning: Disabling this option will also disable all "
-                  "safety checks related to legacy address use. For example, "
-                  "attempts to send to legacy P2SH addresses will be allowed "
-                  "without warning.",
-                  DEFAULT_USE_CASHADDR),
-        ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
-
     gArgs.AddArg("-addnode=<ip>",
                  "Add a node to connect to and attempt to keep the connection "
                  "open (see the `addnode` RPC command help for more info)",
@@ -924,25 +904,12 @@ void SetupServerArgs() {
                            "initial block download (default: %u)",
                            DEFAULT_MAX_TIP_AGE),
                  ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::DEBUG_TEST);
-
     gArgs.AddArg(
-        "-axionactivationtime=<n>",
-        strprintf("Activation time of the November 2020 Bitcoin Cash Network Upgrade (<n> seconds since epoch, "
+        "-asertactivationtime=<n>",
+        strprintf("Activation time of the Jul 09 2022 10:00:00 GMT+0000 (1657360800) RAD ASERT DAA enabled (<n> seconds since epoch, "
                   "default: %d). This option only has an effect on regtest or scalenet.",
-                  defaultChainParams->GetConsensus().axionActivationTime),
+                  defaultChainParams->GetConsensus().asertActivationTime),
         ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::DEBUG_TEST);
-    gArgs.AddArg(
-        "-upgrade8activationtime=<n>",
-        strprintf("Activation time of the May 2022 Bitcoin Cash Network Upgrade (<n> seconds since epoch, "
-                  "default: %d)",
-                  defaultChainParams->GetConsensus().upgrade8ActivationTime),
-        ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::DEBUG_TEST);
-    gArgs.AddArg(
-        "-upgrade9activationtime=<n>",
-        strprintf("Activation time of the tentative May 2023 Bitcoin Cash Network Upgrade (<n> seconds since epoch, "
-                  "default: %d)",
-                  defaultChainParams->GetConsensus().upgrade9ActivationTime),
-        true, OptionsCategory::DEBUG_TEST);
     gArgs.AddArg(
         "-printtoconsole",
         "Send trace/debug info to console instead of debug.log file (default: "
@@ -1088,6 +1055,10 @@ void SetupServerArgs() {
                  "Override block version to test forking scenarios", ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY,
                  OptionsCategory::BLOCK_CREATION);
 
+    gArgs.AddArg("-banclientua=<ui>",
+                 "Ban clients whose User Agent contains specified string (case insensitive). This option can be specified multiple times.", ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY,
+                 OptionsCategory::NODE_RELAY);
+
     gArgs.AddArg("-server", "Accept command line and JSON-RPC commands", ArgsManager::ALLOW_ANY,
                  OptionsCategory::RPC);
     gArgs.AddArg("-rest",
@@ -1189,8 +1160,8 @@ void SetupServerArgs() {
 }
 
 std::string LicenseInfo() {
-    constexpr auto URL_SOURCE_CODE = "<https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node>";
-    constexpr auto URL_WEBSITE = "<https://bitcoincashnode.org>";
+    constexpr auto URL_SOURCE_CODE = "<https://github.com/radiantblockchain/radiant-node>";
+    constexpr auto URL_WEBSITE = "<https://radiantblockchain.org>";
 
     return CopyrightHolders(strprintf(_("Copyright (C) %i-%i"), 2009, COPYRIGHT_YEAR) + " ") +
            "\n\n" +
@@ -1199,8 +1170,8 @@ std::string LicenseInfo() {
            "\n\n" +
            strprintf(_("The source code is available from %s."), URL_SOURCE_CODE) +
            "\n\n" +
-           strprintf(_("Distributed under the MIT software license, see the accompanying file %s or %s"),
-                     "COPYING", "<https://opensource.org/licenses/MIT>") +
+           strprintf(_("Distributed under the MIT software license, see the accompanying file %s"),
+                     "COPYING") +
            "\n\n" +
            strprintf(_("This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit %s and "
                        "cryptographic software written by Eric Young and UPnP software written by Thomas Bernard."),
@@ -1957,11 +1928,6 @@ bool AppInitParameterInteraction(Config &config) {
 
     fRequireStandard =
         !gArgs.GetBoolArg("-acceptnonstdtxn", !chainparams.RequireStandard());
-    if (!chainparams.IsTestChain() && !fRequireStandard) {
-        return InitError(
-            strprintf("acceptnonstdtxn is not currently supported for %s chain",
-                      chainparams.NetworkIDString()));
-    }
 
     // -bytespersigcheck. Note that for legacy reasons we also support -bytespersigop, so
     // we must treat the two as aliases of each other.
@@ -1987,7 +1953,7 @@ bool AppInitParameterInteraction(Config &config) {
         nLocalServices = ServiceFlags(nLocalServices | NODE_BLOOM);
     }
 
-    // Signal Bitcoin Cash support.
+    // Signal Radiant support.
     // TODO: remove some time after the hardfork when no longer needed
     // to differentiate the network nodes.
     nLocalServices = ServiceFlags(nLocalServices | NODE_BITCOIN_CASH);
@@ -2094,7 +2060,7 @@ bool AppInitMain(Config &config, RPCServer &rpcServer,
 
     // Only log conf file usage message if conf file actually exists.
     fs::path config_file_path =
-        GetConfigFile(gArgs.GetArg("-conf", BITCOIN_CONF_FILENAME));
+        GetConfigFile(gArgs.GetArg("-conf", RADIANT_CONF_FILENAME));
     if (fs::exists(config_file_path)) {
         LogPrintf("Config file: %s\n", config_file_path.string());
     } else if (gArgs.IsArgSet("-conf")) {
@@ -2114,6 +2080,16 @@ bool AppInitMain(Config &config, RPCServer &rpcServer,
     LogPrintf("Using at most %i automatic connections (%i file descriptors "
               "available)\n",
               nMaxConnections, nFD);
+
+    if (gArgs.IsArgSet("-banclientua"))
+    {
+        std::set<std::string> invalidUAClients;
+        for (auto& invalidClient : gArgs.GetArgs("-banclientua"))
+        {
+            invalidUAClients.insert(std::move(invalidClient));
+        }
+        config.SetBanClientUA(std::move(invalidUAClients));
+    }
 
     // Warn about relative -datadir path.
     if (gArgs.IsArgSet("-datadir") &&
@@ -2181,27 +2157,7 @@ bool AppInitMain(Config &config, RPCServer &rpcServer,
     RegisterZMQRPCCommands(tableRPC);
 #endif
 
-    /**
-     * Set up the "software outdated" mechanism.
-     */
-    if (gArgs.GetBoolArg("-expire", software_outdated::DEFAULT_EXPIRE)) {
-        // The software outdated warning will start to happen 30 days before May 15th, 2023.
-        software_outdated::nTime = gArgs.GetArg("-upgrade9activationtime",
-                                                chainparams.GetConsensus().upgrade9ActivationTime);
-        if (software_outdated::nTime > 0) {
-            software_outdated::fDisableRPCOnExpiry =
-                    gArgs.GetBoolArg("-expirerpc", software_outdated::DEFAULT_EXPIRE_RPC);
-            // Setup hooks for expiring the software. As we near the expiry date,
-            // this will periodically print warnings to the log before expiry.
-            // After the software expires, we will also disable the RPC service
-            // if software_outdated::fDisableRPCOnExpiry is true.
-            software_outdated::SetupExpiryHooks(scheduler);
-        }
-    } else {
-        // -expire=0 - software outdated warning is disabled
-        software_outdated::nTime = 0;
-    }
-
+    software_outdated::nTime = 0;
 
     /**
      * Start the RPC server.  It will be started in "warmup" mode and not

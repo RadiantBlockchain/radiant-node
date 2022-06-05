@@ -4,7 +4,7 @@
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 """
-bchn-rpc-gbt-checkvalidity-ignorecache
+radn-rpc-gbt-checkvalidity-ignorecache
     Test that the -gbtcheckvalidity arg works, and that the template
     args "checkvalidity" and "ignorecache" work.
 """

@@ -1002,7 +1002,7 @@
     <name>WalletView</name>
     </context>
 <context>
-    <name>bitcoin-cash-node</name>
+    <name>radiant-node</name>
     <message>
         <source>Options:</source>
         <translation>Opcións:</translation>
@@ -1028,7 +1028,7 @@
         <translation>Executar no fondo como un demo e aceptar comandos</translation>
     </message>
     <message>
-        <source>Bitcoin Cash Node</source>
+        <source>Radiant Node</source>
         <translation>Core de Bitcoin</translation>
     </message>
     <message>

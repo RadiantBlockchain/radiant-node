@@ -6,7 +6,7 @@
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Test validateblocktemplate RPC call. Adapted from BCHUnlimited
-test for BCHN specific behavior (slightly different error strings
+test for RADN specific behavior (slightly different error strings
 in some cases, not all functionality supported, like setminingmaxblocksize"""
 
 import random
@@ -336,7 +336,7 @@ class ValidateblocktemplateTest(BitcoinTestFramework):
         for n in self.nodes:
             n.validateblocktemplate(hexblk)
 
-        # Note: BCHN does not have RPC method like BU's 'setminingmaxblocksize' yet,
+        # Note: RADN does not have RPC method like BU's 'setminingmaxblocksize' yet,
         # therefore we omit some test cases related to excessiveblock size when
         # modifying that setting on the fly.
         #

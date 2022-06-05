@@ -3000,7 +3000,7 @@
     </message>
 </context>
 <context>
-    <name>bitcoin-cash-node</name>
+    <name>radiant-node</name>
     <message>
         <source>Options:</source>
         <translation>オプション:</translation>
@@ -3070,7 +3070,7 @@
         <translation>HTTPサーバを開始できませんでした。詳細はデバッグログをご確認ください。</translation>
     </message>
     <message>
-        <source>Bitcoin Cash Node</source>
+        <source>Radiant Node</source>
         <translation>Bitcoin のコア</translation>
     </message>
     <message>

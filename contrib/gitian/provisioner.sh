@@ -62,7 +62,7 @@ echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 echo 
 echo "As the user ${BUILDUSER} run the following commands to produce a linux build:"
 echo "export COMMIT=v0.21.0"
-echo "export URL=https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node.git"
+echo "export URL=https://gitlab.com/radiant-node/radiant-node.git"
 echo "cd gitian-builder"
 echo "./bin/make-base-vm --lxc --distro debian --suite stretch --arch amd64"
 echo "./bin/gbuild --commit bitcoin=\${COMMIT} --url bitcoin=\${URL} /vagrant/contrib/gitian-descriptors/gitian-linux.yml"

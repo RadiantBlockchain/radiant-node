@@ -1,9 +1,9 @@
-Bitcoin Cash Node
+Radiant Node
 =====================
 
 Intro
 -----
-Bitcoin Cash is a free open source peer-to-peer electronic cash system that is
+Radiant is a free open source peer-to-peer electronic cash system that is
 completely decentralized, without the need for a central server or trusted
 parties.  Users hold the crypto keys to their own money and transact directly
 with each other, with the help of a P2P network to check for double-spending.
@@ -13,7 +13,7 @@ Setup
 -----
 Unpack the files into a directory and run bitcoin-qt.exe.
 
-Bitcoin Cash Node is based on Bitcoin ABC, which is an original Bitcoin Cash client and
+Radiant Node is based on Bitcoin ABC, which is an original Radiant client and
 builds the backbone of the network. It downloads and stores the entire history
 of Bitcoin transactions; depending on the speed of your computer and network
 connection, the synchronization process can take anywhere from a few hours to

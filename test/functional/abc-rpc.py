@@ -69,7 +69,7 @@ class ABC_RPC_Test(BitcoinTestFramework):
         ebs = getsize['excessiveBlockSize']
         assert_equal(ebs, 2 * ONE_MEGABYTE)
         # Check for EB correctness in the subver string
-        self.check_subversion(r"/Bitcoin Cash Node:.*\(EB2\.0; .*\)/")
+        self.check_subversion(r"/Radiant Node:.*\(EB2\.0; .*\)/")
 
         # Check setting to 13MB
         self.nodes[0].setexcessiveblock(13 * ONE_MEGABYTE)
@@ -77,7 +77,7 @@ class ABC_RPC_Test(BitcoinTestFramework):
         ebs = getsize['excessiveBlockSize']
         assert_equal(ebs, 13 * ONE_MEGABYTE)
         # Check for EB correctness in the subver string
-        self.check_subversion(r"/Bitcoin Cash Node:.*\(EB13\.0; .*\)/")
+        self.check_subversion(r"/Radiant Node:.*\(EB13\.0; .*\)/")
 
         # Check setting to 13.14MB
         self.nodes[0].setexcessiveblock(13140000)
@@ -85,7 +85,7 @@ class ABC_RPC_Test(BitcoinTestFramework):
         ebs = getsize['excessiveBlockSize']
         assert_equal(ebs, 13.14 * ONE_MEGABYTE)
         # check for EB correctness in the subver string
-        self.check_subversion(r"/Bitcoin Cash Node:.*\(EB13\.1; .*\)/")
+        self.check_subversion(r"/Radiant Node:.*\(EB13\.1; .*\)/")
 
         # Check setting to 256MB
         self.nodes[0].setexcessiveblock(256 * ONE_MEGABYTE)
@@ -93,7 +93,7 @@ class ABC_RPC_Test(BitcoinTestFramework):
         ebs = getsize['excessiveBlockSize']
         assert_equal(ebs, 256 * ONE_MEGABYTE)
         # check for EB correctness in the subver string
-        self.check_subversion(r"/Bitcoin Cash Node:.*\(EB256\.0; .*\)/")
+        self.check_subversion(r"/Radiant Node:.*\(EB256\.0; .*\)/")
 
         # Check setting to the limit, 2000 MEGABYTES
         self.nodes[0].setexcessiveblock(MAX_EXCESSIVE_BLOCK_SIZE)
@@ -101,7 +101,7 @@ class ABC_RPC_Test(BitcoinTestFramework):
         ebs = getsize['excessiveBlockSize']
         assert_equal(ebs, MAX_EXCESSIVE_BLOCK_SIZE)
         # check for EB correctness in the subver string
-        self.check_subversion(r"/Bitcoin Cash Node:.*\(EB" + str(MAX_EXCESSIVE_BLOCK_SIZE // ONE_MEGABYTE)
+        self.check_subversion(r"/Radiant Node:.*\(EB" + str(MAX_EXCESSIVE_BLOCK_SIZE // ONE_MEGABYTE)
                               + r"\.0; .*\)/")
 
         # Check that going above the limit (2000 MB) leads to RPC error

@@ -12,7 +12,7 @@
 // The vectors are intended to validate implementations of the same
 // integer ASERT algorithm in other languages against the C++ implementation.
 //
-// This program needs to be compiled and linked against pre-built BCHN
+// This program needs to be compiled and linked against pre-built RADN
 // libraries and sources. There should be some build instructions
 // in the same folder as this program's source.
 

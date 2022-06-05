@@ -15,7 +15,7 @@ section, to avoid having to use `sudo` all the time.
 
 ### Prepare a build workspace
 
-Create a workspace directory (e.g. `~/bchn-gitian`) and `cd` into it.  You'll
+Create a workspace directory (e.g. `~/radn-gitian`) and `cd` into it.  You'll
 only need to run through this setup once so long as you retain the workspace.
 
 ### Install dependencies
@@ -27,8 +27,8 @@ curl git`.
 
 ```bash
 # Fetch the `gitian-build.py` script
-git clone https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node.git
-cp bitcoin-cash-node/contrib/gitian-build.py .
+git clone https://github.com/radiantblockchain/radiant-node.git
+cp radiant-node/contrib/gitian-build.py .
 
 # If you are on a MacOS host, you will need the MacOS-capable fork
 # of gitian-builder, if on Linux, you can skip this step.

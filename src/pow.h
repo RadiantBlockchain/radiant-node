@@ -21,8 +21,11 @@ struct Params;
 
 uint32_t GetNextWorkRequired(const CBlockIndex *pindexPrev,
                              const CBlockHeader *pblock,
+                             const Consensus::Params &params);   
+uint32_t GetNextClassicWorkRequired(const CBlockIndex *pindexPrev,
+                             const CBlockHeader *pblock,
                              const Consensus::Params &params);
-uint32_t CalculateNextWorkRequired(const CBlockIndex *pindexPrev,
+uint32_t CalculateNextClassicWorkRequired(const CBlockIndex *pindexPrev,
                                    int64_t nFirstBlockTime,
                                    const Consensus::Params &params);
 
@@ -32,13 +35,6 @@ uint32_t CalculateNextWorkRequired(const CBlockIndex *pindexPrev,
  */
 bool CheckProofOfWork(const BlockHash &hash, uint32_t nBits,
                       const Consensus::Params &params);
-
-/**
- * Bitcoin cash's difficulty adjustment mechanism.
- */
-uint32_t GetNextCashWorkRequired(const CBlockIndex *pindexPrev,
-                                 const CBlockHeader *pblock,
-                                 const Consensus::Params &params);
 
 arith_uint256 CalculateASERT(const arith_uint256 &refTarget,
                              const int64_t nPowTargetSpacing,

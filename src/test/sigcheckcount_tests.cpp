@@ -177,7 +177,7 @@ BOOST_AUTO_TEST_CASE(test_evalscript) {
             CheckEvalScript(sigs, script, {vtrue}, m, schnorrmultisigflags);
         }
     }
-
+ 
     // repeated checks of the same signature count each time
     CheckEvalScript({txsigschnorr},
                     CScript() << pub << OP_2DUP << OP_CHECKSIGVERIFY
@@ -232,6 +232,7 @@ BOOST_AUTO_TEST_CASE(test_evalscript) {
                       << OP_CHECKMULTISIG,
             SCRIPT_VERIFY_NONE, dummysigchecker, null_context));
     }
+ 
     {
         stacktype stack{{1}, txsigschnorr};
         auto const null_context = std::nullopt;
@@ -242,7 +243,6 @@ BOOST_AUTO_TEST_CASE(test_evalscript) {
                       << OP_CHECKMULTISIG,
             SCRIPT_ENABLE_SCHNORR_MULTISIG, dummysigchecker, null_context));
     }
-
     // EvalScript cumulatively increases the sigchecks count.
     {
         stacktype stack{txsigschnorr};
@@ -257,13 +257,13 @@ BOOST_AUTO_TEST_CASE(test_evalscript) {
     // Other opcodes may be cryptographic and/or CPU intensive, but they do not
     // add any additional sigchecks.
     static_assert(
-        (MAX_SCRIPT_SIZE <= 10000 && MAX_OPS_PER_SCRIPT <= 201 &&
-         MAX_STACK_SIZE <= 1000 && MAX_SCRIPT_ELEMENT_SIZE <= 520),
+        (MAX_SCRIPT_SIZE <= 64000000 && MAX_OPS_PER_SCRIPT <= INT32_MAX &&
+         MAX_STACK_SIZE <= 16000000 && MAX_SCRIPT_ELEMENT_SIZE_LEGACY <= INT32_MAX),
         "These can be made far worse with higher limits. Update accordingly.");
 
     // Hashing operations on the largest stack element.
     {
-        valtype bigblob(MAX_SCRIPT_ELEMENT_SIZE);
+        valtype bigblob(MAX_SCRIPT_ELEMENT_SIZE_LEGACY);
         CheckEvalScript({},
                         CScript()
                             << bigblob << OP_RIPEMD160 << bigblob << OP_SHA1
@@ -272,7 +272,6 @@ BOOST_AUTO_TEST_CASE(test_evalscript) {
                             << OP_CAT << OP_CAT << OP_DROP,
                         {}, 0);
     }
-
     // OP_ROLL grinding, see
     // https://bitslog.com/2017/04/17/new-quadratic-delays-in-bitcoin-scripts/
     {
@@ -302,7 +301,6 @@ BOOST_AUTO_TEST_CASE(test_evalscript) {
         script << ScriptInt::fromIntUnchecked(1);
         CheckEvalScript({}, script, {vtrue}, 0);
     }
-
     // OP_CODESEPARATOR grinding, see
     // https://gist.github.com/markblundeberg/c2c88d25d5f34213830e48d459cbfb44
     // (this is a simplified form)
@@ -357,13 +355,11 @@ BOOST_AUTO_TEST_CASE(test_verifyscript) {
     CHECK_VERIFYSCRIPT(CScript() << ToByteVector(swscript),
                        CScript()
                            << OP_HASH160 << ToByteVector(CScriptID(swscript))
-                           << OP_EQUAL,
-                       SCRIPT_VERIFY_P2SH | SCRIPT_VERIFY_CLEANSTACK, 0);
+                           << OP_EQUAL, SCRIPT_VERIFY_CLEANSTACK, 0);
 
     // If signature checks somehow occur in scriptsig, they do get counted.
     // This can happen in historical blocks pre SIGPUSHONLY, even with CHECKSIG.
-    // (an analogous check for P2SH is not possible since it enforces
-    // sigpushonly).
+    //
     CHECK_VERIFYSCRIPT(CScript() << sigschnorr << msg << pub
                                  << OP_CHECKDATASIG /* scriptSig */,
                        CScript() << sigecdsa << msg << pub

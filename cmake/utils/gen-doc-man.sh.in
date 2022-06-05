@@ -17,7 +17,7 @@ else
     export SOURCE_DATE_EPOCH="$(git show -s --format=%ct HEAD)"
   fi
   # Generate the manpage with help2man.
-  if [ "@CMAKE_SYSTEM_NAME@" == "Darwin" ] && [ "$1" == "qt/bitcoin-qt" ]; then
+  if [ "@CMAKE_SYSTEM_NAME@" == "Darwin" ] && [ "$1" == "qt/radiant-qt" ]; then
     help2man --include=footer.h2m -o "${1##*/}.1" "../../src/qt/@BITCOIN_QT_OSX_BUNDLE_NAME@.app/Contents/MacOS/@BITCOIN_QT_OSX_BUNDLE_NAME@"
   else
     help2man --include=footer.h2m -o "${1##*/}.1" "../../src/$1"

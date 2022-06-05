@@ -55,7 +55,6 @@ public:
         SpendZeroConfChange, // bool
         Listen,              // bool
         AllowLegacyP2PKH,    // bool
-        AllowLegacyP2SH,     // bool
         OptionIDRowCount,    // Keep as final entry
     };
 

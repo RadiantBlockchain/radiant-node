@@ -2,7 +2,7 @@
 # Copyright (c) 2021 The Bitcoin Cash Node developers
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
-"""Test BCHN httptrace logging category."""
+"""Test RADN httptrace logging category."""
 
 import os
 import mmap

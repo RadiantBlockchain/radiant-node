@@ -21,61 +21,7 @@ bool IsUAHFenabled(const Consensus::Params &params,
     return IsUAHFenabled(params, pindexPrev->nHeight);
 }
 
-static bool IsDAAEnabled(const Consensus::Params &params, int nHeight) {
-    return nHeight >= params.daaHeight;
-}
-
-bool IsDAAEnabled(const Consensus::Params &params,
-                  const CBlockIndex *pindexPrev) {
-    if (pindexPrev == nullptr) {
-        return false;
-    }
-
-    return IsDAAEnabled(params, pindexPrev->nHeight);
-}
-
-bool IsMagneticAnomalyEnabled(const Consensus::Params &params,
-                              int32_t nHeight) {
-    return nHeight >= params.magneticAnomalyHeight;
-}
-
-bool IsMagneticAnomalyEnabled(const Consensus::Params &params,
-                              const CBlockIndex *pindexPrev) {
-    if (pindexPrev == nullptr) {
-        return false;
-    }
-
-    return IsMagneticAnomalyEnabled(params, pindexPrev->nHeight);
-}
-
-static bool IsGravitonEnabled(const Consensus::Params &params,
-                              int32_t nHeight) {
-    return nHeight >= params.gravitonHeight;
-}
-
-bool IsGravitonEnabled(const Consensus::Params &params,
-                       const CBlockIndex *pindexPrev) {
-    if (pindexPrev == nullptr) {
-        return false;
-    }
-
-    return IsGravitonEnabled(params, pindexPrev->nHeight);
-}
-
-static bool IsPhononEnabled(const Consensus::Params &params, int32_t nHeight) {
-    return nHeight >= params.phononHeight;
-}
-
-bool IsPhononEnabled(const Consensus::Params &params,
-                     const CBlockIndex *pindexPrev) {
-    if (pindexPrev == nullptr) {
-        return false;
-    }
-
-    return IsPhononEnabled(params, pindexPrev->nHeight);
-}
-
-bool IsAxionEnabled(const Consensus::Params &params,
+bool IsASERTEnabled(const Consensus::Params &params,
                     const CBlockIndex *pindexPrev) {
     if (pindexPrev == nullptr) {
         return false;
@@ -88,13 +34,5 @@ bool IsAxionEnabled(const Consensus::Params &params,
 
     // Otherwise, do the MTP check
     return pindexPrev->GetMedianTimePast() >=
-           gArgs.GetArg("-axionactivationtime", params.axionActivationTime);
-}
-
-bool IsUpgrade8Enabled(const Consensus::Params &params, const CBlockIndex *pindexPrev) {
-    if (pindexPrev == nullptr) {
-        return false;
-    }
-
-    return pindexPrev->GetMedianTimePast() >= gArgs.GetArg("-upgrade8activationtime", params.upgrade8ActivationTime);
+           gArgs.GetArg("-asertactivationtime", params.asertActivationTime);
 }

@@ -29,7 +29,7 @@ function(enable_sanitizers)
 			message(STATUS "
 Check for sanitizer support failed. A common error is not setting \
 C/C++ compiler to 'clang' when using libFuzzer. See\n \
-https://docs.bitcoincashnode.org/doc/fuzzing/")
+https://docs.radiantblockchain.org/doc/fuzzing/")
 		endif()
 		message(FATAL_ERROR "The sanitizers option is not supported: ${_fsanitize_option}")
 	endif()

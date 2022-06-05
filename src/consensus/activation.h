@@ -16,30 +16,6 @@ struct Params;
 bool IsUAHFenabled(const Consensus::Params &params,
                    const CBlockIndex *pindexPrev);
 
-/** Check if DAA HF has activated. */
-bool IsDAAEnabled(const Consensus::Params &params,
-                  const CBlockIndex *pindexPrev);
-
-/** Check if Nov 15, 2018 HF has activated using block height. */
-bool IsMagneticAnomalyEnabled(const Consensus::Params &params, int32_t nHeight);
-/** Check if Nov 15, 2018 HF has activated using previous block index. */
-bool IsMagneticAnomalyEnabled(const Consensus::Params &params,
-                              const CBlockIndex *pindexPrev);
-
-/** Check if Nov 15th, 2019 protocol upgrade has activated. */
-bool IsGravitonEnabled(const Consensus::Params &params,
-                       const CBlockIndex *pindexPrev);
-
-/** Check if May 15th, 2020 protocol upgrade has activated. */
-bool IsPhononEnabled(const Consensus::Params &params,
-                     const CBlockIndex *pindexPrev);
-
-/** Check if November 15th, 2020 protocol upgrade has activated. */
-bool IsAxionEnabled(const Consensus::Params &params,
+/** Check if Jul 09 2022 10:00:00 GMT+000 0(1657360800) ASERT DAA has activated. */
+bool IsASERTEnabled(const Consensus::Params &params,
                     const CBlockIndex *pindexPrev);
-
-/** Note: May 15th, 2021 protocol upgrade was relay-only, and has no on-chain rules.
- *  The function "IsTachyonEnabled" that used to live here has been removed. */
-
-/** Check if tentative May 15th, 2022 protocol upgrade has activated. */
-bool IsUpgrade8Enabled(const Consensus::Params &params, const CBlockIndex *pindexPrev);

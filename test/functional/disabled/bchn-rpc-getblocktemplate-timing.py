@@ -4,7 +4,7 @@
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 '''
-bchn-rpc-getblocktemplate-timing -- test that -maxgbttime and -maxinitialgbttime command-line options work
+radn-rpc-getblocktemplate-timing -- test that -maxgbttime and -maxinitialgbttime command-line options work
 '''
 
 import http

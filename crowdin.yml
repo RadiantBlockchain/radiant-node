@@ -1,4 +1,4 @@
-# Configuration for https://crowdin.com/project/bitcoin-cash-node
+# Configuration for https://crowdin.com/project/radiant-node
 
 project_id: 398054
 base_path: .
@@ -10,7 +10,7 @@ commit_message: |-
 
  Source file: `%original_file_name%`
 
- Translators, thank you for making Bitcoin Cash usable by everyone in the world!
+ Translators, thank you for making Radiant usable by everyone in the world!
 
  Commit created automatically by Crowdin.
 

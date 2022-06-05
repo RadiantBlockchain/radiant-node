@@ -731,7 +731,7 @@ void CoinControlDialog::updateView() {
                 sAddress = QString::fromStdString(
                     EncodeCashAddr(outputAddress, model->getChainParams()));
 
-                // if listMode or change => show Bitcoin Cash address. In tree mode,
+                // if listMode or change => show Radiant address. In tree mode,
                 // address is not shown again for direct wallet address outputs
                 if (!treeMode || (!(sAddress == sWalletAddress))) {
                     itemOutput->setText(COLUMN_ADDRESS, sAddress);

@@ -11,13 +11,18 @@
 /** 1MB */
 inline constexpr uint64_t ONE_MEGABYTE = 1000000;
 /** The maximum allowed size for a transaction, in bytes */
-inline constexpr uint64_t MAX_TX_SIZE = ONE_MEGABYTE;
+inline constexpr uint64_t MAX_TX_SIZE = 32 * ONE_MEGABYTE;
+/** The maximum allowed size for a transaction legacy, in bytes */
+inline constexpr uint64_t MAX_TX_SIZE_CONSENSUS_LEGACY = ONE_MEGABYTE;
 /** The minimum allowed size for a transaction, in bytes */
-inline constexpr uint64_t MIN_TX_SIZE = 100;
+inline constexpr uint64_t MIN_TX_SIZE = 32;
 /** The maximum allowed size for a block, before the UAHF */
 inline constexpr uint64_t LEGACY_MAX_BLOCK_SIZE = ONE_MEGABYTE;
 /** Default setting for maximum allowed size for a block, in bytes */
-inline constexpr uint64_t DEFAULT_EXCESSIVE_BLOCK_SIZE = 32 * ONE_MEGABYTE;
+inline constexpr uint64_t DEFAULT_EXCESSIVE_BLOCK_SIZE = 128 * ONE_MEGABYTE;
+
+/** Default setting for maximum allowed size for a block, in bytes legacy */
+inline constexpr uint64_t DEFAULT_EXCESSIVE_BLOCK_SIZE_LEGACY = 32 * ONE_MEGABYTE;
 /**
  *  Maximum excessive blocks size: 2GB. This is a temporary limit
  *  to prevent consensus failure between 32-bit and 64-bit platforms,
@@ -26,19 +31,19 @@ inline constexpr uint64_t DEFAULT_EXCESSIVE_BLOCK_SIZE = 32 * ONE_MEGABYTE;
  */
 inline constexpr uint64_t MAX_EXCESSIVE_BLOCK_SIZE = uint64_t(2000) * ONE_MEGABYTE;
 /** Allowed number of signature check operations per transaction. */
-inline constexpr uint64_t MAX_TX_SIGCHECKS = 3000;
+inline constexpr uint64_t MAX_TX_SIGCHECKS = UINT64_MAX;
 /**
  * The ratio between the maximum allowable block size and the maximum allowable
  * SigChecks (executed signature check operations) in the block. (network rule).
  */
-inline constexpr int BLOCK_MAXBYTES_MAXSIGCHECKS_RATIO = 141;
+inline constexpr int BLOCK_MAXBYTES_MAXSIGCHECKS_RATIO = 1;
 /**
  * Coinbase transaction outputs can only be spent after this number of new
  * blocks (network rule).
  */
 inline constexpr int COINBASE_MATURITY = 100;
 /** Coinbase scripts have their own script size limit. */
-inline constexpr int MAX_COINBASE_SCRIPTSIG_SIZE = 100;
+inline constexpr int MAX_COINBASE_SCRIPTSIG_SIZE = 2048;
 
 /** Flags for nSequence and nLockTime locks */
 /** Interpret sequence numbers as relative lock-time constraints. */

@@ -1,44 +1,44 @@
-# Contributing to Bitcoin Cash Node
+# Contributing to Radiant Node
 
-The Bitcoin Cash Node project welcomes contributors!
+The Radiant Node project welcomes contributors!
 
 This guide is intended to help developers and others contribute effectively
-to Bitcoin Cash Node.
+to Radiant Node.
 
 ## Communicating with the project
 
-To get in contact with the Bitcoin Cash Node project, we monitor a number
+To get in contact with the Radiant Node project, we monitor a number
 of resources.
 
 Our main development repository is currently located at
 
-[https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node)
+[https://github.com/radiantblockchain/radiant-node](https://github.com/radiantblockchain/radiant-node)
 
 This features the project code, an issue tracker and facilities to see
 project progress and activities, even in detailed form such as individual
 change requests.
 
 Users are free to submit issues or comment on existing ones - all that is
-needed is a GitLab account which can be freely registered (use the 'Register'
-button on the GitLab page).
+needed is a Github account which can be freely registered (use the 'Register'
+button on the Github page).
 
 In addition to the project repository, we have various other channels where
 project contributors can be reached.
 
-Our main chat is at <https://bitcoincashnode.slack.com>, where we conduct
+Our main chat is at <https://t.me/radiantblockchain>, where we conduct
 our main development and interactive support for users of our node.
 
 Other social media resources such as our Telegram and Twitter are linked
 from the project website at
 
-[https://bitcoincashnode.org](https://bitcoincashnode.org)
+[https://radiantblockchain.org](https://radiantblockchain.org)
 
-On all our channels, we seek to facilitate development of Bitcoin Cash Node,
+On all our channels, we seek to facilitate development of Radiant Node,
 and to welcome and support people who wish to participate.
 
 Please visit our channels to
 
-- Introduce yourself to other Bitcoin Cash Node contributors
+- Introduce yourself to other Radiant Node contributors
 - Get help with your development environment
 - Discuss how to complete a patch.
 
@@ -47,9 +47,9 @@ It is not for:
 - Market discussion
 - Non-constructive criticism
 
-## Bitcoin Cash Node Development Philosophy
+## Radiant Node Development Philosophy
 
-Bitcoin Cash Node aims for fast iteration and continuous integration.
+Radiant Node aims for fast iteration and continuous integration.
 
 This means that there should be quick turnaround for patches to be proposed,
 reviewed, and committed. Changes should not sit in a queue for long.
@@ -116,9 +116,9 @@ when they have a good reason to do so.
 - Don't be afraid to say "NO", or "MAYBE, but...", if a change seems
   undesirable or if you otherwise have reservations/caveats/etc.
 
-Here are some handy links for development practices aligned with Bitcoin Cash Node:
+Here are some handy links for development practices aligned with Radiant Node:
 
-- [BCHN GitLab development working rules and guidelines](doc/bchn-gitlab-usage-rules-and-guidelines.md)
+- [RADN GitLab development working rules and guidelines](doc/radn-github-usage-rules-and-guidelines.md)
 - [Developer Notes](doc/developer-notes.md)
 - [How to Write a Git Commit Message](https://chris.beams.io/posts/git-commit/)
 - [How to Do Code Reviews Like a Human - Part 1](https://mtlynch.io/human-code-reviews-1/)
@@ -131,9 +131,9 @@ Here are some handy links for development practices aligned with Bitcoin Cash No
 - [Good Work, Great Work, and Right Work](https://forum.dlang.org/post/q7u6g1$94p$1@digitalmars.com)
 - [Accelerate: The Science of Lean Software and DevOps](https://www.amazon.com/Accelerate-Software-Performing-Technology-Organizations/dp/1942788339)
 
-## Getting set up with the Bitcoin Cash Node Repository
+## Getting set up with the Radiant Node Repository
 
-1. Create an account at [https://gitlab.com](https://gitlab.com) if you don't have
+1. Create an account at [https://github.com](https://github.com) if you don't have
    one yet
 2. Install Git on your machine
 
@@ -151,26 +151,26 @@ Here are some handy links for development practices aligned with Bitcoin Cash No
 
 4. Upload your SSH public key to GitLab
 
-    - Go to: [https://gitlab.com](https://gitlab.com), log in
+    - Go to: [https://github.com](https://github.com), log in
     - Under "User Settings", "SSH Keys", add your public key
     - Paste contents from: `$HOME/.ssh/id_rsa.pub`
 
-5. Create a personal fork of the Bitcoin Cash Node repository for your work
+5. Create a personal fork of the Radiant Node repository for your work
 
-    - Sign into GitLab under your account, then visit the project at [https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node)
+    - Sign into GitLab under your account, then visit the project at [https://github.com/radiantblockchain/radiant-node](https://github.com/radiantblockchain/radiant-node)
     - Click the 'Fork' button on the top right, and choose to fork the project to
       your personal GitLab space.
 
 6. Clone your personal work repository to your local machine:
 
     ```
-    git clone git@gitlab.com:username/bitcoin-cash-node.git
+    git clone git@github.com:username/radiant-node.git
     ```
 
 7. Set your checked out copy's upstream to our main project:
 
     ```
-    git remote add upstream https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node.git
+    git remote add upstream https://github.com/radiantblockchain/radiant-node.git
     ```
 
 8. You may want to add the `mreq` alias to your `.git/config`:
@@ -196,7 +196,7 @@ Here are some handy links for development practices aligned with Bitcoin Cash No
     During submission of patches, our GitLab process may refused code that
     is not styled according to our coding guidelines.
 
-    To enforce Bitcoin Cash Node codeformatting standards, you may need to
+    To enforce Radiant Node codeformatting standards, you may need to
     install `clang-format-8`, `clang-tidy` (version >=8), `autopep8`, `flake8`,
     `phpcs` and `shellcheck` on your system to format your code before submission
     as a Merge Request.
@@ -239,7 +239,7 @@ Here are some handy links for development practices aligned with Bitcoin Cash No
 
     To run benchmarks, see [Benchmarking](doc/benchmarking.md).
 
-## Working with The Bitcoin Cash Node Repository
+## Working with The Radiant Node Repository
 
 A typical workflow would be:
 
@@ -285,7 +285,7 @@ please contact our developers and they will help you decide.
 ## What to work on
 
 If you are looking for a useful task to contribute to the project, a good place
-to start is the list of issues at [https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/issues](https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/issues)
+to start is the list of issues at [https://github.com/radiantblockchain/radiant-node/-/issues](https://github.com/radiantblockchain/radiant-node/-/issues)
 
 Look for issues marked with a label 'good-first-issue'.
 

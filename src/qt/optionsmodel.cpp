@@ -145,7 +145,7 @@ void OptionsModel::Init(bool resetSettings) {
 
 // Wallet
 #ifdef ENABLE_WALLET
-    settings.setValue("fAllowLegacyP2SH", gArgs.GetBoolArg("-allowlegacyp2sh", false));
+
     if (!settings.contains("bSpendZeroConfChange")) {
         settings.setValue("bSpendZeroConfChange", true);
     }

@@ -150,7 +150,7 @@ void setupAddressWidget(QValidatedLineEdit *widget, QWidget *parent) {
     // We don't want translators to use own addresses in translations
     // and this is the only place, where this address is supplied.
     widget->setPlaceholderText(
-        QObject::tr("Enter a Bitcoin Cash address (e.g. %1)").arg(QString::fromStdString(DummyAddress(Params()))));
+        QObject::tr("Enter a Radiant address (e.g. %1)").arg(QString::fromStdString(DummyAddress(Params()))));
     widget->setValidator(
         new BitcoinAddressEntryValidator(Params().CashAddrPrefix(), parent));
     widget->setCheckValidator(new BitcoinAddressCheckValidator(parent));
@@ -412,7 +412,7 @@ void openDebugLogfile() {
 
 bool openBitcoinConf() {
     fs::path pathConfig =
-        GetConfigFile(gArgs.GetArg("-conf", BITCOIN_CONF_FILENAME));
+        GetConfigFile(gArgs.GetArg("-conf", RADIANT_CONF_FILENAME));
 
     /* Create the file */
     fs::ofstream configFile(pathConfig, std::ios_base::app);
@@ -581,19 +581,19 @@ static fs::path StartupShortcutPath() {
        in the uninstaller NSIS script (see: cmake/modules/NSIS.template.in) */
     std::string chain = gArgs.GetChainName();
     if (chain == CBaseChainParams::MAIN) {
-        return GetSpecialFolderPath(CSIDL_STARTUP) / "Bitcoin Cash Node.lnk";
+        return GetSpecialFolderPath(CSIDL_STARTUP) / "Radiant Node.lnk";
     }
     if (chain == CBaseChainParams::TESTNET) {
-        return GetSpecialFolderPath(CSIDL_STARTUP) / "Bitcoin Cash Node (testnet).lnk";
+        return GetSpecialFolderPath(CSIDL_STARTUP) / "Radiant Node (testnet).lnk";
     }
     if (chain == CBaseChainParams::TESTNET4) {
-        return GetSpecialFolderPath(CSIDL_STARTUP) / "Bitcoin Cash Node (testnet4).lnk";
+        return GetSpecialFolderPath(CSIDL_STARTUP) / "Radiant Node (testnet4).lnk";
     }
     if (chain == CBaseChainParams::SCALENET) {
-        return GetSpecialFolderPath(CSIDL_STARTUP) / "Bitcoin Cash Node (scalenet).lnk";
+        return GetSpecialFolderPath(CSIDL_STARTUP) / "Radiant Node (scalenet).lnk";
     }
     return GetSpecialFolderPath(CSIDL_STARTUP) /
-           strprintf("Bitcoin Cash Node (%s).lnk", chain); // If we get here: "regtest"
+           strprintf("Radiant Node (%s).lnk", chain); // If we get here: "regtest"
 }
 
 bool GetStartOnSystemStartup() {

@@ -1,4 +1,4 @@
-# Fuzz-testing Bitcoin Cash Node
+# Fuzz-testing Radiant Node
 
 A special test harness in `src/test/fuzz/` is provided for each fuzz target to
 provide an easy entry point for fuzzers and the like. In this document we'll
@@ -16,7 +16,7 @@ Extract the example seeds (or other starting inputs) into the inputs
 directory before starting fuzzing.
 
 ```
-git clone https://gitlab.com/bitcoin-cash-node/bchn-sw/qa-assets
+git clone https://github.com/radiantblockchain/radn-sw/qa-assets
 export DIR_FUZZ_IN=$PWD/qa-assets/fuzz_seed_corpus
 ```
 
@@ -43,7 +43,7 @@ export AFLPATH=$PWD
 
 ### Instrumentation
 
-To build Bitcoin Cash Node using AFL instrumentation (this assumes that the
+To build Radiant Node using AFL instrumentation (this assumes that the
 `AFLPATH` was set as above):
 
 ```

@@ -88,6 +88,14 @@ enum class ScriptError {
     INVALID_TX_INPUT_INDEX,
     INVALID_TX_OUTPUT_INDEX,
 
+    /* RADIANT specific OP codes */
+    INVALID_TX_REFHASH_SIZE,
+    INVALID_TX_REF_SIZE,
+
+    /* Invalid output disallow additional refs*/
+    INVALID_TX_OUTPUT_CONTAINS_DISALLOWED_PUSHREF,
+
+    // General 
     ERROR_COUNT,
 };
 

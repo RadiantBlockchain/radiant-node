@@ -9,9 +9,11 @@
 #include <hash.h>
 #include <tinyformat.h>
 #include <util/strencodings.h>
+#include <key_io.h>
 
 BlockHash CBlockHeader::GetHash() const {
-    return BlockHash(SerializeHash(*this));
+    uint256 hash = BlockHashCalculator::CalculateBlockHashFromHeader_sha512_256(*this);
+    return BlockHash(hash);
 }
 
 std::string CBlock::ToString() const {

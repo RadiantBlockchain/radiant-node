@@ -11,8 +11,56 @@
 #include <primitives/txid.h>
 #include <script/script.h>
 #include <serialize.h>
+#include "hash.h"
 
 static const int SERIALIZE_TRANSACTION = 0x00;
+
+/**
+ * The transaction id preimage is constituted from the parts of a transaction.
+ * This is a more compact representation of the parts of a transaction. 
+ * 
+ * The key innovation is that we compress the inputs, prevouts, and outputs into a constant size data structure
+ * This allows arbitrary induction proofs by checking the parent and grand parent transactions.
+ * 
+ * Make note that the 'hashOutputs' is not the same as the Sighash.Preimage, below it is the sha256 hash
+ * of the concatentation of the individual sha256 hashes of each output. This is done so that a smart contract
+ * can optionally verify a smaller set of data instead of requiring all complete outputs.
+ * 
+ */
+class CTransactionHashPreimage {
+public:
+    int32_t nVersion;           // Tx version
+    uint32_t nTotalInputs;      // Total number of inputs
+    uint256 hashPrevoutInputs;  // sha256 hash of the complete inputs  
+    uint256 hashSequence;       // sha256 hash of the input sequences
+    uint32_t nTotalOutputs;     // Total number of outputs
+    uint256 hashOutputHashes;   // sha256 hash of the concat of the sha256 hash of each output and it's pushrefs/contents
+    uint32_t nLockTime;         // Tx lock time
+
+    CTransactionHashPreimage() { SetNull(); }
+ 
+    SERIALIZE_METHODS(CTransactionHashPreimage, obj) {
+        READWRITE(
+            obj.nVersion, 
+            obj.nTotalInputs, 
+            obj.hashPrevoutInputs, 
+            obj.hashSequence, 
+            obj.nTotalOutputs,
+            obj.hashOutputHashes,
+            obj.nLockTime
+        );
+    }
+
+    void SetNull() {
+        nVersion = 0;
+        nTotalInputs = 0;
+        hashPrevoutInputs.SetNull();
+        hashSequence.SetNull();
+        nTotalOutputs = 0;
+        hashOutputHashes.SetNull();
+        nLockTime = 0;
+    }
+};
 
 /**
  * An outpoint - a combination of a transaction hash and an index n into its
@@ -340,7 +388,7 @@ static inline CTransactionRef MakeTransactionRef(Tx &&txIn) {
 
 /** Precompute sighash midstate to avoid quadratic hashing */
 struct PrecomputedTransactionData {
-    uint256 hashPrevouts, hashSequence, hashOutputs;
+    uint256 hashPrevouts, hashSequence, hashOutputs, hashOutputHashes;
 
     PrecomputedTransactionData() = default;
 
@@ -384,3 +432,98 @@ public:
     /// Returned pointer will be nullptr if this->isMutableTx()
     const CTransaction *constantTx() const { return tx; }
 };
+
+/**
+ * @brief Compute the summary data for a transaction output
+ * To be used in Sighash.preimage, in TxId V3 Preimage and OP codes OP_UTXODATASUMMARY
+ * 
+ */
+struct OutputDataSummary {
+    Amount nValue;
+    uint256 scriptPubKeyHash;
+    uint32_t totalRefs;
+    uint256 refsHash;
+};
+
+static inline OutputDataSummary getOutputDataSummary(const CScript& script, const Amount& amount, const uint256& zeroRefHash) {
+    OutputDataSummary outputDataSummary;
+    outputDataSummary.nValue = amount;
+    CHashWriter hashWriterScriptPubKey(SER_GETHASH, 0);
+    hashWriterScriptPubKey << CFlatData(script);
+    outputDataSummary.scriptPubKeyHash = hashWriterScriptPubKey.GetHash();
+    std::set<uint288> pushRefSet;
+    std::set<uint288> requireRefSet;
+    std::set<uint288> disallowSiblingRefSet;
+    if (!script.GetPushRefs(pushRefSet, requireRefSet, disallowSiblingRefSet)) {
+        // Fatal error parsing output should never happen
+        throw std::runtime_error("Error: refs-error: parsing OP_PUSHINPUTREF, OP_REQUIREINPUTREF, OP_DISALLOWPUSHINPUTREF, or OP_DISALLOWPUSHINPUTREFSIBLING. Ensure references are 36 bytes length.");
+    }
+    outputDataSummary.totalRefs = pushRefSet.size();
+    outputDataSummary.refsHash = zeroRefHash;
+    // Write the 'color' of the output by taking the sorted set of all OP_PUSHINPUTREFs values (dedup in a map)
+    if (outputDataSummary.totalRefs) {
+         // Get the hash of the concatentation of all of the refs in the output
+        CHashWriter hashWriterScriptPubKeyColorPushRefs(SER_GETHASH, 0);
+        // Then output all colors
+        std::set<uint288>::const_iterator outputIt;
+        for (outputIt = pushRefSet.begin(); outputIt != pushRefSet.end(); outputIt++) {
+            hashWriterScriptPubKeyColorPushRefs << *outputIt;
+        }
+        outputDataSummary.refsHash = hashWriterScriptPubKeyColorPushRefs.GetHash();
+    }
+    return outputDataSummary;
+}
+
+static inline void writeOutputVector(CHashWriter& hashWriterOutputs, const CScript& script, const Amount& amount, uint256& zeroRefHash) {
+    OutputDataSummary outputSummary = getOutputDataSummary(script, amount, zeroRefHash);
+    hashWriterOutputs << outputSummary.nValue;
+    hashWriterOutputs << outputSummary.scriptPubKeyHash;
+    hashWriterOutputs << outputSummary.totalRefs;
+    hashWriterOutputs << outputSummary.refsHash;
+}
+
+/**
+ * @brief Get the Hash Output Hashes object
+ * 
+ * Generate a hash of the outputs of a transaction with the following format:
+ * 
+ * <output1-nValue>
+ * <sha256(output1-scriptPubKey)>
+ * <sha256(
+ *  output1-pushRef1
+ *  output1-pushRef2
+ *  ...
+ *  output1-pushRef3
+ * )>
+ * <output2-nValue>
+ * <sha256(output2-scriptPubKey)>
+ * <sha256(
+ *  output2-pushRef1
+ *  output2-pushRef2
+ * )>
+ * <output3-nValue>
+ * <sha256(output3-scriptPubKey)>
+ * <0000000000000000000000000000000000000000000000000000000000000000>
+ * 
+ * 
+ * In the above ^^ example the first two outputs (output1 and output2) contain 3 push refs and 2 push refs respectively.
+ * The sha256 is included of the concatenation of them. The push refs are sorted lexicographically (not in order)
+ * In the third output, since there are no push refs in that output, a 32 byte zero NULL is included instead.
+ * 
+ * Then the entire datastructure above is hashed with sha256 one more time.
+ * 
+ * The Purpose of the construction is to provide a compressed/succint way to prove the contents of one or more outputs
+ * of a transaction.
+ * 
+ * @tparam T 
+ * @param txTo 
+ * @return uint256 
+ */
+template <class T> static inline uint256 GetHashOutputHashes(const T &txTo) {
+    CHashWriter hashWriterOutputs(SER_GETHASH, 0);
+    uint256 zeroRefHash(uint256S("0000000000000000000000000000000000000000000000000000000000000000"));
+    for (const auto &txout : txTo.vout) {
+        writeOutputVector(hashWriterOutputs, txout.scriptPubKey, txout.nValue, zeroRefHash);
+    }
+    return hashWriterOutputs.GetHash();
+}

@@ -1,15 +1,15 @@
 [Unit]
-Description=Bitcoin Cash Node Daemon
+Description=Radiant Node Daemon
 After=network.target
 
 [Service]
-User=bitcoin
-Group=bitcoin
+User=radiant
+Group=radiant
 
 Type=forking
-PIDFile=/var/lib/bitcoind/bitcoind.pid
-ExecStart=/usr/bin/bitcoind -daemon -pid=/var/lib/bitcoind/bitcoind.pid \
--conf=/etc/bitcoin/bitcoin.conf -datadir=/var/lib/bitcoind -disablewallet
+PIDFile=/var/lib/radiantd/radiantd.pid
+ExecStart=/usr/bin/radiantd -daemon -pid=/var/lib/radiantd/radiantd.pid \
+-conf=/etc/radiant/radiant.conf -datadir=/var/lib/radiantd -disablewallet
 
 Restart=always
 PrivateTmp=true

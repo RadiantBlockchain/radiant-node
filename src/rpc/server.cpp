@@ -603,9 +603,9 @@ std::vector<std::string> CRPCTable::listCommands() const {
 std::string HelpExampleCli(const std::string &methodname,
                            const std::string &args) {
     if (args.empty()) {
-        return "> bitcoin-cli " + methodname + "\n";
+        return "> radiant-cli " + methodname + "\n";
     } else {
-        return "> bitcoin-cli " + methodname + " " + args + "\n";
+        return "> radiant-cli " + methodname + " " + args + "\n";
     }
 }
 

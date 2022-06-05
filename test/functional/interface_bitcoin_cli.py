@@ -24,7 +24,7 @@ class TestBitcoinCli(BitcoinTestFramework):
         """Main test logic"""
 
         cli_response = self.nodes[0].cli("-version").send_cli()
-        assert "Bitcoin Cash Node RPC client version" in cli_response
+        assert "Radiant Node RPC client version" in cli_response
 
         self.log.info(
             "Compare responses from gewalletinfo RPC and `bitcoin-cli getwalletinfo`")

@@ -80,3 +80,17 @@ template std::string base_blob<256>::GetHex() const;
 template std::string base_blob<256>::ToString() const;
 template void base_blob<256>::SetHex(const char *) noexcept;
 template void base_blob<256>::SetHex(const std::string &) noexcept;
+
+// Explicit instantiations for base_blob<288>
+template base_blob<288>::base_blob(const std::vector<uint8_t> &) noexcept;
+template std::string base_blob<288>::GetHex() const;
+template std::string base_blob<288>::ToString() const;
+template void base_blob<288>::SetHex(const char *) noexcept;
+template void base_blob<288>::SetHex(const std::string &) noexcept;
+
+// Explicit instantiations for base_blob<512>
+template base_blob<512>::base_blob(const std::vector<uint8_t> &) noexcept;
+template std::string base_blob<512>::GetHex() const;
+template std::string base_blob<512>::ToString() const;
+template void base_blob<512>::SetHex(const char *) noexcept;
+template void base_blob<512>::SetHex(const std::string &) noexcept;
