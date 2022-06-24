@@ -1851,7 +1851,7 @@ void writeOutputVector(CHashWriter& hashWriterOutputs, const CTxOut& txout, uint
     std::set<uint288> disallowSiblingRefSet;
     if (!txout.scriptPubKey.GetPushRefs(pushRefSet, requireRefSet, disallowSiblingRefSet)) {
         // Fatal error parsing output should never happen
-        throw std::runtime_error("GetPushRefs error in interpreter.cpp");
+        throw std::runtime_error("Error: get-push-ref-interpreter-error: parsing OP_PUSHINPUTREF, OP_REQUIREINPUTREF, OP_DISALLOWPUSHINPUTREF, or OP_DISALLOWPUSHINPUTREFSIBLING. Ensure references are 36 bytes length.");
     }
     // Write the 'color' of the output by taking the sorted set of all OP_PUSHINPUTREFs values (dedup in a map)
     uint32_t totalPushRefs(pushRefSet.size());
