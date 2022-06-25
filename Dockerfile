@@ -6,8 +6,7 @@ FROM ubuntu:20.04
 
 LABEL maintainer="radiantblockchain@protonmail.com"
 LABEL version="1.0.0"
-LABEL description="Docker image for radiantd and electrumx"
-ARG testvar=123453
+LABEL description="Docker image for radiantd node"
 
 ARG DEBIAN_FRONTEND=nointeractive
 RUN apt update
@@ -23,9 +22,6 @@ ENV PACKAGES="\
   pkg-config \
   libtool \
   openssh-server \
-  ocl-icd-* \
-  opencl-headers \
-  ocl-icd-opencl-dev\
   git \
   clinfo \
   autoconf \
@@ -49,7 +45,12 @@ ENV PACKAGES="\
   libdb++-dev \
   wget \
   cmake \
+  ocl-icd-* \
+  opencl-headers \
+  ocl-icd-opencl-dev\
 "
+# Note can remove the opencl and ocl packages above when not building on a system for GPU/mining
+# Included only for reference purposes if this container would be used for mining as well.
 
 RUN apt update && apt install --no-install-recommends -y $PACKAGES  && \
     rm -rf /var/lib/apt/lists/* && \
@@ -64,10 +65,10 @@ RUN apt update && apt install --no-install-recommends -y $PACKAGES  && \
 # RUN ./bootstrap
 # RUN make
 # RUN make install
-
+ 
 # Install radiant-node
 WORKDIR /root
-RUN git clone https://github.com/radiantblockchain/radiant-node.git
+RUN git clone --depth 1 --branch v1.0.0 https://github.com/radiantblockchain/radiant-node.git
 RUN mkdir /root/radiant-node/build
 WORKDIR /root/radiant-node/build
 RUN cmake -GNinja .. -DBUILD_RADIANT_QT=OFF
@@ -75,68 +76,9 @@ RUN ninja
 RUN ninja install
 
 WORKDIR /root/radiant-node/build/src
-ENTRYPOINT ["radiantd", "-rpcworkqueue=64", "-rpcthreads=64", "-rest", "-server", "-rpcbind","-rpcallowip='0.0.0.0/0'", "-txindex=1", "-rpcuser=raduser", "-rpcpassword=radpass"]
+
+EXPOSE 7332 7333
  
-# Load up a shell to be able to run on vast.ai and connect
-CMD ["sh"]
-
-# Once you login you will see a folder structure like:
-#
-# root@C.482204:~$ ls
-# onstart.sh  rad-bfgminer  rad-bfgminer-helper
-# root@C.482204:~$ 
-#
-# Launch rad-bfgminer like (specify url to the radiantd node process or a stratum server)
-#
-# /root/rad-bfgminer/bfgminer -S opencl:auto -o http://127.0.0.1:7332 -u raduser -p radpass --set-device OCL:kernel=poclbm --coinbase-sig rad-bfgminer-misc --generate-to 16JR3uTBpTSnhWfLdX8D5EcMrTVhrBCr2X
-# /root/rad-bfgminer/bfgminer -S opencl:auto -o http://miner.radiantblockchain.org:7332 -u raduser -p radpass --set-device OCL:kernel=poclbm --coinbase-sig rad-bfgminer-misc --generate-to 16JR3uTBpTSnhWfLdX8D5EcMrTVhrBCr2X >> /root/bfgminer.txt 
-# /root/rad-bfgminer/bfgminer -S opencl:auto -o http://miner.radiantblockchain.org:7332 -u raduser -p radpass --set-device OCL0:kernel=poclbm --set-device OCL1:kernel=poclbm --set-device OCL2:kernel=poclbm --set-device OCL3:kernel=poclbm --coinbase-sig rad-bfgminer-misc --generate-to 16JR3uTBpTSnhWfLdX8D5EcMrTVhrBCr2X
-# The above command will begin mining and generating any coinbase rewards into 1KSFaegQYMgQRfr2jWfHxy5pv6CQvHB5Lz
-#
-#
-# ------ Optional ------
-# To launch the rad-bfgminer with the key rotation, prepare the following
-#
-# Step 1. First generate a 12 word seed phrase with any program OR just run the miner the first time:
-#
-# node /root/rad-bfgminer-helper/start_radbfgminer.js
-# 
-# node start_radbfgminer.js          
-#----------------------------------------------------
-# Mnemonic seed phrase random every time (NOT USED) --> this success manual property energy cry feel shift celery not valid no bullet <--
-# Showing first address associated with the random mnemonic seed phrase... 
-# Address:  13rXNRH2afHmhGdWGZfz9KMusfRQ7TVxaz
-# Private Key WIF:  KxK2f6eKvRcHsoFjmWDQkkANXpmp1Bi4Qhhdbj1k8Yhkn2pA
-# xpriv:  xprv9s21ZrQH143K3EwsTqYrVHPeVCEgWdEsPPxieU1CGmN7ChpEkFVqrfnF5hHgAn7LfUxvzSX4u79Zwjwp5MVGcJEBSpjJNtuF8vy4cuFbs
-# xpub:  xpub661MyMwAqRbcFj2LZs5rzRLf3E5Av5xikctKQqPXokEuXrMn4W3eB9dWP9QvRy65oSAZdQL9p43pHgJreMXoVWsceJcRpmSAQSwdsTBGk
-#----------------------------------------------------
-#
-# Notice how it generates a new 12 words above (ex: dance sauce drill olive story swamp strategy lion jungle mass rib try)
-# 
-# Each time the program runs it produces a new random 12 words for convenience.
-#
-# Step 2. Copy the 12 word seed phrase into the file at rad-bfgminer-helper/.env into the PHRASE variable:
-#
-# PHRASE="REPLACE BETWEEN THE QUOTES HERE THE 12 WORD SEED PHRASE HERE"
-# RPCUSER=raduser
-# RPCPASS=radpass
-# RPCHOSTPORT=node.radiantone.org:7332
-# BFGMINERPATH=/root/rad-bfgminer
-#
-# Optionally you can replace the RPCHOSTPORT with your own radiantd node process or a stratum pool.
-#
-# Step 3. The .env file is now configured and you can run the miner again to start mining into addresses generated
-# from your 12 word seed phrase
-#
-# node ./start_radbfgminer.js
-#
-# You will see output that the GPU miner starts up and every few seconds it will output something like:
-#
-# Checking if miner process is still alive... Sun Jun 12 2022 16:57:49 GMT+0000 (Coordinated Universal Time) ...
-# ...Yes, it is alive!
-#
-# Everytime it finds a block it terminates the process and re-spawns with the next address
-#
-# Look inside rad-bfgminer-helper/minerIndex.json and see which key index is being used (it will increment on each new found block)
-
+ENTRYPOINT ["radiantd", "-rpcworkqueue=32", "-rpcthreads=16", "-rest", "-server", "-rpcallowip=0.0.0.0/0",  "-txindex=1", "-rpcuser=dockeruser", "-rpcpassword=dockerpass"]
+  
  

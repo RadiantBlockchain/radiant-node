@@ -144,6 +144,8 @@ public:
         vSeeds.emplace_back("node.radiantlayerone.com");
         vSeeds.emplace_back("radiant.bit90.io");
         vSeeds.emplace_back("radiant.relayx.com");
+        vSeeds.emplace_back("us-chi1-rad.terraflow.info");
+        vSeeds.emplace_back("uk-lon1-rad.terraflow.info");
         vSeeds.emplace_back("node.terraflow.info");
         vSeeds.emplace_back("radchad.ddns.net");
         vSeeds.emplace_back("node.radiantmideast.org");
