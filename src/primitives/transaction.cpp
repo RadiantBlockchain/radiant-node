@@ -45,6 +45,43 @@ template <class T> uint256 GetSequenceHash(const T &txTo) {
     return ss.GetHash();
 }
 
+OutputDataSummary getOutputDataSummary(const CScript& script, const Amount& amount, const uint256& zeroRefHash) {
+    OutputDataSummary outputDataSummary;
+    outputDataSummary.nValue = amount;
+    CHashWriter hashWriterScriptPubKey(SER_GETHASH, 0);
+    hashWriterScriptPubKey << CFlatData(script);
+    outputDataSummary.scriptPubKeyHash = hashWriterScriptPubKey.GetHash();
+    std::set<uint288> pushRefSet;
+    std::set<uint288> requireRefSet;
+    std::set<uint288> disallowSiblingRefSet;
+    if (!script.GetPushRefs(pushRefSet, requireRefSet, disallowSiblingRefSet)) {
+        // Fatal error parsing output should never happen
+        throw std::runtime_error("Error: refs-error: parsing OP_PUSHINPUTREF, OP_REQUIREINPUTREF, OP_DISALLOWPUSHINPUTREF, or OP_DISALLOWPUSHINPUTREFSIBLING. Ensure references are 36 bytes length.");
+    }
+    outputDataSummary.totalRefs = pushRefSet.size();
+    outputDataSummary.refsHash = zeroRefHash;
+    // Write the 'color' of the output by taking the sorted set of all OP_PUSHINPUTREFs values (dedup in a map)
+    if (outputDataSummary.totalRefs) {
+         // Get the hash of the concatentation of all of the refs in the output
+        CHashWriter hashWriterScriptPubKeyColorPushRefs(SER_GETHASH, 0);
+        // Then output all colors
+        std::set<uint288>::const_iterator outputIt;
+        for (outputIt = pushRefSet.begin(); outputIt != pushRefSet.end(); outputIt++) {
+            hashWriterScriptPubKeyColorPushRefs << *outputIt;
+        }
+        outputDataSummary.refsHash = hashWriterScriptPubKeyColorPushRefs.GetHash();
+    }
+    return outputDataSummary;
+}
+
+void writeOutputVector(CHashWriter& hashWriterOutputs, const CScript& script, const Amount& amount, uint256& zeroRefHash) {
+    OutputDataSummary outputSummary = getOutputDataSummary(script, amount, zeroRefHash);
+    hashWriterOutputs << outputSummary.nValue;
+    hashWriterOutputs << outputSummary.scriptPubKeyHash;
+    hashWriterOutputs << outputSummary.totalRefs;
+    hashWriterOutputs << outputSummary.refsHash;
+}
+
 /**
  * @brief Get the Hash Output Hashes object
  * 
@@ -82,62 +119,11 @@ template <class T> uint256 GetSequenceHash(const T &txTo) {
  * @param txTo 
  * @return uint256 
  */
-
-/**
- * @brief Write the output vector for a specific output
- * 
- * Duplicated in interpreter.cpp
- * 
- * @param hashWriterOutputs The hashwriter to write the data to
- * @param txout Specific output to write
- * @param zeroRefHash Reference to the zero hash to save allocations
- */
-void writeOutputVector(CHashWriter& hashWriterOutputs, const CTxOut& txout, uint256& zeroRefHash) {
-    hashWriterOutputs << txout.nValue;
-    CHashWriter hashWriterScriptPubKey(SER_GETHASH, 0);
-    hashWriterScriptPubKey << CFlatData(txout.scriptPubKey);
-    hashWriterOutputs << hashWriterScriptPubKey.GetHash();
-    // Get the hash of the concatentation of all of the refs in the output
-    CHashWriter hashWriterScriptPubKeyColorPushRefs(SER_GETHASH, 0);
-    std::set<uint288> pushRefSet;
-    std::set<uint288> requireRefSet;
-    std::set<uint288> disallowSiblingRefSet;
-    if (!txout.scriptPubKey.GetPushRefs(pushRefSet, requireRefSet, disallowSiblingRefSet)) {
-        // Fatal error parsing output should never happen
-        throw std::runtime_error("Error: get-push-ref-transaction-error: parsing OP_PUSHINPUTREF, OP_REQUIREINPUTREF, OP_DISALLOWPUSHINPUTREF, or OP_DISALLOWPUSHINPUTREFSIBLING. Ensure references are 36 bytes length.");
-    }
-    // Write the 'color' of the output by taking the sorted set of all OP_PUSHINPUTREFs values (dedup in a map)
-    uint32_t totalPushRefs(pushRefSet.size());
-    // Write out the number of 'colors'
-    hashWriterOutputs << totalPushRefs;
-    if (pushRefSet.size()) {
-        // Then output all colors
-        std::set<uint288>::const_iterator outputIt;
-        for (outputIt = pushRefSet.begin(); outputIt != pushRefSet.end(); outputIt++) {
-            hashWriterScriptPubKeyColorPushRefs << *outputIt;
-        }
-        // Take the hash
-        hashWriterOutputs << hashWriterScriptPubKeyColorPushRefs.GetHash();
-    } else {
-        // There are no colors therefore set the zero hash
-        hashWriterOutputs << zeroRefHash;
-    }
-}
-
-/**
- * @brief Get the Hash Output Hashes object
- * 
- * Duplicated in interpreter.cpp
- * 
- * @tparam T 
- * @param txTo 
- * @return uint256 
- */
 template <class T> uint256 GetHashOutputHashes(const T &txTo) {
     CHashWriter hashWriterOutputs(SER_GETHASH, 0);
     uint256 zeroRefHash(uint256S("0000000000000000000000000000000000000000000000000000000000000000"));
     for (const auto &txout : txTo.vout) {
-        writeOutputVector(hashWriterOutputs, txout, zeroRefHash);
+        writeOutputVector(hashWriterOutputs, txout.scriptPubKey, txout.nValue, zeroRefHash);
     }
     return hashWriterOutputs.GetHash();
 }

@@ -288,6 +288,7 @@ const char *GetOpName(opcodetype opcode) {
             return "OP_OUTPUTVALUE";
         case OP_OUTPUTBYTECODE:
             return "OP_OUTPUTBYTECODE";
+            
         case OP_SHA512_256:
             return "OP_SHA512_256";
         case OP_HASH512_256:

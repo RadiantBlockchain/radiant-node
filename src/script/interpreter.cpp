@@ -250,6 +250,23 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
     std::set<uint288> disallowedRefs;
 
     try {
+        uint256 zeroRefHash(uint256S("0000000000000000000000000000000000000000000000000000000000000000"));
+        // For each input we build up the push refs
+        std::map<uint256, Amount> refsToAmountMap;
+        for (uint64_t i = 0; i < context->tx().vin().size(); i++) {
+            auto const& utxoScript = context->coinScriptPubKey(i);
+            auto const& coinAmount = context->coinAmount(i);
+            OutputDataSummary outputSummary = getOutputDataSummary(utxoScript, coinAmount, zeroRefHash);
+            auto refsIt = refsToAmountMap.find(outputSummary.refsHash);
+            if (refsIt == refsToAmountMap.end()) {
+                // If it doesn't exist, then just initialize it
+                refsToAmountMap.insert(std::pair(refsIt->first, Amount::zero()));
+                refsIt = refsToAmountMap.find(outputSummary.refsHash);
+            }
+            // Add the amount to the key
+            refsIt->second += coinAmount;
+        }
+
         while (pc < pend) {
             bool fExec = vfExec.all_true();
             //
@@ -1626,7 +1643,8 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     case OP_PUSHINPUTREF:
                     case OP_REQUIREINPUTREF:
                     case OP_DISALLOWPUSHINPUTREFSIBLING:
-                    case OP_DISALLOWPUSHINPUTREF: {
+                    case OP_DISALLOWPUSHINPUTREF:
+                    case OP_UTXODATASUMMARY: {
                         switch (opcode) {
                             case OP_PUSHINPUTREF: {
                                 // When interpretting OP_PUSHINPUTREF, just push to the primary stack
@@ -1651,13 +1669,65 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                             case OP_REQUIREINPUTREF: {
                                 // When interpretting OP_REQUIREINPUTREF, do nothing
                             } break;
-                            break;
+                            case OP_UTXODATASUMMARY: {
+                                // Push a hash256 of the output being spent of a vector of the form:
+                                // <nValue><hash256(scriptPubKey)><numRefs><hash(sortedMap(pushRefs))>
+                                // This allows an unlocking context to access any other input's scriptPubKey
+                                // and determine what 'type' it is and all other details of that script
+                                if ( ! context) {
+                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
+                                }
+                                // (in -- out)
+                                if (stack.size() < 1) {
+                                    return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
+                                }
+                                auto const index = CScriptNum(stacktop(-1), fRequireMinimal, maxIntegerSize).getint64();
+                                popstack(stack); // consume element
+                                
+                                if (index < 0 || uint64_t(index) >= context->tx().vin().size()) {
+                                    return set_error(serror, ScriptError::INVALID_TX_INPUT_INDEX);
+                                }
+                                if (context->isLimited() && uint64_t(index) != context->inputIndex()) {
+                                    // This branch can only happen in tests or other non-consensus code
+                                    // that calls the VM without all the *other* inputs' coins.
+                                    return set_error(serror, ScriptError::LIMITED_CONTEXT_NO_SIBLING_INFO);
+                                }
+                                auto const& utxoScript = context->coinScriptPubKey(index);
+                                CHashWriter hashOutputDataSummaryWriter(SER_GETHASH, 0);
+                                writeOutputVector(hashOutputDataSummaryWriter, utxoScript, context->coinAmount(index), zeroRefHash);
+                                uint256 hashOutputDataSummary = hashOutputDataSummaryWriter.GetHash();
+                                stack.emplace_back(hashOutputDataSummary.begin(), hashOutputDataSummary.end());
+                            } break;
+                            case OP_UTXOREFVALUESUM: {
+                                if ( ! context) {
+                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
+                                }
+                                // (in -- out)
+                                if (stack.size() < 1) {
+                                    return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
+                                }
+                                valtype refHash = stacktop(-1);
+
+                                if (refHash.size() != 32) {
+                                    return set_error(serror, ScriptError::INVALID_TX_REFHASH_SIZE);
+                                }
+                                popstack(stack); // consume element
+
+                                uint256 refHashUint256(refHash);
+                                auto refMapIt = refsToAmountMap.find(refHashUint256);
+                                auto bn = CScriptNum::fromInt(0).value();       // Default to 0
+                                if (refMapIt != refsToAmountMap.end()) {
+                                    bn = CScriptNum::fromInt(refMapIt->second / SATOSHI).value();
+                                }
+                                stack.push_back(bn.getvch());
+                            } break;
                             default: {
                                 assert(!"invalid push opcode");
                                 break;
                             }
                         }
-                    } break; // end of induction reference op codes
+                    } break; // end of RADIANT based induction and introspection op codes
+
 
                     default:
                         return set_error(serror, ScriptError::BAD_OPCODE);
@@ -1830,65 +1900,6 @@ template <class T> uint256 GetOutputsHash(const T &txTo) {
     return ss.GetHash();
 }
 
-/**
- * @brief Write the output vector for a specific output
- * 
- *  Duplicated in transaction.cpp
- * 
- * @param hashWriterOutputs The hashwriter to write the data to
- * @param txout Specific output to write
- * @param zeroRefHash Reference to the zero hash to save allocations
- */
-void writeOutputVector(CHashWriter& hashWriterOutputs, const CTxOut& txout, uint256& zeroRefHash) {
-    hashWriterOutputs << txout.nValue;
-    CHashWriter hashWriterScriptPubKey(SER_GETHASH, 0);
-    hashWriterScriptPubKey << CFlatData(txout.scriptPubKey);
-    hashWriterOutputs << hashWriterScriptPubKey.GetHash();
-    // Get the hash of the concatentation of all of the refs in the output
-    CHashWriter hashWriterScriptPubKeyColorPushRefs(SER_GETHASH, 0);
-    std::set<uint288> pushRefSet;
-    std::set<uint288> requireRefSet;
-    std::set<uint288> disallowSiblingRefSet;
-    if (!txout.scriptPubKey.GetPushRefs(pushRefSet, requireRefSet, disallowSiblingRefSet)) {
-        // Fatal error parsing output should never happen
-        throw std::runtime_error("Error: get-push-ref-interpreter-error: parsing OP_PUSHINPUTREF, OP_REQUIREINPUTREF, OP_DISALLOWPUSHINPUTREF, or OP_DISALLOWPUSHINPUTREFSIBLING. Ensure references are 36 bytes length.");
-    }
-    // Write the 'color' of the output by taking the sorted set of all OP_PUSHINPUTREFs values (dedup in a map)
-    uint32_t totalPushRefs(pushRefSet.size());
-    // Write out the number of 'colors'
-    hashWriterOutputs << totalPushRefs;
-    if (pushRefSet.size()) {
-        // Then output all colors
-        std::set<uint288>::const_iterator outputIt;
-        for (outputIt = pushRefSet.begin(); outputIt != pushRefSet.end(); outputIt++) {
-            hashWriterScriptPubKeyColorPushRefs << *outputIt;
-        }
-        // Take the hash
-        hashWriterOutputs << hashWriterScriptPubKeyColorPushRefs.GetHash();
-    } else {
-        // There are no colors therefore set the zero hash
-        hashWriterOutputs << zeroRefHash;
-    }
-}
-
-/**
- * @brief Get the Hash Output Hashes object
- * 
- * Duplicated in transaction.cpp
- * 
- * @tparam T 
- * @param txTo 
- * @return uint256 
- */
-template <class T> uint256 GetHashOutputHashes(const T &txTo) {
-    CHashWriter hashWriterOutputs(SER_GETHASH, 0);
-    uint256 zeroRefHash(uint256S("0000000000000000000000000000000000000000000000000000000000000000"));
-    for (const auto &txout : txTo.vout) {
-        writeOutputVector(hashWriterOutputs, txout, zeroRefHash);
-    }
-    return hashWriterOutputs.GetHash();
-}
-
 } // namespace
 
 template <class T>
@@ -1940,7 +1951,7 @@ uint256 SignatureHash(const CScript &scriptCode, const T &txTo,
 
             CHashWriter hashOutputHashesSs(SER_GETHASH, 0);
             uint256 zeroRefHash(uint256S("0000000000000000000000000000000000000000000000000000000000000000"));
-            writeOutputVector(hashOutputHashesSs, txTo.vout[nIn], zeroRefHash);
+            writeOutputVector(hashOutputHashesSs, txTo.vout[nIn].scriptPubKey, txTo.vout[nIn].nValue, zeroRefHash);
             hashOutputHashes = hashOutputHashesSs.GetHash();
         }
 

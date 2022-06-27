@@ -88,10 +88,14 @@ enum class ScriptError {
     INVALID_TX_INPUT_INDEX,
     INVALID_TX_OUTPUT_INDEX,
 
-    ERROR_COUNT,
+    /* RADIANT specific OP codes */
+    INVALID_TX_REFHASH_SIZE,
+
     /* Invalid output disallow additional refs*/
     INVALID_TX_OUTPUT_CONTAINS_DISALLOWED_PUSHREF,
-    
+
+    // General 
+    ERROR_COUNT,
 };
 
 #define SCRIPT_ERR_LAST ScriptError::ERROR_COUNT

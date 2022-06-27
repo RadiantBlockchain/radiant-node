@@ -227,6 +227,12 @@ enum opcodetype {
     OP_DISALLOWPUSHINPUTREF = 0xd2,
     // OP_DISALLOWPUSHINPUTREFSIBLING prevents a specific reference from being used anywhere in another output
     OP_DISALLOWPUSHINPUTREFSIBLING = 0xd3,
+    // OP_UTXODATASUMMARY takes an index and then pushes the input's locking script information about the pushrefs and value of that output
+    OP_UTXODATASUMMARY = 0xd4,
+    // OP_UTXOREFVALUESUM takes a 32 byte hash of the refs to have their values summed and pushed back onto the stack
+    // This would be used to check the total satoshi value of the color input
+    OP_UTXOREFVALUESUM = 0xd5,
+    
     // The first op_code value after all defined opcodes
     FIRST_UNDEFINED_OP_VALUE,
 

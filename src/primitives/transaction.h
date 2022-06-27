@@ -432,3 +432,58 @@ public:
     /// Returned pointer will be nullptr if this->isMutableTx()
     const CTransaction *constantTx() const { return tx; }
 };
+
+/**
+ * @brief Compute the summary data for a transaction output
+ * To be used in Sighash.preimage, in TxId V3 Preimage and OP codes OP_UTXODATASUMMARY
+ * 
+ */
+struct OutputDataSummary {
+    Amount nValue;
+    uint256 scriptPubKeyHash;
+    uint32_t totalRefs;
+    uint256 refsHash;
+};
+
+OutputDataSummary getOutputDataSummary(const CScript& script, const Amount& amount, const uint256& zeroRefHash);
+
+void writeOutputVector(CHashWriter& hashWriterOutputs, const CScript& script, const Amount& amount, uint256& zeroRefHash);
+
+/**
+ * @brief Get the Hash Output Hashes object
+ * 
+ * Generate a hash of the outputs of a transaction with the following format:
+ * 
+ * <output1-nValue>
+ * <sha256(output1-scriptPubKey)>
+ * <sha256(
+ *  output1-pushRef1
+ *  output1-pushRef2
+ *  ...
+ *  output1-pushRef3
+ * )>
+ * <output2-nValue>
+ * <sha256(output2-scriptPubKey)>
+ * <sha256(
+ *  output2-pushRef1
+ *  output2-pushRef2
+ * )>
+ * <output3-nValue>
+ * <sha256(output3-scriptPubKey)>
+ * <0000000000000000000000000000000000000000000000000000000000000000>
+ * 
+ * 
+ * In the above ^^ example the first two outputs (output1 and output2) contain 3 push refs and 2 push refs respectively.
+ * The sha256 is included of the concatenation of them. The push refs are sorted lexicographically (not in order)
+ * In the third output, since there are no push refs in that output, a 32 byte zero NULL is included instead.
+ * 
+ * Then the entire datastructure above is hashed with sha256 one more time.
+ * 
+ * The Purpose of the construction is to provide a compressed/succint way to prove the contents of one or more outputs
+ * of a transaction.
+ * 
+ * @tparam T 
+ * @param txTo 
+ * @return uint256 
+ */
+template <class T> uint256 GetHashOutputHashes(const T &txTo);
