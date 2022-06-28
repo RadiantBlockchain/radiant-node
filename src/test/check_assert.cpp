@@ -44,7 +44,7 @@
 #if defined(__GNUC__) && (__GNUC__ > 11 || (__GNUC__ == 11 && __GNUC_MINOR__ >= 1))
 // GCC version 11.1 and later incorrectly warn of a maybe uninitialized usage
 // of std::array, so we disable the warning.
-// See https://gitlab.com/radiant-node/radiant-node/-/issues/351
+// See https://gitlab.com/bitcoin-cash-node/bitcoin-cash-node/-/issues/351
 // See https://godbolt.org/z/vWYxTh4eo
 // See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=101831
 #pragma GCC diagnostic push

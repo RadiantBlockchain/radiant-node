@@ -55,10 +55,10 @@
 2. Verify matching Gitian Builds, gather signatures
 3. Verify IBD bith with and without `-checkpoints=0 -assumevalid=0`
 4. Upload Gitian Builds to [radiantblockchain.org](https://radiantblockchain.org/)
-5. Create a [release](https://github.com/radiant-node/radiant-node)
+5. Create a [release](https://github.com/radiantblockchain/radiant-node)
    on our GitHub mirror: `contrib/release/github-release.sh -a <path to release binaries> -t <release tag> -o <file containing your Github OAuth token>`
 6. Create [Ubuntu PPA packages](https://launchpad.net/~radiant-node/+archive/ubuntu/ppa):
-   Maintainers need to clone [packaging](https://gitlab.com/radiant-node/radn-sw/packaging)
+   Maintainers need to clone [packaging](https://github.com/radiantblockchain/radn-sw/packaging)
    and follow instructions to run `debian-packaging.sh` in that repository.
 7. Notify maintainers of AUR and Docker images to build their packages.
    They should be given 1-day advance notice if possible.

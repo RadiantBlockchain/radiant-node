@@ -6,7 +6,7 @@ providing various message-oriented semantics such as publish/subscribe,
 request/reply, and push/pull.
 
 The Radiant Node daemon can be configured to act as a trusted "border
-router", implementing the bitcoin wire protocol and relay, making
+router", implementing the radiant wire protocol and relay, making
 consensus decisions, maintaining the local blockchain database,
 broadcasting locally generated transactions into the network, and
 providing a queryable RPC interface to interact on a polled basis for
@@ -46,7 +46,7 @@ operation.
 ## Enabling
 
 By default, the ZeroMQ feature is automatically compiled.
-To disable, use -DBUILD_BITCOIN_ZMQ=OFF to `cmake` when building bitcoind:
+To disable, use -DBUILD_BITCOIN_ZMQ=OFF to `cmake` when building radiantd:
 
     cmake -GNinja .. -DBUILD_BITCOIN_ZMQ=OFF [...]
 
@@ -69,8 +69,8 @@ address. The same address can be used in more than one notification.
 
 For instance:
 
-    bitcoind -zmqpubhashtx=tcp://127.0.0.1:28332 \
-             -zmqpubrawtx=ipc:///tmp/bitcoind.tx.raw
+    radiantd -zmqpubhashtx=tcp://127.0.0.1:28332 \
+             -zmqpubrawtx=ipc:///tmp/radiantd.tx.raw
 
 Each PUB notification has a topic and body, where the header
 corresponds to the notification type. For instance, for the
@@ -78,7 +78,7 @@ notification `-zmqpubhashtx` the topic is `hashtx` (no null
 terminator) and the body is the transaction hash (32
 bytes).
 
-These options can also be provided in bitcoin.conf.
+These options can also be provided in radiant.conf.
 
 ZeroMQ endpoint specifiers for TCP (and others) are documented in the
 [ZeroMQ API](http://api.zeromq.org/4-0:_start).
@@ -90,9 +90,9 @@ arriving. Please see `contrib/zmq/zmq_sub.py` for a working example.
 
 ## Remarks
 
-From the perspective of bitcoind, the ZeroMQ socket is write-only; PUB
+From the perspective of radiantd, the ZeroMQ socket is write-only; PUB
 sockets don't even have a read function. Thus, there is no state
-introduced into bitcoind directly. Furthermore, no information is
+introduced into radiantd directly. Furthermore, no information is
 broadcast that wasn't already received from the public P2P network.
 
 No authentication or authorization is done on connecting clients; it
@@ -105,5 +105,5 @@ retrieve the chain from the last known block to the new tip.
 
 There are several possibilities that ZMQ notification can get lost
 during transmission depending on the communication type you are
-using. Bitcoind appends an up-counting sequence number to each
+using. Radiantd appends an up-counting sequence number to each
 notification which allows listeners to detect lost notifications.

@@ -47,7 +47,7 @@ It will be `1` if the input script correctly spends the previous output `scriptP
   ([BIP112](https://github.com/bitcoin/bips/blob/master/bip-0112.mediawiki))
 - `bitcoinconsensus_SCRIPT_FLAGS_VERIFY_WITNESS` - Enable WITNESS ([BIP141](https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki))
 - `bitcoinconsensus_SCRIPT_ENABLE_SIGHASH_FORKID` - Enable SIGHASH_FORKID replay
-  protection ([UAHF](https://gitlab.com/radiant-node/radn-sw/bitcoincash-upgrade-specifications/-/blob/master/spec/uahf-technical-spec.md#req-6-2-mandatory-signature-shift-via-hash-type))
+  protection ([UAHF](https://github.com/radiantblockchain/radn-sw/bitcoincash-upgrade-specifications/-/blob/master/spec/uahf-technical-spec.md#req-6-2-mandatory-signature-shift-via-hash-type))
 
 ##### Errors
 
@@ -62,7 +62,7 @@ It will be `1` if the input script correctly spends the previous output `scriptP
 
 ### Example Implementations
 
-- [Radiant Node (RADN)](https://gitlab.com/radiant-node/radiant-node/-/blob/master/src/script/bitcoinconsensus.h)
+- [Radiant Node (RADN)](https://github.com/radiantblockchain/radiant-node/-/blob/master/src/script/bitcoinconsensus.h)
  
 ### Historic Example Implementations in Bitcoin (pre-dating Radiant)
 

@@ -16,7 +16,7 @@ Extract the example seeds (or other starting inputs) into the inputs
 directory before starting fuzzing.
 
 ```
-git clone https://gitlab.com/radiant-node/radn-sw/qa-assets
+git clone https://github.com/radiantblockchain/radn-sw/qa-assets
 export DIR_FUZZ_IN=$PWD/qa-assets/fuzz_seed_corpus
 ```
 

@@ -55,8 +55,8 @@ gpg --armor --encrypt --recipient security@radiantblockchain.org yourDisclosureD
 This will create a copy of your document with the file extension `.asc`, you can
 email this encrypted version of the document to Radiant Nodes security team.
 
-If you still have questions about how to do it, feel free to contact the Bitcoin
-Cash Node project security team for more instructions.
+If you still have questions about how to do it, feel free to contact the Radiant Node 
+project security team for more instructions.
 
 ## Backup PGP Keys
 

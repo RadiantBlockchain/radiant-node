@@ -29,22 +29,8 @@ The initial release of Radiant Node 1.0.0 is recommended for use by everyone, im
   - OP_REQUIREREF
   - OP_DISALLOWPUSHREF
   - OP_DISALLOWPUSHREFSIBLINGOUTPUT
-- Native introspection OP Codes:
-  - OP_INPUTINDEX 
-  - OP_ACTIVEBYTECODE 
-  - OP_TXVERSION 
-  - OP_TXINPUTCOUNT 
-  - OP_TXOUTPUTCOUNT 
-  - OP_TXLOCKTIME 
-  - OP_UTXOVALUE 
-  - OP_UTXOBYTECODE 
-  - OP_OUTPOINTTXHASH 
-  - OP_OUTPOINTINDEX  
-  - OP_INPUTBYTECODE
-  - OP_INPUTSEQUENCENUMBER
-  - OP_OUTPUTVALUE 
-  - OP_OUTPUTBYTECODE 
-  - OP_UTXOSVALUESUM
+
+- TxId V3
 
 ## Deprecated functionality
 

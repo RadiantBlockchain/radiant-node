@@ -11,7 +11,7 @@ Authors: freetrader <freetrader@tuta.io>
          Dagur Valberg Johannsson <dagurval@pvv.ntnu.no>
          BigBlockIfTrue <info@bitcoinlogo.eu>
 License: CC0-1.0
-Comments-URI: https://gitlab.com/radiant-node/radiant-node/-/merge_requests/284
+Comments-URI: https://github.com/radiantblockchain/radiant-node/-/merge_requests/284
 Comments-Summary: RADN internal review comments.
 ```
 
@@ -199,7 +199,7 @@ implementations may use shorter job ids based on whatever they see fit.
 ## Reference implementation
 
 A C++ reference implementation is available in Radiant Node
-[merge request 281](https://gitlab.com/radiant-node/radiant-node/-/merge_requests/281).
+[merge request 281](https://github.com/radiantblockchain/radiant-node/-/merge_requests/281).
 
 ## Example outputs
 

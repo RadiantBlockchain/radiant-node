@@ -445,9 +445,42 @@ struct OutputDataSummary {
     uint256 refsHash;
 };
 
-OutputDataSummary getOutputDataSummary(const CScript& script, const Amount& amount, const uint256& zeroRefHash);
+static inline OutputDataSummary getOutputDataSummary(const CScript& script, const Amount& amount, const uint256& zeroRefHash) {
+    OutputDataSummary outputDataSummary;
+    outputDataSummary.nValue = amount;
+    CHashWriter hashWriterScriptPubKey(SER_GETHASH, 0);
+    hashWriterScriptPubKey << CFlatData(script);
+    outputDataSummary.scriptPubKeyHash = hashWriterScriptPubKey.GetHash();
+    std::set<uint288> pushRefSet;
+    std::set<uint288> requireRefSet;
+    std::set<uint288> disallowSiblingRefSet;
+    if (!script.GetPushRefs(pushRefSet, requireRefSet, disallowSiblingRefSet)) {
+        // Fatal error parsing output should never happen
+        throw std::runtime_error("Error: refs-error: parsing OP_PUSHINPUTREF, OP_REQUIREINPUTREF, OP_DISALLOWPUSHINPUTREF, or OP_DISALLOWPUSHINPUTREFSIBLING. Ensure references are 36 bytes length.");
+    }
+    outputDataSummary.totalRefs = pushRefSet.size();
+    outputDataSummary.refsHash = zeroRefHash;
+    // Write the 'color' of the output by taking the sorted set of all OP_PUSHINPUTREFs values (dedup in a map)
+    if (outputDataSummary.totalRefs) {
+         // Get the hash of the concatentation of all of the refs in the output
+        CHashWriter hashWriterScriptPubKeyColorPushRefs(SER_GETHASH, 0);
+        // Then output all colors
+        std::set<uint288>::const_iterator outputIt;
+        for (outputIt = pushRefSet.begin(); outputIt != pushRefSet.end(); outputIt++) {
+            hashWriterScriptPubKeyColorPushRefs << *outputIt;
+        }
+        outputDataSummary.refsHash = hashWriterScriptPubKeyColorPushRefs.GetHash();
+    }
+    return outputDataSummary;
+}
 
-void writeOutputVector(CHashWriter& hashWriterOutputs, const CScript& script, const Amount& amount, uint256& zeroRefHash);
+static inline void writeOutputVector(CHashWriter& hashWriterOutputs, const CScript& script, const Amount& amount, uint256& zeroRefHash) {
+    OutputDataSummary outputSummary = getOutputDataSummary(script, amount, zeroRefHash);
+    hashWriterOutputs << outputSummary.nValue;
+    hashWriterOutputs << outputSummary.scriptPubKeyHash;
+    hashWriterOutputs << outputSummary.totalRefs;
+    hashWriterOutputs << outputSummary.refsHash;
+}
 
 /**
  * @brief Get the Hash Output Hashes object
@@ -486,4 +519,11 @@ void writeOutputVector(CHashWriter& hashWriterOutputs, const CScript& script, co
  * @param txTo 
  * @return uint256 
  */
-template <class T> uint256 GetHashOutputHashes(const T &txTo);
+template <class T> static inline uint256 GetHashOutputHashes(const T &txTo) {
+    CHashWriter hashWriterOutputs(SER_GETHASH, 0);
+    uint256 zeroRefHash(uint256S("0000000000000000000000000000000000000000000000000000000000000000"));
+    for (const auto &txout : txTo.vout) {
+        writeOutputVector(hashWriterOutputs, txout.scriptPubKey, txout.nValue, zeroRefHash);
+    }
+    return hashWriterOutputs.GetHash();
+}

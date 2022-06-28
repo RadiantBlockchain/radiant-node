@@ -611,7 +611,7 @@ int GuiMain(int argc, char *argv[]) {
     }
 
     /// 6. Determine availability of data and blocks directory and parse
-    /// bitcoin.conf
+    /// radiant.conf
     /// - Do not call GetDataDir(true) before this step finishes.
     if (!fs::is_directory(GetDataDir(false))) {
         QMessageBox::critical(

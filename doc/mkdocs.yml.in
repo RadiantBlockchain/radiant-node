@@ -11,7 +11,7 @@ site_description: Documentation for the Radiant Node project
 site_author: The Bitcoin developers
 site_dir: html
 
-repo_url: https://gitlab.com/radiant-node/radiant-node
+repo_url: https://github.com/radiantblockchain/radiant-node
 edit_uri: ""
 
 docs_dir: md

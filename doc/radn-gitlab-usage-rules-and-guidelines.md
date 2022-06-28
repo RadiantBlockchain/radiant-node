@@ -4,7 +4,7 @@ This document describes the working rules, workflow, terminology and guidelines
 that developers and testers should be familiar with while working on the Bitcoin
 Cash Node repository and issue tracker at
 
-[https://gitlab.com/radiant-node/radiant-node/](https://gitlab.com/radiant-node/radiant-node/)
+[https://github.com/radiantblockchain/radiant-node/](https://github.com/radiantblockchain/radiant-node/)
 
 ## RADN GitLab workflow
 

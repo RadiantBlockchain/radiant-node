@@ -260,7 +260,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
             auto refsIt = refsToAmountMap.find(outputSummary.refsHash);
             if (refsIt == refsToAmountMap.end()) {
                 // If it doesn't exist, then just initialize it
-                refsToAmountMap.insert(std::pair(refsIt->first, Amount::zero()));
+                refsToAmountMap.insert(std::pair(outputSummary.refsHash, Amount::zero()));
                 refsIt = refsToAmountMap.find(outputSummary.refsHash);
             }
             // Add the amount to the key
@@ -1661,13 +1661,13 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 // As sanity check just verify that the input being spent does not contain a disallowed push ref
                                 uint288 uref = uint288S(std::string(vchPushValue.begin(), vchPushValue.end()).c_str());
                                 disallowedRefs.insert(uref);
-                                // When interpretting OP_DISALLOWPUSHINPUTREF, do nothing, but save the reference to a set to cross check later
+                                // When interpreting OP_DISALLOWPUSHINPUTREF, do nothing, but save the reference to a set to cross check later
                             } break;
                             case OP_DISALLOWPUSHINPUTREFSIBLING: {
-                                // When interpretting OP_DISALLOWPUSHINPUTREFSIBLING, do nothing
+                                // When interpreting OP_DISALLOWPUSHINPUTREFSIBLING, do nothing
                             } break;
                             case OP_REQUIREINPUTREF: {
-                                // When interpretting OP_REQUIREINPUTREF, do nothing
+                                // When interpreting OP_REQUIREINPUTREF, do nothing
                             } break;
                             case OP_UTXODATASUMMARY: {
                                 // Push a hash256 of the output being spent of a vector of the form:

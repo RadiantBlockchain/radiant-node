@@ -1,30 +1,29 @@
 Radiant Node
 =================
 
-The goal of Radiant Node is to create sound money that is usable by everyone
-in the world. We believe this is a civilization-changing technology which will
-dramatically increase human flourishing, freedom, and prosperity. The project
-aims to achieve this goal by implementing a series of optimizations and
-protocol upgrades that will enable peer-to-peer digital cash to scale many
-orders of magnitude beyond current limits.
+The goal of Radiant Node is to create sound money and a digital value transfer
+system that is usable by everyone in the world. This is civilization-changing 
+technology which will dramatically increase human flourishing, freedom, and 
+prosperity. The project aims to achieve this goal by focusing on high performance
+scalablity and an expressive programming language to realize any type of digital
+value and money transfer imaginable.
 
 What is Radiant?
 ---------------------
 
-Radiant is a digital currency that enables instant payments to anyone,
-anywhere in the world. It uses peer-to-peer technology to operate with no
-central authority: managing transactions and issuing money are carried out
-collectively by the network. Radiant is a descendant of Bitcoin. It became
-a separate currency from the version supported by Bitcoin Core when the two
-split on August 1, 2017. Radiant and the Bitcoin Core version of Bitcoin
-share the same transaction history up until the split.
+Radiant is a high performance blockchainn for digital assets and enables instant 
+payments and asset transfers to to anyone, anywhere in the world. It uses 
+peer-to-peer technology to operate with no central authority: managing 
+transactions are carried out collectively by the network. Radiant is a twin 
+network based on the original Bitcoin design.
 
 What is Radiant Node?
 --------------------------
 
 [Radiant Node](https://www.radiantblockchain.org) is the name of open-source
-software which enables the use of Radiant. It is a descendant of the
-[Bitcoin Core](https://bitcoincore.org) and [Bitcoin ABC](https://www.bitcoinabc.org)
+software which enables the use of Radiant. It is a descendant of the 
+[Bitcoin Cash Node](https://bitcoincashnode.org) [Bitcoin Core](https://bitcoincore.org) 
+and [Bitcoin ABC](https://www.bitcoinabc.org)
 software projects.
 
 License
@@ -42,12 +41,12 @@ Bernard.
 Development Process
 -------------------
 
-Radiant Node development takes place at [https://gitlab.com/radiant-node/radiant-node](https://gitlab.com/radiant-node/radiant-node)
+Radiant Node development takes place at [https://gitlab.com/radiantblockchain/radiant-node](https://gitlab.com/radiantblockchain/radiant-node)
 
 This Github repository contains only source code of releases.
 
 If you would like to contribute, please contact us directly at
-[bitcoincashnode.slack.com](https://bitcoincashnode.slack.com) or [t.me/bitcoincashnode](https://t.me/bitcoincashnode)
+ [t.me/radiantblockchain](https://t.me/radiantblockchain)
 
 Disclosure Policy
 -----------------

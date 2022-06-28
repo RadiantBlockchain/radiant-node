@@ -37,7 +37,7 @@ remote: Counting objects: 57959, done.
 remote: Total 57959 (delta 0), reused 0 (delta 0), pack-reused 57958
 Receiving objects: 100% (57959/57959), 53.76 MiB | 484.00 KiB/s, done.
 Resolving deltas: 100% (41590/41590), done.
-From https://gitlab.com/radiant-node/radiant-node.git
+From https://github.com/radiantblockchain/radiant-node.git
 ... (new tags, new branch etc)
 --- Building for trusty amd64 ---
 Stopping target if it is up
@@ -65,7 +65,7 @@ and inputs.
 For example:
 
 ```bash
-URL=https://gitlab.com/radiant-node/radiant-node.git
+URL=https://github.com/radiantblockchain/radiant-node.git
 COMMIT=v0.18.5
 ./bin/gbuild --commit bitcoin=${COMMIT} --url bitcoin=${URL} ../radiant-node/contrib/gitian-descriptors/gitian-linux.yml
 ./bin/gbuild --commit bitcoin=${COMMIT} --url bitcoin=${URL} ../radiant-node/contrib/gitian-descriptors/gitian-win.yml

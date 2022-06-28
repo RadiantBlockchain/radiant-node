@@ -47,7 +47,7 @@ static void SetupCliArgs() {
     gArgs.AddArg("-conf=<file>",
                  strprintf("Specify configuration file. Relative paths will be "
                            "prefixed by datadir location. (default: %s)",
-                           BITCOIN_CONF_FILENAME),
+                           RADIANT_CONF_FILENAME),
                  ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     gArgs.AddArg("-datadir=<dir>", _("Specify data directory"), ArgsManager::ALLOW_ANY,
                  OptionsCategory::OPTIONS);
@@ -454,7 +454,7 @@ static UniValue CallRPC(BaseRequestHandler *rh, const std::string &strMethod,
                 "Could not locate RPC credentials. No authentication cookie "
                 "could be found, and RPC password is not set.  See "
                 "-rpcpassword and -stdinrpcpass.  Configuration file: (%s)",
-                GetConfigFile(gArgs.GetArg("-conf", BITCOIN_CONF_FILENAME))
+                GetConfigFile(gArgs.GetArg("-conf", RADIANT_CONF_FILENAME))
                     .string()
                     .c_str()));
         } else {

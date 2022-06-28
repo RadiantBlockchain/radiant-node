@@ -3,7 +3,7 @@
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 """Additional tests of ancestor/descendant limit & counting scenarios.
-Refers to RADN GitLab https://gitlab.com/radiant-node/radiant-node/-/issues/225
+Refers to RADN Github https://github.com/radiantblockchain/radiant-node/-/issues/225
 and scenarios raised for investigation by TG @readdotcash in
 https://bitcoincashresearch.org/t/specific-needs-for-increasing-or-removing-chained-tx-limit/240"""
 

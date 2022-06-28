@@ -76,7 +76,7 @@ Clone the git repositories for Radiant Node and Gitian.
 
 ```bash
 git clone https://github.com/devrandom/gitian-builder.git
-git clone https://gitlab.com/radiant-node/radiant-node.git
+git clone https://github.com/radiantblockchain/radiant-node.git
 ```
 
 ## Setting up the Gitian image

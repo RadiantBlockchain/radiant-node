@@ -2,26 +2,26 @@
 
 # backward compatibility for existing gentoo layout 
 #
-if [ -d "/var/lib/bitcoin/.bitcoin" ]; then
-	RADIANTD_DEFAULT_DATADIR="/var/lib/bitcoin/.bitcoin"
+if [ -d "/var/lib/radiant/.radiant" ]; then
+	RADIANTD_DEFAULT_DATADIR="/var/lib/radiant/.radiant"
 else
-	RADIANTD_DEFAULT_DATADIR="/var/lib/bitcoind"
+	RADIANTD_DEFAULT_DATADIR="/var/lib/radiantd"
 fi
 
-RADIANTD_CONFIGFILE=${RADIANTD_CONFIGFILE:-/etc/bitcoin/bitcoin.conf}
-RADIANTD_PIDDIR=${RADIANTD_PIDDIR:-/var/run/bitcoind}
-RADIANTD_PIDFILE=${RADIANTD_PIDFILE:-${RADIANTD_PIDDIR}/bitcoind.pid}
+RADIANTD_CONFIGFILE=${RADIANTD_CONFIGFILE:-/etc/radiant/radiant.conf}
+RADIANTD_PIDDIR=${RADIANTD_PIDDIR:-/var/run/radiantd}
+RADIANTD_PIDFILE=${RADIANTD_PIDFILE:-${RADIANTD_PIDDIR}/radiantd.pid}
 RADIANTD_DATADIR=${RADIANTD_DATADIR:-${RADIANTD_DEFAULT_DATADIR}}
-RADIANTD_USER=${RADIANTD_USER:-${BITCOIN_USER:-bitcoin}}
-RADIANTD_GROUP=${RADIANTD_GROUP:-bitcoin}
-RADIANTD_BIN=${RADIANTD_BIN:-/usr/bin/bitcoind}
+RADIANTD_USER=${RADIANTD_USER:-${BITCOIN_USER:-radiant}}
+RADIANTD_GROUP=${RADIANTD_GROUP:-radiant}
+RADIANTD_BIN=${RADIANTD_BIN:-/usr/bin/radiantd}
 RADIANTD_NICE=${RADIANTD_NICE:-${NICELEVEL:-0}}
 RADIANTD_OPTS="${RADIANTD_OPTS:-${BITCOIN_OPTS}}"
 
 name="Radiant Node Daemon"
 description="Bitcoin cryptocurrency P2P network daemon"
 
-command="/usr/bin/bitcoind"
+command="/usr/bin/radiantd"
 command_args="-pid=\"${RADIANTD_PIDFILE}\" \
 		-conf=\"${RADIANTD_CONFIGFILE}\" \
 		-datadir=\"${RADIANTD_DATADIR}\" \
@@ -71,7 +71,7 @@ checkconfig()
 {
 	if ! grep -qs '^rpcpassword=' "${RADIANTD_CONFIGFILE}" ; then
 		eerror ""
-		eerror "ERROR: You must set a secure rpcpassword to run bitcoind."
+		eerror "ERROR: You must set a secure rpcpassword to run radiantd."
 		eerror "The setting must appear in ${RADIANTD_CONFIGFILE}"
 		eerror ""
 		eerror "This password is security critical to securing wallets "

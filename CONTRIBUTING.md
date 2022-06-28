@@ -12,20 +12,20 @@ of resources.
 
 Our main development repository is currently located at
 
-[https://gitlab.com/radiant-node/radiant-node](https://gitlab.com/radiant-node/radiant-node)
+[https://github.com/radiantblockchain/radiant-node](https://github.com/radiantblockchain/radiant-node)
 
 This features the project code, an issue tracker and facilities to see
 project progress and activities, even in detailed form such as individual
 change requests.
 
 Users are free to submit issues or comment on existing ones - all that is
-needed is a GitLab account which can be freely registered (use the 'Register'
-button on the GitLab page).
+needed is a Github account which can be freely registered (use the 'Register'
+button on the Github page).
 
 In addition to the project repository, we have various other channels where
 project contributors can be reached.
 
-Our main chat is at <https://bitcoincashnode.slack.com>, where we conduct
+Our main chat is at <https://t.me/radiantblockchain>, where we conduct
 our main development and interactive support for users of our node.
 
 Other social media resources such as our Telegram and Twitter are linked
@@ -118,7 +118,7 @@ when they have a good reason to do so.
 
 Here are some handy links for development practices aligned with Radiant Node:
 
-- [RADN GitLab development working rules and guidelines](doc/radn-gitlab-usage-rules-and-guidelines.md)
+- [RADN GitLab development working rules and guidelines](doc/radn-github-usage-rules-and-guidelines.md)
 - [Developer Notes](doc/developer-notes.md)
 - [How to Write a Git Commit Message](https://chris.beams.io/posts/git-commit/)
 - [How to Do Code Reviews Like a Human - Part 1](https://mtlynch.io/human-code-reviews-1/)
@@ -133,7 +133,7 @@ Here are some handy links for development practices aligned with Radiant Node:
 
 ## Getting set up with the Radiant Node Repository
 
-1. Create an account at [https://gitlab.com](https://gitlab.com) if you don't have
+1. Create an account at [https://github.com](https://github.com) if you don't have
    one yet
 2. Install Git on your machine
 
@@ -151,26 +151,26 @@ Here are some handy links for development practices aligned with Radiant Node:
 
 4. Upload your SSH public key to GitLab
 
-    - Go to: [https://gitlab.com](https://gitlab.com), log in
+    - Go to: [https://github.com](https://github.com), log in
     - Under "User Settings", "SSH Keys", add your public key
     - Paste contents from: `$HOME/.ssh/id_rsa.pub`
 
 5. Create a personal fork of the Radiant Node repository for your work
 
-    - Sign into GitLab under your account, then visit the project at [https://gitlab.com/radiant-node/radiant-node](https://gitlab.com/radiant-node/radiant-node)
+    - Sign into GitLab under your account, then visit the project at [https://github.com/radiantblockchain/radiant-node](https://github.com/radiantblockchain/radiant-node)
     - Click the 'Fork' button on the top right, and choose to fork the project to
       your personal GitLab space.
 
 6. Clone your personal work repository to your local machine:
 
     ```
-    git clone git@gitlab.com:username/radiant-node.git
+    git clone git@github.com:username/radiant-node.git
     ```
 
 7. Set your checked out copy's upstream to our main project:
 
     ```
-    git remote add upstream https://gitlab.com/radiant-node/radiant-node.git
+    git remote add upstream https://github.com/radiantblockchain/radiant-node.git
     ```
 
 8. You may want to add the `mreq` alias to your `.git/config`:
@@ -285,7 +285,7 @@ please contact our developers and they will help you decide.
 ## What to work on
 
 If you are looking for a useful task to contribute to the project, a good place
-to start is the list of issues at [https://gitlab.com/radiant-node/radiant-node/-/issues](https://gitlab.com/radiant-node/radiant-node/-/issues)
+to start is the list of issues at [https://github.com/radiantblockchain/radiant-node/-/issues](https://github.com/radiantblockchain/radiant-node/-/issues)
 
 Look for issues marked with a label 'good-first-issue'.
 

@@ -78,7 +78,7 @@
 // Application startup time (used for uptime calculation)
 const int64_t nStartupTime = GetTime();
 
-const char *const BITCOIN_CONF_FILENAME = "bitcoin.conf";
+const char *const RADIANT_CONF_FILENAME = "radiant.conf";
 
 ArgsManager gArgs;
 
@@ -1023,7 +1023,7 @@ bool ArgsManager::ReadConfigFiles(std::string &error,
     }
 
     // Error out if the conf file is specified but it doesn't exist
-    const fs::path config_file_path = GetConfigFile(gArgs.GetArg("-conf", BITCOIN_CONF_FILENAME));
+    const fs::path config_file_path = GetConfigFile(gArgs.GetArg("-conf", RADIANT_CONF_FILENAME));
     if (!fs::exists(config_file_path) && IsArgSet("-conf")) {
         error = strprintf(_("The specified config file %s does not exist"),
                           config_file_path.string());

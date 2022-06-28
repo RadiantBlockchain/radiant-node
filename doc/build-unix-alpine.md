@@ -36,7 +36,7 @@ build Radiant Node as such:
 First fetch the code (if you haven't done so already).
 
 ```sh
-git clone https://gitlab.com/radiant-node/radiant-node.git
+git clone https://github.com/radiantblockchain/radiant-node.git
 ```
 
 Change to the BCN directory, make `build` dir, and change to that directory

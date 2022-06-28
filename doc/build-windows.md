@@ -109,7 +109,7 @@ file system to perform the build.
 Acquire the source in the usual way:
 
 ```bash
-    git clone https://gitlab.com/radiant-node/radiant-node.git
+    git clone https://github.com/radiantblockchain/radiant-node.git
     cd radiant-node
 ```
 
@@ -222,7 +222,7 @@ file system to perform the build.
 Acquire the source in the usual way:
 
 ```bash
-    git clone https://gitlab.com/radiant-node/radiant-node.git
+    git clone https://github.com/radiantblockchain/radiant-node.git
     cd radiant-node
 ```
 

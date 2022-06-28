@@ -2,7 +2,7 @@ This license can be used by developers, projects or companies who wish to make t
 
 Copyright (c) 2022 The Radiant Blockchain Developers
 
-Open Radiant Blockchain (RAD) License Version 1
+Open Radiant Blockchain (RAD) License Version 2
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -16,11 +16,11 @@ all copies or substantial portions of the Software.
 
 2 - The Software, and any software that is derived from the Software or parts thereof,
 can only be used on the Radiant (RAD) blockchains. The Radiant (RAD) blockchains are defined,
-for purposes of this license, as the Radiant (RAD) blockchains containing block height #12,613
-with the hash "0000000000053e6cd2f124bdcda89a4bf2b299b3d7c66f98da2020fd6d09a9aa" and that 
+for purposes of this license, as the Radiant (RAD) blockchains containing block height #15,565
+with the hash "0000000000002bae76f9943a5673500e01be6ff961861061860ea6c9a40f4fb0" and that 
 contains the longest persistent chain of blocks accepted by this Software, as well as the test 
 blockchains that contain the longest persistent chains of blocks accepted by this Software.
- 
+
 3 - The Software, and any software that is derived from the Software or parts thereof, can only
 be used on Radiant (RAD) blockchain that maintains the original difficulty adjustment algorithm, 
 maintains the block subsidy emission rate defined in the original version of this Software, and 

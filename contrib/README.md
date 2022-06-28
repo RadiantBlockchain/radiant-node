@@ -13,7 +13,7 @@ Construct a linear, no-fork, best version of the blockchain.
 
 ### [Qos](qos/) ###
 
-A Linux bash script that will set up traffic control (tc) to limit the outgoing bandwidth for connections to the Bitcoin network. This means one can have an always-on bitcoind instance running, and another local bitcoind/bitcoin-qt instance which connects to this node and receives blocks from it.
+A Linux bash script that will set up traffic control (tc) to limit the outgoing bandwidth for connections to the radiant network. This means one can have an always-on radiantd instance running, and another local radiantd/radiant-qt instance which connects to this node and receives blocks from it.
 
 ### [Seeds](seeds/) ###
 
@@ -41,4 +41,4 @@ Script for running full Gitian builds.
 
 ### [TestGen](testgen/) ###
 
-Utilities to generate test vectors for the data-driven Bitcoin tests.
+Utilities to generate test vectors for the data-driven radiant tests.

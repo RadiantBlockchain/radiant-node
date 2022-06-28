@@ -27,7 +27,7 @@ curl git`.
 
 ```bash
 # Fetch the `gitian-build.py` script
-git clone https://gitlab.com/radiant-node/radiant-node.git
+git clone https://github.com/radiantblockchain/radiant-node.git
 cp radiant-node/contrib/gitian-build.py .
 
 # If you are on a MacOS host, you will need the MacOS-capable fork

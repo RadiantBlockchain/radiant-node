@@ -439,7 +439,7 @@ void SetupServerArgs() {
     gArgs.AddArg("-conf=<file>",
                  strprintf("Specify configuration file. Relative paths will be "
                            "prefixed by datadir location. (default: %s)",
-                           BITCOIN_CONF_FILENAME),
+                           RADIANT_CONF_FILENAME),
                  ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     gArgs.AddArg("-datadir=<dir>", "Specify data directory", ArgsManager::ALLOW_ANY,
                  OptionsCategory::OPTIONS);
@@ -1155,7 +1155,7 @@ void SetupServerArgs() {
 }
 
 std::string LicenseInfo() {
-    constexpr auto URL_SOURCE_CODE = "<https://gitlab.com/radiant-node/radiant-node>";
+    constexpr auto URL_SOURCE_CODE = "<https://github.com/radiantblockchain/radiant-node>";
     constexpr auto URL_WEBSITE = "<https://radiantblockchain.org>";
 
     return CopyrightHolders(strprintf(_("Copyright (C) %i-%i"), 2009, COPYRIGHT_YEAR) + " ") +
@@ -1165,8 +1165,8 @@ std::string LicenseInfo() {
            "\n\n" +
            strprintf(_("The source code is available from %s."), URL_SOURCE_CODE) +
            "\n\n" +
-           strprintf(_("Distributed under the MIT software license, see the accompanying file %s or %s"),
-                     "COPYING", "<https://opensource.org/licenses/MIT>") +
+           strprintf(_("Distributed under the Open Radiant (RAD) Version 1 software license, see the accompanying file %s"),
+                     "COPYING") +
            "\n\n" +
            strprintf(_("This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit %s and "
                        "cryptographic software written by Eric Young and UPnP software written by Thomas Bernard."),
@@ -2055,7 +2055,7 @@ bool AppInitMain(Config &config, RPCServer &rpcServer,
 
     // Only log conf file usage message if conf file actually exists.
     fs::path config_file_path =
-        GetConfigFile(gArgs.GetArg("-conf", BITCOIN_CONF_FILENAME));
+        GetConfigFile(gArgs.GetArg("-conf", RADIANT_CONF_FILENAME));
     if (fs::exists(config_file_path)) {
         LogPrintf("Config file: %s\n", config_file_path.string());
     } else if (gArgs.IsArgSet("-conf")) {

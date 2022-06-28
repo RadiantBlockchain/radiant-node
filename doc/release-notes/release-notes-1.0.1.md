@@ -1,18 +1,16 @@
-# Release Notes for Radiant Node version 1.0.2
+# Release Notes for Radiant Node version 1.0.1
 
-Radiant Node version 1.0.2 is now available from:
+Radiant Node version 1.0.1 is now available from:
 
   <https://radiantblockchain.org>
 
 ## Overview
 
-The purpose of this release is to enhance the OP codes to streamline induction proofs and introspection.
+The purpose of this release is to fix the fee rate bug that prevents radiant-cli from generating the correct required fee rate.
 
-Note: The configuration file is now to be used from `radiant.conf` and not `bitcoin.conf`
- 
 ## Usage recommendations
 
-The release of Radiant Node 1.0.2 is recommended for use by everyone, immediately.
+The initial release of Radiant Node 1.0.1 is recommended for use by everyone, immediately.
 
 ## Network changes
 
@@ -20,19 +18,7 @@ n/a
 
 ## Added functionality
 
-Added additional induction related introspection OP Codes to make it easier to evaluate reference groups.
-
-#### <inputIndex> OP_UTXODATASUMMARY 
-
-Pushes the hash256 output vector being spent by an input onto the stack.
-
-`hash256(<nValue><hash256(scriptPubKey)><numRefs><hash(sortedMap(pushRefs))>)`
-
-This allows an unlocking context to access any other input's scriptPubKey and determine what 'type' it is and all other details of that script.
-
-#### <ref hash> OP_UTXOREFVALUESUM 
-
-Pushes the sum of all output values that matches the ref hash
+n/a
 
 ## Deprecated functionality
 
@@ -64,9 +50,7 @@ n/a
 
 ---
 
-## Changes since Radiant Node 1.0.1
-
-Added 
+## Changes since Radiant Node 1.0.0
 
 ### New documents
 

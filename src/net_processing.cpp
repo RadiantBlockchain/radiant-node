@@ -3826,7 +3826,7 @@ static bool ProcessMessage(const Config &config, CNode *pfrom,
             // NOTE: We must hold cs_main and pool.cs here to get a "transactional"
             // and consistent view of the mempool while we perform the validation
             // operation & add operations.
-            // See: https://gitlab.com/radiant-node/radiant-node/-/merge_requests/700#note_417716740
+            // See: https://gitlab.com/bitcoin-cash-node/radiant-node/-/merge_requests/700#note_417716740
             // Also see: The comments in txmempool.h about mempool consistency guarantees.
             LOCK2(cs_main, g_mempool.cs);
             switch ( dsp.validate(g_mempool) ) {
