@@ -17,6 +17,22 @@ peer-to-peer technology to operate with no central authority: managing
 transactions are carried out collectively by the network. Radiant is a twin 
 network based on the original Bitcoin design.
 
+Quick Start Compile on Ubuntu 18/20
+---------------------
+
+See [Ubuntu/Debian Builds](build_unix.md) or the Docs folder for your platform
+
+Disable QT when building:
+
+```
+mkdir build
+cd build
+cmake -GNinja .. -DBUILD_RADIANT_QT=OFF
+ninja
+# Optionally install into system
+sudo ninja install 
+```
+
 What is Radiant Node?
 --------------------------
 
