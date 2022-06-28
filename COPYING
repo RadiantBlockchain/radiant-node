@@ -16,26 +16,10 @@ all copies or substantial portions of the Software.
 
 2 - The Software, and any software that is derived from the Software or parts thereof,
 can only be used on the Radiant (RAD) blockchains. The Radiant (RAD) blockchains are defined,
-for purposes of this license, as the Radiant (RAD) blockchains containing block height #15,565
-with the hash "0000000000002bae76f9943a5673500e01be6ff961861061860ea6c9a40f4fb0" and that 
+for purposes of this license, as the Radiant (RAD) blockchains containing block height #16043
+with the hash "000000000003df1392cb8e042f69e2c98e9cb75d1bb229c597afb334019b8add" and that 
 contains the longest persistent chain of blocks accepted by this Software, as well as the test 
 blockchains that contain the longest persistent chains of blocks accepted by this Software.
-
-3 - The Software, and any software that is derived from the Software or parts thereof, can only
-be used on Radiant (RAD) blockchain that maintains the original difficulty adjustment algorithm, 
-maintains the block subsidy emission rate defined in the original version of this Software, and 
-ensures all coins are spendable in the normal manner without either subverting, undermining, 
-changing, diminishing, nullifying, hijacking, or altering the way existing coins can be spent. Any 
-attempt or proposal by an entity to violate, change, or remove the logic for verifying 
-digital chains of signatures for existing coins will be deemed a violation of this license 
-and that entity must cease to use the Software immediately.
-
-4 - Users and providers of the Software agree to insure themselves against any loss of any kind
-if they wish to mitigate the effects of theft or error. The Users and providers agree
-and understand that under no circumstances will there be recourse through Radiant (RAD) blockchain
-providers via subverting, undermining, changing, diminishing, nullifying, hijacking, or altering 
-the way existing coins can be spent and the proper functioning of the verification of chains of 
-digital signatures.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
