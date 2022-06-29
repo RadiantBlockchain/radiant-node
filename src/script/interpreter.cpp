@@ -1644,13 +1644,13 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     case OP_REQUIREINPUTREF:
                     case OP_DISALLOWPUSHINPUTREFSIBLING:
                     case OP_DISALLOWPUSHINPUTREF:
-                    case OP_UTXODATASUMMARY: {
+                    case OP_UTXODATASUMMARY: 
+                    case OP_UTXOREFVALUESUM: {
                         switch (opcode) {
                             case OP_PUSHINPUTREF: {
                                 // When interpretting OP_PUSHINPUTREF, just push to the primary stack
                                 // As safety check, ensure that the UTXO being spent does indeed have the OP_PUSHINPUTREF saved in it's ref vector
                                 // It should never be the case that the check fails since a UTXO can only be committed with the output color verified
-                                // Todo: Check
                                 stack.push_back(vchPushValue);
                                 // As a sanity check we save all the pushrefs, and then cross check them against 
                                 // OP_DISALLOWPUSHINPUTREF
@@ -1664,10 +1664,19 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 // When interpreting OP_DISALLOWPUSHINPUTREF, do nothing, but save the reference to a set to cross check later
                             } break;
                             case OP_DISALLOWPUSHINPUTREFSIBLING: {
-                                // When interpreting OP_DISALLOWPUSHINPUTREFSIBLING, do nothing
+                                if (vchPushValue.size() != 36) {
+                                    return set_error(serror, ScriptError::INVALID_TX_REFHASH_SIZE);
+                                }
+                                // When interpreting OP_DISALLOWPUSHINPUTREFSIBLING, push the value to the stack
+                                stack.push_back(vchPushValue);
                             } break;
                             case OP_REQUIREINPUTREF: {
-                                // When interpreting OP_REQUIREINPUTREF, do nothing
+
+                                if (vchPushValue.size() != 36) {
+                                    return set_error(serror, ScriptError::INVALID_TX_REFHASH_SIZE);
+                                }
+                                // When interpreting OP_REQUIREINPUTREF, push the value to the stack
+                                stack.push_back(vchPushValue);
                             } break;
                             case OP_UTXODATASUMMARY: {
                                 // Push a hash256 of the output being spent of a vector of the form:
@@ -1727,7 +1736,6 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                             }
                         }
                     } break; // end of RADIANT based induction and introspection op codes
-
 
                     default:
                         return set_error(serror, ScriptError::BAD_OPCODE);
