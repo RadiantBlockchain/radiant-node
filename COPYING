@@ -16,8 +16,8 @@ all copies or substantial portions of the Software.
 
 2 - The Software, and any software that is derived from the Software or parts thereof,
 can only be used on the Radiant (RAD) blockchains. The Radiant (RAD) blockchains are defined,
-for purposes of this license, as the Radiant (RAD) blockchains containing block height #16043
-with the hash "000000000003df1392cb8e042f69e2c98e9cb75d1bb229c597afb334019b8add" and that 
+for purposes of this license, as the Radiant (RAD) blockchains containing block height #16317
+with the hash "00000000000120b9747653c5f67ecc081d925f3406d1c76af142aac0c05bfd97" and that 
 contains the longest persistent chain of blocks accepted by this Software, as well as the test 
 blockchains that contain the longest persistent chains of blocks accepted by this Software.
 

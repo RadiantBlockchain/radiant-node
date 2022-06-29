@@ -1165,7 +1165,7 @@ std::string LicenseInfo() {
            "\n\n" +
            strprintf(_("The source code is available from %s."), URL_SOURCE_CODE) +
            "\n\n" +
-           strprintf(_("Distributed under the Open Radiant (RAD) Version 1 software license, see the accompanying file %s"),
+           strprintf(_("Distributed under the Open Radiant (RAD) Version 2software license, see the accompanying file %s"),
                      "COPYING") +
            "\n\n" +
            strprintf(_("This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit %s and "
