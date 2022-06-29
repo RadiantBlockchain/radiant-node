@@ -24,19 +24,19 @@
 static constexpr unsigned int MAX_SCRIPT_ELEMENT_SIZE_LEGACY = 520;
 
 // Maximum number of bytes pushable to the stack
-static constexpr unsigned int MAX_SCRIPT_ELEMENT_SIZE = 8000000;
+static constexpr unsigned int MAX_SCRIPT_ELEMENT_SIZE = 32000000;
 
 // Maximum number of non-push operations per script
-static const int MAX_OPS_PER_SCRIPT = 8000000;
+static const int MAX_OPS_PER_SCRIPT = 32000000;
 
 // Maximum number of public keys per multisig
 static const int MAX_PUBKEYS_PER_MULTISIG = 20;
 
 // Maximum script length in bytes
-static const int MAX_SCRIPT_SIZE = 8000000;
+static const int MAX_SCRIPT_SIZE = 32000000;
 
 // Maximum number of values on script interpreter stack
-static const int MAX_STACK_SIZE = 8000000;
+static const int MAX_STACK_SIZE = 32000000;
 
 // Threshold for nLockTime: below this value it is interpreted as block number,
 // otherwise as UNIX timestamp. Thresold is Tue Nov 5 00:53:20 1985 UTC
