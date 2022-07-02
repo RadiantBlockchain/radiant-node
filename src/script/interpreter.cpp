@@ -253,18 +253,21 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
         uint256 zeroRefHash(uint256S("0000000000000000000000000000000000000000000000000000000000000000"));
         // For each input we build up the push refs
         std::map<uint256, Amount> refsToAmountMap;
-        for (uint64_t i = 0; i < context->tx().vin().size(); i++) {
-            auto const& utxoScript = context->coinScriptPubKey(i);
-            auto const& coinAmount = context->coinAmount(i);
-            OutputDataSummary outputSummary = getOutputDataSummary(utxoScript, coinAmount, zeroRefHash);
-            auto refsIt = refsToAmountMap.find(outputSummary.refsHash);
-            if (refsIt == refsToAmountMap.end()) {
-                // If it doesn't exist, then just initialize it
-                refsToAmountMap.insert(std::pair(outputSummary.refsHash, Amount::zero()));
-                refsIt = refsToAmountMap.find(outputSummary.refsHash);
+
+        if (!context->isLimited() && context) {
+            for (uint64_t i = 0; i < context->tx().vin().size(); i++) {
+                auto const& utxoScript = context->coinScriptPubKey(i);
+                auto const& coinAmount = context->coinAmount(i);
+                OutputDataSummary outputSummary = getOutputDataSummary(utxoScript, coinAmount, zeroRefHash);
+                auto refsIt = refsToAmountMap.find(outputSummary.refsHash);
+                if (refsIt == refsToAmountMap.end()) {
+                    // If it doesn't exist, then just initialize it
+                    refsToAmountMap.insert(std::pair(outputSummary.refsHash, Amount::zero()));
+                    refsIt = refsToAmountMap.find(outputSummary.refsHash);
+                }
+                // Add the amount to the key
+                refsIt->second += coinAmount;
             }
-            // Add the amount to the key
-            refsIt->second += coinAmount;
         }
 
         while (pc < pend) {
@@ -1648,6 +1651,9 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     case OP_UTXOREFVALUESUM: {
                         switch (opcode) {
                             case OP_PUSHINPUTREF: {
+                                if (vchPushValue.size() != 36) {
+                                    return set_error(serror, ScriptError::INVALID_TX_REF_SIZE);
+                                }
                                 // When interpretting OP_PUSHINPUTREF, just push to the primary stack
                                 // As safety check, ensure that the UTXO being spent does indeed have the OP_PUSHINPUTREF saved in it's ref vector
                                 // It should never be the case that the check fails since a UTXO can only be committed with the output color verified
@@ -1658,6 +1664,9 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 foundPushRefs.insert(uref);
                             } break;
                             case OP_DISALLOWPUSHINPUTREF: {
+                                if (vchPushValue.size() != 36) {
+                                    return set_error(serror, ScriptError::INVALID_TX_REF_SIZE);
+                                }
                                 // As sanity check just verify that the input being spent does not contain a disallowed push ref
                                 uint288 uref = uint288S(std::string(vchPushValue.begin(), vchPushValue.end()).c_str());
                                 disallowedRefs.insert(uref);
@@ -1665,15 +1674,14 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                             } break;
                             case OP_DISALLOWPUSHINPUTREFSIBLING: {
                                 if (vchPushValue.size() != 36) {
-                                    return set_error(serror, ScriptError::INVALID_TX_REFHASH_SIZE);
+                                    return set_error(serror, ScriptError::INVALID_TX_REF_SIZE);
                                 }
                                 // When interpreting OP_DISALLOWPUSHINPUTREFSIBLING, push the value to the stack
                                 stack.push_back(vchPushValue);
                             } break;
                             case OP_REQUIREINPUTREF: {
-
                                 if (vchPushValue.size() != 36) {
-                                    return set_error(serror, ScriptError::INVALID_TX_REFHASH_SIZE);
+                                    return set_error(serror, ScriptError::INVALID_TX_REF_SIZE);
                                 }
                                 // When interpreting OP_REQUIREINPUTREF, push the value to the stack
                                 stack.push_back(vchPushValue);

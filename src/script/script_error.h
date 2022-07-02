@@ -90,6 +90,7 @@ enum class ScriptError {
 
     /* RADIANT specific OP codes */
     INVALID_TX_REFHASH_SIZE,
+    INVALID_TX_REF_SIZE,
 
     /* Invalid output disallow additional refs*/
     INVALID_TX_OUTPUT_CONTAINS_DISALLOWED_PUSHREF,
