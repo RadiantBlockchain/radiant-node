@@ -50,9 +50,9 @@ n/a
 
 ---
 
-## Changes since Radiant Node 1.0.3
+## Changes since Radiant Node 1.0.4
 
-Fix segfault for assetId
+Re-enable native introspection OP codes
 
 ### New documents
 

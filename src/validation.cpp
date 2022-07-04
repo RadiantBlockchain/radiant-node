@@ -1639,49 +1639,42 @@ static uint32_t GetNextBlockScriptFlags(const Consensus::Params &params,
                                         const CBlockIndex *pindex) {
     uint32_t flags = SCRIPT_VERIFY_NONE;
 
-    // We will never support P2SH
-    // Start enforcing P2SH (BIP16)
-    //if ((pindex->nHeight + 1) >= params.BIP16Height) {
-    // flags |= SCRIPT_VERIFY_P2SH;
-    //}
+    //  We will never support P2SH because it makes it hard to test and examine the blockchain data
+    //  Misguided concerns about privacy, a discussion for another place and time.
+    //  if ((pindex->nHeight + 1) >= params.BIP16Height) {
+    //      flags |= SCRIPT_VERIFY_P2SH;
+    //  }
 
+    // We keep the following rules in place, but they are buried less than a couple of hundred blocks from genesis
+    // Just so that it will be easier to test
+    // No transactions in the blockchain history violate any of these rules, this is more of a formality.
     // Start enforcing the DERSIG (BIP66) rule.
     if ((pindex->nHeight + 1) >= params.BIP66Height) {
         flags |= SCRIPT_VERIFY_DERSIG;
     }
-
     // Start enforcing CHECKLOCKTIMEVERIFY (BIP65) rule.
     if ((pindex->nHeight + 1) >= params.BIP65Height) {
         flags |= SCRIPT_VERIFY_CHECKLOCKTIMEVERIFY;
     }
-
     // Start enforcing CSV (BIP68, BIP112 and BIP113) rule.
     if ((pindex->nHeight + 1) >= params.CSVHeight) {
         flags |= SCRIPT_VERIFY_CHECKSEQUENCEVERIFY;
     }
-
     // If the UAHF is enabled, we start accepting replay protected txns
+    // Since height 200
     if (IsUAHFenabled(params, pindex)) {
         flags |= SCRIPT_VERIFY_STRICTENC;
         flags |= SCRIPT_ENABLE_SIGHASH_FORKID;
     }
-
     flags |= SCRIPT_VERIFY_LOW_S;
     flags |= SCRIPT_VERIFY_NULLFAIL;
-
     flags |= SCRIPT_VERIFY_SIGPUSHONLY;  
     flags |= SCRIPT_VERIFY_CLEANSTACK;
-
     flags |= SCRIPT_ENABLE_SCHNORR_MULTISIG;
     flags |= SCRIPT_VERIFY_MINIMALDATA;
-
     flags |= SCRIPT_ENFORCE_SIGCHECKS;
-
     flags |= SCRIPT_64_BIT_INTEGERS;
-
-    // Keep it disabled for now since it's not needed
-    // But can be enabled in case
-    // flags |= SCRIPT_NATIVE_INTROSPECTION;
+    flags |= SCRIPT_NATIVE_INTROSPECTION;
 
     return flags;
 }

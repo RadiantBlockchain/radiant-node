@@ -19,7 +19,7 @@ inline constexpr uint64_t MIN_TX_SIZE = 32;
 /** The maximum allowed size for a block, before the UAHF */
 inline constexpr uint64_t LEGACY_MAX_BLOCK_SIZE = ONE_MEGABYTE;
 /** Default setting for maximum allowed size for a block, in bytes */
-inline constexpr uint64_t DEFAULT_EXCESSIVE_BLOCK_SIZE = 32 * ONE_MEGABYTE;
+inline constexpr uint64_t DEFAULT_EXCESSIVE_BLOCK_SIZE = 128 * ONE_MEGABYTE;
 
 /** Default setting for maximum allowed size for a block, in bytes legacy */
 inline constexpr uint64_t DEFAULT_EXCESSIVE_BLOCK_SIZE_LEGACY = 32 * ONE_MEGABYTE;

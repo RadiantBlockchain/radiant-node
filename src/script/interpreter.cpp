@@ -253,7 +253,6 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
         uint256 zeroRefHash(uint256S("0000000000000000000000000000000000000000000000000000000000000000"));
         // For each input we build up the push refs
         std::map<uint256, Amount> refsToAmountMap;
-
         if (!context->isLimited() && context) {
             for (uint64_t i = 0; i < context->tx().vin().size(); i++) {
                 auto const& utxoScript = context->coinScriptPubKey(i);
@@ -1523,8 +1522,6 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     } break; // end of Native Introspection opcodes (Nullary)
 
                     // Native Introspection opcodes (Unary)
-                    // Note: it is designed for now to keep these op codes disabled as they are not necessary
-                    // It is possible to achieve introspection with native script as it stands now
                     case OP_UTXOVALUE:
                     case OP_UTXOBYTECODE:
                     case OP_OUTPOINTTXHASH:
