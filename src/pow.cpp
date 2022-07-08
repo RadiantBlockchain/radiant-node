@@ -145,6 +145,8 @@ static uint32_t GetNextASERTWorkRequired(const CBlockIndex *pindexPrev,
                                               params.nASERTHalfLife);
 
     // CalculateASERT() already clamps to powLimit.
+
+    std::cerr << "------ resulting CalculateASERT------- nTimeDiff: " << nTimeDiff << " nHeightDiff: " << " params.nASERTHalfLife: " << params.nASERTHalfLife << std::endl;
     return nextTarget.GetCompact();
 }
 
