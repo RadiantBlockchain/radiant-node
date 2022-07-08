@@ -105,6 +105,26 @@ public:
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting = false;
 
+        // The half life for the ASERT DAA. For every (nASERTHalfLife) seconds behind schedule the blockchain gets,
+        // difficulty is cut in half. Doubled if blocks are ahead of schedule.
+        // Two days
+        consensus.nASERTHalfLife = 2 * 24 * 60 * 60;
+
+        // Sat Jul 09 2022 22:00:00 GMT+0000 ASERT DAA enabled
+        consensus.asertActivationTime = 1657404000;
+
+        // Anchor params: Note that the block after this height *must* also be checkpointed below.
+        // Note: The anchor is searched dynamically automatically after consensus.asertActivationTime
+        // The anchor params below will be added once that new block is mined and buried in the past
+        // This is done so that the very first block after consensus.asertActivationTime will be anchored
+        // to the original classic DAA right before it.
+        /*
+        consensus.asertAnchorParams = Consensus::Params::ASERTAnchor{
+            661647,       // anchor block height
+            0x1804dafe,   // anchor block nBits
+            1605447844,   // anchor block previous block timestamp
+        };*/
+
         // The best chain should have at least this much work.
         consensus.nMinimumChainWork =
             ChainParamsConstants::MAINNET_MINIMUM_CHAIN_WORK;
@@ -211,11 +231,19 @@ public:
         consensus.CSVHeight = 102;
         consensus.powLimit = uint256S(
             "00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-        // one weeks
+        // one week
         consensus.nPowTargetTimespan = 7 * 24 * 60 * 60;
         consensus.nPowTargetSpacing = 5 * 60;
         consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.fPowNoRetargeting = false;
+
+        // The half life for the ASERT DAA. For every (nASERTHalfLife) seconds behind schedule the blockchain gets,
+        // difficulty is cut in half. Doubled if blocks are ahead of schedule.
+        // 1 hour
+        consensus.nASERTHalfLife = 60 * 60;
+
+        // Sat Jul 09 2022 22:00:00 GMT+0000 ASERT DAA enabled
+        consensus.asertActivationTime = 1657404000;
 
         // The best chain should have at least this much work.
         consensus.nMinimumChainWork =
@@ -315,6 +343,14 @@ public:
         consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.fPowNoRetargeting = false;
  
+        // The half life for the ASERT DAA. For every (nASERTHalfLife) seconds behind schedule the blockchain gets,
+        // difficulty is cut in half. Doubled if blocks are ahead of schedule.
+        // One hour
+        consensus.nASERTHalfLife = 60 * 60;
+
+        // Sat Jul 09 2022 22:00:00 GMT+0000 ASERT DAA enabled
+        consensus.asertActivationTime = 1657404000;
+
         // The best chain should have at least this much work.
         consensus.nMinimumChainWork = ChainParamsConstants::TESTNET4_MINIMUM_CHAIN_WORK;
 
@@ -403,6 +439,14 @@ public:
         consensus.nPowTargetSpacing = 5 * 60;
         consensus.fPowAllowMinDifficultyBlocks = true;
         consensus.fPowNoRetargeting = false;
+
+        // The half life for the ASERT DAA. For every (nASERTHalfLife) seconds behind schedule the blockchain gets,
+        // difficulty is cut in half. Doubled if blocks are ahead of schedule.
+        // Two days
+        consensus.nASERTHalfLife = 2 * 24 * 60 * 60;
+
+        // Sat Jul 09 2022 22:00:00 GMT+0000 ASERT DAA enabled
+        consensus.asertActivationTime = 1657404000;
 
         // The best chain should have at least this much work.
         consensus.nMinimumChainWork = ChainParamsConstants::SCALENET_MINIMUM_CHAIN_WORK;

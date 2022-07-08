@@ -904,7 +904,12 @@ void SetupServerArgs() {
                            "initial block download (default: %u)",
                            DEFAULT_MAX_TIP_AGE),
                  ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::DEBUG_TEST);
-
+    gArgs.AddArg(
+        "-asertactivationtime=<n>",
+        strprintf("Activation time of the Jul 09 2022 10:00:00 GMT+0000 (1657360800) RAD ASERT DAA enabled (<n> seconds since epoch, "
+                  "default: %d). This option only has an effect on regtest or scalenet.",
+                  defaultChainParams->GetConsensus().asertActivationTime),
+        ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::DEBUG_TEST);
     gArgs.AddArg(
         "-printtoconsole",
         "Send trace/debug info to console instead of debug.log file (default: "
