@@ -243,7 +243,7 @@ public:
         consensus.nASERTHalfLife = 60 * 60;
 
         // Sat Jul 09 2022 22:00:00 GMT+0000 ASERT DAA enabled
-        consensus.asertActivationTime = 1657404000;
+        consensus.asertActivationTime = 1657315787;
 
         // The best chain should have at least this much work.
         consensus.nMinimumChainWork =
