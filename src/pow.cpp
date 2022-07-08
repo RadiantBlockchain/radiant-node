@@ -281,6 +281,7 @@ uint32_t GetNextWorkRequired(const CBlockIndex *pindexPrev,
     }
 
     if (IsASERTEnabled(params, pindexPrev)) {
+        std::cerr << "IsASERTEnabled true" << std::endl;
         const CBlockIndex *panchorBlock = nullptr;
         if (!params.asertAnchorParams) {
             // No hard-coded anchor params -- find the anchor block dynamically
@@ -289,7 +290,7 @@ uint32_t GetNextWorkRequired(const CBlockIndex *pindexPrev,
 
         return GetNextASERTWorkRequired(pindexPrev, pblock, params, panchorBlock);
     }
-
+     std::cerr << "IsASERTEnabled FALSE" << std::endl;
     return GetNextClassicWorkRequired(pindexPrev, pblock, params);
 }
 
