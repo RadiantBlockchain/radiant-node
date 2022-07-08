@@ -234,7 +234,7 @@ public:
         // one week
         consensus.nPowTargetTimespan = 7 * 24 * 60 * 60;
         consensus.nPowTargetSpacing = 5 * 60;
-        consensus.fPowAllowMinDifficultyBlocks = true;
+        consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting = false;
 
         // The half life for the ASERT DAA. For every (nASERTHalfLife) seconds behind schedule the blockchain gets,
