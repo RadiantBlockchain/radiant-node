@@ -109,6 +109,8 @@ static uint32_t GetNextASERTWorkRequired(const CBlockIndex *pindexPrev,
     // We make no further assumptions other than the height of the prev block must be >= that of the anchor block.
     assert(pindexPrev->nHeight >= anchorParams.nHeight);
 
+    std::cerr << "GetNextASERTWorkRequired: anchorParams.nHeight: " << anchorParams.nHeight << std::endl;
+    std::cerr << "GetNextASERTWorkRequired: pindexPrev->nHeight: " << pindexPrev->nHeight << std::endl;
     // Special difficulty rule for testnet
     // If the new block's timestamp is more than 2 * 5 minutes then allow
     // mining of a min-difficulty block.
