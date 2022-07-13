@@ -2,7 +2,7 @@ This license can be used by developers, projects or companies who wish to make t
 
 Copyright (c) 2022 The Radiant Blockchain Developers
 
-Open Radiant Blockchain (RAD) License Version 2
+Open Radiant Blockchain (RAD) License Version 3
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -14,12 +14,26 @@ furnished to do so, subject to the following conditions:
 1 - The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
-2 - The Software, and any software that is derived from the Software or parts thereof,
-can only be used on the Radiant (RAD) blockchains. The Radiant (RAD) blockchains are defined,
-for purposes of this license, as the Radiant (RAD) blockchains containing block height #16317
-with the hash "00000000000120b9747653c5f67ecc081d925f3406d1c76af142aac0c05bfd97" and that 
-contains the longest persistent chain of blocks accepted by this Software, as well as the test 
-blockchains that contain the longest persistent chains of blocks accepted by this Software.
+2 - The Software, and any software that is derived from the Software or parts 
+thereof, can only be used on the Radiant (RAD) blockchains. The Radiant (RAD) 
+blockchains are defined, for purposes of this license, as the Radiant (RAD) 
+blockchains containing block height #19068 with the hash 
+"0000000000021a9928656e3b386b2e352e054fb2344ec0474e003cfabcdf0eff" and that 
+contains the longest persistent chain of blocks accepted by this Software, 
+as well as the test blockchains that contain the longest persistent chains of 
+blocks accepted by this Software.
+
+3 - Users and providers agree that Radiant Blockchain is a public database to 
+keep a record of who controls which outputs using digital signatures and 
+signed messages for what is included in the public database.
+No legal title or ownership is associated with the RAD token quantity themselves.
+Users and providers of the Software agree to insure themselves against any 
+loss of any kind if they wish to mitigate the effects of theft or error. 
+The Users and providers agree and understand that under no circumstances will 
+there be recourse through Radiant (RAD) blockchain nodes via subverting, 
+undermining, changing, diminishing, nullifying, hijacking, or altering the 
+way coins can be spent to violate the intended functionality of digital 
+signatures and signed messages for including records in the database.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,

@@ -118,12 +118,11 @@ public:
         // The anchor params below will be added once that new block is mined and buried in the past
         // This is done so that the very first block after consensus.asertActivationTime will be anchored
         // to the original classic DAA right before it.
-        /*
         consensus.asertAnchorParams = Consensus::Params::ASERTAnchor{
-            661647,       // anchor block height
-            0x1804dafe,   // anchor block nBits
-            1605447844,   // anchor block previous block timestamp
-        };*/
+            18206,          // anchor block height
+            0x1b03a760,     // anchor block nBits
+            1657404650,     // anchor block previous block timestamp
+        }; 
 
         // The best chain should have at least this much work.
         consensus.nMinimumChainWork =
@@ -197,9 +196,11 @@ public:
 
         checkpointData = {
             /* .mapCheckpoints = */ {
-                {0, genesis.GetHash()},
-                {10543, BlockHash::fromHex("0000000000389e57f64aeda459b441613dedb49b050ef0df1e25e4f325957dcf")}
-            }};
+            {0, genesis.GetHash()},
+            {10543, BlockHash::fromHex("0000000000389e57f64aeda459b441613dedb49b050ef0df1e25e4f325957dcf")}, 
+            {18206, BlockHash::fromHex("000000000002b08f7be7bce01d53c4ab2f7b3420955866b88b3e6e087f941e07")}, // When ASERT went live
+            {19068, BlockHash::fromHex("0000000000021a9928656e3b386b2e352e054fb2344ec0474e003cfabcdf0eff")}  // Latest
+        }};
 
         // Data as of block
         // 000000000000000000d7e938f43eb520468fc75dc626c54ec770f9cd1bd6bc1d
