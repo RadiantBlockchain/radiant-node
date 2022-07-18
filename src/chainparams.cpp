@@ -180,7 +180,10 @@ public:
         vSeeds.emplace_back("node.terraflow.info");
         vSeeds.emplace_back("radchad.ddns.net");
         vSeeds.emplace_back("node.radiantmideast.org");
-        
+        vSeeds.emplace_back("node6.radiant.ovh");
+        vSeeds.emplace_back("node.radiant.ovh");
+
+    
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<uint8_t>(1, 0);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<uint8_t>(1, 5);
         base58Prefixes[SECRET_KEY] = std::vector<uint8_t>(1, 128);
