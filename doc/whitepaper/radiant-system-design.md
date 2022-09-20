@@ -577,7 +577,6 @@ contract SuperAssetR201 {
 
 ```
 
-
 # Blockchain Network Details
 
 Radiant is a peer-to-peer digital asset system with unbounded scaling as a UTXO-based blockchain with all the flexibility and power of account-based blockchains.
