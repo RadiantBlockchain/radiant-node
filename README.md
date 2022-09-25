@@ -11,7 +11,7 @@ value and money transfer imaginable.
 What is Radiant?
 ---------------------
 
-Radiant is a high performance blockchainn for digital assets and enables instant 
+Radiant is a high performance blockchain for digital assets and enables instant 
 payments and asset transfers to to anyone, anywhere in the world. It uses 
 peer-to-peer technology to operate with no central authority: managing 
 transactions are carried out collectively by the network. Radiant is a twin 
