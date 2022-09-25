@@ -1,12 +1,6 @@
 *.tar.gz
 
 *.exe
-src/bitcoin
-src/bitcoind
-src/bitcoin-cli
-src/bitcoin-seeder
-src/bitcoin-tx
-src/bitcoin-wallet
 src/radiant
 src/radiantd
 src/radiant-cli

@@ -40,7 +40,7 @@ static constexpr bool DEFAULT_GBT_CHECK_VALIDITY = true;
 /**
  * The maximum size for transactions we're willing to relay/mine.
  */
-static constexpr unsigned int MAX_STANDARD_TX_SIZE = 2000000;
+static constexpr unsigned int MAX_STANDARD_TX_SIZE = 20000000;
 
 /**
  * Biggest 'standard' txin is a 15-of-15 P2SH multisig with compressed
@@ -50,7 +50,7 @@ static constexpr unsigned int MAX_STANDARD_TX_SIZE = 2000000;
  * future-proofing. That's also enough to spend a 20-of-20 CHECKMULTISIG
  * scriptPubKey, though such a scriptPubKey is not considered standard.
  */
-static constexpr unsigned int MAX_TX_IN_SCRIPT_SIG_SIZE = 1650;
+static constexpr unsigned int MAX_TX_IN_SCRIPT_SIG_SIZE = 20000000;
 
 /**
  * Default maximum megabytes of mempool memory usage per MB of excessive block size. This is used to calculate the
@@ -96,10 +96,15 @@ inline constexpr unsigned int MAX_INV_BROADCAST_RATE = 1'000'000;
  */
 static constexpr uint32_t MANDATORY_SCRIPT_VERIFY_FLAGS =
     SCRIPT_VERIFY_STRICTENC |
-    SCRIPT_ENABLE_SIGHASH_FORKID | SCRIPT_VERIFY_LOW_S |
-    SCRIPT_VERIFY_NULLFAIL | SCRIPT_VERIFY_MINIMALDATA |
-    SCRIPT_ENABLE_SCHNORR_MULTISIG | SCRIPT_ENFORCE_SIGCHECKS;
-
+    SCRIPT_ENABLE_SIGHASH_FORKID | 
+    SCRIPT_VERIFY_LOW_S |
+    SCRIPT_VERIFY_NULLFAIL | 
+    SCRIPT_VERIFY_MINIMALDATA |
+    SCRIPT_ENABLE_SCHNORR_MULTISIG | 
+    SCRIPT_ENFORCE_SIGCHECKS |
+    SCRIPT_VERIFY_SIGPUSHONLY | 
+    SCRIPT_64_BIT_INTEGERS |
+    SCRIPT_NATIVE_INTROSPECTION;
 /**
  * Standard script verification flags that standard transactions will comply
  * with. However scripts violating these flags may still be present in valid

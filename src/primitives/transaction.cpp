@@ -122,9 +122,7 @@ uint256 CTransaction::ComputeHash() const {
         std::stringstream ss;
         ::Serialize(ss, preimage);
         std::string rawByteStr = ss.str();
-        std::cerr << "txid v3 preimage: " << boost::algorithm::hex(rawByteStr) << std::endl; 
         auto txHash = SerializeHash(preimage, SER_GETHASH, 0);
-        std::cerr << "txid v3: " << txHash.GetHex() << std::endl;
         return txHash;
     }
     return SerializeHash(*this, SER_GETHASH, 0);

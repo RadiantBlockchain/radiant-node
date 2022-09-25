@@ -654,7 +654,7 @@ add_library(rpcclient rpc/client.cpp)
 target_link_libraries(rpcclient univalue util)
 
 # bitcoin-seeder
-if(BUILD_BITCOIN_SEEDER)
+if(BUILD_RADIANT_SEEDER)
   add_subdirectory(seeder)
 endif()
 

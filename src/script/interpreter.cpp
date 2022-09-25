@@ -142,8 +142,35 @@ static bool IsOpcodeDisabled(opcodetype opcode, uint32_t flags) {
         case OP_2DIV:
         case OP_LSHIFT:
         case OP_RSHIFT:
-        // Disabled opcodes.
+            // Disabled opcodes.
             return true;
+        case OP_REFHASHDATASUMMARY_OUTPUT:
+        case OP_REFHASHVALUESUM_OUTPUTS:
+        case OP_PUSHINPUTREFSINGLETON: 
+        case OP_REFTYPE_UTXO:
+        case OP_REFTYPE_OUTPUT:
+        case OP_STATESEPARATOR:
+        case OP_STATESEPARATORINDEX_UTXO:
+        case OP_STATESEPARATORINDEX_OUTPUT:
+        case OP_REFVALUESUM_UTXOS:
+        case OP_REFVALUESUM_OUTPUTS:
+        case OP_REFOUTPUTCOUNT_UTXOS:
+        case OP_REFOUTPUTCOUNT_OUTPUTS:
+        case OP_REFOUTPUTCOUNTZEROVALUED_UTXOS:
+        case OP_REFOUTPUTCOUNTZEROVALUED_OUTPUTS:
+        case OP_REFDATASUMMARY_UTXO:
+        case OP_REFDATASUMMARY_OUTPUT:
+        case OP_CODESCRIPTHASHVALUESUM_UTXOS:
+        case OP_CODESCRIPTHASHVALUESUM_OUTPUTS:
+        case OP_CODESCRIPTHASHOUTPUTCOUNT_UTXOS:
+        case OP_CODESCRIPTHASHOUTPUTCOUNT_OUTPUTS:
+        case OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_UTXOS:
+        case OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_OUTPUTS:
+        case OP_CODESCRIPTBYTECODE_UTXO:
+        case OP_CODESCRIPTBYTECODE_OUTPUT:
+        case OP_STATESCRIPTBYTECODE_UTXO:
+        case OP_STATESCRIPTBYTECODE_OUTPUT:
+            return (flags & SCRIPT_ENHANCED_REFERENCES) == 0;
         case OP_INVERT:
         case OP_MUL:
         default:
@@ -236,6 +263,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
     int nOpCount = 0;
     bool const fRequireMinimal = (flags & SCRIPT_VERIFY_MINIMALDATA) != 0;
     bool const nativeIntrospection = (flags & SCRIPT_NATIVE_INTROSPECTION) != 0;
+    bool const enhancedReferences = (flags & SCRIPT_ENHANCED_REFERENCES) != 0;
     bool const integers64Bit = (flags & SCRIPT_64_BIT_INTEGERS) != 0;
 
     size_t const maxIntegerSize = integers64Bit ?
@@ -250,25 +278,6 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
     std::set<uint288> disallowedRefs;
 
     try {
-        uint256 zeroRefHash(uint256S("0000000000000000000000000000000000000000000000000000000000000000"));
-        // For each input we build up the push refs
-        std::map<uint256, Amount> refsToAmountMap;
-        if (!context->isLimited() && context) {
-            for (uint64_t i = 0; i < context->tx().vin().size(); i++) {
-                auto const& utxoScript = context->coinScriptPubKey(i);
-                auto const& coinAmount = context->coinAmount(i);
-                OutputDataSummary outputSummary = getOutputDataSummary(utxoScript, coinAmount, zeroRefHash);
-                auto refsIt = refsToAmountMap.find(outputSummary.refsHash);
-                if (refsIt == refsToAmountMap.end()) {
-                    // If it doesn't exist, then just initialize it
-                    refsToAmountMap.insert(std::pair(outputSummary.refsHash, Amount::zero()));
-                    refsIt = refsToAmountMap.find(outputSummary.refsHash);
-                }
-                // Add the amount to the key
-                refsIt->second += coinAmount;
-            }
-        }
-
         while (pc < pend) {
             bool fExec = vfExec.all_true();
             //
@@ -496,7 +505,13 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     } break;
 
                     case OP_RETURN: {
-                        return set_error(serror, ScriptError::OP_RETURN);
+                        if (stack.empty()) {
+                            // Terminate the execution as successful. The remaining of the script does not affect the validity (even in
+                            // presence of unbalanced IFs, invalid opcodes etc)
+                            return set_success(serror);
+                        } else {
+                            return set_error(serror, ScriptError::OP_RETURN);
+                        }
                     } break;
 
                     //
@@ -641,6 +656,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                         // (x1 x2 -- x1 x2 x1)
                         if (stack.size() < 2) {
                             return set_error(
+                             
                                 serror, ScriptError::INVALID_STACK_OPERATION);
                         }
                         valtype vch = stacktop(-2);
@@ -806,7 +822,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                             }
                             valtype &vch1 = stacktop(-2);
                             valtype &vch2 = stacktop(-1);
-
+                            
                             bool fEqual = (vch1 == vch2);
                             // OP_NOTEQUAL is disabled because it would be too
                             // easy to say something like n != 1 and have some
@@ -1644,8 +1660,35 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     case OP_REQUIREINPUTREF:
                     case OP_DISALLOWPUSHINPUTREFSIBLING:
                     case OP_DISALLOWPUSHINPUTREF:
-                    case OP_UTXODATASUMMARY: 
-                    case OP_UTXOREFVALUESUM: {
+                    case OP_REFHASHDATASUMMARY_UTXO: 
+                    case OP_REFHASHDATASUMMARY_OUTPUT:
+                    case OP_REFHASHVALUESUM_UTXOS:
+                    case OP_REFHASHVALUESUM_OUTPUTS:
+                    case OP_PUSHINPUTREFSINGLETON: 
+                    case OP_REFTYPE_UTXO:
+                    case OP_REFTYPE_OUTPUT:
+                    case OP_STATESEPARATOR:
+                    case OP_STATESEPARATORINDEX_UTXO:
+                    case OP_STATESEPARATORINDEX_OUTPUT:
+                    case OP_REFVALUESUM_UTXOS:
+                    case OP_REFVALUESUM_OUTPUTS:
+                    case OP_REFOUTPUTCOUNT_UTXOS:
+                    case OP_REFOUTPUTCOUNT_OUTPUTS:
+                    case OP_REFOUTPUTCOUNTZEROVALUED_UTXOS:
+                    case OP_REFOUTPUTCOUNTZEROVALUED_OUTPUTS:
+                    case OP_REFDATASUMMARY_UTXO:
+                    case OP_REFDATASUMMARY_OUTPUT:
+                    case OP_CODESCRIPTHASHVALUESUM_UTXOS:
+                    case OP_CODESCRIPTHASHVALUESUM_OUTPUTS:
+                    case OP_CODESCRIPTHASHOUTPUTCOUNT_UTXOS:
+                    case OP_CODESCRIPTHASHOUTPUTCOUNT_OUTPUTS:
+                    case OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_UTXOS:
+                    case OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_OUTPUTS:
+                    case OP_CODESCRIPTBYTECODE_UTXO:
+                    case OP_CODESCRIPTBYTECODE_OUTPUT:
+                    case OP_STATESCRIPTBYTECODE_UTXO:
+                    case OP_STATESCRIPTBYTECODE_OUTPUT:
+                    {
                         switch (opcode) {
                             case OP_PUSHINPUTREF: {
                                 if (vchPushValue.size() != 36) {
@@ -1667,7 +1710,8 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 // As sanity check just verify that the input being spent does not contain a disallowed push ref
                                 uint288 uref = uint288S(std::string(vchPushValue.begin(), vchPushValue.end()).c_str());
                                 disallowedRefs.insert(uref);
-                                // When interpreting OP_DISALLOWPUSHINPUTREF, do nothing, but save the reference to a set to cross check later
+                                // When interpreting OP_DISALLOWPUSHINPUTREF, push the value to the stack
+                                stack.push_back(vchPushValue);
                             } break;
                             case OP_DISALLOWPUSHINPUTREFSIBLING: {
                                 if (vchPushValue.size() != 36) {
@@ -1683,7 +1727,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 // When interpreting OP_REQUIREINPUTREF, push the value to the stack
                                 stack.push_back(vchPushValue);
                             } break;
-                            case OP_UTXODATASUMMARY: {
+                            case OP_REFHASHDATASUMMARY_UTXO: {
                                 // Push a hash256 of the output being spent of a vector of the form:
                                 // <nValue><hash256(scriptPubKey)><numRefs><hash(sortedMap(pushRefs))>
                                 // This allows an unlocking context to access any other input's scriptPubKey
@@ -1706,13 +1750,32 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                     // that calls the VM without all the *other* inputs' coins.
                                     return set_error(serror, ScriptError::LIMITED_CONTEXT_NO_SIBLING_INFO);
                                 }
-                                auto const& utxoScript = context->coinScriptPubKey(index);
-                                CHashWriter hashOutputDataSummaryWriter(SER_GETHASH, 0);
-                                writeOutputVector(hashOutputDataSummaryWriter, utxoScript, context->coinAmount(index), zeroRefHash);
-                                uint256 hashOutputDataSummary = hashOutputDataSummaryWriter.GetHash();
-                                stack.emplace_back(hashOutputDataSummary.begin(), hashOutputDataSummary.end());
+                                auto const& dataHash = context->getRefHashDataSummaryUtxo(index);
+                                stack.emplace_back(dataHash.begin(), dataHash.end());
                             } break;
-                            case OP_UTXOREFVALUESUM: {
+                            case OP_REFHASHDATASUMMARY_OUTPUT: {
+                                // Push a hash256 of an output of a vector of the form:
+                                // <nValue><hash256(scriptPubKey)><numRefs><hash(sortedMap(pushRefs))>
+                                // This allows the script to access any other output scriptPubKey
+                                // and determine what 'type' it is and all other details of that script
+                                if ( ! context) {
+                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
+                                }
+                                // (in -- out)
+                                if (stack.size() < 1) {
+                                    return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
+                                }
+                                auto const index = CScriptNum(stacktop(-1), fRequireMinimal, maxIntegerSize).getint64();
+                                popstack(stack); // consume element
+                                
+                                if (index < 0 || uint64_t(index) >= context->tx().vout().size()) {
+                                    return set_error(serror, ScriptError::INVALID_TX_OUTPUT_INDEX);
+                                }
+                                auto const& dataHash = context->getRefHashDataSummaryOutput(index);
+                                stack.emplace_back(dataHash.begin(), dataHash.end());
+
+                            } break;
+                            case OP_REFHASHVALUESUM_UTXOS: {
                                 if ( ! context) {
                                     return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
                                 }
@@ -1728,19 +1791,551 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 popstack(stack); // consume element
 
                                 uint256 refHashUint256(refHash);
-                                auto refMapIt = refsToAmountMap.find(refHashUint256);
-                                auto bn = CScriptNum::fromInt(0).value();       // Default to 0
-                                if (refMapIt != refsToAmountMap.end()) {
-                                    bn = CScriptNum::fromInt(refMapIt->second / SATOSHI).value();
-                                }
+                                auto const& sumAmount = context->getRefHashValueSumUtxos(refHashUint256);
+                                auto bn = CScriptNum::fromInt(sumAmount / SATOSHI).value();
                                 stack.push_back(bn.getvch());
                             } break;
+                            case OP_REFHASHVALUESUM_OUTPUTS: {
+                                if ( ! enhancedReferences) {
+                                    return set_error(serror, ScriptError::BAD_OPCODE);
+                                }
+                                if ( ! context) {
+                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
+                                }
+                                // (in -- out)
+                                if (stack.size() < 1) {
+                                    return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
+                                }
+                                valtype refHash = stacktop(-1);
+
+                                if (refHash.size() != 32) {
+                                    return set_error(serror, ScriptError::INVALID_TX_REFHASH_SIZE);
+                                }
+                                popstack(stack); // consume element
+
+                                uint256 refHashUint256(refHash);
+                                auto const& sumAmount = context->getRefHashValueSumOutputs(refHashUint256);
+                                auto bn = CScriptNum::fromInt(sumAmount / SATOSHI).value();
+                                stack.push_back(bn.getvch());
+                            } break;
+                            case OP_REFVALUESUM_UTXOS: {
+                                if ( ! context) {
+                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
+                                }
+                                // (in -- out)
+                                if (stack.size() < 1) {
+                                    return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
+                                }
+                                valtype refAssetId = stacktop(-1);
+
+                                if (refAssetId.size() != 36) {
+                                    return set_error(serror, ScriptError::INVALID_TX_REF_SIZE);
+                                }
+                                popstack(stack); // consume element
+
+                                uint288 refAssetIdUint288(refAssetId);
+                                auto const& sumAmount = context->getRefValueSumUtxos(refAssetIdUint288);
+                                auto bn = CScriptNum::fromInt(sumAmount / SATOSHI).value();
+                                stack.push_back(bn.getvch());
+                            } break;
+                            
+                            case OP_REFVALUESUM_OUTPUTS: {
+                                if ( ! context) {
+                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
+                                }
+                                // (in -- out)
+                                if (stack.size() < 1) {
+                                    return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
+                                }
+                                valtype refAssetId = stacktop(-1);
+
+                                if (refAssetId.size() != 36) {
+                                    return set_error(serror, ScriptError::INVALID_TX_REF_SIZE);
+                                }
+                                popstack(stack); // consume element
+
+                                uint288 refAssetIdUint288(refAssetId);
+                                auto const& sumAmount = context->getRefValueSumOutputs(refAssetIdUint288);
+                                auto bn = CScriptNum::fromInt(sumAmount / SATOSHI).value();
+                                stack.push_back(bn.getvch());
+                            } break; 
+                            case OP_PUSHINPUTREFSINGLETON: {
+                                if ( ! enhancedReferences) {
+                                    return set_error(serror, ScriptError::BAD_OPCODE);
+                                }
+                                if (vchPushValue.size() != 36) {
+                                    return set_error(serror, ScriptError::INVALID_TX_REF_SIZE);
+                                }
+                                // When interpreting OP_PUSHINPUTREFSINGLETON, push the value to the stack
+                                stack.push_back(vchPushValue);
+                            } break;
+
+                            case OP_STATESEPARATOR: {
+                                if ( ! enhancedReferences) {
+                                    return set_error(serror, ScriptError::BAD_OPCODE);
+                                }
+                                // When interpreting OP_STATESEPARATOR, do nothing (NOP)
+                            } break;
+
+                            case OP_REFTYPE_UTXO: {
+                                if ( ! context) {
+                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
+                                }
+                                // (in -- out)
+                                if (stack.size() < 1) {
+                                    return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
+                                }
+                                valtype refAssetId = stacktop(-1);
+
+                                if (refAssetId.size() != 36) {
+                                    return set_error(serror, ScriptError::INVALID_TX_REF_SIZE);
+                                }
+                                popstack(stack); // consume element
+                                uint288 refAssetIdUint288(refAssetId);
+                                auto const& intType = context->getRefTypeUtxo(refAssetIdUint288);
+                                auto bn = CScriptNum::fromInt(intType).value();
+                                stack.push_back(bn.getvch());
+                            } break;
+                            case OP_REFTYPE_OUTPUT: {
+                                if ( ! context) {
+                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
+                                }
+                                // (in -- out)
+                                if (stack.size() < 1) {
+                                    return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
+                                }
+                                valtype refAssetId = stacktop(-1);
+
+                                if (refAssetId.size() != 36) {
+                                    return set_error(serror, ScriptError::INVALID_TX_REF_SIZE);
+                                }
+                                popstack(stack); // consume element
+                                uint288 refAssetIdUint288(refAssetId);
+                                auto const& intType = context->getRefTypeOutput(refAssetIdUint288);
+                                auto bn = CScriptNum::fromInt(intType).value();
+                                stack.push_back(bn.getvch());
+                             } break;
+                            case OP_STATESEPARATORINDEX_UTXO: {
+                                if ( ! enhancedReferences) {
+                                    return set_error(serror, ScriptError::BAD_OPCODE);
+                                }
+                                if ( ! context) {
+                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
+                                }
+                                // (in -- out)
+                                if (stack.size() < 1) {
+                                    return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
+                                }
+                                auto const index = CScriptNum(stacktop(-1), fRequireMinimal, maxIntegerSize).getint64();
+                                popstack(stack); // consume element
+                                
+                                if (index < 0 || uint64_t(index) >= context->tx().vin().size()) {
+                                    return set_error(serror, ScriptError::INVALID_TX_INPUT_INDEX);
+                                }
+                                if (context->isLimited() && uint64_t(index) != context->inputIndex()) {
+                                    // This branch can only happen in tests or other non-consensus code
+                                    // that calls the VM without all the *other* inputs' coins.
+                                    return set_error(serror, ScriptError::LIMITED_CONTEXT_NO_SIBLING_INFO);
+                                }
+                                auto const& intType = context->getStateSeperatorIndexUtxo(index);
+                                auto bn = CScriptNum::fromInt(intType).value();
+                                stack.push_back(bn.getvch());
+                            } break;
+                            case OP_STATESEPARATORINDEX_OUTPUT: {
+                                if ( ! enhancedReferences) {
+                                    return set_error(serror, ScriptError::BAD_OPCODE);
+                                }
+                                if ( ! context) {
+                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
+                                }
+                                // (in -- out)
+                                if (stack.size() < 1) {
+                                    return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
+                                }
+                                auto const index = CScriptNum(stacktop(-1), fRequireMinimal, maxIntegerSize).getint64();
+                                popstack(stack); // consume element
+                                
+                                if (index < 0 || uint64_t(index) >= context->tx().vout().size()) {
+                                    return set_error(serror, ScriptError::INVALID_TX_OUTPUT_INDEX);
+                                }
+                                if (context->isLimited() && uint64_t(index) != context->inputIndex()) {
+                                    // This branch can only happen in tests or other non-consensus code
+                                    // that calls the VM without all the *other* inputs' coins.
+                                    return set_error(serror, ScriptError::LIMITED_CONTEXT_NO_SIBLING_INFO);
+                                }
+                                auto const& intType = context->getStateSeperatorIndexOutput(index);
+                                auto bn = CScriptNum::fromInt(intType).value();
+                                stack.push_back(bn.getvch());
+                            } break;
+                            case OP_REFOUTPUTCOUNT_UTXOS: {
+                                if ( ! context) {
+                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
+                                }
+                                // (in -- out)
+                                if (stack.size() < 1) {
+                                    return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
+                                }
+                                valtype refAssetId = stacktop(-1);
+
+                                if (refAssetId.size() != 36) {
+                                    return set_error(serror, ScriptError::INVALID_TX_REF_SIZE);
+                                }
+                                popstack(stack); // consume element
+                                uint288 refAssetIdUint288(refAssetId);
+                                auto const& intType = context->getRefOutputCountUtxos(refAssetIdUint288);
+                                auto bn = CScriptNum::fromInt(intType).value();
+                                stack.push_back(bn.getvch());
+                            } break;
+                            case OP_REFOUTPUTCOUNT_OUTPUTS: {
+                                if ( ! context) {
+                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
+                                }
+                                // (in -- out)
+                                if (stack.size() < 1) {
+                                    return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
+                                }
+                                valtype refAssetId = stacktop(-1);
+
+                                if (refAssetId.size() != 36) {
+                                    return set_error(serror, ScriptError::INVALID_TX_REF_SIZE);
+                                }
+                                popstack(stack); // consume element
+                                uint288 refAssetIdUint288(refAssetId);
+                                auto const& intType = context->getRefOutputCountOutputs(refAssetIdUint288);
+                                auto bn = CScriptNum::fromInt(intType).value();
+                                stack.push_back(bn.getvch());
+                            } break;
+                            case OP_REFOUTPUTCOUNTZEROVALUED_UTXOS: {
+                                if ( ! context) {
+                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
+                                }
+                                // (in -- out)
+                                if (stack.size() < 1) {
+                                    return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
+                                }
+                                valtype refAssetId = stacktop(-1);
+
+                                if (refAssetId.size() != 36) {
+                                    return set_error(serror, ScriptError::INVALID_TX_REF_SIZE);
+                                }
+                                popstack(stack); // consume element
+                                uint288 refAssetIdUint288(refAssetId);
+                                auto const& intType = context->getRefOutputZeroValuedCountUtxos(refAssetIdUint288);
+                                auto bn = CScriptNum::fromInt(intType).value();
+                                stack.push_back(bn.getvch());
+                            } break;
+                            case OP_REFOUTPUTCOUNTZEROVALUED_OUTPUTS: {
+                                if ( ! context) {
+                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
+                                }
+                                // (in -- out)
+                                if (stack.size() < 1) {
+                                    return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
+                                }
+                                valtype refAssetId = stacktop(-1);
+
+                                if (refAssetId.size() != 36) {
+                                    return set_error(serror, ScriptError::INVALID_TX_REF_SIZE);
+                                }
+                                popstack(stack); // consume element
+                                uint288 refAssetIdUint288(refAssetId);
+                                auto const& intType = context->getRefOutputZeroValuedCountOutputs(refAssetIdUint288);
+                                auto bn = CScriptNum::fromInt(intType).value();
+                                stack.push_back(bn.getvch());
+                            } break;
+                            case OP_REFDATASUMMARY_UTXO: {
+                                if ( ! context) {
+                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
+                                }
+                                // (in -- out)
+                                if (stack.size() < 1) {
+                                    return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
+                                }
+                                auto const index = CScriptNum(stacktop(-1), fRequireMinimal, maxIntegerSize).getint64();
+                                popstack(stack); // consume element
+                                
+                                if (index < 0 || uint64_t(index) >= context->tx().vin().size()) {
+                                    return set_error(serror, ScriptError::INVALID_TX_INPUT_INDEX);
+                                }
+                                if (context->isLimited() && uint64_t(index) != context->inputIndex()) {
+                                    // This branch can only happen in tests or other non-consensus code
+                                    // that calls the VM without all the *other* inputs' coins.
+                                    return set_error(serror, ScriptError::LIMITED_CONTEXT_NO_SIBLING_INFO);
+                                }
+                                std::vector<uint8_t> concatVec;
+                                auto const hasAtLeastOneValidRef = context->getRefsPerUtxo(index, concatVec);
+                                if (hasAtLeastOneValidRef) {
+                                    stack.emplace_back(concatVec.begin(), concatVec.end());
+                                } else {
+                                    auto bn = CScriptNum::fromInt(0).value();
+                                    stack.push_back(bn.getvch());
+                                }
+                            } break;
+                            case OP_REFDATASUMMARY_OUTPUT: {
+                                if ( ! context) {
+                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
+                                }
+                                // (in -- out)
+                                if (stack.size() < 1) {
+                                    return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
+                                }
+                                auto const index = CScriptNum(stacktop(-1), fRequireMinimal, maxIntegerSize).getint64();
+                                popstack(stack); // consume element
+                                
+                                if (index < 0 || uint64_t(index) >= context->tx().vout().size()) {
+                                    return set_error(serror, ScriptError::INVALID_TX_OUTPUT_INDEX);
+                                }
+    
+                                std::vector<uint8_t> concatVec;
+                                auto const hasAtLeastOneValidRef = context->getRefsPerOutput(index, concatVec);
+                                if (hasAtLeastOneValidRef) {
+                                    stack.emplace_back(concatVec.begin(), concatVec.end());
+                                } else {
+                                    auto bn = CScriptNum::fromInt(0).value();
+                                    stack.push_back(bn.getvch());
+                                }
+                            } break;
+                            case OP_CODESCRIPTHASHVALUESUM_UTXOS: {
+                                if ( ! context) {
+                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
+                                }
+                                // (in -- out)
+                                if (stack.size() < 1) {
+                                    return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
+                                }
+                                valtype codeScriptHash = stacktop(-1);
+
+                                if (codeScriptHash.size() != 32) {
+                                    return set_error(serror, ScriptError::INVALID_TX_HASH_SIZE);
+                                }
+                                popstack(stack); // consume element
+                                uint256 codeScriptHashUint256(codeScriptHash);
+                                auto const& sumAmount = context->getCodeScriptHashValueSumUtxos(codeScriptHashUint256);
+                                auto bn = CScriptNum::fromInt(sumAmount / SATOSHI).value();
+                                stack.push_back(bn.getvch());
+                            } break;
+                            case OP_CODESCRIPTHASHVALUESUM_OUTPUTS: {
+                                if ( ! context) {
+                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
+                                }
+                                // (in -- out)
+                                if (stack.size() < 1) {
+                                    return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
+                                }
+                                valtype codeScriptHash = stacktop(-1);
+
+                                if (codeScriptHash.size() != 32) {
+                                    return set_error(serror, ScriptError::INVALID_TX_HASH_SIZE);
+                                }
+                                popstack(stack); // consume element
+                                uint256 codeScriptHashUint256(codeScriptHash);
+                                auto const& sumAmount = context->getCodeScriptHashValueSumOutputs(codeScriptHashUint256);
+                                auto bn = CScriptNum::fromInt(sumAmount / SATOSHI).value();
+                                stack.push_back(bn.getvch());
+                            } break;
+                            case OP_CODESCRIPTHASHOUTPUTCOUNT_UTXOS: {
+                                if ( ! context) {
+                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
+                                }
+                                // (in -- out)
+                                if (stack.size() < 1) {
+                                    return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
+                                }
+                                valtype codeScriptHash = stacktop(-1);
+
+                                if (codeScriptHash.size() != 32) {
+                                    return set_error(serror, ScriptError::INVALID_TX_HASH_SIZE);
+                                }
+                                popstack(stack); // consume element
+                                uint256 codeScriptHashUint256(codeScriptHash);
+                                auto const& counter = context->getCodeScriptHashOutputCountUtxos(codeScriptHashUint256);
+                                auto bn = CScriptNum::fromInt(counter).value();
+                                stack.push_back(bn.getvch());
+                            } break;
+                            case OP_CODESCRIPTHASHOUTPUTCOUNT_OUTPUTS: {
+                                if ( ! context) {
+                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
+                                }
+                                // (in -- out)
+                                if (stack.size() < 1) {
+                                    return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
+                                }
+                                valtype codeScriptHash = stacktop(-1);
+
+                                if (codeScriptHash.size() != 32) {
+                                    return set_error(serror, ScriptError::INVALID_TX_HASH_SIZE);
+                                }
+                                popstack(stack); // consume element
+                                uint256 codeScriptHashUint256(codeScriptHash);
+                                auto const& counter = context->getCodeScriptHashOutputCountOutputs(codeScriptHashUint256);
+                                auto bn = CScriptNum::fromInt(counter).value();
+                                stack.push_back(bn.getvch());
+                            } break;
+                            case OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_UTXOS: {
+                                if ( ! context) {
+                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
+                                }
+                                // (in -- out)
+                                if (stack.size() < 1) {
+                                    return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
+                                }
+                                valtype codeScriptHash = stacktop(-1);
+
+                                if (codeScriptHash.size() != 32) {
+                                    return set_error(serror, ScriptError::INVALID_TX_HASH_SIZE);
+                                }
+                                popstack(stack); // consume element
+                                uint256 codeScriptHashUint256(codeScriptHash);
+                                auto const& counter = context->getCodeScriptHashOutputZeroValuedCountUtxos(codeScriptHashUint256);
+                                auto bn = CScriptNum::fromInt(counter).value();
+                                stack.push_back(bn.getvch());
+                            } break;
+                            case OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_OUTPUTS: {
+                                if ( ! context) {
+                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
+                                }
+                                // (in -- out)
+                                if (stack.size() < 1) {
+                                    return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
+                                }
+                                valtype codeScriptHash = stacktop(-1);
+
+                                if (codeScriptHash.size() != 32) {
+                                    return set_error(serror, ScriptError::INVALID_TX_HASH_SIZE);
+                                }
+                                popstack(stack); // consume element
+                                uint256 codeScriptHashUint256(codeScriptHash);
+                                auto const& counter = context->getCodeScriptHashOutputZeroValuedCountOutputs(codeScriptHashUint256);
+                                auto bn = CScriptNum::fromInt(counter).value();
+                                stack.push_back(bn.getvch());
+                            } break;
+                            case OP_CODESCRIPTBYTECODE_UTXO: {
+                                if ( ! context) {
+                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
+                                }
+                                // (in -- out)
+                                if (stack.size() < 1) {
+                                    return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
+                                }
+                                auto const index = CScriptNum(stacktop(-1), fRequireMinimal, maxIntegerSize).getint64();
+                                popstack(stack); // consume element
+                                if (index < 0 || uint64_t(index) >= context->tx().vin().size()) {
+                                    return set_error(serror, ScriptError::INVALID_TX_INPUT_INDEX);
+                                }
+                                if (context->isLimited() && uint64_t(index) != context->inputIndex()) {
+                                    // This branch can only happen in tests or other non-consensus code
+                                    // that calls the VM without all the *other* inputs' coins.
+                                    return set_error(serror, ScriptError::LIMITED_CONTEXT_NO_SIBLING_INFO);
+                                }
+ 
+                                auto const& utxoScript = context->coinScriptPubKey(index);
+                                if (utxoScript.size() > MAX_SCRIPT_ELEMENT_SIZE) {
+                                    return set_error(serror, ScriptError::PUSH_SIZE);
+                                }
+
+                                auto const stateSeperatorIndex = context->getStateSeparatorByteIndexUtxo(index);
+                                stack.emplace_back(utxoScript.begin() + stateSeperatorIndex, utxoScript.end());
+                            } break;
+                            case OP_CODESCRIPTBYTECODE_OUTPUT: {
+                                if ( ! context) {
+                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
+                                }
+                                // (in -- out)
+                                if (stack.size() < 1) {
+                                    return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
+                                }
+                                auto const index = CScriptNum(stacktop(-1), fRequireMinimal, maxIntegerSize).getint64();
+                                popstack(stack); // consume element
+                                if (index < 0 || uint64_t(index) >= context->tx().vout().size()) {
+                                    return set_error(serror, ScriptError::INVALID_TX_OUTPUT_INDEX);
+                                }
+                                auto const& outputScript = context->tx().vout()[index].scriptPubKey;
+                                if (outputScript.size() > MAX_SCRIPT_ELEMENT_SIZE) {
+                                    return set_error(serror, ScriptError::PUSH_SIZE);
+                                }
+                                auto const stateSeperatorIndex = context->getStateSeparatorByteIndexOutput(index);
+                                stack.emplace_back(outputScript.begin() + stateSeperatorIndex, outputScript.end());
+                            } break;
+ 
+                            case OP_STATESCRIPTBYTECODE_UTXO: {
+
+                                 if ( ! nativeIntrospection) {
+                                    return set_error(serror, ScriptError::BAD_OPCODE);
+                                }
+                                if ( ! context) {
+                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
+                                }
+
+                                // (in -- out)
+                                if (stack.size() < 1) {
+                                    return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
+                                }
+                                auto const index = CScriptNum(stacktop(-1), fRequireMinimal, maxIntegerSize).getint64();
+                                popstack(stack); // consume element
+
+                                if (index < 0 || uint64_t(index) >= context->tx().vin().size()) {
+                                    return set_error(serror, ScriptError::INVALID_TX_INPUT_INDEX);
+                                }
+                                if (context->isLimited() && uint64_t(index) != context->inputIndex()) {
+                                    // This branch can only happen in tests or other non-consensus code
+                                    // that calls the VM without all the *other* inputs' coins.
+                                    return set_error(serror, ScriptError::LIMITED_CONTEXT_NO_SIBLING_INFO);
+                                }
+                                auto const& utxoScript = context->coinScriptPubKey(index);
+                                if (utxoScript.size() > MAX_SCRIPT_ELEMENT_SIZE) {
+                                    return set_error(serror, ScriptError::PUSH_SIZE);
+                                }
+                                auto const stateSeperatorIndex = context->getStateSeparatorByteIndexUtxo(index);
+
+                                if (stateSeperatorIndex > 0) {
+                                    stack.emplace_back(utxoScript.begin(), utxoScript.begin() + stateSeperatorIndex - 1); // Do not include the state seperator itself
+                                } else {
+                                    auto const bn = CScriptNum::fromIntUnchecked(0);
+                                    stack.push_back(bn.getvch());   
+                                }
+                               
+                             
+                            } break;
+
+                            case OP_STATESCRIPTBYTECODE_OUTPUT: {
+
+                                 if ( ! nativeIntrospection) {
+                                    return set_error(serror, ScriptError::BAD_OPCODE);
+                                }
+                                if ( ! context) {
+                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
+                                }
+
+                                // (in -- out)
+                                if (stack.size() < 1) {
+                                    return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
+                                }
+                                auto const index = CScriptNum(stacktop(-1), fRequireMinimal, maxIntegerSize).getint64();
+                                popstack(stack); // consume element
+
+                                if (index < 0 || uint64_t(index) >= context->tx().vout().size()) {
+                                    return set_error(serror, ScriptError::INVALID_TX_OUTPUT_INDEX);
+                                }
+                                auto const& outputScript = context->tx().vout()[index].scriptPubKey;
+                                if (outputScript.size() > MAX_SCRIPT_ELEMENT_SIZE) {
+                                    return set_error(serror, ScriptError::PUSH_SIZE);
+                                }
+                                auto const stateSeperatorIndex = context->getStateSeparatorByteIndexOutput(index);
+                                if (stateSeperatorIndex > 0) {
+                                    stack.emplace_back(outputScript.begin(), outputScript.begin() + stateSeperatorIndex - 1); // Do not include the state seperator itself
+                                } else {
+                                    auto const bn = CScriptNum::fromIntUnchecked(0);
+                                    stack.push_back(bn.getvch());
+                                }
+                            } break;
+
                             default: {
                                 assert(!"invalid push opcode");
                                 break;
                             }
                         }
                     } break; // end of RADIANT based induction and introspection op codes
+
 
                     default:
                         return set_error(serror, ScriptError::BAD_OPCODE);
@@ -1964,7 +2559,7 @@ uint256 SignatureHash(const CScript &scriptCode, const T &txTo,
 
             CHashWriter hashOutputHashesSs(SER_GETHASH, 0);
             uint256 zeroRefHash(uint256S("0000000000000000000000000000000000000000000000000000000000000000"));
-            writeOutputVector(hashOutputHashesSs, txTo.vout[nIn].scriptPubKey, txTo.vout[nIn].nValue, zeroRefHash);
+            writeOutputDataSummaryVector(hashOutputHashesSs, txTo.vout[nIn].scriptPubKey, txTo.vout[nIn].nValue, zeroRefHash);
             hashOutputHashes = hashOutputHashesSs.GetHash();
         }
 
@@ -2160,7 +2755,6 @@ bool VerifyScript(const CScript &scriptSig, const CScript &scriptPubKey, uint32_
     }
 
     if ((flags & SCRIPT_VERIFY_SIGPUSHONLY) != 0 && !scriptSig.IsPushOnly()) {
-        std::cout << "Failed to due to SCRIPT_VERIFY_SIGPUSHONLY " << HexStr(scriptSig) << " txid " << context->tx().GetId().GetHex() << " !IsPushOnly: " << !scriptSig.IsPushOnly() << std::endl;
         return set_error(serror, ScriptError::SIG_PUSHONLY);
     }
     

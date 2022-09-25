@@ -122,7 +122,7 @@ Once the source code is ready the build steps are below:
     cd ..
     mkdir build
     cd build
-    cmake -GNinja .. -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/Win64.cmake -DENABLE_MAN=OFF -DBUILD_BITCOIN_SEEDER=OFF # seeder not supported in Windows yet
+    cmake -GNinja .. -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/Win64.cmake -DENABLE_MAN=OFF -DBUILD_RADIANT_SEEDER=OFF # seeder not supported in Windows yet
     ninja
     ninja package #to build the install-package
 ```
@@ -135,7 +135,7 @@ as they appear in the release `.zip` archive. This can be done in the following
 way. This will install to `c:\workspace\radiant-node`, for example:
 
 ```bash
-    cmake -GNinja .. -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/Win64.cmake -DENABLE_MAN=OFF -DBUILD_BITCOIN_SEEDER=OFF -DCMAKE_INSTALL_PREFIX=/mnt/c/workspace/radiant-node
+    cmake -GNinja .. -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/Win64.cmake -DENABLE_MAN=OFF -DBUILD_RADIANT_SEEDER=OFF -DCMAKE_INSTALL_PREFIX=/mnt/c/workspace/radiant-node
     sudo ninja install
 ```
 
@@ -235,7 +235,7 @@ Once the source code is ready the build steps are below:
     cd ..
     mkdir build
     cd build
-    cmake -GNinja .. -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/Win64.cmake -DENABLE_MAN=OFF -DBUILD_BITCOIN_SEEDER=OFF # seeder not supported in Windows yet
+    cmake -GNinja .. -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/Win64.cmake -DENABLE_MAN=OFF -DBUILD_RADIANT_SEEDER=OFF # seeder not supported in Windows yet
     ninja
 ```
 
@@ -264,7 +264,7 @@ as they appear in the release `.zip` archive. This can be done in the following
 way. This will install to `c:\workspace\radiant-node`, for example:
 
 ```bash
-    cmake -GNinja .. -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/Win64.cmake -DENABLE_MAN=OFF -DBUILD_BITCOIN_SEEDER=OFF -DCMAKE_INSTALL_PREFIX=/mnt/c/workspace/radiant-node
+    cmake -GNinja .. -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/Win64.cmake -DENABLE_MAN=OFF -DBUILD_RADIANT_SEEDER=OFF -DCMAKE_INSTALL_PREFIX=/mnt/c/workspace/radiant-node
     sudo ninja install
 ```
 

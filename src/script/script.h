@@ -189,14 +189,15 @@ enum opcodetype {
     // additional byte string operations
     OP_REVERSEBYTES = 0xbc,
 
-    // Available codepoints
-    // 0xbd,
-    // 0xbe,
-    // 0xbf,
+    // OP_STATESEPARATOR can only appear up to once in an output. The purpose is to allow a contract developer to split an output script
+    // into two state and code sections. By defining this OP code, the second half (or "suffix script") can be summarized as a single hash
+    // called a "codeScripthash". The first half can be summarized with a "stateScripthash". This is especially useful for the OP code OP_OUTPUTCODESUMMARY which enables a contract to verify the bytecode (logic) of a contract related to each unique reference.
+    // A requirement is that all op codes preceding the `OP_STATESEPARATOR` must strictly be data or reference pushes.
+    OP_STATESEPARATOR = 0xbd,
+    OP_STATESEPARATORINDEX_UTXO = 0xbe,
+    OP_STATESEPARATORINDEX_OUTPUT = 0xbf,
 
     // Native Introspection opcodes
-    // These are disabled in Radiant since we do not need them
-    // However they can be enabled if required
     OP_INPUTINDEX = 0xc0,
     OP_ACTIVEBYTECODE = 0xc1,
     OP_TXVERSION = 0xc2,
@@ -217,22 +218,39 @@ enum opcodetype {
     OP_SHA512_256 = 0xce,    
     OP_HASH512_256 = 0xcf,
 
-    // OP_PUSHINPUTREF is a stack push operation that can only succeed if at least one of the inputs
-    // has the same outpoint (36 bytes) as being indicated with the push, OR:
-    // at least one of the inputs' output script already contains OP_PUSHINPUTREF of the indicated outpoint.
     OP_PUSHINPUTREF = 0xd0,
-    // OP_REQUIREINPUTREF requires the same rules as OP_PUSHINPUTREF, but does not carry on the reference to the output it appears
     OP_REQUIREINPUTREF = 0xd1,
-    // OP_DISALLOWPUSHINPUTREF prevents a specific reference from being used anywhere in the output
     OP_DISALLOWPUSHINPUTREF = 0xd2,
-    // OP_DISALLOWPUSHINPUTREFSIBLING prevents a specific reference from being used anywhere in another output
     OP_DISALLOWPUSHINPUTREFSIBLING = 0xd3,
-    // OP_UTXODATASUMMARY takes an index and then pushes the input's locking script information about the pushrefs and value of that output
-    OP_UTXODATASUMMARY = 0xd4,
-    // OP_UTXOREFVALUESUM takes a 32 byte hash of the refs to have their values summed and pushed back onto the stack
-    // This would be used to check the total satoshi value of the color input
-    OP_UTXOREFVALUESUM = 0xd5,
-    
+
+    OP_REFHASHDATASUMMARY_UTXO = 0xd4,
+    OP_REFHASHVALUESUM_UTXOS = 0xd5,
+    OP_REFHASHDATASUMMARY_OUTPUT = 0xd6,
+    OP_REFHASHVALUESUM_OUTPUTS = 0xd7,
+
+    OP_PUSHINPUTREFSINGLETON = 0xd8,
+    OP_REFTYPE_UTXO = 0xd9, 
+    OP_REFTYPE_OUTPUT = 0xda, 
+
+    OP_REFVALUESUM_UTXOS = 0xdb,
+    OP_REFVALUESUM_OUTPUTS = 0xdc,
+    OP_REFOUTPUTCOUNT_UTXOS = 0xdd,
+    OP_REFOUTPUTCOUNT_OUTPUTS = 0xde,
+    OP_REFOUTPUTCOUNTZEROVALUED_UTXOS = 0xdf,
+    OP_REFOUTPUTCOUNTZEROVALUED_OUTPUTS = 0xe0,
+    OP_REFDATASUMMARY_UTXO = 0xe1,
+    OP_REFDATASUMMARY_OUTPUT = 0xe2,
+    OP_CODESCRIPTHASHVALUESUM_UTXOS = 0xe3,
+    OP_CODESCRIPTHASHVALUESUM_OUTPUTS = 0xe4,
+    OP_CODESCRIPTHASHOUTPUTCOUNT_UTXOS = 0xe5,
+    OP_CODESCRIPTHASHOUTPUTCOUNT_OUTPUTS = 0xe6,
+    OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_UTXOS = 0xe7,
+    OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_OUTPUTS = 0xe8,
+    OP_CODESCRIPTBYTECODE_UTXO = 0xe9,
+    OP_CODESCRIPTBYTECODE_OUTPUT = 0xea,
+    OP_STATESCRIPTBYTECODE_UTXO = 0xeb,
+    OP_STATESCRIPTBYTECODE_OUTPUT = 0xec,
+
     // The first op_code value after all defined opcodes
     FIRST_UNDEFINED_OP_VALUE,
 
@@ -816,13 +834,17 @@ public:
         const_iterator pc, 
         std::set<uint288> &pushRefs,
         std::set<uint288> &requireRefs,
-        std::set<uint288> &disallowedSiblingsRefSet
+        std::set<uint288> &disallowedSiblingsRefSet,
+        std::set<uint288> &singletonRefSet,
+        uint32_t &stateSeperatorByteIndex
     ) const;
     
     bool GetPushRefs(
         std::set<uint288> &pushRefs,
         std::set<uint288> &requireRefs,
-        std::set<uint288> &disallowedSiblingsRefSet
+        std::set<uint288> &disallowedSiblingsRefSet,
+        std::set<uint288> &singletonRefSet,
+        uint32_t &stateSeperatorByteIndex
     ) const;
 };
 

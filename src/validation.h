@@ -68,7 +68,7 @@ static constexpr Amount DEFAULT_MIN_RELAY_TX_FEE_PER_KB(1000000 * SATOSHI);
 /** Default for -excessutxocharge for transactions transactions */
 static constexpr Amount DEFAULT_UTXO_FEE = Amount::zero();
 //! -maxtxfee default
-static constexpr Amount DEFAULT_TRANSACTION_MAXFEE(100 * COIN);
+static constexpr Amount DEFAULT_TRANSACTION_MAXFEE(2000 * COIN);
 //! Discourage users to set fees higher than this amount (in satoshis) per kB
 static constexpr Amount HIGH_TX_FEE_PER_KB(COIN / 100);
 /**
@@ -79,7 +79,7 @@ static constexpr Amount HIGH_MAX_TX_FEE(100 * HIGH_TX_FEE_PER_KB);
  * Default for -mempoolexpiry, expiration time for mempool transactions in
  * hours.
  */
-static constexpr unsigned int DEFAULT_MEMPOOL_EXPIRY = 16;
+static constexpr unsigned int DEFAULT_MEMPOOL_EXPIRY = 8;
 /**
  *  Default for -mempoolexpiryperiod, execute the mempool transaction expiration
  *  this often (in hours).
@@ -885,12 +885,21 @@ class ReferenceParser {
      * @param pushRefSet The found push refs
      * @param requireRefSet The found require refs
      * @param disallowSiblingsRefSet The found disallowed sibling refs
+     * @param singletonRefSet The found singleton push refs
      * @return true 
      * @return false 
      */
-    static bool buildRefSetFromScript(const CScript& script, std::set<uint288> &pushRefSet, std::set<uint288> &requireRefSet, std::set<uint288> &disallowSiblingsRefSet) {
-        return script.GetPushRefs(pushRefSet, requireRefSet, disallowSiblingsRefSet);
+    static bool buildRefSetFromScript(
+        const CScript& script, 
+        std::set<uint288> &pushRefSet, 
+        std::set<uint288> &requireRefSet, 
+        std::set<uint288> &disallowSiblingsRefSet,
+        std::set<uint288> &singletonRefSet,
+        uint32_t &stateSeperatorByteIndex
+    ) {
+        return script.GetPushRefs(pushRefSet, requireRefSet, disallowSiblingsRefSet, singletonRefSet, stateSeperatorByteIndex);
     }
+
     /**
      * @brief Validates that the push and require refs are present in the inputs for the outputs
      * 
@@ -915,7 +924,6 @@ class ReferenceParser {
         }
         return true;
     }
-
     /**
      * @brief Validate that no disallowed reference is present in a sibling output.
      * 
@@ -978,13 +986,16 @@ class ReferenceParser {
         }
 
         std::set<uint288> outputPushRefSet;
+        std::set<uint288> outputSingletonRefSet;
         std::set<uint288> outputRequireRefSet;
         std::map<uint288, size_t> onlyAllowedRefMap;  // Store the only allowed references in a map from ref->outputIndex (generate from OP_DISALLOWPUSHREFSIBLING)
         std::vector<std::set<uint288>> outputVec;
         for (size_t o = 0; o < tx.vout.size(); o++) {
             std::set<uint288> outputDisallowSiblingRefSet;
             std::set<uint288> outputPushRefSetLocal;
-            if (!ReferenceParser::buildRefSetFromScript(tx.vout[o].scriptPubKey, outputPushRefSetLocal, outputRequireRefSet, outputDisallowSiblingRefSet)) {
+            std::set<uint288> outputSingletonRefSetLocal;
+            uint32_t stateSeperatorByteIndex;
+            if (!ReferenceParser::buildRefSetFromScript(tx.vout[o].scriptPubKey, outputPushRefSetLocal, outputRequireRefSet, outputDisallowSiblingRefSet, outputSingletonRefSetLocal, stateSeperatorByteIndex)) {
                 return false;
             }
             // The following section is for the maintenance of OP_DISALLOWPUSHREFSIBLING data to be used to check further below
@@ -1008,23 +1019,29 @@ class ReferenceParser {
             // Finish up....
             // Merge in the local outputPushRefSetLocal to the outputPushRefSet
             outputPushRefSet.insert(outputPushRefSetLocal.begin(), outputPushRefSetLocal.end());
+            // Merge in the local outputSingletonRefSetLocal to outputSingletonRefSet
+            outputSingletonRefSet.insert(outputSingletonRefSetLocal.begin(), outputSingletonRefSetLocal.end());
         }
 
         // If there are no push and require refs, then this automatically succeeds
-        if (!outputPushRefSet.size() && !outputRequireRefSet.size()) {
+        if (!outputPushRefSet.size() && !outputRequireRefSet.size() && !outputSingletonRefSet.size()) {
             return true;
         }
 
         std::set<uint288> inputPushRefSet;
+        std::set<uint288> inputSingletonRefSet;
         std::set<uint288> inputRequireRefSet;           // Not used, but we save it anyways
         std::set<uint288> inputDisallowSiblingRefSet;   // Not used, but we save it anyways
+        uint32_t stateSeperatorByteIndex;                // Not used
         for (uint32_t i = 0; i < tx.vin.size(); i++) {
             // Add the parent input outpoint 
             COutPoint prevOutpoint(tx.vin[i].prevout.GetTxId(), tx.vin[i].prevout.GetN());
             inputPushRefSet.insert(Converters::fromOutpoint(prevOutpoint));
+            // Ensure to add it to the singleton set too
+            inputSingletonRefSet.insert(Converters::fromOutpoint(prevOutpoint));
             // Scan the parent input output's script
             auto output = view.GetOutputFor(tx.vin[i]);
-            if (!ReferenceParser::buildRefSetFromScript(output.scriptPubKey, inputPushRefSet, inputRequireRefSet, inputDisallowSiblingRefSet)) {
+            if (!ReferenceParser::buildRefSetFromScript(output.scriptPubKey, inputPushRefSet, inputRequireRefSet, inputDisallowSiblingRefSet, inputSingletonRefSet, stateSeperatorByteIndex)) {
                 return false;
             }
         }
@@ -1033,9 +1050,10 @@ class ReferenceParser {
         // Verify that every require ref in an output is found in the input script (or matches the input outpoint being spent)
         bool requireRefSatisfied = ReferenceParser::validatePushRefRule(inputPushRefSet, outputRequireRefSet);
         // Verify that any disallowed sibling references are not found in a sibling output
-        // Practically this means we can have singleton like outputs and ensure a reference is only passed on in one output even when using SIGHASH_SINGLE
         bool disallowSiblingRefSatisfied = ReferenceParser::validateDisallowedSiblingsRefRule(outputVec, onlyAllowedRefMap);
-        return pushRefSatisfied && requireRefSatisfied && disallowSiblingRefSatisfied;
+        // Verify that every singleton ref in an output is found in the input script (or matches the input outpoint being spent)
+        bool singletonRefSatisfied = ReferenceParser::validatePushRefRule(inputSingletonRefSet, outputSingletonRefSet);
+        return pushRefSatisfied && requireRefSatisfied && disallowSiblingRefSatisfied && singletonRefSatisfied;
     }
 
 };

@@ -25,9 +25,6 @@ button on the Github page).
 In addition to the project repository, we have various other channels where
 project contributors can be reached.
 
-Our main chat is at <https://t.me/radiantblockchain>, where we conduct
-our main development and interactive support for users of our node.
-
 Other social media resources such as our Telegram and Twitter are linked
 from the project website at
 

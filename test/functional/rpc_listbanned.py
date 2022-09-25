@@ -14,15 +14,15 @@ from test_framework.util import assert_equal
 TESTSDIR = os.path.dirname(os.path.realpath(__file__))
 
 # Ban list and JSON file were generated with:
-# bitcoind -regtest -debug=net
-# bitcoin-cli -regtest setmocktime 1643252767
-# bitcoin-cli -regtest setban 28.0.0.0/8 add
-# bitcoin-cli -regtest setban 188.162.251.56/32 add
-# bitcoin-cli -regtest setban 189.7.128.0/24 add
-# bitcoin-cli -regtest setban 9908:8554:2487:5277::/64 add
-# bitcoin-cli -regtest setban de41:b9a8:b178:52f:f639:e9bf:4ae3:dca8 add
-# bitcoin-cli -regtest listbanned
-# bitcoin-cli -regtest stop
+# radiantd -regtest -debug=net
+# radiant-cli -regtest setmocktime 1643252767
+# radiant-cli -regtest setban 28.0.0.0/8 add
+# radiant-cli -regtest setban 188.162.251.56/32 add
+# radiant-cli -regtest setban 189.7.128.0/24 add
+# radiant-cli -regtest setban 9908:8554:2487:5277::/64 add
+# radiant-cli -regtest setban de41:b9a8:b178:52f:f639:e9bf:4ae3:dca8 add
+# radiant-cli -regtest listbanned
+# radiant-cli -regtest stop
 
 
 class DeserializeBanlistTest(BitcoinTestFramework):

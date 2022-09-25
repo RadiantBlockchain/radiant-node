@@ -97,6 +97,7 @@ public:
         consensus.BIP65Height = 100;
         consensus.BIP66Height = 101;
         consensus.CSVHeight = 102;
+        consensus.ERHeight = 62000;
         consensus.powLimit = uint256S(
             "00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         // one week
@@ -182,8 +183,12 @@ public:
         vSeeds.emplace_back("node.radiantmideast.org");
         vSeeds.emplace_back("node6.radiant.ovh");
         vSeeds.emplace_back("node.radiant.ovh");
-
-    
+        vSeeds.emplace_back("node.radiantlayerone.com");
+        vSeeds.emplace_back("node.radiantnode.org");
+        vSeeds.emplace_back("node.radiantminer.com");
+        vSeeds.emplace_back("node.radiantchain.org");
+        vSeeds.emplace_back("node.radiantone.org");
+        
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<uint8_t>(1, 0);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<uint8_t>(1, 5);
         base58Prefixes[SECRET_KEY] = std::vector<uint8_t>(1, 128);
@@ -233,6 +238,7 @@ public:
         consensus.BIP65Height = 100;
         consensus.BIP66Height = 101;
         consensus.CSVHeight = 102;
+        consensus.ERHeight = 10600;
         consensus.powLimit = uint256S(
             "00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         // one week
@@ -340,6 +346,7 @@ public:
         consensus.BIP65Height = 3;
         consensus.BIP66Height = 4;
         consensus.CSVHeight = 5;
+        consensus.ERHeight = 10;
         consensus.powLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         // one weeks
         consensus.nPowTargetTimespan = 7 * 24 * 60 * 60;
@@ -437,6 +444,7 @@ public:
         consensus.BIP65Height = 3;
         consensus.BIP66Height = 4;
         consensus.CSVHeight = 5;
+        consensus.ERHeight = 10;
         consensus.powLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         // one weeks
         consensus.nPowTargetTimespan = 7 * 24 * 60 * 60;
@@ -536,6 +544,7 @@ public:
         consensus.BIP66Height = 1251;
         // CSV activated on regtest (Used in rpc activation tests)
         consensus.CSVHeight = 576;
+        consensus.ERHeight = 100;
         consensus.powLimit = uint256S(
             "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         // one weeks
