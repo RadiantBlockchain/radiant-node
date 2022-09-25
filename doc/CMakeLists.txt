@@ -122,7 +122,7 @@ if(ENABLE_MAN AND BUILD_RADIANT_DAEMON)
 			COMPONENT radiantd
 		)
 	endif()
-	if(BUILD_BITCOIN_SEEDER)
+	if(BUILD_RADIANT_SEEDER)
 		add_custom_command(
 			OUTPUT man/bitcoin-seeder.1
 			DEPENDS bitcoin-seeder

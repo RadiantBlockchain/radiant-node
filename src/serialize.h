@@ -1150,7 +1150,7 @@ public:
     }
     template <unsigned int N, typename T, typename S, typename D>
     explicit CFlatData(const prevector<N, T, S, D> &v)
-    {
+    { 
         pbegin = (char*)v.data();
         pend = (char*)(v.data() + v.size());
     }

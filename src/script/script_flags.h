@@ -109,4 +109,7 @@ enum {
 
     // Native Introspection opcodes.
     SCRIPT_NATIVE_INTROSPECTION = (1U << 25),
+
+    // Added enhanced OP codes for reference support
+    SCRIPT_ENHANCED_REFERENCES = (1U << 26),
 };

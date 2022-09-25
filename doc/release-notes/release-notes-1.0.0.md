@@ -27,8 +27,8 @@ The initial release of Radiant Node 1.0.0 is recommended for use by everyone, im
 - Induction Proofs via new OP Codes:
   - OP_PUSHINPUTREF
   - OP_REQUIREREF
-  - OP_DISALLOWPUSHREF
-  - OP_DISALLOWPUSHREFSIBLINGOUTPUT
+  - OP_DISALLOWPUSHINPUTREF
+  - OP_DISALLOWPUSHINPUTREFSIBLING
 
 - TxId V3
 

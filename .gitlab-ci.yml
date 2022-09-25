@@ -611,7 +611,7 @@ build-win-64:
         - cd build
         - cmake -GNinja .. -DENABLE_MAN=OFF
                            -DBUILD_RADIANT_QT=OFF
-                           -DBUILD_BITCOIN_SEEDER=OFF
+                           -DBUILD_RADIANT_SEEDER=OFF
                            -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/Win64.cmake
         - ninja
     dependencies:
@@ -638,7 +638,7 @@ build-arm:
         - cd build
         - cmake -GNinja .. -DENABLE_MAN=OFF
                            -DBUILD_RADIANT_QT=OFF
-                           -DBUILD_BITCOIN_SEEDER=OFF
+                           -DBUILD_RADIANT_SEEDER=OFF
                            -DENABLE_GLIBC_BACK_COMPAT=ON
                            -DENABLE_STATIC_LIBSTDCXX=ON
                            -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/LinuxARM.cmake

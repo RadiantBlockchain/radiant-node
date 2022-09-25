@@ -111,26 +111,26 @@ Similar to `OP_DISALLOWPUSHINPUTREF`, disallow specific outputs in any sibling o
 <center>Diagram 8. OP_DISALLOWPUSHINPUTREFSIBLING: Disallow usage of a specific reference in all other outputs than the one in which this instruction appears.</center>
 <br/>
 
-### OP_UTXODATASUMMARY: Push UTXO data summary
+### OP_REFHASHDATASUMMARY_UTXO: Push UTXO data summary
 
 Provides a summary of the contents of an output being spent in the current transaction. Takes the top element of the stack which is the index of the input being spent and then pushes the hash256 of the information about the UTXO being spent: `hash256(<nValue><hash256(scriptPubKey)><numRefs><hash256(sorted_list(pushInputRefs))>)`. During unlocking script evaluation, the relevant data of an UTXO is able to be accessed and incorporated into the logic. 
 
-![OP_UTXODATASUMMARY: OP_UTXODATASUMMARY: Output coloring diagram](images/a9.jpeg)
-<center>Diagram 9. OP_UTXODATASUMMARY: Output coloring diagram </center>
+![OP_REFHASHDATASUMMARY_UTXO: OP_REFHASHDATASUMMARY_UTXO: Output coloring diagram](images/a9.jpeg)
+<center>Diagram 9. OP_REFHASHDATASUMMARY_UTXO: Output coloring diagram </center>
 <br/>
 
-![OP_UTXODATASUMMARY: Push to stack the summary of an input being spent.](images/a10.jpeg)
-<center>Diagram 10. OP_UTXODATASUMMARY: Push to stack the summary of an input being spent. </center>
+![OP_REFHASHDATASUMMARY_UTXO: Push to stack the summary of an input being spent.](images/a10.jpeg)
+<center>Diagram 10. OP_REFHASHDATASUMMARY_UTXO: Push to stack the summary of an input being spent. </center>
 <br/>
 
-### OP_UTXOREFVALUESUM: Push value sum of UTXO by reference (color)
+### OP_REFHASHVALUESUM_UTXOS: Push value sum of UTXO by reference (color)
 
 This programming code accepts a hash256 of the 36 byte reference and pushes onto the stack the sum total of all of the inputs that matches that reference coloring. This is useful for saving data and for quickly assessing the total inputs and the values input to the transaction.
 
 This is very useful for building a compact fungible token accounting system as we shall see below.
 
-![OP_UTXOREFVALUESUM: Push to stack the total sum of the inputs which match a specific reference hash](images/a11.jpeg)
-<center>Diagram 11. OP_UTXOREFVALUESUM: Push to stack the total sum of the inputs which match a specific reference hash</center>
+![OP_REFHASHVALUESUM_UTXOS: Push to stack the total sum of the inputs which match a specific reference hash](images/a11.jpeg)
+<center>Diagram 11. OP_REFHASHVALUESUM_UTXOS: Push to stack the total sum of the inputs which match a specific reference hash</center>
 <br/> 
 
 ## Contract Authenticity via Induction 

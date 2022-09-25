@@ -22,7 +22,7 @@ n/a
 
 Added additional induction related introspection OP Codes to make it easier to evaluate reference groups.
 
-#### <inputIndex> OP_UTXODATASUMMARY 
+#### <inputIndex> OP_REFHASHDATASUMMARY_UTXO 
 
 Pushes the hash256 output vector being spent by an input onto the stack.
 
@@ -30,7 +30,7 @@ Pushes the hash256 output vector being spent by an input onto the stack.
 
 This allows an unlocking context to access any other input's scriptPubKey and determine what 'type' it is and all other details of that script.
 
-#### <ref hash> OP_UTXOREFVALUESUM 
+#### <ref hash> OP_REFHASHVALUESUM_UTXOS 
 
 Pushes the sum of all output values that matches the ref hash
 

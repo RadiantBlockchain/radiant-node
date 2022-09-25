@@ -52,6 +52,35 @@ native platform.
 
 ### Unix
 
+Quick Start (Build from Source)
+
+```bash
+# to build just the node, no wallet functionality, choose this:
+cmake -GNinja .. -DBUILD_RADIANT_WALLET=OFF -DBUILD_RADIANT_QT=OFF
+```
+
+```bash
+# to build the node, with wallet functionality, but without GUI, choose this:
+cmake -GNinja .. -DBUILD_RADIANT_QT=OFF
+```
+
+```bash
+# to build node and QT GUI client, choose this:
+cmake -GNinja ..
+```
+
+Next, finish the build
+
+```bash
+ninja
+```
+
+Install:
+
+```bash
+ninja install
+```
+
 Unpack the files into a directory and run:
 
 - `bin/bitcoin-qt` (GUI) or

@@ -89,8 +89,11 @@ enum class ScriptError {
     INVALID_TX_OUTPUT_INDEX,
 
     /* RADIANT specific OP codes */
+    INVALID_TX_HASH_SIZE,
     INVALID_TX_REFHASH_SIZE,
     INVALID_TX_REF_SIZE,
+    INVALID_TX_INPUT_REF_NOT_FOUND,
+    INVALID_TX_OUTPUT_REF_NOT_FOUND,
 
     /* Invalid output disallow additional refs*/
     INVALID_TX_OUTPUT_CONTAINS_DISALLOWED_PUSHREF,
