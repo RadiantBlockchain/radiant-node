@@ -288,12 +288,71 @@ const char *GetOpName(opcodetype opcode) {
             return "OP_OUTPUTVALUE";
         case OP_OUTPUTBYTECODE:
             return "OP_OUTPUTBYTECODE";
-            
         case OP_SHA512_256:
             return "OP_SHA512_256";
         case OP_HASH512_256:
             return "OP_HASH512_256";
-
+        case OP_PUSHINPUTREF:
+            return "OP_PUSHINPUTREF";
+        case OP_REQUIREINPUTREF:
+            return "OP_REQUIREINPUTREF";
+        case OP_DISALLOWPUSHINPUTREF:
+            return "OP_DISALLOWPUSHINPUTREF";
+        case OP_DISALLOWPUSHINPUTREFSIBLING:
+            return "OP_DISALLOWPUSHINPUTREFSIBLING";
+        case OP_REFHASHDATASUMMARY_UTXO:
+            return "OP_REFHASHDATASUMMARY_UTXO";
+        case OP_REFHASHVALUESUM_UTXOS:
+            return "OP_REFHASHVALUESUM_UTXOS";
+        // SCRIPT_ENHANCED_REFERENCES
+        case OP_REFHASHVALUESUM_OUTPUTS:
+            return "OP_REFHASHVALUESUM_OUTPUTS";
+        case OP_REFHASHDATASUMMARY_OUTPUT:
+            return "OP_REFHASHDATASUMMARY_OUTPUT";
+        case OP_PUSHINPUTREFSINGLETON:
+            return "OP_PUSHINPUTREFSINGLETON";
+        case OP_REFTYPE_UTXO:
+            return "OP_REFTYPE_UTXO";
+        case OP_REFTYPE_OUTPUT:
+            return "OP_REFTYPE_OUTPUT";
+        case OP_STATESEPERATOR:
+            return "OP_STATESEPERATOR";
+        case OP_STATESEPERATORINDEX_UTXO:
+            return "OP_STATESEPERATORINDEX_UTXO";
+        case OP_STATESEPERATORINDEX_OUTPUT:
+            return "OP_STATESEPERATORINDEX_OUTPUT";
+        case OP_REFVALUESUM_UTXOS:
+            return "OP_REFVALUESUM_UTXOS";
+        case OP_REFVALUESUM_OUTPUTS:
+            return "OP_REFVALUESUM_OUTPUTS";
+        case OP_REFOUTPUTCOUNT_UTXOS:
+            return "OP_REFOUTPUTCOUNT_UTXOS";
+        case OP_REFOUTPUTCOUNT_OUTPUTS:
+            return "OP_REFOUTPUTCOUNT_OUTPUTS";
+        case OP_REFOUTPUTCOUNTZEROVALUED_UTXOS:
+            return "OP_REFOUTPUTCOUNTZEROVALUED_UTXOS";
+        case OP_REFOUTPUTCOUNTZEROVALUED_OUTPUTS:
+            return "OP_REFOUTPUTCOUNTZEROVALUED_OUTPUTS";
+        case OP_REFDATASUMMARY_UTXO:
+            return "OP_REFDATASUMMARY_UTXO";
+        case OP_REFDATASUMMARY_OUTPUT:
+            return "OP_REFDATASUMMARY_OUTPUT";
+        case OP_CODESCRIPTHASHVALUESUM_UTXOS:
+            return "OP_CODESCRIPTHASHVALUESUM_UTXOS";
+        case OP_CODESCRIPTHASHVALUESUM_OUTPUTS:
+            return "OP_CODESCRIPTHASHVALUESUM_OUTPUTS";
+        case OP_CODESCRIPTHASHOUTPUTCOUNT_UTXOS:
+            return "OP_CODESCRIPTHASHOUTPUTCOUNT_UTXOS";
+        case OP_CODESCRIPTHASHOUTPUTCOUNT_OUTPUTS:
+            return "OP_CODESCRIPTHASHOUTPUTCOUNT_OUTPUTS";
+        case OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_UTXOS:
+            return "OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_UTXOS";
+        case OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_OUTPUTS:
+            return "OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_OUTPUTS";
+        case OP_CODESCRIPTHASH_UTXO:
+            return "OP_CODESCRIPTHASH_UTXO";
+        case OP_CODESCRIPTHASH_OUTPUT:
+            return "OP_CODESCRIPTHASH_OUTPUT";
         default:
             return "OP_UNKNOWN";
     }
@@ -484,24 +543,38 @@ bool CScript::GetPushRefs(
     const_iterator pc, 
     std::set<uint288> &pushRefSet,
     std::set<uint288> &requireRefSet,
-    std::set<uint288> &disallowedSiblingsRefSet
+    std::set<uint288> &disallowedSiblingsRefSet,
+    std::set<uint288> &singletonRefSet,
+    uint32_t &stateSeperatorByteIndex
 ) const {
 
     std::set<uint288> foundDisallowedRefs;
     std::set<uint288> foundDisallowedSiblingRefs;
     std::set<uint288> foundPushRefs;
     std::set<uint288> foundRequiredRefs;
+    std::set<uint288> foundSingletonRefs;
 
+    bool isExistingStateSeperator = false;
+    bool isExistingOpReturn = false;
+    // Track if there is an OP_STATESEPERATOR
+    const_iterator startIterator = pc;
+    const_iterator stateSeperatorLocatedIt = pc;
     while (pc < end()) {
         opcodetype opcode;
         std::vector<uint8_t> ret;
         if (!GetOp(pc, opcode, ret)) {
             return false;
         }
+        // Track if there is an OP_RETURN
+        // If there is one, then cannot use OP_STATESEPERATOR in same script
+        if (opcode == OP_RETURN) {
+            isExistingOpReturn = true;
+        }
         if (opcode == OP_PUSHINPUTREF ||
             opcode == OP_REQUIREINPUTREF ||
             opcode == OP_DISALLOWPUSHINPUTREF ||
-            opcode == OP_DISALLOWPUSHINPUTREFSIBLING) {
+            opcode == OP_DISALLOWPUSHINPUTREFSIBLING || 
+            opcode == OP_PUSHINPUTREFSINGLETON) {
             std::vector<unsigned char> refId(ret.cbegin(), ret.cend());
             uint288 refIdUint288 = uint288(refId);
             if (opcode == OP_PUSHINPUTREF) {
@@ -512,8 +585,30 @@ bool CScript::GetPushRefs(
                 foundDisallowedRefs.insert(refIdUint288);
             } else if (opcode == OP_DISALLOWPUSHINPUTREFSIBLING) {
                 foundDisallowedSiblingRefs.insert(refIdUint288);
+            } else if (opcode == OP_PUSHINPUTREFSINGLETON) {
+                // The singleton op code ensures the reference is passed, and simultaneously disallows other siblings 
+                // from taking on that reference
+                foundPushRefs.insert(refIdUint288);
+                foundDisallowedSiblingRefs.insert(refIdUint288);
+                foundSingletonRefs.insert(refIdUint288);
             } 
         }
+        // Cannot process if there is already an existing state seperator
+        // Maximum one OP_STATESEPERATOR allowed per script
+        if (isExistingStateSeperator) {
+            if (opcode == OP_STATESEPERATOR) {
+               return false;
+            }
+        } else if (!isExistingStateSeperator) {
+            if (opcode == OP_STATESEPERATOR) {
+                if (isExistingOpReturn) {
+                    // OP_STATESEPERATOR cannot be used with OP_RETURN
+                    return false;
+                }
+                stateSeperatorLocatedIt = pc;
+                isExistingStateSeperator = true;
+            }
+        } 
     }
     // Verify that none of the prohibit refs appear in the ref set
     // Save the set difference into resultSet
@@ -529,16 +624,34 @@ bool CScript::GetPushRefs(
     pushRefSet.insert(foundPushRefs.begin(), foundPushRefs.end());
     requireRefSet.insert(foundRequiredRefs.begin(), foundRequiredRefs.end());
     disallowedSiblingsRefSet.insert(foundDisallowedSiblingRefs.begin(), foundDisallowedSiblingRefs.end());
+    singletonRefSet.insert(foundSingletonRefs.begin(), foundSingletonRefs.end());
+    // Update the location of the state seperator only if we got this far
+    // If there was no OP_STATESEPERATOR, then the index is 0 (ie the start of the script)
+    // If there was one OP_STATESEPERATOR, then the index is the location of it in the script
+    stateSeperatorByteIndex = isExistingStateSeperator ? std::distance(startIterator, stateSeperatorLocatedIt) : 0;
     return true;
 }
 
 bool CScript::GetPushRefs(
     std::set<uint288> &pushRefSet,
     std::set<uint288> &requireRefSet,
-    std::set<uint288> &disallowedSiblingsRefSet
+    std::set<uint288> &disallowedSiblingsRefSet,
+    std::set<uint288> &singletonRefSet,
+    uint32_t &stateSeperatorByteIndex
 ) const {
-    std::string str(begin(), end());
-    return this->GetPushRefs(begin(), pushRefSet, requireRefSet, disallowedSiblingsRefSet);
+    return this->GetPushRefs(begin(), pushRefSet, requireRefSet, disallowedSiblingsRefSet, singletonRefSet, stateSeperatorByteIndex);
+}
+
+static bool getScriptIterator(int32_t startIndex, const CScript &script, CScriptBase::const_iterator &startIterator) {
+    uint32_t adjustedStartIndex = startIndex;
+    if (startIndex <= 0) {
+       adjustedStartIndex = 0;
+    }
+    if (adjustedStartIndex >= script.size()) {
+        return false;
+    }
+   startIterator = script.begin() + adjustedStartIndex;
+   return true;
 }
 
 bool CScript::IsPushOnly() const {
@@ -593,7 +706,13 @@ bool GetScriptOp(CScriptBase::const_iterator &pc,
             pvchRet->assign(pc, pc + nSize);
         }
         pc += nSize;
-    } else if (opcode == OP_PUSHINPUTREF || opcode == OP_REQUIREINPUTREF || opcode == OP_DISALLOWPUSHINPUTREF || opcode == OP_DISALLOWPUSHINPUTREFSIBLING ) {
+    } else if (
+        opcode == OP_PUSHINPUTREF || 
+        opcode == OP_REQUIREINPUTREF || 
+        opcode == OP_DISALLOWPUSHINPUTREF || 
+        opcode == OP_DISALLOWPUSHINPUTREFSIBLING ||
+        opcode == OP_PUSHINPUTREFSINGLETON
+    ) {
         // The program counter is incremented for the payload 36 byte arg
         if (end - pc < 36) {
             return false;

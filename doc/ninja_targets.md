@@ -283,7 +283,7 @@ Below are some of the cmake build options with example values.
 
 All these options are passed via `-D` (defines) to the `cmake` command.
 
-- -DBUILD_BITCOIN_SEEDER=OFF # to disable build of the seeder (it is not
+- -DBUILD_RADIANT_SEEDER=OFF # to disable build of the seeder (it is not
   supported in Windows yet)
 
 - -DCMAKE_INSTALL_PREFIX=/home/user   # set install prefix to user home directory

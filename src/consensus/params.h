@@ -33,6 +33,8 @@ struct Params {
     int uahfHeight;
     /** Unix time used for MTP activation of 15 Nov 2020 12:00:00 UTC upgrade */
     int asertActivationTime;
+    /** Block height at which ER (Enhanced References) becomes active */
+    int ERHeight;
 
     /** Default blocksize limit -- can be overridden with the -excessiveblocksize= command-line switch */
     uint64_t nDefaultExcessiveBlockSize;

@@ -435,29 +435,27 @@ public:
 
 /**
  * @brief Compute the summary data for a transaction output
- * To be used in Sighash.preimage, in TxId V3 Preimage and OP codes OP_UTXODATASUMMARY
+ * To be used in Sighash.preimage, in TxId V3 Preimage and OP codes OP_REFHASHDATASUMMARY_UTXO
  * 
  */
-struct OutputDataSummary {
+struct RefHashDataSummary {
     Amount nValue;
     uint256 scriptPubKeyHash;
     uint32_t totalRefs;
     uint256 refsHash;
 };
 
-static inline OutputDataSummary getOutputDataSummary(const CScript& script, const Amount& amount, const uint256& zeroRefHash) {
-    OutputDataSummary outputDataSummary;
+static inline RefHashDataSummary getRefHashDataSummary(
+    const std::set<uint288> &pushRefSet,
+    const CScript& script, 
+    const Amount& amount, 
+    const uint256& zeroRefHash
+) {
+    RefHashDataSummary outputDataSummary;
     outputDataSummary.nValue = amount;
     CHashWriter hashWriterScriptPubKey(SER_GETHASH, 0);
     hashWriterScriptPubKey << CFlatData(script);
     outputDataSummary.scriptPubKeyHash = hashWriterScriptPubKey.GetHash();
-    std::set<uint288> pushRefSet;
-    std::set<uint288> requireRefSet;
-    std::set<uint288> disallowSiblingRefSet;
-    if (!script.GetPushRefs(pushRefSet, requireRefSet, disallowSiblingRefSet)) {
-        // Fatal error parsing output should never happen
-        throw std::runtime_error("Error: refs-error: parsing OP_PUSHINPUTREF, OP_REQUIREINPUTREF, OP_DISALLOWPUSHINPUTREF, or OP_DISALLOWPUSHINPUTREFSIBLING. Ensure references are 36 bytes length.");
-    }
     outputDataSummary.totalRefs = pushRefSet.size();
     outputDataSummary.refsHash = zeroRefHash;
     // Write the 'color' of the output by taking the sorted set of all OP_PUSHINPUTREFs values (dedup in a map)
@@ -474,8 +472,17 @@ static inline OutputDataSummary getOutputDataSummary(const CScript& script, cons
     return outputDataSummary;
 }
 
-static inline void writeOutputVector(CHashWriter& hashWriterOutputs, const CScript& script, const Amount& amount, uint256& zeroRefHash) {
-    OutputDataSummary outputSummary = getOutputDataSummary(script, amount, zeroRefHash);
+static inline void writeOutputDataSummaryVector(CHashWriter& hashWriterOutputs, const CScript& script, const Amount& amount, uint256& zeroRefHash) {
+    std::set<uint288> pushRefSet;
+    std::set<uint288> requireRefSet;
+    std::set<uint288> disallowSiblingRefSet;
+    std::set<uint288> singletonRefSet;
+    uint32_t stateSeperatorByteIndex;
+    if (!script.GetPushRefs(pushRefSet, requireRefSet, disallowSiblingRefSet, singletonRefSet, stateSeperatorByteIndex)) {
+        // Fatal error parsing output should never happen
+        throw std::runtime_error("Error: get-push-refs-write-output-data-summary-vector");
+    }
+    RefHashDataSummary outputSummary = getRefHashDataSummary(pushRefSet, script, amount, zeroRefHash);
     hashWriterOutputs << outputSummary.nValue;
     hashWriterOutputs << outputSummary.scriptPubKeyHash;
     hashWriterOutputs << outputSummary.totalRefs;
@@ -489,6 +496,7 @@ static inline void writeOutputVector(CHashWriter& hashWriterOutputs, const CScri
  * 
  * <output1-nValue>
  * <sha256(output1-scriptPubKey)>
+ * <totalRefsForOutput1>
  * <sha256(
  *  output1-pushRef1
  *  output1-pushRef2
@@ -497,11 +505,13 @@ static inline void writeOutputVector(CHashWriter& hashWriterOutputs, const CScri
  * )>
  * <output2-nValue>
  * <sha256(output2-scriptPubKey)>
+ * <totalRefsForOutput2>
  * <sha256(
  *  output2-pushRef1
  *  output2-pushRef2
  * )>
  * <output3-nValue>
+ * <totalRefsForOutput3>
  * <sha256(output3-scriptPubKey)>
  * <0000000000000000000000000000000000000000000000000000000000000000>
  * 
@@ -523,7 +533,7 @@ template <class T> static inline uint256 GetHashOutputHashes(const T &txTo) {
     CHashWriter hashWriterOutputs(SER_GETHASH, 0);
     uint256 zeroRefHash(uint256S("0000000000000000000000000000000000000000000000000000000000000000"));
     for (const auto &txout : txTo.vout) {
-        writeOutputVector(hashWriterOutputs, txout.scriptPubKey, txout.nValue, zeroRefHash);
+        writeOutputDataSummaryVector(hashWriterOutputs, txout.scriptPubKey, txout.nValue, zeroRefHash);
     }
     return hashWriterOutputs.GetHash();
 }

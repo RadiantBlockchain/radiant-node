@@ -20,7 +20,7 @@ Amount GetDustThreshold(const CTxOut &txout, const CFeeRate &dustRelayFeeIn) {
 }
 
 bool IsDust(const CTxOut &txout, const CFeeRate &dustRelayFeeIn) {
-    return txout.nValue < Amount::zero();
+    return txout.nValue <= Amount::zero();
 }
 
 bool IsStandard(const CScript &scriptPubKey, txnouttype &whichType) {

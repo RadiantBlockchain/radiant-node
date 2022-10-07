@@ -71,7 +71,7 @@ rpcpassword=yourpassword
 What is Radiant Node?
 --------------------------
 
-[Radiant Node](https://www.radiantblockchain.org) is the name of open-source
+[Radiant Node](https://radiantblockchain.org) is the name of open-source
 software which enables the use of Radiant. It is a descendant of the 
 [Bitcoin Cash Node](https://bitcoincashnode.org) [Bitcoin Core](https://bitcoincore.org) 
 and [Bitcoin ABC](https://www.bitcoinabc.org)
@@ -95,9 +95,6 @@ Development Process
 Radiant Node development takes place at [https://gitlab.com/radiantblockchain/radiant-node](https://gitlab.com/radiantblockchain/radiant-node)
 
 This Github repository contains only source code of releases.
-
-If you would like to contribute, please contact us directly at
- [t.me/radiantblockchain](https://t.me/radiantblockchain)
 
 Disclosure Policy
 -----------------

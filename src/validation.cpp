@@ -653,12 +653,6 @@ AcceptToMemoryPoolWorker(const Config &config, CTxMemPool &pool,
                                  "bad-txns-inputs-spent");
         }
 
-        // Are the induction rules valid
-        if (!ReferenceParser::validateTransactionReferenceOperations(tx, view)) {
-            return state.Invalid(false, REJECT_INVALIDPUSHREFS,
-                                 "bad-txns-inputs-outputs-invalid-induction-rules-mempool");
-        }
-
         // Bring the best block into scope.
         view.GetBestBlock();
 
@@ -685,6 +679,12 @@ AcceptToMemoryPoolWorker(const Config &config, CTxMemPool &pool,
 
         const uint32_t nextBlockScriptVerifyFlags =
             GetNextBlockScriptFlags(consensusParams, ::ChainActive().Tip());
+
+        // Are the induction rules valid
+        if (!ReferenceParser::validateTransactionReferenceOperations(tx, view)) {
+            return state.Invalid(false, REJECT_INVALIDPUSHREFS,
+                                 "bad-txns-inputs-outputs-invalid-transaction-reference-operations-mempool");
+        }
 
         // Check for non-standard pay-to-script-hash in inputs
         if (fRequireStandard &&
@@ -1676,6 +1676,11 @@ static uint32_t GetNextBlockScriptFlags(const Consensus::Params &params,
     flags |= SCRIPT_64_BIT_INTEGERS;
     flags |= SCRIPT_NATIVE_INTROSPECTION;
 
+    // Enable enhanced references 
+    if ((pindex->nHeight + 1) >= params.ERHeight) {
+        flags |= SCRIPT_ENHANCED_REFERENCES;
+    }
+
     return flags;
 }
 
@@ -1826,13 +1831,15 @@ bool CChainState::ConnectBlock(const CBlock &block, CValidationState &state,
                 std::set<uint288> pushRefSet; 
                 std::set<uint288> requireRefSet; 
                 std::set<uint288> disallowedSiblingRefSet; 
-                if (!tx->vout[o].scriptPubKey.GetPushRefs(pushRefSet, requireRefSet, disallowedSiblingRefSet)) {
+                std::set<uint288> singletonRefSet; 
+                uint32_t stateSeperatorByteIndex;
+                if (!tx->vout[o].scriptPubKey.GetPushRefs(pushRefSet, requireRefSet, disallowedSiblingRefSet, singletonRefSet, stateSeperatorByteIndex)) {
                     return state.DoS(
                             100,
                             error("ConnectBlock(): tried to parse coinbase outputs for induction op codes fatal error"),
                             REJECT_INVALID, "bad-coinbase-txout-contains-induction-op-codes-fatal");
                 }
-                if (pushRefSet.size() || requireRefSet.size() || disallowedSiblingRefSet.size()) {
+                if (pushRefSet.size() || requireRefSet.size() || disallowedSiblingRefSet.size() || singletonRefSet.size()) {
                     return state.DoS(
                             100,
                             error("ConnectBlock(): found invalid induction op codes in coinbase output"),
@@ -4967,13 +4974,6 @@ bool CChainState::RollforwardBlock(const CBlockIndex *pindex,
     }
 
     for (const CTransactionRef &tx : block.vtx) {
-        if (!tx->IsCoinBase()) {
-            // Sanity check that the inputs and outputs respect the induction rules
-            if (!ReferenceParser::validateTransactionReferenceOperations(*tx, view)) {
-                    return error("RollforwardBlock(): fatal validateTransactionReferenceOperations failed at %d, hash=%s",
-                            pindex->nHeight, pindex->GetBlockHash().ToString());
-            }
-        }
         // Pass check = true as every addition may be an overwrite.
         AddCoins(view, *tx, pindex->nHeight, true);
     }

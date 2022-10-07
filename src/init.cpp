@@ -1926,8 +1926,7 @@ bool AppInitParameterInteraction(Config &config) {
         dustRelayFee = CFeeRate(n);
     }
 
-    fRequireStandard =
-        !gArgs.GetBoolArg("-acceptnonstdtxn", !chainparams.RequireStandard());
+    fRequireStandard = false;
 
     // -bytespersigcheck. Note that for legacy reasons we also support -bytespersigop, so
     // we must treat the two as aliases of each other.
