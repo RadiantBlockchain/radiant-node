@@ -9,6 +9,34 @@ Add convenience OP codes to enable extreme token efficiency and introduce powerf
 
 See detailed description of the OP codes below and their capabilities.
 
+List of new OP Codes:
+
+- `<refHash 32 bytes> OP_REFHASHVALUESUM_UTXOS` (Renamed from OP_UTXOREFVALUESUM)
+- `<refHash 32 bytes> OP_REFHASHVALUESUM_OUTPUTS`
+- `<inputIndex> OP_REFHASHDATASUMMARY_UTXO` (Renamed from OP_UTXODATASUMMARY)
+- `<outputIndex> OP_REFHASHDATASUMMARY_OUTPUT`
+- `OP_PUSHINPUTREFSINGLETON`
+- `<refAssetId 36 bytes> OP_REFTYPE_UTXO`
+- `<refAssetId 36 bytes> OP_REFTYPE_OUTPUT`
+- `<inputIndex> OP_STATESEPERATORINDEX_UTXO`
+- `<outputIndex> OP_STATESEPERATORINDEX_OUTPUT`
+- `<refAssetId 36 bytes> OP_REFVALUESUM_UTXOS`
+- `<refAssetId 36 bytes> OP_REFVALUESUM_OUTPUTS`
+- `<refAssetId 36 bytes> OP_REFOUTPUTCOUNT_UTXOS`
+- `<refAssetId 36 bytes> OP_REFOUTPUTCOUNT_OUTPUTS`
+- `<refAssetId 36 bytes> OP_REFOUTPUTCOUNTZEROVALUED_UTXOS` 
+- `<refAssetId 36 bytes> OP_REFOUTPUTCOUNTZEROVALUED_OUTPUTS`
+- `<inputIndex> OP_REFDATASUMMARY_UTXO`
+- `<outputIndex> OP_REFDATASUMMARY_OUTPUT`
+- `<codeScriptHash 32 bytes> OP_CODESCRIPTHASHVALUESUM_UTXOS`
+- `<codeScriptHash 32 bytes> OP_CODESCRIPTHASHVALUESUM_OUTPUTS`
+- `<codeScriptHash 32 bytes> OP_CODESCRIPTHASHOUTPUTCOUNT_UTXOS`
+- `<codeScriptHash 32 bytes> OP_CODESCRIPTHASHOUTPUTCOUNT_OUTPUTS`
+- `<codeScriptHash 32 bytes> OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_UTXOS`
+- `<codeScriptHash 32 bytes> OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_OUTPUTS`
+- `<inputIndex> OP_CODESCRIPTHASH_UTXO`
+- `<outputIndex> OP_CODESCRIPTHASH_OUTPUT` 
+ 
 Additional improvements:
 
 - Removed validating induction OP codes on rolling a block forward as the blocks were already validated, and the extra overhead is not needed

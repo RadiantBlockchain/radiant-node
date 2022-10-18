@@ -68,7 +68,7 @@ static constexpr Amount DEFAULT_MIN_RELAY_TX_FEE_PER_KB(1000000 * SATOSHI);
 /** Default for -excessutxocharge for transactions transactions */
 static constexpr Amount DEFAULT_UTXO_FEE = Amount::zero();
 //! -maxtxfee default
-static constexpr Amount DEFAULT_TRANSACTION_MAXFEE(100 * COIN);
+static constexpr Amount DEFAULT_TRANSACTION_MAXFEE(2000 * COIN);
 //! Discourage users to set fees higher than this amount (in satoshis) per kB
 static constexpr Amount HIGH_TX_FEE_PER_KB(COIN / 100);
 /**
@@ -79,7 +79,7 @@ static constexpr Amount HIGH_MAX_TX_FEE(100 * HIGH_TX_FEE_PER_KB);
  * Default for -mempoolexpiry, expiration time for mempool transactions in
  * hours.
  */
-static constexpr unsigned int DEFAULT_MEMPOOL_EXPIRY = 16;
+static constexpr unsigned int DEFAULT_MEMPOOL_EXPIRY = 4;
 /**
  *  Default for -mempoolexpiryperiod, execute the mempool transaction expiration
  *  this often (in hours).
@@ -1037,6 +1037,8 @@ class ReferenceParser {
             // Add the parent input outpoint 
             COutPoint prevOutpoint(tx.vin[i].prevout.GetTxId(), tx.vin[i].prevout.GetN());
             inputPushRefSet.insert(Converters::fromOutpoint(prevOutpoint));
+            // Ensure to add it to the singleton set too
+            inputSingletonRefSet.insert(Converters::fromOutpoint(prevOutpoint));
             // Scan the parent input output's script
             auto output = view.GetOutputFor(tx.vin[i]);
             if (!ReferenceParser::buildRefSetFromScript(output.scriptPubKey, inputPushRefSet, inputRequireRefSet, inputDisallowSiblingRefSet, inputSingletonRefSet, stateSeperatorByteIndex)) {

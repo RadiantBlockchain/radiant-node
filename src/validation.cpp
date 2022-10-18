@@ -1639,11 +1639,10 @@ static uint32_t GetNextBlockScriptFlags(const Consensus::Params &params,
                                         const CBlockIndex *pindex) {
     uint32_t flags = SCRIPT_VERIFY_NONE;
 
-    //  We will never support P2SH because it makes it hard to test and examine the blockchain data
-    //  Misguided concerns about privacy, a discussion for another place and time.
-    //  if ((pindex->nHeight + 1) >= params.BIP16Height) {
-    //      flags |= SCRIPT_VERIFY_P2SH;
-    //  }
+    //  Keep P2SH enabled to make it simpler to test and verify CLEANSTACK rule
+    if ((pindex->nHeight + 1) >= params.BIP16Height) {
+        flags |= SCRIPT_VERIFY_P2SH;
+    }
 
     // We keep the following rules in place, but they are buried less than a couple of hundred blocks from genesis
     // Just so that it will be easier to test

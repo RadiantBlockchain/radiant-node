@@ -9,6 +9,34 @@ Add convenience OP codes to enable extreme token efficiency and introduce powerf
 
 See detailed description of the OP codes below and their capabilities.
 
+List of new OP Codes:
+
+- `<refHash 32 bytes> OP_REFHASHVALUESUM_UTXOS` (Renamed from OP_UTXOREFVALUESUM)
+- `<refHash 32 bytes> OP_REFHASHVALUESUM_OUTPUTS`
+- `<inputIndex> OP_REFHASHDATASUMMARY_UTXO` (Renamed from OP_UTXODATASUMMARY)
+- `<outputIndex> OP_REFHASHDATASUMMARY_OUTPUT`
+- `OP_PUSHINPUTREFSINGLETON`
+- `<refAssetId 36 bytes> OP_REFTYPE_UTXO`
+- `<refAssetId 36 bytes> OP_REFTYPE_OUTPUT`
+- `<inputIndex> OP_STATESEPERATORINDEX_UTXO`
+- `<outputIndex> OP_STATESEPERATORINDEX_OUTPUT`
+- `<refAssetId 36 bytes> OP_REFVALUESUM_UTXOS`
+- `<refAssetId 36 bytes> OP_REFVALUESUM_OUTPUTS`
+- `<refAssetId 36 bytes> OP_REFOUTPUTCOUNT_UTXOS`
+- `<refAssetId 36 bytes> OP_REFOUTPUTCOUNT_OUTPUTS`
+- `<refAssetId 36 bytes> OP_REFOUTPUTCOUNTZEROVALUED_UTXOS` 
+- `<refAssetId 36 bytes> OP_REFOUTPUTCOUNTZEROVALUED_OUTPUTS`
+- `<inputIndex> OP_REFDATASUMMARY_UTXO`
+- `<outputIndex> OP_REFDATASUMMARY_OUTPUT`
+- `<codeScriptHash 32 bytes> OP_CODESCRIPTHASHVALUESUM_UTXOS`
+- `<codeScriptHash 32 bytes> OP_CODESCRIPTHASHVALUESUM_OUTPUTS`
+- `<codeScriptHash 32 bytes> OP_CODESCRIPTHASHOUTPUTCOUNT_UTXOS`
+- `<codeScriptHash 32 bytes> OP_CODESCRIPTHASHOUTPUTCOUNT_OUTPUTS`
+- `<codeScriptHash 32 bytes> OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_UTXOS`
+- `<codeScriptHash 32 bytes> OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_OUTPUTS`
+- `<inputIndex> OP_CODESCRIPTHASH_UTXO`
+- `<outputIndex> OP_CODESCRIPTHASH_OUTPUT` 
+ 
 Additional improvements:
 
 - Removed validating induction OP codes on rolling a block forward as the blocks were already validated, and the extra overhead is not needed
@@ -25,15 +53,15 @@ n/a
 
 ## Added functionality
 
-#### <refHash 32 bytes> OP_REFHASHVALUESUM_UTXOS (Renamed from OP_UTXOREFVALUESUM)
+### <refHash 32 bytes> OP_REFHASHVALUESUM_UTXOS (Renamed from OP_UTXOREFVALUESUM)
 
 Pushes the total sum of satoshis across all of the input utxos by the 32 byte hash of the sorted set of ref asset ids. 
 
-#### <refHash 32 bytes> OP_REFHASHVALUESUM_OUTPUTS
+### <refHash 32 bytes> OP_REFHASHVALUESUM_OUTPUTS
 
 Pushes the total sum of satoshis across all of the outputs by the 32 byte hash of the sorted set of ref asset ids. 
 
-#### <inputIndex> OP_REFHASHDATASUMMARY_UTXO (Renamed from OP_UTXODATASUMMARY)
+### <inputIndex> OP_REFHASHDATASUMMARY_UTXO (Renamed from OP_UTXODATASUMMARY)
 
 Pushes a vector of the form onto the stack from an inputIndex.
 
@@ -41,63 +69,63 @@ Pushes a vector of the form onto the stack from an inputIndex.
 
 This allows an unlocking context to access any other input's scriptPubKey and determine what 'type' it is and all other details of that script.
 
-#### <outputIndex> OP_REFHASHDATASUMMARY_OUTPUT
+### <outputIndex> OP_REFHASHDATASUMMARY_OUTPUT
 
 Same functionality as OP_REFHASHDATASUMMARY_UTXO, but for outputs.
 
-#### OP_PUSHINPUTREFSINGLETON
+### OP_PUSHINPUTREFSINGLETON
 
 Functionally the same as combining OP_PUSHINPUTREF and OP_DISALLOWPUSHINPUTREFSIBLING, but also the added restriction that an OP_PUSHINPUTREFSINGLETON
 must originate from another OP_PUSHINPUTREFSINGLETON. This enables polymorphic NFTs with almost zero code.
 
-#### <refAssetId 36 bytes> OP_REFTYPE_UTXO
+### <refAssetId 36 bytes> OP_REFTYPE_UTXO
 
 Given a reference asset id, determine the type of reference used in any input utxo. NOT_FOUND=0, NORMAL_REF=1, SINGLETON_REF=2
 
-#### <refAssetId 36 bytes> OP_REFTYPE_OUTPUT
+### <refAssetId 36 bytes> OP_REFTYPE_OUTPUT
 
 Same as OP_REFTYPE_UTXO, but for the outputs.
  
-#### OP_STATESEPERATOR
+### OP_STATESEPERATOR
 
 Allow up to a single OP_STATESEPERATOR in a script. When used, no OP_RETURN is allowed in the same script.
 The OP_STATESEPERATOR is interpretted as a NOP, however it allows a demarcation point for calculating a `codeScriptHash`
 which begins from the first byte=0 (when OP_STATESEPERATOR is not used), but starts from the byte location of the 
 OP_STATESEPERATOR when it is present. 
 
-#### <inputIndex> OP_STATESEPERATORINDEX_UTXO
+### <inputIndex> OP_STATESEPERATORINDEX_UTXO
 
 Pushes 0 onto the stack or the byte index of the OP_STATESEPERATOR (if present) in the input utxo at the inputIndex.
 
-#### <outputIndex> OP_STATESEPERATORINDEX_OUTPUT
+### <outputIndex> OP_STATESEPERATORINDEX_OUTPUT
 
 Same as OP_STATESEPERATORINDEX_UTXO, but for the outputs.
 
-#### <refAssetId 36 bytes> OP_REFVALUESUM_UTXOS
+### <refAssetId 36 bytes> OP_REFVALUESUM_UTXOS
 
 Pushes the total sum of satoshis across all of the input utxos by the 36 byte ref asset id.
 
-#### <refAssetId 36 bytes> OP_REFVALUESUM_OUTPUTS
+### <refAssetId 36 bytes> OP_REFVALUESUM_OUTPUTS
 
 Same as OP_REFVALUESUM_UTXOS, but for the outputs.
 
-#### <refAssetId 36 bytes> OP_REFOUTPUTCOUNT_UTXOS
+### <refAssetId 36 bytes> OP_REFOUTPUTCOUNT_UTXOS
 
 Pushes the total number of input utxos that contain at least one usage of a ref asset id.
 
-#### <refAssetId 36 bytes> OP_REFOUTPUTCOUNT_OUTPUTS
+### <refAssetId 36 bytes> OP_REFOUTPUTCOUNT_OUTPUTS
 
 Same as OP_REFOUTPUTCOUNT_UTXOS, but for the outputs.
 
-#### <refAssetId 36 bytes> OP_REFOUTPUTCOUNTZEROVALUED_UTXOS
+### <refAssetId 36 bytes> OP_REFOUTPUTCOUNTZEROVALUED_UTXOS
 
 Pushes the total number of input utxos that contain at least one usage of a ref asset id and the value of the input utxo is 0-sats.
 
-#### <refAssetId 36 bytes> OP_REFOUTPUTCOUNTZEROVALUED_OUTPUTS
+### <refAssetId 36 bytes> OP_REFOUTPUTCOUNTZEROVALUED_OUTPUTS
 
 Same as OP_REFOUTPUTCOUNTZEROVALUED_UTXOS, but for the outputs.
  
-#### <inputIndex> OP_REFDATASUMMARY_UTXO
+### <inputIndex> OP_REFDATASUMMARY_UTXO
 
 Pushes a vector of the form onto the stack from an inputIndex.
 
@@ -107,39 +135,39 @@ If an input utxo does not contain at least one reference, then the 36 byte zeroe
 This OP code can be used to identify input utxos that have no reference, and also be able to identify the precise
 references. To calculate the number of references, take the len() of the vector and divide by 36 and check it is not equal to 36 byte zeroes.
 
-#### <outputIndex> OP_REFDATASUMMARY_OUTPUT
+### <outputIndex> OP_REFDATASUMMARY_OUTPUT
 
 Same as OP_REFDATASUMMARY_UTXO, but for the outputs.
 
-#### <codeScriptHash 32 bytes> OP_CODESCRIPTHASHVALUESUM_UTXOS
+### <codeScriptHash 32 bytes> OP_CODESCRIPTHASHVALUESUM_UTXOS
 
 Pushes the total sum of satoshis across all of the input utxos by the codeScriptHash.
 
-#### <codeScriptHash 32 bytes> OP_CODESCRIPTHASHVALUESUM_OUTPUTS
+### <codeScriptHash 32 bytes> OP_CODESCRIPTHASHVALUESUM_OUTPUTS
 
 Same as OP_REFVALUESUM_UTXOS, but for the outputs.
 
-#### <codeScriptHash 32 bytes> OP_CODESCRIPTHASHOUTPUTCOUNT_UTXOS
+### <codeScriptHash 32 bytes> OP_CODESCRIPTHASHOUTPUTCOUNT_UTXOS
 
 Pushes the total number of input utxos that contain at least one usage of a ref asset id.
 
-#### <codeScriptHash 32 bytes> OP_CODESCRIPTHASHOUTPUTCOUNT_OUTPUTS
+### <codeScriptHash 32 bytes> OP_CODESCRIPTHASHOUTPUTCOUNT_OUTPUTS
 
 Same as OP_CODESCRIPTHASHOUTPUTCOUNT_UTXOS, but for the outputs.
 
-#### <codeScriptHash 32 bytes> OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_UTXOS
+### <codeScriptHash 32 bytes> OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_UTXOS
 
 Pushes the total number of input utxos that contain at least one usage of a ref asset id and the value of the input utxo is 0-sats.
 
-#### <codeScriptHash 32 bytes> OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_OUTPUTS
+### <codeScriptHash 32 bytes> OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_OUTPUTS
 
 Same as OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_UTXOS, but for the outputs.
 
-#### <inputIndex> OP_CODESCRIPTHASH_UTXO
+### <inputIndex> OP_CODESCRIPTHASH_UTXO
 
 Pushes the codeScriptHash for an input utxo by inputIndex.
 
-#### <outputIndex> OP_CODESCRIPTHASH_OUTPUT
+### <outputIndex> OP_CODESCRIPTHASH_OUTPUT
 
 Same as OP_CODESCRIPTHASH_UTXO, but for the outputs.
  

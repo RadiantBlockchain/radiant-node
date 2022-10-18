@@ -234,7 +234,7 @@ public:
         consensus.BIP65Height = 100;
         consensus.BIP66Height = 101;
         consensus.CSVHeight = 102;
-        consensus.ERHeight = 11000;
+        consensus.ERHeight = 10600;
         consensus.powLimit = uint256S(
             "00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         // one week

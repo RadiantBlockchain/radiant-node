@@ -206,6 +206,8 @@ Optional - Easier login to the VM
 
 You'll need to generate an SSH key, e.g. by following the instructions under "Generating a new SSH key" [here](https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent).
 
+eval $(ssh-agent) && ssh-add ~/.ssh/id_rsa
+
 After that, login to the VM and enter:
 
 ```bash
