@@ -1867,8 +1867,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                     return set_error(serror, ScriptError::BAD_OPCODE);
                                 }
                                 // When interpreting OP_STATESEPERATOR, do nothing (NOP)
-                                break;
-                            }
+                            } break;
 
                             case OP_REFTYPE_UTXO: {
                                 if ( ! context) {
