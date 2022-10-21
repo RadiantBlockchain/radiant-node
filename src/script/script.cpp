@@ -315,12 +315,12 @@ const char *GetOpName(opcodetype opcode) {
             return "OP_REFTYPE_UTXO";
         case OP_REFTYPE_OUTPUT:
             return "OP_REFTYPE_OUTPUT";
-        case OP_STATESEPERATOR:
-            return "OP_STATESEPERATOR";
-        case OP_STATESEPERATORINDEX_UTXO:
-            return "OP_STATESEPERATORINDEX_UTXO";
-        case OP_STATESEPERATORINDEX_OUTPUT:
-            return "OP_STATESEPERATORINDEX_OUTPUT";
+        case OP_STATESEPARATOR:
+            return "OP_STATESEPARATOR";
+        case OP_STATESEPARATORINDEX_UTXO:
+            return "OP_STATESEPARATORINDEX_UTXO";
+        case OP_STATESEPARATORINDEX_OUTPUT:
+            return "OP_STATESEPARATORINDEX_OUTPUT";
         case OP_REFVALUESUM_UTXOS:
             return "OP_REFVALUESUM_UTXOS";
         case OP_REFVALUESUM_OUTPUTS:
@@ -556,7 +556,7 @@ bool CScript::GetPushRefs(
 
     bool isExistingStateSeperator = false;
     bool isExistingOpReturn = false;
-    // Track if there is an OP_STATESEPERATOR
+    // Track if there is an OP_STATESEPARATOR
     const_iterator startIterator = pc;
     const_iterator stateSeperatorLocatedIt = pc;
     while (pc < end()) {
@@ -566,7 +566,7 @@ bool CScript::GetPushRefs(
             return false;
         }
         // Track if there is an OP_RETURN
-        // If there is one, then cannot use OP_STATESEPERATOR in same script
+        // If there is one, then cannot use OP_STATESEPARATOR in same script
         if (opcode == OP_RETURN) {
             isExistingOpReturn = true;
         }
@@ -594,15 +594,15 @@ bool CScript::GetPushRefs(
             } 
         }
         // Cannot process if there is already an existing state seperator
-        // Maximum one OP_STATESEPERATOR allowed per script
+        // Maximum one OP_STATESEPARATOR allowed per script
         if (isExistingStateSeperator) {
-            if (opcode == OP_STATESEPERATOR) {
+            if (opcode == OP_STATESEPARATOR) {
                return false;
             }
         } else if (!isExistingStateSeperator) {
-            if (opcode == OP_STATESEPERATOR) {
+            if (opcode == OP_STATESEPARATOR) {
                 if (isExistingOpReturn) {
-                    // OP_STATESEPERATOR cannot be used with OP_RETURN
+                    // OP_STATESEPARATOR cannot be used with OP_RETURN
                     return false;
                 }
                 stateSeperatorLocatedIt = pc;
@@ -626,8 +626,8 @@ bool CScript::GetPushRefs(
     disallowedSiblingsRefSet.insert(foundDisallowedSiblingRefs.begin(), foundDisallowedSiblingRefs.end());
     singletonRefSet.insert(foundSingletonRefs.begin(), foundSingletonRefs.end());
     // Update the location of the state seperator only if we got this far
-    // If there was no OP_STATESEPERATOR, then the index is 0 (ie the start of the script)
-    // If there was one OP_STATESEPERATOR, then the index is the location of it in the script
+    // If there was no OP_STATESEPARATOR, then the index is 0 (ie the start of the script)
+    // If there was one OP_STATESEPARATOR, then the index is the location of it in the script
     stateSeperatorByteIndex = isExistingStateSeperator ? std::distance(startIterator, stateSeperatorLocatedIt) : 0;
     return true;
 }

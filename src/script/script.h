@@ -189,13 +189,13 @@ enum opcodetype {
     // additional byte string operations
     OP_REVERSEBYTES = 0xbc,
 
-    // OP_STATESEPERATOR can only appear up to once in an output. The purpose is to allow a contract developer to split an output script
+    // OP_STATESEPARATOR can only appear up to once in an output. The purpose is to allow a contract developer to split an output script
     // into two state and code sections. By defining this OP code, the second half (or "suffix script") can be summarized as a single hash
     // called a "codeScripthash". The first half can be summarized with a "stateScripthash". This is especially useful for the OP code OP_OUTPUTCODESUMMARY which enables a contract to verify the bytecode (logic) of a contract related to each unique reference.
-    // A requirement is that all op codes preceding the `OP_STATESEPERATOR` must strictly be data or reference pushes.
-    OP_STATESEPERATOR = 0xbd,
-    OP_STATESEPERATORINDEX_UTXO = 0xbe,
-    OP_STATESEPERATORINDEX_OUTPUT = 0xbf,
+    // A requirement is that all op codes preceding the `OP_STATESEPARATOR` must strictly be data or reference pushes.
+    OP_STATESEPARATOR = 0xbd,
+    OP_STATESEPARATORINDEX_UTXO = 0xbe,
+    OP_STATESEPARATORINDEX_OUTPUT = 0xbf,
 
     // Native Introspection opcodes
     OP_INPUTINDEX = 0xc0,

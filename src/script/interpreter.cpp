@@ -149,8 +149,8 @@ static bool IsOpcodeDisabled(opcodetype opcode, uint32_t flags) {
         case OP_PUSHINPUTREFSINGLETON: 
         case OP_REFTYPE_UTXO:
         case OP_REFTYPE_OUTPUT:
-        case OP_STATESEPERATORINDEX_UTXO:
-        case OP_STATESEPERATORINDEX_OUTPUT:
+        case OP_STATESEPARATORINDEX_UTXO:
+        case OP_STATESEPARATORINDEX_OUTPUT:
         case OP_REFVALUESUM_UTXOS:
         case OP_REFVALUESUM_OUTPUTS:
         case OP_REFOUTPUTCOUNT_UTXOS:
@@ -1663,8 +1663,8 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     case OP_PUSHINPUTREFSINGLETON: 
                     case OP_REFTYPE_UTXO:
                     case OP_REFTYPE_OUTPUT:
-                    case OP_STATESEPERATORINDEX_UTXO:
-                    case OP_STATESEPERATORINDEX_OUTPUT:
+                    case OP_STATESEPARATORINDEX_UTXO:
+                    case OP_STATESEPARATORINDEX_OUTPUT:
                     case OP_REFVALUESUM_UTXOS:
                     case OP_REFVALUESUM_OUTPUTS:
                     case OP_REFOUTPUTCOUNT_UTXOS:
@@ -1862,11 +1862,11 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 stack.push_back(vchPushValue);
                             } break;
 
-                            case OP_STATESEPERATOR: {
+                            case OP_STATESEPARATOR: {
                                 if ( ! enhancedReferences) {
                                     return set_error(serror, ScriptError::BAD_OPCODE);
                                 }
-                                // When interpreting OP_STATESEPERATOR, do nothing (NOP)
+                                // When interpreting OP_STATESEPARATOR, do nothing (NOP)
                             } break;
 
                             case OP_REFTYPE_UTXO: {
@@ -1907,7 +1907,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 auto bn = CScriptNum::fromInt(intType).value();
                                 stack.push_back(bn.getvch());
                              } break;
-                            case OP_STATESEPERATORINDEX_UTXO: {
+                            case OP_STATESEPARATORINDEX_UTXO: {
                                 if ( ! enhancedReferences) {
                                     return set_error(serror, ScriptError::BAD_OPCODE);
                                 }
@@ -1933,7 +1933,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 auto bn = CScriptNum::fromInt(intType).value();
                                 stack.push_back(bn.getvch());
                             } break;
-                            case OP_STATESEPERATORINDEX_OUTPUT: {
+                            case OP_STATESEPARATORINDEX_OUTPUT: {
                                 if ( ! enhancedReferences) {
                                     return set_error(serror, ScriptError::BAD_OPCODE);
                                 }

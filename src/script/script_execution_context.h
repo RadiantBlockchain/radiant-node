@@ -198,9 +198,9 @@ class ScriptExecutionContext {
             // Populate state seperator map
             // Serves:
             // 
-            // - OP_STATESEPERATOR
-            // - <inputIndex> OP_STATESEPERATORINDEX_UTXO
-            // - <outputIndex> OP_STATESEPERATORINDEX_OUTPUT
+            // - OP_STATESEPARATOR
+            // - <inputIndex> OP_STATESEPARATORINDEX_UTXO
+            // - <outputIndex> OP_STATESEPARATORINDEX_OUTPUT
             indexToStateSeperatorIndex.insert(std::pair(index, stateSeperatorByteIndex));
             // Populate the maps for refHash
             // Serves:

@@ -18,8 +18,8 @@ List of new OP Codes:
 - `OP_PUSHINPUTREFSINGLETON`
 - `<refAssetId 36 bytes> OP_REFTYPE_UTXO`
 - `<refAssetId 36 bytes> OP_REFTYPE_OUTPUT`
-- `<inputIndex> OP_STATESEPERATORINDEX_UTXO`
-- `<outputIndex> OP_STATESEPERATORINDEX_OUTPUT`
+- `<inputIndex> OP_STATESEPARATORINDEX_UTXO`
+- `<outputIndex> OP_STATESEPARATORINDEX_OUTPUT`
 - `<refAssetId 36 bytes> OP_REFVALUESUM_UTXOS`
 - `<refAssetId 36 bytes> OP_REFVALUESUM_OUTPUTS`
 - `<refAssetId 36 bytes> OP_REFOUTPUTCOUNT_UTXOS`
@@ -86,20 +86,20 @@ Given a reference asset id, determine the type of reference used in any input ut
 
 Same as OP_REFTYPE_UTXO, but for the outputs.
  
-### OP_STATESEPERATOR
+### OP_STATESEPARATOR
 
-Allow up to a single OP_STATESEPERATOR in a script. When used, no OP_RETURN is allowed in the same script.
-The OP_STATESEPERATOR is interpretted as a NOP, however it allows a demarcation point for calculating a `codeScriptHash`
-which begins from the first byte=0 (when OP_STATESEPERATOR is not used), but starts from the byte location of the 
-OP_STATESEPERATOR when it is present. 
+Allow up to a single OP_STATESEPARATOR in a script. When used, no OP_RETURN is allowed in the same script.
+The OP_STATESEPARATOR is interpretted as a NOP, however it allows a demarcation point for calculating a `codeScriptHash`
+which begins from the first byte=0 (when OP_STATESEPARATOR is not used), but starts from the byte location of the 
+OP_STATESEPARATOR when it is present. 
 
-### <inputIndex> OP_STATESEPERATORINDEX_UTXO
+### <inputIndex> OP_STATESEPARATORINDEX_UTXO
 
-Pushes 0 onto the stack or the byte index of the OP_STATESEPERATOR (if present) in the input utxo at the inputIndex.
+Pushes 0 onto the stack or the byte index of the OP_STATESEPARATOR (if present) in the input utxo at the inputIndex.
 
-### <outputIndex> OP_STATESEPERATORINDEX_OUTPUT
+### <outputIndex> OP_STATESEPARATORINDEX_OUTPUT
 
-Same as OP_STATESEPERATORINDEX_UTXO, but for the outputs.
+Same as OP_STATESEPARATORINDEX_UTXO, but for the outputs.
 
 ### <refAssetId 36 bytes> OP_REFVALUESUM_UTXOS
 
