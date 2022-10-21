@@ -149,6 +149,7 @@ static bool IsOpcodeDisabled(opcodetype opcode, uint32_t flags) {
         case OP_PUSHINPUTREFSINGLETON: 
         case OP_REFTYPE_UTXO:
         case OP_REFTYPE_OUTPUT:
+        case OP_STATESEPARATOR:
         case OP_STATESEPARATORINDEX_UTXO:
         case OP_STATESEPARATORINDEX_OUTPUT:
         case OP_REFVALUESUM_UTXOS:
@@ -1663,6 +1664,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     case OP_PUSHINPUTREFSINGLETON: 
                     case OP_REFTYPE_UTXO:
                     case OP_REFTYPE_OUTPUT:
+                    case OP_STATESEPARATOR:
                     case OP_STATESEPARATORINDEX_UTXO:
                     case OP_STATESEPARATORINDEX_OUTPUT:
                     case OP_REFVALUESUM_UTXOS:
