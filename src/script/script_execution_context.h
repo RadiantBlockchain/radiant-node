@@ -190,7 +190,6 @@ class ScriptExecutionContext {
             scriptSummary.disallowSiblingRefSet = disallowSiblingRefSetLocal;
             scriptSummary.singletonRefSet = singletonRefSetLocal;
             scriptSummary.stateSeperatorByteIndex = stateSeperatorByteIndex;
-            vectorPushRefScriptSummary.push_back(scriptSummary);
 
             // Merge in the local pushRefSet and singletonRefSet
             globalPushRefSet.insert(pushRefSetLocal.begin(), pushRefSetLocal.end());
@@ -279,6 +278,8 @@ class ScriptExecutionContext {
             CHashWriter hashWriterCodeScriptHashWriter(SER_GETHASH, 0);
             hashWriterCodeScriptHashWriter << CFlatData(CScript(scriptStateSeperatorIterator, script.end()));
             scriptSummary.codeScriptHash = hashWriterCodeScriptHashWriter.GetHash(); 
+            vectorPushRefScriptSummary.push_back(scriptSummary);
+
             // Populate the maps for codeScriptHash
             // Serves:
             //
