@@ -274,8 +274,9 @@ class ScriptExecutionContext {
             }
             // Create the codeScriptHash
             if (stateSeperatorByteIndex >= script.size()) {
-                // If the OP_STATESEPARATOR is at the very end, then set it to the zero hash.
-                scriptSummary.codeScriptHash = zeroRefHash;
+                CHashWriter hashWriterCodeScriptHashWriter(SER_GETHASH, 0);
+                hashWriterCodeScriptHashWriter << CFlatData(CScript(script.end(), script.end()));
+                scriptSummary.codeScriptHash = hashWriterCodeScriptHashWriter.GetHash(); 
             } else {
                 CScript::const_iterator scriptStateSeperatorIterator = script.begin() + stateSeperatorByteIndex;
                 CHashWriter hashWriterCodeScriptHashWriter(SER_GETHASH, 0);
