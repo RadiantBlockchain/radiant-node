@@ -272,14 +272,17 @@ class ScriptExecutionContext {
                     }
                 }
             }
-            
             // Create the codeScriptHash
-            CScript::const_iterator scriptStateSeperatorIterator = script.begin() + stateSeperatorByteIndex;
-            CHashWriter hashWriterCodeScriptHashWriter(SER_GETHASH, 0);
-            hashWriterCodeScriptHashWriter << CFlatData(CScript(scriptStateSeperatorIterator, script.end()));
-            scriptSummary.codeScriptHash = hashWriterCodeScriptHashWriter.GetHash(); 
+            if (stateSeperatorByteIndex >= script.size()) {
+                // If the OP_STATESEPARATOR is at the very end, then set it to the zero hash.
+                scriptSummary.codeScriptHash = zeroRefHash;
+            } else {
+                CScript::const_iterator scriptStateSeperatorIterator = stateSeperatorByteIndex ? script.begin() + stateSeperatorByteIndex;
+                CHashWriter hashWriterCodeScriptHashWriter(SER_GETHASH, 0);
+                hashWriterCodeScriptHashWriter << CFlatData(CScript(scriptStateSeperatorIterator, script.end()));
+                scriptSummary.codeScriptHash = hashWriterCodeScriptHashWriter.GetHash(); 
+            }
             vectorPushRefScriptSummary.push_back(scriptSummary);
-
             // Populate the maps for codeScriptHash
             // Serves:
             //
