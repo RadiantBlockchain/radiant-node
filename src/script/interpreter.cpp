@@ -537,6 +537,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     case OP_2DROP: {
                         // (x1 x2 -- )
                         if (stack.size() < 2) {
+                             std::cout << "INVALID_STACK_OPERATION: OP_2DROP" << std::endl;
                             return set_error(
                                 serror, ScriptError::INVALID_STACK_OPERATION);
                         }
@@ -547,6 +548,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     case OP_2DUP: {
                         // (x1 x2 -- x1 x2 x1 x2)
                         if (stack.size() < 2) {
+                              std::cout << "INVALID_STACK_OPERATION: OP_2DUP" << std::endl;
                             return set_error(
                                 serror, ScriptError::INVALID_STACK_OPERATION);
                         }
@@ -644,6 +646,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     case OP_NIP: {
                         // (x1 x2 -- x2)
                         if (stack.size() < 2) {
+                              std::cout << "INVALID_STACK_OPERATION: NIP" << std::endl;
                             return set_error(
                                 serror, ScriptError::INVALID_STACK_OPERATION);
                         }
@@ -815,11 +818,12 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                         {
                             // (x1 x2 - bool)
                             if (stack.size() < 2) {
+                                std::cout << "INVALID_STACK_OPERATION: OP_EQUALVERIFY" << std::endl;
                                 return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
                             }
                             valtype &vch1 = stacktop(-2);
                             valtype &vch2 = stacktop(-1);
-
+                            
                             std::cout << "OP_EQUALVERIFY: " << HexStr(vch1) << " compared: " << HexStr(vch2) << std::endl;
                             bool fEqual = (vch1 == vch2);
                             // OP_NOTEQUAL is disabled because it would be too
@@ -913,6 +917,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     case OP_MAX: {
                         // (x1 x2 -- out)
                         if (stack.size() < 2) {
+                            std::cout << "INVALID_STACK_OPERATION: EXTRAS" << std::endl;
                             return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
                         }
                         CScriptNum bn1(stacktop(-2), fRequireMinimal, maxIntegerSize);
