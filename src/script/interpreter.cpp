@@ -491,6 +491,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                         // (true -- ) or
                         // (false -- false) and return
                         if (stack.size() < 1) {
+                            std::cout << "INVALID_STACK_OPERATION: OP_VERIFY" << std::endl;
                             return set_error(
                                 serror, ScriptError::INVALID_STACK_OPERATION);
                         }
@@ -517,6 +518,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     //
                     case OP_TOALTSTACK: {
                         if (stack.size() < 1) {
+                             std::cout << "INVALID_STACK_OPERATION: OP_TOALTSTACK" << std::endl;
                             return set_error(
                                 serror, ScriptError::INVALID_STACK_OPERATION);
                         }
@@ -1021,6 +1023,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     case OP_WITHIN: {
                         // (x min max -- out)
                         if (stack.size() < 3) {
+                               std::cout << "INVALID_STACK_OPERATION: op within" << std::endl;
                             return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
                         }
                         CScriptNum bn1(stacktop(-3), fRequireMinimal, maxIntegerSize);
@@ -1046,6 +1049,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     case OP_HASH512_256: {
                         // (in -- hash)
                         if (stack.size() < 1) {
+                               std::cout << "INVALID_STACK_OPERATION: riped" << std::endl;
                             return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
                         }
                         valtype &vch = stacktop(-1);
@@ -1090,6 +1094,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     case OP_CHECKSIGVERIFY: {
                         // (sig pubkey -- bool)
                         if (stack.size() < 2) {
+                               std::cout << "INVALID_STACK_OPERATION: cheksig" << std::endl;
                             return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
                         }
                         valtype const &vchSig = stacktop(-2);
@@ -1385,6 +1390,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     case OP_CAT: {
                         // (x1 x2 -- out)
                         if (stack.size() < 2) {
+                               std::cout << "INVALID_STACK_OPERATION: op cat" << std::endl;
                             return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
                         }
                         valtype &vch1 = stacktop(-2);
@@ -1400,6 +1406,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     case OP_SPLIT: {
                         // (in position -- x1 x2)
                         if (stack.size() < 2) {
+                               std::cout << "INVALID_STACK_OPERATION: op split" << std::endl;
                             return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
                         }
 
@@ -1423,6 +1430,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     case OP_REVERSEBYTES: {
                         // (in -- out)
                         if (stack.size() < 1) {
+                               std::cout << "INVALID_STACK_OPERATION: rever" << std::endl;
                             return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
                         }
 
@@ -1476,6 +1484,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     case OP_BIN2NUM: {
                         // (in -- out)
                         if (stack.size() < 1) {
+                               std::cout << "INVALID_STACK_OPERATION: bin2n" << std::endl;
                             return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
                         }
 
@@ -1559,6 +1568,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
 
                         // (in -- out)
                         if (stack.size() < 1) {
+                               std::cout << "INVALID_STACK_OPERATION: NATIVE INTRO" << std::endl;
                             return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
                         }
                         auto const index = CScriptNum(stacktop(-1), fRequireMinimal, maxIntegerSize).getint64();
