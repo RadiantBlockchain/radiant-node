@@ -820,6 +820,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                             valtype &vch1 = stacktop(-2);
                             valtype &vch2 = stacktop(-1);
 
+                            std::cout << "OP_EQUALVERIFY: " << HexStr(vch1) << " compared: " << HexStr(vch2) << std::endl;
                             bool fEqual = (vch1 == vch2);
                             // OP_NOTEQUAL is disabled because it would be too
                             // easy to say something like n != 1 and have some
