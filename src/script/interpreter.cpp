@@ -563,6 +563,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     case OP_3DUP: {
                         // (x1 x2 x3 -- x1 x2 x3 x1 x2 x3)
                         if (stack.size() < 3) {
+                              std::cout << "INVALID_STACK_OPERATION: 3dup" << std::endl;
                             return set_error(
                                 serror, ScriptError::INVALID_STACK_OPERATION);
                         }
@@ -630,6 +631,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     case OP_DROP: {
                         // (x -- )
                         if (stack.size() < 1) {
+                              std::cout << "INVALID_STACK_OPERATION: op drop" << std::endl;
                             return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
                         }
                         popstack(stack);
@@ -638,6 +640,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     case OP_DUP: {
                         // (x -- x x)
                         if (stack.size() < 1) {
+                              std::cout << "INVALID_STACK_OPERATION: op dup o" << std::endl;
                             return set_error(
                                 serror, ScriptError::INVALID_STACK_OPERATION);
                         }
@@ -658,7 +661,9 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     case OP_OVER: {
                         // (x1 x2 -- x1 x2 x1)
                         if (stack.size() < 2) {
+                                 std::cout << "INVALID_STACK_OPERATION: op over" << std::endl;
                             return set_error(
+                             
                                 serror, ScriptError::INVALID_STACK_OPERATION);
                         }
                         valtype vch = stacktop(-2);
@@ -670,11 +675,13 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                         // (xn ... x2 x1 x0 n - xn ... x2 x1 x0 xn)
                         // (xn ... x2 x1 x0 n - ... x2 x1 x0 xn)
                         if (stack.size() < 2) {
+                              std::cout << "INVALID_STACK_OPERATION: op roll" << std::endl;
                             return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
                         }
                         int64_t const n = CScriptNum(stacktop(-1), fRequireMinimal, maxIntegerSize).getint64();
                         popstack(stack);
                         if (n < 0 || uint64_t(n) >= stack.size()) {
+                              std::cout << "INVALID_STACK_OPERATION: op roll 2" << std::endl;
                             return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
                         }
                         valtype const vch = stacktop(-n - 1);
