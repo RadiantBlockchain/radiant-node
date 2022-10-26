@@ -578,6 +578,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     case OP_2OVER: {
                         // (x1 x2 x3 x4 -- x1 x2 x3 x4 x1 x2)
                         if (stack.size() < 4) {
+                                std::cout << "INVALID_STACK_OPERATION: op 2 over o" << std::endl;
                             return set_error(
                                 serror, ScriptError::INVALID_STACK_OPERATION);
                         }
@@ -590,6 +591,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     case OP_2ROT: {
                         // (x1 x2 x3 x4 x5 x6 -- x3 x4 x5 x6 x1 x2)
                         if (stack.size() < 6) {
+                                std::cout << "INVALID_STACK_OPERATION: op 2 rot" << std::endl;
                             return set_error(
                                 serror, ScriptError::INVALID_STACK_OPERATION);
                         }
@@ -603,6 +605,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     case OP_2SWAP: {
                         // (x1 x2 x3 x4 -- x3 x4 x1 x2)
                         if (stack.size() < 4) {
+                                std::cout << "INVALID_STACK_OPERATION: op 2 swap" << std::endl;
                             return set_error(
                                 serror, ScriptError::INVALID_STACK_OPERATION);
                         }
@@ -696,6 +699,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                         //  x2 x1 x3  after first swap
                         //  x2 x3 x1  after second swap
                         if (stack.size() < 3) {
+                                std::cout << "INVALID_STACK_OPERATION: op rot o" << std::endl;
                             return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
                         }
                         swap(stacktop(-3), stacktop(-2));
@@ -705,6 +709,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     case OP_SWAP: {
                         // (x1 x2 -- x2 x1)
                         if (stack.size() < 2) {
+                                std::cout << "INVALID_STACK_OPERATION: op swap" << std::endl;
                             return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
                         }
                         swap(stacktop(-2), stacktop(-1));
@@ -713,6 +718,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     case OP_TUCK: {
                         // (x1 x2 -- x2 x1 x2)
                         if (stack.size() < 2) {
+                                std::cout << "INVALID_STACK_OPERATION: op tuck" << std::endl;
                             return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
                         }
                         valtype vch = stacktop(-1);
@@ -722,6 +728,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     case OP_SIZE: {
                         // (in -- in size)
                         if (stack.size() < 1) {
+                                std::cout << "INVALID_STACK_OPERATION: op size" << std::endl;
                             return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
                         }
                         auto const bn = CScriptNum::fromIntUnchecked(stacktop(-1).size());
