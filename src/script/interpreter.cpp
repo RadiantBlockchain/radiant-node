@@ -2304,7 +2304,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                     return set_error(serror, ScriptError::PUSH_SIZE);
                                 }
                                 CHashWriter scriptHashWriter(SER_GETHASH, 0);
-                                scriptHashWriter << CFlatData(utxoScript.begin(), utxoScript.end());
+                                scriptHashWriter << utxoScript;
                                 auto h = scriptHashWriter.GetHash();
                                 stack.emplace_back(h.begin(), h.end());
                             } break;
@@ -2327,7 +2327,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                     return set_error(serror, ScriptError::PUSH_SIZE);
                                 }
                                 CHashWriter scriptHashWriter(SER_GETHASH, 0);
-                                scriptHashWriter << CFlatData(outputScript.begin(), outputScript.end());
+                                scriptHashWriter << outputScript;
                                 auto h = scriptHashWriter.GetHash();
                                 stack.emplace_back(h.begin(), h.end());
                             } break;
