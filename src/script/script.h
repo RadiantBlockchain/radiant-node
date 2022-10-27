@@ -248,7 +248,10 @@ enum opcodetype {
     OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_OUTPUTS = 0xe8,
     OP_CODESCRIPTHASH_UTXO = 0xe9,
     OP_CODESCRIPTHASH_OUTPUT = 0xea,
-
+    OP_ACTIVECODESCRIPTHASH = 0xeb,
+    OP_SCRIPTHASH_UTXO = 0xec,
+    OP_SCRIPTHASH_OUTPUT = 0xed,
+ 
     // The first op_code value after all defined opcodes
     FIRST_UNDEFINED_OP_VALUE,
 

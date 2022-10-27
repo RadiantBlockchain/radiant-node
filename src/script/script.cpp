@@ -353,6 +353,17 @@ const char *GetOpName(opcodetype opcode) {
             return "OP_CODESCRIPTHASH_UTXO";
         case OP_CODESCRIPTHASH_OUTPUT:
             return "OP_CODESCRIPTHASH_OUTPUT";
+        case OP_ACTIVECODESCRIPTHASH:
+            return "OP_ACTIVECODESCRIPTHASH";
+        case OP_SCRIPTHASH_UTXO:
+            return "OP_SCRIPTHASH_UTXO";
+        case OP_SCRIPTHASH_OUTPUT:
+            return "OP_SCRIPTHASH_OUTPUT";
+        // Should we have a way to return a count of the total unique non-zero 
+        // references per input and output?
+        // It could be used to disallow any inputs
+        // case OP_TOTALUNIQUEREFCOUNT_OUTPUTS: todo
+        // case OP_TOTALUNIQUEREFCOUNT_INPUTS: todo
         default:
             return "OP_UNKNOWN";
     }

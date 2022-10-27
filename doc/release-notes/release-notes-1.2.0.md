@@ -36,7 +36,8 @@ List of new OP Codes:
 - `<codeScriptHash 32 bytes> OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_OUTPUTS`
 - `<inputIndex> OP_CODESCRIPTHASH_UTXO`
 - `<outputIndex> OP_CODESCRIPTHASH_OUTPUT` 
- 
+- `OP_ACTIVECODESCRIPTHASH`
+
 Additional improvements:
 
 - Removed validating induction OP codes on rolling a block forward as the blocks were already validated, and the extra overhead is not needed
@@ -171,6 +172,18 @@ Pushes the codeScriptHash for an input utxo by inputIndex.
 
 Same as OP_CODESCRIPTHASH_UTXO, but for the outputs.
  
+### OP_ACTIVECODESCRIPTHASH
+
+Pushes the codeScriptHash of the active input utxo being spent.
+
+### <inputIndex> OP_SCRIPTHASH_UTXO
+
+Pushes the hash256 of the input utxo identified by the inputIndex.
+
+### <outputIndex> OP_SCRIPTHASH_OUTPUT
+
+Same as OP_SCRIPTHASH_UTXO but for the outputs.
+
 ## Deprecated functionality
 
 n/a

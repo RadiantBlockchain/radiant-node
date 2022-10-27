@@ -1713,6 +1713,9 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     case OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_OUTPUTS:
                     case OP_CODESCRIPTHASH_UTXO:
                     case OP_CODESCRIPTHASH_OUTPUT:
+                    case OP_ACTIVECODESCRIPTHASH:
+                    case OP_SCRIPTHASH_UTXO:
+                    case OP_SCRIPTHASH_OUTPUT:
                     {
                         switch (opcode) {
                             case OP_PUSHINPUTREF: {
@@ -2260,6 +2263,67 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 }
                                 auto const& codeScriptHash = context->getCodeScriptHashOutput(index);
                                 stack.emplace_back(codeScriptHash.begin(), codeScriptHash.end());
+                            } break;
+
+                            case OP_ACTIVECODESCRIPTHASH: {
+                                if ( ! context) {
+                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
+                                }
+                                auto const bn = CScriptNum::fromInt(context->inputIndex()).value();
+                                auto const& codeScriptHash = context->getCodeScriptHashOutput(bn);
+                                stack.emplace_back(codeScriptHash.begin(), codeScriptHash.end());
+                            } break;
+ 
+                            case OP_SCRIPTHASH_UTXO: {
+                                if ( ! context) {
+                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
+                                }
+                                // (in -- out)
+                                if (stack.size() < 1) {
+                                    return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
+                                }
+                                auto const index = CScriptNum(stacktop(-1), fRequireMinimal, maxIntegerSize).getint64();
+                                popstack(stack); // consume element
+                                if (index < 0 || uint64_t(index) >= context->tx().vin().size()) {
+                                    return set_error(serror, ScriptError::INVALID_TX_INPUT_INDEX);
+                                }
+                                if (context->isLimited() && uint64_t(index) != context->inputIndex()) {
+                                    // This branch can only happen in tests or other non-consensus code
+                                    // that calls the VM without all the *other* inputs' coins.
+                                    return set_error(serror, ScriptError::LIMITED_CONTEXT_NO_SIBLING_INFO);
+                                }
+
+                                auto const& utxoScript = context->coinScriptPubKey(index);
+                                if (utxoScript.size() > MAX_SCRIPT_ELEMENT_SIZE) {
+                                    return set_error(serror, ScriptError::PUSH_SIZE);
+                                }
+                                CHashWriter scriptHashWriter(SER_GETHASH, 0);
+                                scriptHashWriter << CFlatData(utxoScript.begin(), utxoScript.end());
+                                auto h = scriptHashWriter.GetHash();
+                                stack.emplace_back(h.begin(), h.end());
+                            } break;
+
+                            case OP_SCRIPTHASH_OUTPUT: {
+                                if ( ! context) {
+                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
+                                }
+                                // (in -- out)
+                                if (stack.size() < 1) {
+                                    return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
+                                }
+                                auto const index = CScriptNum(stacktop(-1), fRequireMinimal, maxIntegerSize).getint64();
+                                popstack(stack); // consume element
+                                if (index < 0 || uint64_t(index) >= context->tx().vout().size()) {
+                                    return set_error(serror, ScriptError::INVALID_TX_OUTPUT_INDEX);
+                                }
+                                auto const& outputScript = context->tx().vout()[index].scriptPubKey;
+                                if (outputScript.size() > MAX_SCRIPT_ELEMENT_SIZE) {
+                                    return set_error(serror, ScriptError::PUSH_SIZE);
+                                }
+                                CHashWriter scriptHashWriter(SER_GETHASH, 0);
+                                scriptHashWriter << CFlatData(outputScript.begin(), outputScript.end());
+                                auto h = scriptHashWriter.GetHash();
+                                stack.emplace_back(h.begin(), h.end());
                             } break;
 
                             default: {
