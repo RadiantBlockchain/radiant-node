@@ -2346,7 +2346,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 if (utxoScript.size() > MAX_SCRIPT_ELEMENT_SIZE) {
                                     return set_error(serror, ScriptError::PUSH_SIZE);
                                 }
-                                auto const stateSeperatorIndex = context->getStateSeparatorIndexUtxo(index);
+                                auto const stateSeperatorIndex = context->getStateSeparatorByteIndexUtxo(index);
 
                                 if (stateSeperatorIndex > 0) {
                                     stack.emplace_back(utxoScript.begin(), utxoScript.begin() + stateSeperatorIndex);
@@ -2365,7 +2365,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 if (outputScript.size() > MAX_SCRIPT_ELEMENT_SIZE) {
                                     return set_error(serror, ScriptError::PUSH_SIZE);
                                 }
-                                auto const stateSeperatorIndex = context->getStateSeparatorIndexUtxo(index);
+                                auto const stateSeperatorIndex = context->getStateSeparatorByteIndexOutput(index);
                                 if (stateSeperatorIndex > 0) {
                                     stack.emplace_back(outputScript.begin(), outputScript.begin() + stateSeperatorIndex);
                                 } else {
