@@ -600,10 +600,10 @@ public:
     const uint256& getCodeScriptHashOutput(uint32_t outputIndex) const {
         return shared->vectorOutputsPushRefScriptSummary[outputIndex].codeScriptHash;
     }
-    const uint32_t getStateSeparatorByteIndexUtxo(uint32_t inputIndex) const {
+    uint32_t getStateSeparatorByteIndexUtxo(uint32_t inputIndex) const {
         return shared->vectorInputsPushRefScriptSummary[inputIndex].stateSeperatorByteIndex;
     }
-    const uint32_t getStateSeparatorByteIndexOutput(uint32_t outputIndex) const {
+    uint32_t getStateSeparatorByteIndexOutput(uint32_t outputIndex) const {
         return shared->vectorOutputsPushRefScriptSummary[outputIndex].stateSeperatorByteIndex;
     }
 };
