@@ -359,6 +359,11 @@ const char *GetOpName(opcodetype opcode) {
             return "OP_SCRIPTHASH_UTXO";
         case OP_SCRIPTHASH_OUTPUT:
             return "OP_SCRIPTHASH_OUTPUT";
+        case OP_STATECRIPTBYTECODE_UTXO:
+            return "OP_STATECRIPTBYTECODE_UTXO";
+        case OP_STATECRIPTBYTECODE_OUTPUT:
+            return "OP_STATECRIPTBYTECODE_OUTPUT";
+
         // Should we have a way to return a count of the total unique non-zero 
         // references per input and output?
         // It could be used to disallow any inputs

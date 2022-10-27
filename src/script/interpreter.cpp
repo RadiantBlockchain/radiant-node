@@ -168,6 +168,11 @@ static bool IsOpcodeDisabled(opcodetype opcode, uint32_t flags) {
         case OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_OUTPUTS:
         case OP_CODESCRIPTHASH_UTXO:
         case OP_CODESCRIPTHASH_OUTPUT:
+        case OP_ACTIVECODESCRIPTHASH:
+        case OP_SCRIPTHASH_UTXO:
+        case OP_SCRIPTHASH_OUTPUT:
+        case OP_STATECRIPTBYTECODE_UTXO:
+        case OP_STATECRIPTBYTECODE_OUTPUT:
             return (flags & SCRIPT_ENHANCED_REFERENCES) == 0;
         case OP_INVERT:
         case OP_MUL:
@@ -1716,6 +1721,8 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     case OP_ACTIVECODESCRIPTHASH:
                     case OP_SCRIPTHASH_UTXO:
                     case OP_SCRIPTHASH_OUTPUT:
+                    case OP_STATECRIPTBYTECODE_UTXO:
+                    case OP_STATECRIPTBYTECODE_OUTPUT:
                     {
                         switch (opcode) {
                             case OP_PUSHINPUTREF: {
@@ -2273,7 +2280,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 auto const& codeScriptHash = context->getCodeScriptHashOutput(bn);
                                 stack.emplace_back(codeScriptHash.begin(), codeScriptHash.end());
                             } break;
- 
+  
                             case OP_SCRIPTHASH_UTXO: {
                                 if ( ! context) {
                                     return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
@@ -2324,6 +2331,47 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 scriptHashWriter << CFlatData(outputScript.begin(), outputScript.end());
                                 auto h = scriptHashWriter.GetHash();
                                 stack.emplace_back(h.begin(), h.end());
+                            } break;
+
+                            case OP_STATECRIPTBYTECODE_UTXO: {
+                                if (index < 0 || uint64_t(index) >= context->tx().vin().size()) {
+                                    return set_error(serror, ScriptError::INVALID_TX_INPUT_INDEX);
+                                }
+                                if (context->isLimited() && uint64_t(index) != context->inputIndex()) {
+                                    // This branch can only happen in tests or other non-consensus code
+                                    // that calls the VM without all the *other* inputs' coins.
+                                    return set_error(serror, ScriptError::LIMITED_CONTEXT_NO_SIBLING_INFO);
+                                }
+                                auto const& utxoScript = context->coinScriptPubKey(index);
+                                if (utxoScript.size() > MAX_SCRIPT_ELEMENT_SIZE) {
+                                    return set_error(serror, ScriptError::PUSH_SIZE);
+                                }
+                                auto const stateSeperatorIndex = context->getStateSeparatorIndexUtxo(index);
+
+                                if (stateSeperatorIndex > 0) {
+                                    stack.emplace_back(utxoScript.begin(), utxoScript.begin() + stateSeperatorIndex);
+                                } else {
+                                    auto const bn = CScriptNum::fromIntUnchecked(0);
+                                    stack.push_back(bn.getvch());
+                                }
+                             
+                            } break;
+
+                            case OP_STATECRIPTBYTECODE_OUTPUT: {
+                                if (index < 0 || uint64_t(index) >= context->tx().vout().size()) {
+                                    return set_error(serror, ScriptError::INVALID_TX_OUTPUT_INDEX);
+                                }
+                                auto const& outputScript = context->tx().vout()[index].scriptPubKey;
+                                if (outputScript.size() > MAX_SCRIPT_ELEMENT_SIZE) {
+                                    return set_error(serror, ScriptError::PUSH_SIZE);
+                                }
+                                auto const stateSeperatorIndex = context->getStateSeparatorIndexUtxo(index);
+                                if (stateSeperatorIndex > 0) {
+                                    stack.emplace_back(outputScript.begin(), outputScript.begin() + stateSeperatorIndex);
+                                } else {
+                                    auto const bn = CScriptNum::fromIntUnchecked(0);
+                                    stack.push_back(bn.getvch());
+                                }
                             } break;
 
                             default: {

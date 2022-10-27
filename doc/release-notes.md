@@ -37,6 +37,8 @@ List of new OP Codes:
 - `<inputIndex> OP_CODESCRIPTHASH_UTXO`
 - `<outputIndex> OP_CODESCRIPTHASH_OUTPUT` 
 - `OP_ACTIVECODESCRIPTHASH`
+- `<inputIndex> OP_STATECRIPTBYTECODE_UTXO`
+- `<outputIndex> OP_STATECRIPTBYTECODE_OUTPUT`
 
 Additional improvements:
 
@@ -184,6 +186,16 @@ Pushes the hash256 of the input utxo identified by the inputIndex.
 
 Same as OP_SCRIPTHASH_UTXO but for the outputs.
 
+
+### <inputIndex> OP_STATECRIPTBYTECODE_UTXO
+
+Pushes the part of the bytecode from the beginning of a script until the byte right before the use of OP_STATESEPARATOR.
+If there is no OP_STATESEPARATOR or it appears at the very first byte in a script, then then null 0x00 value is pushed to the stack.
+
+### <outputIndex> OP_STATECRIPTBYTECODE_OUTPUT
+
+Same as OP_STATECRIPTBYTECODE_UTXO but for the outputs.
+ 
 ## Deprecated functionality
 
 n/a

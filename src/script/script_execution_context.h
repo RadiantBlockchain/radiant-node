@@ -278,7 +278,7 @@ class ScriptExecutionContext {
                 hashWriterCodeScriptHashWriter << CFlatData(CScript(script.end(), script.end()));
                 scriptSummary.codeScriptHash = hashWriterCodeScriptHashWriter.GetHash(); 
             } else {
-                CScript::const_iterator scriptStateSeperatorIterator = script.begin() + stateSeperatorByteIndex;
+                CScript::const_iterator scriptStateSeperatorIterator = script.begin() + stateSeperatorByteIndex; 
                 CHashWriter hashWriterCodeScriptHashWriter(SER_GETHASH, 0);
                 hashWriterCodeScriptHashWriter << CFlatData(CScript(scriptStateSeperatorIterator, script.end()));
                 scriptSummary.codeScriptHash = hashWriterCodeScriptHashWriter.GetHash(); 
@@ -599,6 +599,12 @@ public:
     }
     const uint256& getCodeScriptHashOutput(uint32_t outputIndex) const {
         return shared->vectorOutputsPushRefScriptSummary[outputIndex].codeScriptHash;
+    }
+    const uint32_t getStateSeperatorByteIndexUtxo(uint32_t inputIndex) const {
+        return shared->vectorInputsPushRefScriptSummary[inputIndex].stateSeperatorByteIndex;
+    }
+    const uint32_t getStateSeperatorByteIndexOutput(uint32_t outputIndex) const {
+        return shared->vectorOutputsPushRefScriptSummary[outputIndex].stateSeperatorByteIndex;
     }
 };
 #if defined(__GNUG__) && !defined(__clang__)
