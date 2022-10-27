@@ -2276,8 +2276,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 if ( ! context) {
                                     return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
                                 }
-                                auto const bn = CScriptNum::fromInt(context->inputIndex()).value();
-                                auto const& codeScriptHash = context->getCodeScriptHashOutput(bn);
+                                auto const& codeScriptHash = context->getCodeScriptHashOutput(context->inputIndex());
                                 stack.emplace_back(codeScriptHash.begin(), codeScriptHash.end());
                             } break;
   
@@ -2349,7 +2348,6 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 }
                                 auto const index = CScriptNum(stacktop(-1), fRequireMinimal, maxIntegerSize).getint64();
                                 popstack(stack); // consume element
-
 
                                 if (index < 0 || uint64_t(index) >= context->tx().vin().size()) {
                                     return set_error(serror, ScriptError::INVALID_TX_INPUT_INDEX);
