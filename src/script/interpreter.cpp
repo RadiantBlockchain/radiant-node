@@ -2334,6 +2334,23 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                             } break;
 
                             case OP_STATECRIPTBYTECODE_UTXO: {
+
+                                 if ( ! nativeIntrospection) {
+                                    return set_error(serror, ScriptError::BAD_OPCODE);
+                                }
+                                if ( ! context) {
+                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
+                                }
+
+                                // (in -- out)
+                                if (stack.size() < 1) {
+                                    std::cout << "INVALID_STACK_OPERATION: NATIVE INTRO" << std::endl;
+                                    return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
+                                }
+                                auto const index = CScriptNum(stacktop(-1), fRequireMinimal, maxIntegerSize).getint64();
+                                popstack(stack); // consume element
+
+
                                 if (index < 0 || uint64_t(index) >= context->tx().vin().size()) {
                                     return set_error(serror, ScriptError::INVALID_TX_INPUT_INDEX);
                                 }
@@ -2358,6 +2375,22 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                             } break;
 
                             case OP_STATECRIPTBYTECODE_OUTPUT: {
+
+                                 if ( ! nativeIntrospection) {
+                                    return set_error(serror, ScriptError::BAD_OPCODE);
+                                }
+                                if ( ! context) {
+                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
+                                }
+
+                                // (in -- out)
+                                if (stack.size() < 1) {
+                                    std::cout << "INVALID_STACK_OPERATION: NATIVE INTRO" << std::endl;
+                                    return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
+                                }
+                                auto const index = CScriptNum(stacktop(-1), fRequireMinimal, maxIntegerSize).getint64();
+                                popstack(stack); // consume element
+
                                 if (index < 0 || uint64_t(index) >= context->tx().vout().size()) {
                                     return set_error(serror, ScriptError::INVALID_TX_OUTPUT_INDEX);
                                 }
