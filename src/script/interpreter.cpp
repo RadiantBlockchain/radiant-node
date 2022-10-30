@@ -1802,6 +1802,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 }
                                 auto const& dataHash = context->getRefHashDataSummaryOutput(index);
                                 stack.emplace_back(dataHash.begin(), dataHash.end());
+
                             } break;
                             case OP_REFHASHVALUESUM_UTXOS: {
                                 if ( ! context) {
@@ -1822,6 +1823,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 auto const& sumAmount = context->getRefHashValueSumUtxos(refHashUint256);
                                 auto bn = CScriptNum::fromInt(sumAmount / SATOSHI).value();
                                 stack.push_back(bn.getvch());
+                                std::cout << "OP_REFHASHVALUESUM_UTXOS:" << HexStr(bn.getvch()) << std::endl;
                             } break;
                             case OP_REFHASHVALUESUM_OUTPUTS: {
                                 if ( ! enhancedReferences) {
@@ -1845,6 +1847,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 auto const& sumAmount = context->getRefHashValueSumOutputs(refHashUint256);
                                 auto bn = CScriptNum::fromInt(sumAmount / SATOSHI).value();
                                 stack.push_back(bn.getvch());
+                                std::cout << "OP_REFHASHVALUESUM_OUTPUTS:" << HexStr(bn.getvch()) << std::endl;
                             } break;
                             case OP_REFVALUESUM_UTXOS: {
                                 if ( ! context) {
@@ -1865,7 +1868,9 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 auto const& sumAmount = context->getRefValueSumUtxos(refAssetIdUint288);
                                 auto bn = CScriptNum::fromInt(sumAmount / SATOSHI).value();
                                 stack.push_back(bn.getvch());
+                                std::cout << "OP_REFVALUESUM_UTXOS:" << HexStr(bn.getvch()) << std::endl;
                             } break;
+                            
                             case OP_REFVALUESUM_OUTPUTS: {
                                 if ( ! context) {
                                     return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
@@ -1886,6 +1891,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 auto bn = CScriptNum::fromInt(sumAmount / SATOSHI).value();
                                 stack.push_back(bn.getvch());
                                   
+                                std::cout << "OP_REFVALUESUM_OUTPUTS:" << HexStr(bn.getvch()) << std::endl;
                             } break; 
                             case OP_PUSHINPUTREFSINGLETON: {
                                 if ( ! enhancedReferences) {
@@ -1896,6 +1902,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 }
                                 // When interpreting OP_PUSHINPUTREFSINGLETON, push the value to the stack
                                 stack.push_back(vchPushValue);
+                                std::cout << "OP_PUSHINPUTREFSINGLETON found" << HexStr(vchPushValue) << std::endl;
                             } break;
 
                             case OP_STATESEPARATOR: {
@@ -1903,6 +1910,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                     return set_error(serror, ScriptError::BAD_OPCODE);
                                 }
                                 // When interpreting OP_STATESEPARATOR, do nothing (NOP)
+                                std::cout << "OP_STATESEPARATOR found" << std::endl;
                             } break;
 
                             case OP_REFTYPE_UTXO: {
@@ -1923,6 +1931,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 auto const& intType = context->getRefTypeUtxo(refAssetIdUint288);
                                 auto bn = CScriptNum::fromInt(intType).value();
                                 stack.push_back(bn.getvch());
+                                std::cout << "OP_REFTYPE_UTXO: " << HexStr(bn.getvch()) << std::endl;
                             } break;
                             case OP_REFTYPE_OUTPUT: {
                                 if ( ! context) {
@@ -1942,6 +1951,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 auto const& intType = context->getRefTypeOutput(refAssetIdUint288);
                                 auto bn = CScriptNum::fromInt(intType).value();
                                 stack.push_back(bn.getvch());
+                                std::cout << "OP_REFTYPE_OUTPUT: " << HexStr(bn.getvch()) << std::endl;
                              } break;
                             case OP_STATESEPARATORINDEX_UTXO: {
                                 if ( ! enhancedReferences) {
@@ -1968,6 +1978,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 auto const& intType = context->getStateSeperatorIndexUtxo(index);
                                 auto bn = CScriptNum::fromInt(intType).value();
                                 stack.push_back(bn.getvch());
+                                std::cout << "OP_STATESEPARATORINDEX_UTXO: " << HexStr(bn.getvch()) << std::endl;
                             } break;
                             case OP_STATESEPARATORINDEX_OUTPUT: {
                                 if ( ! enhancedReferences) {
@@ -1994,6 +2005,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 auto const& intType = context->getStateSeperatorIndexOutput(index);
                                 auto bn = CScriptNum::fromInt(intType).value();
                                 stack.push_back(bn.getvch());
+                                std::cout << "OP_STATESEPARATORINDEX_OUTPUT: " << HexStr(bn.getvch()) << std::endl;
                             } break;
                             case OP_REFOUTPUTCOUNT_UTXOS: {
                                 if ( ! context) {
@@ -2013,6 +2025,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 auto const& intType = context->getRefOutputCountUtxos(refAssetIdUint288);
                                 auto bn = CScriptNum::fromInt(intType).value();
                                 stack.push_back(bn.getvch());
+                                std::cout << "OP_REFOUTPUTCOUNT_UTXOS: " << HexStr(bn.getvch()) << std::endl;
                             } break;
                             case OP_REFOUTPUTCOUNT_OUTPUTS: {
                                 if ( ! context) {
@@ -2032,6 +2045,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 auto const& intType = context->getRefOutputCountOutputs(refAssetIdUint288);
                                 auto bn = CScriptNum::fromInt(intType).value();
                                 stack.push_back(bn.getvch());
+                                std::cout << "OP_REFOUTPUTCOUNT_OUTPUTS: " << HexStr(bn.getvch()) << std::endl;
                             } break;
                             case OP_REFOUTPUTCOUNTZEROVALUED_UTXOS: {
                                 if ( ! context) {
@@ -2051,6 +2065,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 auto const& intType = context->getRefOutputZeroValuedCountUtxos(refAssetIdUint288);
                                 auto bn = CScriptNum::fromInt(intType).value();
                                 stack.push_back(bn.getvch());
+                                std::cout << "OP_REFOUTPUTCOUNTZEROVALUED_UTXOS: " << HexStr(bn.getvch()) << std::endl;
                             } break;
                             case OP_REFOUTPUTCOUNTZEROVALUED_OUTPUTS: {
                                 if ( ! context) {
@@ -2070,6 +2085,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 auto const& intType = context->getRefOutputZeroValuedCountOutputs(refAssetIdUint288);
                                 auto bn = CScriptNum::fromInt(intType).value();
                                 stack.push_back(bn.getvch());
+                                std::cout << "OP_REFOUTPUTCOUNTZEROVALUED_OUTPUTS: " << HexStr(bn.getvch()) << std::endl;
                             } break;
                             case OP_REFDATASUMMARY_UTXO: {
                                 if ( ! context) {
@@ -2092,6 +2108,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 }
                                 auto const& pushRefsBytes = context->getRefsPerUtxo(index);
                                 stack.emplace_back(pushRefsBytes.begin(), pushRefsBytes.end());
+                                std::cout << "OP_REFDATASUMMARY_UTXO: " << HexStr(pushRefsBytes) << std::endl;
                             } break;
                             case OP_REFDATASUMMARY_OUTPUT: {
                                 if ( ! context) {
@@ -2110,6 +2127,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
               
                                 auto const& pushRefsBytes = context->getRefsPerOutput(index);
                                 stack.emplace_back(pushRefsBytes.begin(), pushRefsBytes.end());
+                                std::cout << "OP_REFDATASUMMARY_OUTPUT: " << HexStr(pushRefsBytes) << std::endl;
                             } break;
                             case OP_CODESCRIPTHASHVALUESUM_UTXOS: {
                                 if ( ! context) {
@@ -2129,6 +2147,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 auto const& sumAmount = context->getCodeScriptHashValueSumUtxos(codeScriptHashUint256);
                                 auto bn = CScriptNum::fromInt(sumAmount / SATOSHI).value();
                                 stack.push_back(bn.getvch());
+                                std::cout << "OP_CODESCRIPTHASHVALUESUM_UTXOS: " << HexStr(bn.getvch()) << std::endl;
                                 
                             } break;
                             case OP_CODESCRIPTHASHVALUESUM_OUTPUTS: {
@@ -2149,6 +2168,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 auto const& sumAmount = context->getCodeScriptHashValueSumOutputs(codeScriptHashUint256);
                                 auto bn = CScriptNum::fromInt(sumAmount / SATOSHI).value();
                                 stack.push_back(bn.getvch());
+                                std::cout << "OP_CODESCRIPTHASHVALUESUM_OUTPUTS: " << HexStr(bn.getvch()) << std::endl;
                             } break;
                             case OP_CODESCRIPTHASHOUTPUTCOUNT_UTXOS: {
                                 if ( ! context) {
@@ -2168,6 +2188,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 auto const& counter = context->getCodeScriptHashOutputCountUtxos(codeScriptHashUint256);
                                 auto bn = CScriptNum::fromInt(counter).value();
                                 stack.push_back(bn.getvch());
+                                 std::cout << "OP_CODESCRIPTHASHOUTPUTCOUNT_UTXOS: " << HexStr(bn.getvch()) << std::endl;
                             } break;
                             case OP_CODESCRIPTHASHOUTPUTCOUNT_OUTPUTS: {
                                 if ( ! context) {
@@ -2187,6 +2208,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 auto const& counter = context->getCodeScriptHashOutputCountOutputs(codeScriptHashUint256);
                                 auto bn = CScriptNum::fromInt(counter).value();
                                 stack.push_back(bn.getvch());
+                                 std::cout << "OP_CODESCRIPTHASHOUTPUTCOUNT_OUTPUTS: " << HexStr(bn.getvch()) << std::endl;
                             } break;
                             case OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_UTXOS: {
                                 if ( ! context) {
@@ -2206,6 +2228,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 auto const& counter = context->getCodeScriptHashOutputZeroValuedCountUtxos(codeScriptHashUint256);
                                 auto bn = CScriptNum::fromInt(counter).value();
                                 stack.push_back(bn.getvch());
+                                std::cout << "OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_UTXOS: " << HexStr(bn.getvch()) << std::endl;
                             } break;
                             case OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_OUTPUTS: {
                                 if ( ! context) {
@@ -2225,6 +2248,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 auto const& counter = context->getCodeScriptHashOutputZeroValuedCountOutputs(codeScriptHashUint256);
                                 auto bn = CScriptNum::fromInt(counter).value();
                                 stack.push_back(bn.getvch());
+                                std::cout << "OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_OUTPUTS: " << HexStr(bn.getvch()) << std::endl;
                             } break;
                             case OP_CODESCRIPTBYTECODE_UTXO: {
                                 if ( ! context) {
@@ -2274,6 +2298,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 }
                                 auto const stateSeperatorIndex = context->getStateSeparatorByteIndexOutput(index);
                                 stack.emplace_back(outputScript.begin() + stateSeperatorIndex, outputScript.end());
+                                std::cout << "OP_CODESCRIPTBYTECODE_OUTPUT: " << HexStr(outputScript) << " becomes:  " << HexStr(CScript(outputScript.begin() + stateSeperatorIndex, outputScript.end())) <<" at index: " << index << std::endl;
                             } break;
  
                             case OP_STATECRIPTBYTECODE_UTXO: {
@@ -2309,10 +2334,14 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
 
                                 if (stateSeperatorIndex > 0) {
                                     stack.emplace_back(utxoScript.begin(), utxoScript.begin() + stateSeperatorIndex);
+                                     std::cout << "OP_STATECRIPTBYTECODE_UTXO: " << HexStr(utxoScript) << " becomes:  " << HexStr(CScript(utxoScript.begin(), utxoScript.begin() + stateSeperatorIndex)) <<" at index: " << index << std::endl;
                                 } else {
                                     auto const bn = CScriptNum::fromIntUnchecked(0);
                                     stack.push_back(bn.getvch());
+                                       std::cout << "OP_STATECRIPTBYTECODE_UTXO: " << HexStr(bn.getvch()) << std::endl;
+                                   
                                 }
+                               
                              
                             } break;
 
@@ -2343,9 +2372,11 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 auto const stateSeperatorIndex = context->getStateSeparatorByteIndexOutput(index);
                                 if (stateSeperatorIndex > 0) {
                                     stack.emplace_back(outputScript.begin(), outputScript.begin() + stateSeperatorIndex);
+                                     std::cout << "OP_STATECRIPTBYTECODE_OUTPUT: " << HexStr(outputScript) << " becomes:  " << HexStr(CScript(outputScript.begin(), outputScript.begin() + stateSeperatorIndex)) <<" at index: " << index << std::endl;
                                 } else {
                                     auto const bn = CScriptNum::fromIntUnchecked(0);
                                     stack.push_back(bn.getvch());
+                                     std::cout << "OP_STATECRIPTBYTECODE_OUTPUT: " << HexStr(bn.getvch()) << std::endl;
                                 }
                             } break;
 
