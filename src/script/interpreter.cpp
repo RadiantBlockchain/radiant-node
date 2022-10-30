@@ -166,11 +166,8 @@ static bool IsOpcodeDisabled(opcodetype opcode, uint32_t flags) {
         case OP_CODESCRIPTHASHOUTPUTCOUNT_OUTPUTS:
         case OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_UTXOS:
         case OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_OUTPUTS:
-        case OP_CODESCRIPTHASH_UTXO:
-        case OP_CODESCRIPTHASH_OUTPUT:
-        case OP_ACTIVECODESCRIPTHASH:
-        case OP_SCRIPTHASH_UTXO:
-        case OP_SCRIPTHASH_OUTPUT:
+        case OP_CODESCRIPTBYTECODE_UTXO:
+        case OP_CODESCRIPTBYTECODE_OUTPUT:
         case OP_STATECRIPTBYTECODE_UTXO:
         case OP_STATECRIPTBYTECODE_OUTPUT:
             return (flags & SCRIPT_ENHANCED_REFERENCES) == 0;
@@ -1718,9 +1715,6 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     case OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_OUTPUTS:
                     case OP_CODESCRIPTBYTECODE_UTXO:
                     case OP_CODESCRIPTBYTECODE_OUTPUT:
-                    case OP_ACTIVECODESCRIPTBYTECODE:
-                    case OP_SCRIPTHASH_UTXO:
-                    case OP_SCRIPTHASH_OUTPUT:
                     case OP_STATECRIPTBYTECODE_UTXO:
                     case OP_STATECRIPTBYTECODE_OUTPUT:
                     {
@@ -2232,7 +2226,6 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 auto bn = CScriptNum::fromInt(counter).value();
                                 stack.push_back(bn.getvch());
                             } break;
-
                             case OP_CODESCRIPTBYTECODE_UTXO: {
                                 if ( ! context) {
                                     return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
@@ -2260,7 +2253,6 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 auto const stateSeperatorIndex = context->getStateSeparatorByteIndexUtxo(index);
                                 stack.emplace_back(utxoScript.begin() + stateSeperatorIndex, utxoScript.end());
                             } break;
-
                             case OP_CODESCRIPTBYTECODE_OUTPUT: {
                                 if ( ! context) {
                                     return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
@@ -2281,87 +2273,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 auto const stateSeperatorIndex = context->getStateSeparatorByteIndexOutput(index);
                                 stack.emplace_back(outputScript.begin() + stateSeperatorIndex, outputScript.end());
                             } break;
-
-                            case OP_ACTIVECODESCRIPTBYTECODE: {
-                                if ( ! context) {
-                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
-                                }
-                                // (in -- out)
-                                if (stack.size() < 1) {
-                                    return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
-                                }
-                                auto const index = context->inputIndex();
-                                popstack(stack); // consume element
-                                if (index < 0 || uint64_t(index) >= context->tx().vin().size()) {
-                                    return set_error(serror, ScriptError::INVALID_TX_INPUT_INDEX);
-                                }
-                                if (context->isLimited() && uint64_t(index) != context->inputIndex()) {
-                                    // This branch can only happen in tests or other non-consensus code
-                                    // that calls the VM without all the *other* inputs' coins.
-                                    return set_error(serror, ScriptError::LIMITED_CONTEXT_NO_SIBLING_INFO);
-                                }
  
-                                auto const& utxoScript = context->coinScriptPubKey(index);
-                                if (utxoScript.size() > MAX_SCRIPT_ELEMENT_SIZE) {
-                                    return set_error(serror, ScriptError::PUSH_SIZE);
-                                }
-
-                                auto const stateSeperatorIndex = context->getStateSeparatorByteIndexUtxo(index);
-                                stack.emplace_back(utxoScript.begin() + stateSeperatorIndex, utxoScript.end());
-                            } break;
-  
-                            case OP_SCRIPTHASH_UTXO: {
-                                if ( ! context) {
-                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
-                                }
-                                // (in -- out)
-                                if (stack.size() < 1) {
-                                    return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
-                                }
-                                auto const index = CScriptNum(stacktop(-1), fRequireMinimal, maxIntegerSize).getint64();
-                                popstack(stack); // consume element
-                                if (index < 0 || uint64_t(index) >= context->tx().vin().size()) {
-                                    return set_error(serror, ScriptError::INVALID_TX_INPUT_INDEX);
-                                }
-                                if (context->isLimited() && uint64_t(index) != context->inputIndex()) {
-                                    // This branch can only happen in tests or other non-consensus code
-                                    // that calls the VM without all the *other* inputs' coins.
-                                    return set_error(serror, ScriptError::LIMITED_CONTEXT_NO_SIBLING_INFO);
-                                }
-
-                                auto const& utxoScript = context->coinScriptPubKey(index);
-                                if (utxoScript.size() > MAX_SCRIPT_ELEMENT_SIZE) {
-                                    return set_error(serror, ScriptError::PUSH_SIZE);
-                                }
-                                CHashWriter scriptHashWriter(SER_GETHASH, 0);
-                                scriptHashWriter << utxoScript;
-                                auto h = scriptHashWriter.GetHash();
-                                stack.emplace_back(h.begin(), h.end());
-                            } break;
-
-                            case OP_SCRIPTHASH_OUTPUT: {
-                                if ( ! context) {
-                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
-                                }
-                                // (in -- out)
-                                if (stack.size() < 1) {
-                                    return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
-                                }
-                                auto const index = CScriptNum(stacktop(-1), fRequireMinimal, maxIntegerSize).getint64();
-                                popstack(stack); // consume element
-                                if (index < 0 || uint64_t(index) >= context->tx().vout().size()) {
-                                    return set_error(serror, ScriptError::INVALID_TX_OUTPUT_INDEX);
-                                }
-                                auto const& outputScript = context->tx().vout()[index].scriptPubKey;
-                                if (outputScript.size() > MAX_SCRIPT_ELEMENT_SIZE) {
-                                    return set_error(serror, ScriptError::PUSH_SIZE);
-                                }
-                                CHashWriter scriptHashWriter(SER_GETHASH, 0);
-                                scriptHashWriter << outputScript;
-                                auto h = scriptHashWriter.GetHash();
-                                stack.emplace_back(h.begin(), h.end());
-                            } break;
-
                             case OP_STATECRIPTBYTECODE_UTXO: {
 
                                  if ( ! nativeIntrospection) {

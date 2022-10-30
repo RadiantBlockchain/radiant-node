@@ -353,12 +353,6 @@ const char *GetOpName(opcodetype opcode) {
             return "OP_CODESCRIPTBYTECODE_UTXO";
         case OP_CODESCRIPTBYTECODE_OUTPUT:
             return "OP_CODESCRIPTBYTECODE_OUTPUT";
-        case OP_ACTIVECODESCRIPTHASH:
-            return "OP_ACTIVECODESCRIPTHASH";
-        case OP_SCRIPTHASH_UTXO:
-            return "OP_SCRIPTHASH_UTXO";
-        case OP_SCRIPTHASH_OUTPUT:
-            return "OP_SCRIPTHASH_OUTPUT";
         case OP_STATECRIPTBYTECODE_UTXO:
             return "OP_STATECRIPTBYTECODE_UTXO";
         case OP_STATECRIPTBYTECODE_OUTPUT:

@@ -34,9 +34,8 @@ List of new OP Codes:
 - `<codeScriptHash 32 bytes> OP_CODESCRIPTHASHOUTPUTCOUNT_OUTPUTS`
 - `<codeScriptHash 32 bytes> OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_UTXOS`
 - `<codeScriptHash 32 bytes> OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_OUTPUTS`
-- `<inputIndex> OP_CODESCRIPTHASH_UTXO`
-- `<outputIndex> OP_CODESCRIPTHASH_OUTPUT` 
-- `OP_ACTIVECODESCRIPTHASH`
+- `<inputIndex> OP_CODESCRIPTBYTECODE_UTXO`
+- `<outputIndex> OP_CODESCRIPTBYTECODE_OUTPUT` 
 - `<inputIndex> OP_STATECRIPTBYTECODE_UTXO`
 - `<outputIndex> OP_STATECRIPTBYTECODE_OUTPUT`
 
@@ -166,27 +165,14 @@ Pushes the total number of input utxos that contain at least one usage of a ref 
 
 Same as OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_UTXOS, but for the outputs.
 
-### <inputIndex> OP_CODESCRIPTHASH_UTXO
+### <inputIndex> OP_CODESCRIPTBYTECODE_UTXO
 
-Pushes the codeScriptHash for an input utxo by inputIndex.
+Pushes the part of the script after the OP_STATESEPERATOR (or starting from the beginning if there was none for an input utxo by inputIndex.
 
-### <outputIndex> OP_CODESCRIPTHASH_OUTPUT
+### <outputIndex> OP_CODESCRIPTBYTECODE_OUTPUT
 
-Same as OP_CODESCRIPTHASH_UTXO, but for the outputs.
- 
-### OP_ACTIVECODESCRIPTHASH
-
-Pushes the codeScriptHash of the active input utxo being spent.
-
-### <inputIndex> OP_SCRIPTHASH_UTXO
-
-Pushes the hash256 of the input utxo identified by the inputIndex.
-
-### <outputIndex> OP_SCRIPTHASH_OUTPUT
-
-Same as OP_SCRIPTHASH_UTXO but for the outputs.
-
-
+Same as OP_CODESCRIPTBYTECODE_UTXO, but for the outputs.
+  
 ### <inputIndex> OP_STATECRIPTBYTECODE_UTXO
 
 Pushes the part of the bytecode from the beginning of a script until the byte right before the use of OP_STATESEPARATOR.
