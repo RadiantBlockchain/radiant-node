@@ -846,8 +846,6 @@ public:
         std::set<uint288> &singletonRefSet,
         uint32_t &stateSeperatorByteIndex
     ) const;
-
-    static bool getScriptIterator(int32_t startIndex, const CScript &script, CScriptBase::const_iterator  &startIterator);
 };
 
 class CReserveScript {

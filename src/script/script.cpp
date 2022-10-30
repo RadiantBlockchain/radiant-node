@@ -652,18 +652,6 @@ bool CScript::GetPushRefs(
     return this->GetPushRefs(begin(), pushRefSet, requireRefSet, disallowedSiblingsRefSet, singletonRefSet, stateSeperatorByteIndex);
 }
 
-static bool getScriptIterator(int32_t startIndex, const CScript &script, CScriptBase::const_iterator &startIterator) {
-    uint32_t adjustedStartIndex = startIndex;
-    if (startIndex <= 0) {
-       adjustedStartIndex = 0;
-    }
-    if (adjustedStartIndex >= script.size()) {
-        return false;
-    }
-   startIterator = script.begin() + adjustedStartIndex;
-   return true;
-}
-
 bool CScript::IsPushOnly() const {
     return this->IsPushOnly(begin());
 }
