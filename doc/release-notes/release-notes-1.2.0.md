@@ -186,7 +186,6 @@ Pushes the hash256 of the input utxo identified by the inputIndex.
 
 Same as OP_SCRIPTHASH_UTXO but for the outputs.
 
-
 ### <inputIndex> OP_STATECRIPTBYTECODE_UTXO
 
 Pushes the part of the bytecode from the beginning of a script until the byte right before the use of OP_STATESEPARATOR.
