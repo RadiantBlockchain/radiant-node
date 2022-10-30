@@ -593,13 +593,7 @@ public:
             return foundIt->second;
         }
         return 0;
-    }
-    const uint256& getCodeScriptHashUtxo(uint32_t inputIndex) const {
-        return shared->vectorInputsPushRefScriptSummary[inputIndex].codeScriptHash;
-    }
-    const uint256& getCodeScriptHashOutput(uint32_t outputIndex) const {
-        return shared->vectorOutputsPushRefScriptSummary[outputIndex].codeScriptHash;
-    }
+    } 
     uint32_t getStateSeparatorByteIndexUtxo(uint32_t inputIndex) const {
         return shared->vectorInputsPushRefScriptSummary[inputIndex].stateSeperatorByteIndex;
     }

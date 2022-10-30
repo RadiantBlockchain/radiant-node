@@ -2252,6 +2252,8 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
 
                                 auto const stateSeperatorIndex = context->getStateSeparatorByteIndexUtxo(index);
                                 stack.emplace_back(utxoScript.begin() + stateSeperatorIndex, utxoScript.end());
+
+                                std::cout << "OP_CODESCRIPTBYTECODE_UTXO: " << HexStr(utxoScript) << " becomes:  " << HexStr(CFlatData(utxoScript.begin() + stateSeperatorIndex, utxoScript.end())) <<" at index: " << index << std::endl;
                             } break;
                             case OP_CODESCRIPTBYTECODE_OUTPUT: {
                                 if ( ! context) {
