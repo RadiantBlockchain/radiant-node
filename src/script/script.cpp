@@ -353,10 +353,10 @@ const char *GetOpName(opcodetype opcode) {
             return "OP_CODESCRIPTBYTECODE_UTXO";
         case OP_CODESCRIPTBYTECODE_OUTPUT:
             return "OP_CODESCRIPTBYTECODE_OUTPUT";
-        case OP_STATECRIPTBYTECODE_UTXO:
-            return "OP_STATECRIPTBYTECODE_UTXO";
-        case OP_STATECRIPTBYTECODE_OUTPUT:
-            return "OP_STATECRIPTBYTECODE_OUTPUT";
+        case OP_STATESCRIPTBYTECODE_UTXO:
+            return "OP_STATESCRIPTBYTECODE_UTXO";
+        case OP_STATESCRIPTBYTECODE_OUTPUT:
+            return "OP_STATESCRIPTBYTECODE_OUTPUT";
 
         // Should we have a way to return a count of the total unique non-zero 
         // references per input and output?

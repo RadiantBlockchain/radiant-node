@@ -36,8 +36,8 @@ List of new OP Codes:
 - `<codeScriptHash 32 bytes> OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_OUTPUTS`
 - `<inputIndex> OP_CODESCRIPTBYTECODE_UTXO`
 - `<outputIndex> OP_CODESCRIPTBYTECODE_OUTPUT` 
-- `<inputIndex> OP_STATECRIPTBYTECODE_UTXO`
-- `<outputIndex> OP_STATECRIPTBYTECODE_OUTPUT`
+- `<inputIndex> OP_STATESCRIPTBYTECODE_UTXO`
+- `<outputIndex> OP_STATESCRIPTBYTECODE_OUTPUT`
 
 Additional improvements:
 
@@ -173,14 +173,14 @@ Pushes the part of the script after the OP_STATESEPERATOR (or starting from the 
 
 Same as OP_CODESCRIPTBYTECODE_UTXO, but for the outputs.
   
-### <inputIndex> OP_STATECRIPTBYTECODE_UTXO
+### <inputIndex> OP_STATESCRIPTBYTECODE_UTXO
 
 Pushes the part of the bytecode from the beginning of a script until the byte right before the use of OP_STATESEPARATOR.
 If there is no OP_STATESEPARATOR or it appears at the very first byte in a script, then then null 0x00 value is pushed to the stack.
 
-### <outputIndex> OP_STATECRIPTBYTECODE_OUTPUT
+### <outputIndex> OP_STATESCRIPTBYTECODE_OUTPUT
 
-Same as OP_STATECRIPTBYTECODE_UTXO but for the outputs.
+Same as OP_STATESCRIPTBYTECODE_UTXO but for the outputs.
  
 ## Deprecated functionality
 

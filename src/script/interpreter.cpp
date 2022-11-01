@@ -168,8 +168,8 @@ static bool IsOpcodeDisabled(opcodetype opcode, uint32_t flags) {
         case OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_OUTPUTS:
         case OP_CODESCRIPTBYTECODE_UTXO:
         case OP_CODESCRIPTBYTECODE_OUTPUT:
-        case OP_STATECRIPTBYTECODE_UTXO:
-        case OP_STATECRIPTBYTECODE_OUTPUT:
+        case OP_STATESCRIPTBYTECODE_UTXO:
+        case OP_STATESCRIPTBYTECODE_OUTPUT:
             return (flags & SCRIPT_ENHANCED_REFERENCES) == 0;
         case OP_INVERT:
         case OP_MUL:
@@ -1715,8 +1715,8 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     case OP_CODESCRIPTHASHZEROVALUEDOUTPUTCOUNT_OUTPUTS:
                     case OP_CODESCRIPTBYTECODE_UTXO:
                     case OP_CODESCRIPTBYTECODE_OUTPUT:
-                    case OP_STATECRIPTBYTECODE_UTXO:
-                    case OP_STATECRIPTBYTECODE_OUTPUT:
+                    case OP_STATESCRIPTBYTECODE_UTXO:
+                    case OP_STATESCRIPTBYTECODE_OUTPUT:
                     {
                         switch (opcode) {
                             case OP_PUSHINPUTREF: {
@@ -2301,7 +2301,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 std::cout << "OP_CODESCRIPTBYTECODE_OUTPUT: " << HexStr(outputScript) << " becomes:  " << HexStr(CScript(outputScript.begin() + stateSeperatorIndex, outputScript.end())) <<" at index: " << index << std::endl;
                             } break;
  
-                            case OP_STATECRIPTBYTECODE_UTXO: {
+                            case OP_STATESCRIPTBYTECODE_UTXO: {
 
                                  if ( ! nativeIntrospection) {
                                     return set_error(serror, ScriptError::BAD_OPCODE);
@@ -2333,19 +2333,19 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 auto const stateSeperatorIndex = context->getStateSeparatorByteIndexUtxo(index);
 
                                 if (stateSeperatorIndex > 0) {
-                                    stack.emplace_back(utxoScript.begin(), utxoScript.begin() + stateSeperatorIndex);
-                                     std::cout << "OP_STATECRIPTBYTECODE_UTXO: " << HexStr(utxoScript) << " becomes:  " << HexStr(CScript(utxoScript.begin(), utxoScript.begin() + stateSeperatorIndex)) <<" at index: " << index << std::endl;
+                                    stack.emplace_back(utxoScript.begin(), utxoScript.begin() + stateSeperatorIndex - 1); // Do not include the state seperator itself
+                                     std::cout << "OP_STATESCRIPTBYTECODE_UTXO: " << HexStr(utxoScript) << " becomes:  " << HexStr(CScript(utxoScript.begin(), utxoScript.begin() + stateSeperatorIndex)) <<" at index: " << index << std::endl;
                                 } else {
                                     auto const bn = CScriptNum::fromIntUnchecked(0);
                                     stack.push_back(bn.getvch());
-                                       std::cout << "OP_STATECRIPTBYTECODE_UTXO: " << HexStr(bn.getvch()) << std::endl;
+                                       std::cout << "OP_STATESCRIPTBYTECODE_UTXO: " << HexStr(bn.getvch()) << std::endl;
                                    
                                 }
                                
                              
                             } break;
 
-                            case OP_STATECRIPTBYTECODE_OUTPUT: {
+                            case OP_STATESCRIPTBYTECODE_OUTPUT: {
 
                                  if ( ! nativeIntrospection) {
                                     return set_error(serror, ScriptError::BAD_OPCODE);
@@ -2371,12 +2371,12 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 }
                                 auto const stateSeperatorIndex = context->getStateSeparatorByteIndexOutput(index);
                                 if (stateSeperatorIndex > 0) {
-                                    stack.emplace_back(outputScript.begin(), outputScript.begin() + stateSeperatorIndex);
-                                     std::cout << "OP_STATECRIPTBYTECODE_OUTPUT: " << HexStr(outputScript) << " becomes:  " << HexStr(CScript(outputScript.begin(), outputScript.begin() + stateSeperatorIndex)) <<" at index: " << index << std::endl;
+                                    stack.emplace_back(outputScript.begin(), outputScript.begin() + stateSeperatorIndex - 1); // Do not include the state seperator itself
+                                     std::cout << "OP_STATESCRIPTBYTECODE_OUTPUT: " << HexStr(outputScript) << " becomes:  " << HexStr(CScript(outputScript.begin(), outputScript.begin() + stateSeperatorIndex)) <<" at index: " << index << std::endl;
                                 } else {
                                     auto const bn = CScriptNum::fromIntUnchecked(0);
                                     stack.push_back(bn.getvch());
-                                     std::cout << "OP_STATECRIPTBYTECODE_OUTPUT: " << HexStr(bn.getvch()) << std::endl;
+                                     std::cout << "OP_STATESCRIPTBYTECODE_OUTPUT: " << HexStr(bn.getvch()) << std::endl;
                                 }
                             } break;
 
