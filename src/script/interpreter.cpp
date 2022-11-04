@@ -2106,9 +2106,15 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                     // that calls the VM without all the *other* inputs' coins.
                                     return set_error(serror, ScriptError::LIMITED_CONTEXT_NO_SIBLING_INFO);
                                 }
-                                auto const& pushRefsBytes = context->getRefsPerUtxo(index);
-                                stack.emplace_back(pushRefsBytes.begin(), pushRefsBytes.end());
-                                std::cout << "OP_REFDATASUMMARY_UTXO: " << HexStr(pushRefsBytes) << std::endl;
+                                std::vector<uint8_t> concatVec;
+                                auto const hasAtLeastOneValidRef = context->getRefsPerUtxo(index, concatVec);
+                                if (hasAtLeastOneValidRef) {
+                                    stack.emplace_back(concatVec.begin(), concatVec.end());
+                                } else {
+                                    auto bn = CScriptNum::fromInt(0).value();
+                                    stack.push_back(bn.getvch());
+                                }
+                                std::cout << "OP_REFDATASUMMARY_UTXO: " << HexStr(concatVec) << std::endl;
                             } break;
                             case OP_REFDATASUMMARY_OUTPUT: {
                                 if ( ! context) {
@@ -2124,10 +2130,16 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 if (index < 0 || uint64_t(index) >= context->tx().vout().size()) {
                                     return set_error(serror, ScriptError::INVALID_TX_OUTPUT_INDEX);
                                 }
-              
-                                auto const& pushRefsBytes = context->getRefsPerOutput(index);
-                                stack.emplace_back(pushRefsBytes.begin(), pushRefsBytes.end());
-                                std::cout << "OP_REFDATASUMMARY_OUTPUT: " << HexStr(pushRefsBytes) << std::endl;
+    
+                                std::vector<uint8_t> concatVec;
+                                auto const hasAtLeastOneValidRef = context->getRefsPerOutput(index, concatVec);
+                                if (hasAtLeastOneValidRef) {
+                                    stack.emplace_back(concatVec.begin(), concatVec.end());
+                                } else {
+                                    auto bn = CScriptNum::fromInt(0).value();
+                                    stack.push_back(bn.getvch());
+                                }
+                                std::cout << "OP_REFDATASUMMARY_OUTPUT: " << HexStr(concatVec) << std::endl;
                             } break;
                             case OP_CODESCRIPTHASHVALUESUM_UTXOS: {
                                 if ( ! context) {

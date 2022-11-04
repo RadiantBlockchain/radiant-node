@@ -522,34 +522,31 @@ public:
         return 0;
     }
  
-    std::vector<uint8_t> getRefsPerUtxo(uint32_t inputIndex) const {
-        uint288 zeroRefAssetId(uint288S("000000000000000000000000000000000000000000000000000000000000000000000000"));
+    bool getRefsPerUtxo(uint32_t inputIndex, std::vector<uint8_t>& refsVector) const {
         auto pushRefSetPerInput = shared->vectorInputsPushRefScriptSummary[inputIndex].pushRefSet;
         if (pushRefSetPerInput.size() <= 0) {
-            return std::vector(zeroRefAssetId.begin(), zeroRefAssetId.end());
+            return false;
         }
         // We know there is at least one element, therefore initialize it
-        std::vector<uint8_t> concatVec;
         std::set<uint288>::const_iterator pushRefsIt;
         for (pushRefsIt = pushRefSetPerInput.begin(); pushRefsIt != pushRefSetPerInput.end(); pushRefsIt++) {
-            std::move(pushRefsIt->begin(), pushRefsIt->end(), std::back_inserter(concatVec));
+            std::move(pushRefsIt->begin(), pushRefsIt->end(), std::back_inserter(refsVector));
         }
-        return concatVec;
+        return true;
     }
 
-    std::vector<uint8_t> getRefsPerOutput(uint32_t outputIndex) const {
-        uint288 zeroRefAssetId(uint288S("000000000000000000000000000000000000000000000000000000000000000000000000"));
+    bool getRefsPerOutput(uint32_t outputIndex, std::vector<uint8_t>& refsVector) const {
         auto pushRefSetPerOutput= shared->vectorOutputsPushRefScriptSummary[outputIndex].pushRefSet;
         if (pushRefSetPerOutput.size() <= 0) {
-            return std::vector(zeroRefAssetId.begin(), zeroRefAssetId.end());
+            return false;
         }
         // We know there is at least one element, therefore initialize it
-        std::vector<uint8_t> concatVec;
+        
         std::set<uint288>::const_iterator pushRefsIt;
         for (pushRefsIt = pushRefSetPerOutput.begin(); pushRefsIt != pushRefSetPerOutput.end(); pushRefsIt++) {
-            std::move(pushRefsIt->begin(), pushRefsIt->end(), std::back_inserter(concatVec));
+            std::move(pushRefsIt->begin(), pushRefsIt->end(), std::back_inserter(refsVector));
         }
-        return concatVec;
+        return true;
     }
  
     Amount getCodeScriptHashValueSumUtxos(const uint256& codeScriptHash) const {
