@@ -1,6 +1,8 @@
-# Release Notes for Radiant Node version 1.2.0
+# Release Notes for Radiant Node Version 1.2.0 (Zeus)
 
-Radiant Node version 1.2.0 is now available from: <https://radiantblockchain.org>
+Release Name: Zeus 
+
+Radiant Node version 1.2.0 (Zeus) is now available from: <https://radiantblockchain.org>
 
 ## Overview
 
