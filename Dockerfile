@@ -68,7 +68,7 @@ RUN apt update && apt install --no-install-recommends -y $PACKAGES  && \
  
 # Install radiant-node
 WORKDIR /root
-RUN git clone --depth 1 --branch v1.0.0 https://github.com/radiantblockchain/radiant-node.git
+RUN git clone --depth 1 --branch v1.2.0 https://github.com/radiantblockchain/radiant-node.git
 RUN mkdir /root/radiant-node/build
 WORKDIR /root/radiant-node/build
 RUN cmake -GNinja .. -DBUILD_RADIANT_QT=OFF
