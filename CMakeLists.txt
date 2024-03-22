@@ -9,7 +9,7 @@ set(CMAKE_USER_MAKE_RULES_OVERRIDE
 )
 
 project(radiant-node
-	VERSION 1.2.0
+	VERSION 1.3.0
 	DESCRIPTION "Radiant Node is a full node implementation of the Radiant Blockchain protocol."
 	HOMEPAGE_URL "https://radiantblockchain.org"
 )
