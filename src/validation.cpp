@@ -670,8 +670,20 @@ AcceptToMemoryPoolWorker(const Config &config, CTxMemPool &pool,
             return state.DoS(0, false, REJECT_NONSTANDARD, "non-BIP68-final");
         }
 
+        // Added by Radiant
+        // Validate the MAX_TX_SIZE is respected until v1.3.0 (Enegy) 
+        // ConsensusParam: consensusParams.PushTXStateHeight
+        auto spendHeight = GetSpendHeight(view);
+        uint64_t maxEffectiveTxSize = MAX_TX_SIZE_ENERGY;
+        if (spendHeight < consensusParams.PushTXStateHeight) {
+            maxEffectiveTxSize = MAX_TX_SIZE;
+        }
+        if (GetSerializeSize(tx, PROTOCOL_VERSION) > maxEffectiveTxSize) {
+            return state.DoS(100, false, REJECT_INVALID, "bad-txns-oversize");
+        }
+        
         Amount nFees = Amount::zero();
-        if (!Consensus::CheckTxInputs(tx, state, view, GetSpendHeight(view),
+        if (!Consensus::CheckTxInputs(tx, state, view, spendHeight,
                                       nFees)) {
             return error("%s: Consensus::CheckTxInputs: %s, %s", __func__,
                          tx.GetId().ToString(), FormatStateMessage(state));
@@ -1678,6 +1690,11 @@ static uint32_t GetNextBlockScriptFlags(const Consensus::Params &params,
     // Enable enhanced references 
     if ((pindex->nHeight + 1) >= params.ERHeight) {
         flags |= SCRIPT_ENHANCED_REFERENCES;
+    }
+
+    // Enable push tx state op code
+    if ((pindex->nHeight + 1) >= params.PushTXStateHeight) {
+        flags |= SCRIPT_PUSH_TX_STATE;
     }
 
     return flags;
@@ -5197,7 +5214,7 @@ bool LoadExternalBlockFile(const Config &config, FILE *fileIn,
         // destructor. Make sure we have at least 2*MAX_TX_SIZE space in there
         // so any transaction can fit in the buffer.
         //      CBufferedFile blkdat{
-        CBufferedFile blkdat(fileIn, 2 * ONE_MEGABYTE, ONE_MEGABYTE + 8, SER_DISK,
+        CBufferedFile blkdat(fileIn, 2 * MAX_TX_SIZE, MAX_TX_SIZE + 8, SER_DISK,
                              CLIENT_VERSION);
         uint64_t nRewind = blkdat.GetPos();
         while (!blkdat.eof()) {

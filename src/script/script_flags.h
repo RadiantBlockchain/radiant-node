@@ -112,4 +112,7 @@ enum {
 
     // Added enhanced OP codes for reference support
     SCRIPT_ENHANCED_REFERENCES = (1U << 26),
+
+    // Added OP_PUSH_TX_STATE
+    SCRIPT_PUSH_TX_STATE = (1U << 27)
 };

@@ -367,6 +367,9 @@ public:
                               caller to specify them appropriately. */
                            uint32_t nHeight = 1, bool isCoinbase = false);
 
+    /// Get the transaction id hash being executed
+    TxId GetTxId() const { return shared->tx.GetId(); }
+
     /// Get the input number being evaluated
     unsigned inputIndex() const { return nIn; }
 

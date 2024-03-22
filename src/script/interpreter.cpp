@@ -171,6 +171,8 @@ static bool IsOpcodeDisabled(opcodetype opcode, uint32_t flags) {
         case OP_STATESCRIPTBYTECODE_UTXO:
         case OP_STATESCRIPTBYTECODE_OUTPUT:
             return (flags & SCRIPT_ENHANCED_REFERENCES) == 0;
+        case OP_PUSH_TX_STATE:
+            return (flags & SCRIPT_PUSH_TX_STATE) == 0;
         case OP_INVERT:
         case OP_MUL:
         default:
@@ -264,6 +266,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
     bool const fRequireMinimal = (flags & SCRIPT_VERIFY_MINIMALDATA) != 0;
     bool const nativeIntrospection = (flags & SCRIPT_NATIVE_INTROSPECTION) != 0;
     bool const enhancedReferences = (flags & SCRIPT_ENHANCED_REFERENCES) != 0;
+    bool const pushTxState = (flags & SCRIPT_PUSH_TX_STATE) != 0;
     bool const integers64Bit = (flags & SCRIPT_64_BIT_INTEGERS) != 0;
 
     size_t const maxIntegerSize = integers64Bit ?
@@ -1688,8 +1691,62 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                     case OP_CODESCRIPTBYTECODE_OUTPUT:
                     case OP_STATESCRIPTBYTECODE_UTXO:
                     case OP_STATESCRIPTBYTECODE_OUTPUT:
+                    case OP_PUSH_TX_STATE:
                     {
                         switch (opcode) {
+                            case OP_PUSH_TX_STATE: {
+                                if ( ! pushTxState) {
+                                    return set_error(serror, ScriptError::BAD_OPCODE);
+                                }
+                                if ( ! context) {
+                                    return set_error(serror, ScriptError::CONTEXT_NOT_PRESENT);
+                                }
+                                // (in -- out)
+                                if (stack.size() < 1) {
+                                    return set_error(serror, ScriptError::INVALID_STACK_OPERATION);
+                                }
+                                
+                                auto const fieldItem = CScriptNum(stacktop(-1), fRequireMinimal, maxIntegerSize).getint64();
+                                popstack(stack); // consume element
+                                
+                                // fieldNum 0: Txid
+                                // fieldNum 1: total input satoshis/photons
+                                // fieldNum 2: total output satoshis/photons
+                                if (fieldItem < 0 || fieldItem > 2) {
+                                    return set_error(serror, ScriptError::INVALID_TX_STATE_ITEM);
+                                }
+
+                                switch (fieldItem) {
+                                    case 0: {
+                                        // Get the txid based on normal version or txid v3
+                                        TxId currentTxId = context->GetTxId();
+                                        stack.emplace_back(currentTxId.begin(), currentTxId.end());
+                                        break;
+                                    }
+                                    case 1: {
+                                        Amount accumulatedInputValue(Amount::zero());
+                                        for (uint64_t i = 0; i < context->tx().vin().size(); i++) {
+                                            auto const& inputAmount = context->coinAmount(i);
+                                            accumulatedInputValue += inputAmount;
+                                        }
+                                        auto const bn = CScriptNum::fromInt(accumulatedInputValue / SATOSHI).value();
+                                        stack.push_back(bn.getvch());
+                                        break;
+                                    }
+                                    case 2: {
+                                        Amount accumulatedOutputValue(Amount::zero());
+                                        for (uint64_t i = 0; i < context->tx().vout().size(); i++) {
+                                            auto const& output = context->tx().vout()[i];
+                                            accumulatedOutputValue += output.nValue;
+                                        }
+                                        auto const bn = CScriptNum::fromInt(accumulatedOutputValue / SATOSHI).value();
+                                        stack.push_back(bn.getvch());
+                                        break;
+                                    }
+                                    default:
+                                        return set_error(serror, ScriptError::INVALID_TX_STATE_ITEM);
+                                }
+                            } break;
                             case OP_PUSHINPUTREF: {
                                 if (vchPushValue.size() != 36) {
                                     return set_error(serror, ScriptError::INVALID_TX_REF_SIZE);
@@ -1700,18 +1757,29 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
                                 stack.push_back(vchPushValue);
                                 // As a sanity check we save all the pushrefs, and then cross check them against 
                                 // OP_DISALLOWPUSHINPUTREF
-                                uint288 uref = uint288S(std::string(vchPushValue.begin(), vchPushValue.end()).c_str());
-                                foundPushRefs.insert(uref);
+                                if (pushTxState) {
+                                    uint288 uref(vchPushValue);
+                                    foundPushRefs.insert(uref);
+                                } else {
+                                    // Note: this does not actually work and results in all zeroes
+                                    uint288 uref = uint288S(std::string(vchPushValue.begin(), vchPushValue.end()).c_str());
+                                    foundPushRefs.insert(uref);
+                                }
                             } break;
                             case OP_DISALLOWPUSHINPUTREF: {
                                 if (vchPushValue.size() != 36) {
                                     return set_error(serror, ScriptError::INVALID_TX_REF_SIZE);
                                 }
-                                // As sanity check just verify that the input being spent does not contain a disallowed push ref
-                                uint288 uref = uint288S(std::string(vchPushValue.begin(), vchPushValue.end()).c_str());
-                                disallowedRefs.insert(uref);
-                                // When interpreting OP_DISALLOWPUSHINPUTREF, push the value to the stack
-                                stack.push_back(vchPushValue);
+                                if (pushTxState) {
+                                    uint288 uref(vchPushValue);
+                                    disallowedRefs.insert(uref);
+                                    stack.push_back(vchPushValue);
+                                } else {
+                                    // Note: this does not actually work and results in all zeroes
+                                    uint288 uref = uint288S(std::string(vchPushValue.begin(), vchPushValue.end()).c_str());
+                                    disallowedRefs.insert(uref);
+                                    stack.push_back(vchPushValue);
+                                }
                             } break;
                             case OP_DISALLOWPUSHINPUTREFSIBLING: {
                                 if (vchPushValue.size() != 36) {

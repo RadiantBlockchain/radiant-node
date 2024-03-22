@@ -357,6 +357,8 @@ const char *GetOpName(opcodetype opcode) {
             return "OP_STATESCRIPTBYTECODE_UTXO";
         case OP_STATESCRIPTBYTECODE_OUTPUT:
             return "OP_STATESCRIPTBYTECODE_OUTPUT";
+        case OP_PUSH_TX_STATE:
+            return "OP_PUSH_TX_STATE";
 
         default:
             return "OP_UNKNOWN";

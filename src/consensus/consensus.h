@@ -10,6 +10,8 @@
 
 /** 1MB */
 inline constexpr uint64_t ONE_MEGABYTE = 1000000;
+/** The maximum allowed size for a transaction, in bytes since the Energy (1.3.0) Release */
+inline constexpr uint64_t MAX_TX_SIZE_ENERGY = 8 * ONE_MEGABYTE;
 /** The maximum allowed size for a transaction, in bytes */
 inline constexpr uint64_t MAX_TX_SIZE = 32 * ONE_MEGABYTE;
 /** The maximum allowed size for a transaction legacy, in bytes */
