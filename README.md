@@ -20,7 +20,7 @@ network based on the original Bitcoin design.
 Quick Start Compile on Ubuntu 18/20
 ---------------------
 
-See [Ubuntu/Debian Builds](build_unix.md) or the Docs folder for your platform
+See [Ubuntu/Debian Builds](doc/build_unix.md) or the Docs folder for your platform
 
 Disable QT when building:
 
@@ -28,6 +28,8 @@ Disable QT when building:
 mkdir build
 cd build
 cmake -GNinja .. -DBUILD_RADIANT_QT=OFF
+# or to build in Release mode and disable wallet:
+cmake -GNinja .. -DBUILD_RADIANT_QT=OFF -DCLIENT_VERSION_IS_RELEASE=ON
 ninja
 # Optionally install into system
 sudo ninja install 
