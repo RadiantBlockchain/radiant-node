@@ -17,6 +17,8 @@ List of new OP Codes:
 Additional bug fixes and improvements:
 
 - Correctly validate the OP_DISALLOWPUSHINPUTREF is treated correctly
+- Fix build error on Arch linux
+- Fix build error for GCC 13
 
 ## Usage recommendations
 
