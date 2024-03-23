@@ -98,6 +98,7 @@ public:
         consensus.BIP66Height = 101;
         consensus.CSVHeight = 102;
         consensus.ERHeight = 62000;
+        consensus.PushTXStateHeight = 214555;
         consensus.powLimit = uint256S(
             "00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         // one week
@@ -238,7 +239,8 @@ public:
         consensus.BIP65Height = 100;
         consensus.BIP66Height = 101;
         consensus.CSVHeight = 102;
-        consensus.ERHeight = 10600;
+        consensus.ERHeight = 10600; 
+        consensus.PushTXStateHeight = 182600;
         consensus.powLimit = uint256S(
             "00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         // one week
@@ -350,6 +352,7 @@ public:
         consensus.BIP66Height = 4;
         consensus.CSVHeight = 5;
         consensus.ERHeight = 10;
+        consensus.PushTXStateHeight = 20;
         consensus.powLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         // one weeks
         consensus.nPowTargetTimespan = 7 * 24 * 60 * 60;
@@ -448,6 +451,7 @@ public:
         consensus.BIP66Height = 4;
         consensus.CSVHeight = 5;
         consensus.ERHeight = 10;
+        consensus.PushTXStateHeight = 20;
         consensus.powLimit = uint256S("00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         // one weeks
         consensus.nPowTargetTimespan = 7 * 24 * 60 * 60;
@@ -548,6 +552,7 @@ public:
         // CSV activated on regtest (Used in rpc activation tests)
         consensus.CSVHeight = 576;
         consensus.ERHeight = 100;
+        consensus.PushTXStateHeight = 110;
         consensus.powLimit = uint256S(
             "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
         // one weeks

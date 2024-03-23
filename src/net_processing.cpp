@@ -43,6 +43,7 @@
 #include <validationinterface.h>
 #include <chrono>
 #include <cmath>
+#include <deque>
 #include <memory>
 #include <stdexcept>
 #include <type_traits>

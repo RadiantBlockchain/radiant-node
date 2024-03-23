@@ -250,7 +250,8 @@ enum opcodetype {
     OP_CODESCRIPTBYTECODE_OUTPUT = 0xea,
     OP_STATESCRIPTBYTECODE_UTXO = 0xeb,
     OP_STATESCRIPTBYTECODE_OUTPUT = 0xec,
-
+    OP_PUSH_TX_STATE = 0xed,
+    
     // The first op_code value after all defined opcodes
     FIRST_UNDEFINED_OP_VALUE,
 

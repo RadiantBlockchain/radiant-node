@@ -35,7 +35,9 @@ struct Params {
     int asertActivationTime;
     /** Block height at which ER (Enhanced References) becomes active */
     int ERHeight;
-
+    /** Block height at which Push Tx State (OP_PUSH_TX_STATE) becomes active */
+    int PushTXStateHeight;
+    
     /** Default blocksize limit -- can be overridden with the -excessiveblocksize= command-line switch */
     uint64_t nDefaultExcessiveBlockSize;
     /**
