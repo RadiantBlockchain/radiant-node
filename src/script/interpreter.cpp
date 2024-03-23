@@ -1088,6 +1088,7 @@ bool EvalScript(std::vector<valtype> &stack, const CScript &script,
 
                     case OP_CHECKSIG:
                     case OP_CHECKSIGVERIFY: {
+
                         // (sig pubkey -- bool)
                         if (stack.size() < 2) {
                             return set_error(serror, ScriptError::INVALID_STACK_OPERATION);

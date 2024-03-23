@@ -8,6 +8,7 @@
 #include <primitives/transaction.h>
 #include <version.h>
 
+
 static bool CheckTransactionCommon(const CTransaction &tx,
                                    CValidationState &state) {
     // Basic checks that don't depend on any context

@@ -12,7 +12,10 @@ See detailed description of the OP codes below and their capabilities.
 
 List of new OP Codes:
 
-- `<bytes> OP_PUSH_TX_STATE`
+- `<value> OP_PUSH_TX_STATE`
+0: Current transaction id
+1: Total input photons spent
+2: Total output photons
  
 Additional bug fixes and improvements:
 

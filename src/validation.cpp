@@ -64,7 +64,7 @@
 #include <string>
 #include <thread>
 #include <utility>
-
+#include <iostream>
 #define MICRO 0.000001
 #define MILLI 0.001
 class ConnectTrace;
@@ -528,6 +528,38 @@ AcceptToMemoryPoolWorker(const Config &config, CTxMemPool &pool,
         *pfMissingInputs = false;
     }
 
+
+    //
+    //
+    // Remove following after 1.3.0 goes live
+    // Added by Radiant to check current height to adjust max tx size. TODO: remove this after 1.3.0
+    //
+    CCoinsView dummyRadiantHeight;
+    CCoinsViewCache viewRadiantHeight(&dummyRadiantHeight);
+    CCoinsViewMemPool viewMemPoolRadiantHeight(pcoinsTip.get(), pool);
+    viewRadiantHeight.SetBackend(viewMemPoolRadiantHeight);
+    auto actualCurrentBlockHeight = GetSpendHeight(viewRadiantHeight);
+    // Bring the best block into scope.
+    viewRadiantHeight.GetBestBlock();
+    // We have all inputs cached now, so switch back to dummy, so we don't
+    // need to keep lock on mempool.
+    viewRadiantHeight.SetBackend(dummyRadiantHeight);
+    // Added by Radiant
+    // Validate the MAX_TX_SIZE is respected until v1.3.0 (Enegy) 
+    // ConsensusParam: consensusParams.PushTXStateHeight
+    uint64_t maxEffectiveTxSize = MAX_TX_SIZE_ENERGY;
+    if (actualCurrentBlockHeight < consensusParams.PushTXStateHeight) {
+        maxEffectiveTxSize = MAX_TX_SIZE;
+    }
+    if (GetSerializeSize(tx, PROTOCOL_VERSION) > maxEffectiveTxSize) {
+        return state.DoS(100, false, REJECT_INVALID, "bad-txns-oversize");
+    }
+    // 
+    // Remove above after 1.3.0 goes live
+    // Also make sure to update MAX_TX_SIZE in chainparams.cpp to reflect the 8MB after 1.3.0
+    //
+
+
     // Coinbase is only valid in a block, not as a loose transaction.
     if (!CheckRegularTransaction(tx, state)) {
         // state filled in by CheckRegularTransaction.
@@ -670,20 +702,9 @@ AcceptToMemoryPoolWorker(const Config &config, CTxMemPool &pool,
                                 &lp)) {
             return state.DoS(0, false, REJECT_NONSTANDARD, "non-BIP68-final");
         }
-        // Added by Radiant
-        // Validate the MAX_TX_SIZE is respected until v1.3.0 (Enegy) 
-        // ConsensusParam: consensusParams.PushTXStateHeight
-        auto spendHeight = GetSpendHeight(view);
-        uint64_t maxEffectiveTxSize = MAX_TX_SIZE_ENERGY;
-        if (spendHeight < consensusParams.PushTXStateHeight) {
-            maxEffectiveTxSize = MAX_TX_SIZE;
-        }
-        if (GetSerializeSize(tx, PROTOCOL_VERSION) > maxEffectiveTxSize) {
-            return state.DoS(100, false, REJECT_INVALID, "bad-txns-oversize");
-        }
-        
+       
         Amount nFees = Amount::zero();
-        if (!Consensus::CheckTxInputs(tx, state, view, spendHeight,
+        if (!Consensus::CheckTxInputs(tx, state, view, GetSpendHeight(view),
                                       nFees)) {
             return error("%s: Consensus::CheckTxInputs: %s, %s", __func__,
                          tx.GetId().ToString(), FormatStateMessage(state));
