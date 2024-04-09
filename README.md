@@ -94,7 +94,7 @@ Bernard.
 Development Process
 -------------------
 
-Radiant Node development takes place at [https://gitlab.com/radiantblockchain/radiant-node](https://gitlab.com/radiantblockchain/radiant-node)
+Radiant Node development takes place at [https://github.com/radiantblockchain/radiant-node](https://github.com/radiantblockchain/radiant-node)
 
 This Github repository contains only source code of releases.
 
