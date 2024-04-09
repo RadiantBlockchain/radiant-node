@@ -20,7 +20,7 @@ network based on the original Bitcoin design.
 Quick Start Compile on Ubuntu 18/20
 ---------------------
 
-See [Ubuntu/Debian Builds](doc/build_unix.md) or the Docs folder for your platform
+See [Ubuntu/Debian Builds](doc/build-unix.md) or the Docs folder for your platform
 
 Disable QT when building:
 
@@ -94,7 +94,7 @@ Bernard.
 Development Process
 -------------------
 
-Radiant Node development takes place at [https://gitlab.com/radiantblockchain/radiant-node](https://gitlab.com/radiantblockchain/radiant-node)
+Radiant Node development takes place at [https://github.com/radiantblockchain/radiant-node](https://github.com/radiantblockchain/radiant-node)
 
 This Github repository contains only source code of releases.
 
