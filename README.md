@@ -28,7 +28,7 @@ Disable QT when building:
 mkdir build
 cd build
 cmake -GNinja .. -DBUILD_RADIANT_QT=OFF
-# or to build in Release mode and disable wallet:
+# or to build in Release mode and disable QT wallet:
 cmake -GNinja .. -DBUILD_RADIANT_QT=OFF -DCLIENT_VERSION_IS_RELEASE=ON
 ninja
 # Optionally install into system
