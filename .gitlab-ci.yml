@@ -667,7 +667,7 @@ build-aarch64:
         # The following tests are excluded:
         # - radn-rpc-getblocktemplate-sigops - OOM issues for aarch64 (see #211)
         - cmake -GNinja .. -DENABLE_MAN=OFF
-                           -DBUILD_BITCOIN_ZMQ=OFF
+                           -DBUILD_RADIANT_ZMQ=OFF
                            -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/LinuxAArch64.cmake
                            -DCMAKE_CROSSCOMPILING_EMULATOR=$(command -v qemu-aarch64-static)
                            -DEXCLUDE_FUNCTIONAL_TESTS=radn-rpc-getblocktemplate-sigops

@@ -102,7 +102,7 @@ make build-linux-aarch64
 cd ..
 mkdir build
 cd build
-cmake -GNinja .. -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/LinuxAArch64.cmake -DBUILD_BITCOIN_ZMQ=OFF
+cmake -GNinja .. -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/LinuxAArch64.cmake -DBUILD_RADIANT_ZMQ=OFF
 ninja
 ```
 

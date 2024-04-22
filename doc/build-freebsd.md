@@ -31,7 +31,7 @@ To enable ZeroMQ:
 pkg install libzmq4
 ```
 
-If not installed, ZeroMQ support should be disabled by passing `-DBUILD_BITCOIN_ZMQ=OFF`
+If not installed, ZeroMQ support should be disabled by passing `-DBUILD_RADIANT_ZMQ=OFF`
 to `cmake`.
 
 In order to run the test suite (recommended), you will need to have Python 3:

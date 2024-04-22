@@ -200,7 +200,7 @@ endif()
 set(ENABLE_WALLET ${BUILD_RADIANT_WALLET})
 
 # Activate ZeroMQ
-set(ENABLE_ZMQ ${BUILD_BITCOIN_ZMQ})
+set(ENABLE_ZMQ ${BUILD_RADIANT_ZMQ})
 
 # Try to find libqrencode
 # Only used in the wallet GUI

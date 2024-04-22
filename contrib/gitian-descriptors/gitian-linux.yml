@@ -131,7 +131,7 @@ script: |
   pushd source_package
   cmake -GNinja .. \
     -DBUILD_RADIANT_WALLET=OFF \
-    -DBUILD_BITCOIN_ZMQ=OFF \
+    -DBUILD_RADIANT_ZMQ=OFF \
     -DBUILD_RADIANT_SEEDER=OFF \
     -DBUILD_RADIANT_CLI=OFF \
     -DBUILD_RADIANT_TX=OFF \
