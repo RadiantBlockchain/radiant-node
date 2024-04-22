@@ -1,0 +1,59 @@
+From: Calin Culianu <calin.culianu@gmail.com>
+
+This disables the use of GLIBC 2.28 functions statx and renameat2 so that Qt runs
+against older libc 2.27, such as is found on stock Ubuntu 18.04 systems.
+diff -urN a/qtbase/src/corelib/configure.json b/qtbase/src/corelib/configure.json
+--- a/qtbase/src/corelib/configure.json	2021-03-18 17:29:29.000000000 +0200
++++ b/qtbase/src/corelib/configure.json	2022-03-31 03:05:48.382200062 +0300
+@@ -521,7 +521,7 @@
+             "test": {
+                 "head": "#define _ATFILE_SOURCE 1",
+                 "include": [ "fcntl.h", "stdio.h" ],
+-                "main": "renameat2(AT_FDCWD, argv[1], AT_FDCWD, argv[2], RENAME_NOREPLACE | RENAME_WHITEOUT);"
++                "main": "z_dont_use_renameat2(AT_FDCWD, argv[1], AT_FDCWD, argv[2], RENAME_NOREPLACE | RENAME_WHITEOUT);"
+             }
+         },
+         "statx": {
+@@ -533,7 +533,7 @@
+                 "main": [
+                     "struct statx statxbuf;",
+                     "unsigned int mask = STATX_BASIC_STATS;",
+-                    "return statx(AT_FDCWD, \"\", AT_STATX_SYNC_AS_STAT, mask, &statxbuf);"
++                    "return z_dont_use_statx(AT_FDCWD, \"\", AT_STATX_SYNC_AS_STAT, mask, &statxbuf);"
+                 ]
+             }
+         },
+diff -urN a/qtbase/src/corelib/global/qconfig-bootstrapped.h b/qtbase/src/corelib/global/qconfig-bootstrapped.h
+--- a/qtbase/src/corelib/global/qconfig-bootstrapped.h	2021-03-18 17:29:29.000000000 +0200
++++ b/qtbase/src/corelib/global/qconfig-bootstrapped.h	2022-03-31 04:26:07.164455720 +0300
+@@ -114,11 +114,7 @@
+ #define QT_FEATURE_sharedmemory -1
+ #define QT_FEATURE_signaling_nan -1
+ #define QT_FEATURE_slog2 -1
+-#ifdef __GLIBC_PREREQ
+-# define QT_FEATURE_statx (__GLIBC_PREREQ(2, 28) ? 1 : -1)
+-#else
+-# define QT_FEATURE_statx -1
+-#endif
++#define QT_FEATURE_statx -1
+ #define QT_FEATURE_syslog -1
+ #define QT_NO_SYSTEMLOCALE
+ #define QT_FEATURE_systemsemaphore -1
+diff -urN a/qtbase/src/corelib/io/qfilesystemengine_unix.cpp b/qtbase/src/corelib/io/qfilesystemengine_unix.cpp
+--- a/qtbase/src/corelib/io/qfilesystemengine_unix.cpp	2021-03-18 17:29:29.000000000 +0200
++++ b/qtbase/src/corelib/io/qfilesystemengine_unix.cpp	2022-03-31 04:30:36.239934457 +0300
+@@ -100,12 +100,8 @@
+ #endif
+ #endif
+ 
+-#if defined(Q_OS_ANDROID)
+-// statx() is disabled on Android because quite a few systems
+-// come with sandboxes that kill applications that make system calls outside a
+-// whitelist and several Android vendors can't be bothered to update the list.
+-#  undef STATX_BASIC_STATS
+-#endif
++// BCHN patch: statx() is disabled so we can be compatible with GLIBC 2.27 always
++#undef STATX_BASIC_STATS
+ 
+ #ifndef STATX_ALL
+ struct statx { mode_t stx_mode; };      // dummy

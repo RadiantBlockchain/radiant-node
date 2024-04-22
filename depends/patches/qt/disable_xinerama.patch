@@ -1,0 +1,220 @@
+From: Ieb57d9035e1659fc22bf8333247fc3573fb62992
+From: Tor Arne <tor.arne.vestbo@qt.io>
+Date: Sep 04, 2020
+Subject: xcb: drop Xinerama support
+
+See: https://bugreports.qt.io/browse/QTBUG-89364
+Original qtbase patch: https://codereview.qt-project.org/c/qt/qtbase/+/311432
+
+Added to BCHN repository by Calin Culianu <calin.culianu@gmail.com>
+diff -urN a/qtbase/src/gui/configure.json b/qtbase/src/gui/configure.json
+--- a/qtbase/src/gui/configure.json	2021-03-18 17:29:29.000000000 +0200
++++ b/qtbase/src/gui/configure.json	2022-03-31 01:34:04.854406448 +0300
+@@ -673,15 +673,6 @@
+             ],
+             "use": "xcb"
+         },
+-        "xcb_xinerama": {
+-            "label": "XCB Xinerama",
+-            "headers": "xcb/xinerama.h",
+-            "sources": [
+-                { "type": "pkgConfig", "args": "xcb-xinerama" },
+-                "-lxcb-xinerama"
+-            ],
+-            "use": "xcb"
+-        },
+         "xcb_xlib": {
+             "label": "XCB Xlib",
+             "test": {
+@@ -1064,7 +1055,6 @@
+                     "xcb/shm.h",
+                     "xcb/sync.h",
+                     "xcb/xfixes.h",
+-                    "xcb/xinerama.h",
+                     "xcb/xcb_icccm.h",
+                     "xcb/xcb_renderutil.h",
+                     "xcb/xkb.h"
+@@ -1087,7 +1077,7 @@
+                     "xcb_xkb_get_kbd_by_name_replies_key_names_value_list_sizeof(nullptr, 0, 0, 0, 0, 0, 0, 0, 0);"
+                 ]
+             },
+-            "use": "xcb_icccm xcb_image xcb_keysyms xcb_randr xcb_render xcb_renderutil xcb_shape xcb_shm xcb_sync xcb_xfixes xcb_xinerama xcb_xkb xcb"
++            "use": "xcb_icccm xcb_image xcb_keysyms xcb_randr xcb_render xcb_renderutil xcb_shape xcb_shm xcb_sync xcb_xfixes xcb_xkb xcb"
+         },
+         "x11prefix": {
+             "label": "X11 prefix",
+diff -urN a/qtbase/src/plugins/platforms/xcb/qxcbconnection_basic.cpp b/qtbase/src/plugins/platforms/xcb/qxcbconnection_basic.cpp
+--- a/qtbase/src/plugins/platforms/xcb/qxcbconnection_basic.cpp	2021-03-18 17:29:29.000000000 +0200
++++ b/qtbase/src/plugins/platforms/xcb/qxcbconnection_basic.cpp	2022-03-31 01:35:53.253826619 +0300
+@@ -43,7 +43,6 @@
+ #include <xcb/shm.h>
+ #include <xcb/sync.h>
+ #include <xcb/xfixes.h>
+-#include <xcb/xinerama.h>
+ #include <xcb/render.h>
+ #include <xcb/xinput.h>
+ #define explicit dont_use_cxx_explicit
+@@ -145,8 +144,6 @@
+         initializeShm();
+     if (!qEnvironmentVariableIsSet("QT_XCB_NO_XRANDR"))
+         initializeXRandr();
+-    if (!m_hasXRandr)
+-        initializeXinerama();
+     initializeXFixes();
+     initializeXRender();
+     if (!qEnvironmentVariableIsSet("QT_XCB_NO_XI2"))
+@@ -307,17 +304,6 @@
+     m_xrenderVersion.second = xrenderQuery->minor_version;
+ }
+ 
+-void QXcbBasicConnection::initializeXinerama()
+-{
+-    const xcb_query_extension_reply_t *reply = xcb_get_extension_data(m_xcbConnection, &xcb_xinerama_id);
+-    if (!reply || !reply->present)
+-        return;
+-
+-    auto xineramaActive = Q_XCB_REPLY(xcb_xinerama_is_active, m_xcbConnection);
+-    if (xineramaActive && xineramaActive->state)
+-        m_hasXinerama = true;
+-}
+-
+ void QXcbBasicConnection::initializeXFixes()
+ {
+     const xcb_query_extension_reply_t *reply = xcb_get_extension_data(m_xcbConnection, &xcb_xfixes_id);
+diff -urN a/qtbase/src/plugins/platforms/xcb/qxcbconnection_basic.h b/qtbase/src/plugins/platforms/xcb/qxcbconnection_basic.h
+--- a/qtbase/src/plugins/platforms/xcb/qxcbconnection_basic.h	2021-03-18 17:29:29.000000000 +0200
++++ b/qtbase/src/plugins/platforms/xcb/qxcbconnection_basic.h	2022-03-31 01:35:01.317827609 +0300
+@@ -96,7 +96,6 @@
+     bool hasShm() const { return m_hasShm; }
+     bool hasShmFd() const { return m_hasShmFd; }
+     bool hasXSync() const { return m_hasXSync; }
+-    bool hasXinerama() const { return m_hasXinerama; }
+     bool hasBigRequest() const;
+ 
+     bool isAtLeastXI21() const { return m_xi2Enabled && m_xi2Minor >= 1; }
+@@ -113,7 +112,6 @@
+     void initializeXFixes();
+     void initializeXRender();
+     void initializeXRandr();
+-    void initializeXinerama();
+     void initializeXShape();
+     void initializeXKB();
+     void initializeXSync();
+@@ -130,7 +128,6 @@
+     QXcbAtom m_xcbAtom;
+ 
+     bool m_hasXFixes = false;
+-    bool m_hasXinerama = false;
+     bool m_hasXhape = false;
+     bool m_hasInputShape;
+     bool m_hasXRandr = false;
+diff -urN a/qtbase/src/plugins/platforms/xcb/qxcbconnection_screens.cpp b/qtbase/src/plugins/platforms/xcb/qxcbconnection_screens.cpp
+--- a/qtbase/src/plugins/platforms/xcb/qxcbconnection_screens.cpp	2021-03-18 17:29:29.000000000 +0200
++++ b/qtbase/src/plugins/platforms/xcb/qxcbconnection_screens.cpp	2022-03-31 01:36:52.689825486 +0300
+@@ -46,8 +46,6 @@
+ 
+ #include <qpa/qwindowsysteminterface.h>
+ 
+-#include <xcb/xinerama.h>
+-
+ void QXcbConnection::xrandrSelectEvents()
+ {
+     xcb_screen_iterator_t rootIter = xcb_setup_roots_iterator(setup());
+@@ -360,22 +358,7 @@
+                     }
+                 }
+             }
+-        } else if (hasXinerama()) {
+-            // Xinerama is available
+-            auto screens = Q_XCB_REPLY(xcb_xinerama_query_screens, xcb_connection());
+-            if (screens) {
+-                xcb_xinerama_screen_info_iterator_t it = xcb_xinerama_query_screens_screen_info_iterator(screens.get());
+-                while (it.rem) {
+-                    xcb_xinerama_screen_info_t *screen_info = it.data;
+-                    QXcbScreen *screen = new QXcbScreen(this, virtualDesktop,
+-                                                        XCB_NONE, nullptr,
+-                                                        screen_info, it.index);
+-                    siblings << screen;
+-                    m_screens << screen;
+-                    xcb_xinerama_screen_info_next(&it);
+-                }
+-            }
+-        }
++        } 
+         if (siblings.isEmpty()) {
+             // If there are no XRandR outputs or XRandR extension is missing,
+             // then create a fake/legacy screen.
+diff -urN a/qtbase/src/plugins/platforms/xcb/qxcbconnection_xi2.cpp b/qtbase/src/plugins/platforms/xcb/qxcbconnection_xi2.cpp
+--- a/qtbase/src/plugins/platforms/xcb/qxcbconnection_xi2.cpp	2021-03-18 17:29:29.000000000 +0200
++++ b/qtbase/src/plugins/platforms/xcb/qxcbconnection_xi2.cpp	2022-03-31 01:41:39.061820029 +0300
+@@ -608,9 +608,7 @@
+ bool QXcbConnection::xi2MouseEventsDisabled() const
+ {
+     static bool xi2MouseDisabled = qEnvironmentVariableIsSet("QT_XCB_NO_XI2_MOUSE");
+-    // FIXME: Don't use XInput2 mouse events when Xinerama extension
+-    // is enabled, because it causes problems with multi-monitor setup.
+-    return xi2MouseDisabled || hasXinerama();
++    return xi2MouseDisabled;
+ }
+ 
+ bool QXcbConnection::isTouchScreen(int id)
+diff -urN a/qtbase/src/plugins/platforms/xcb/qxcbscreen.cpp b/qtbase/src/plugins/platforms/xcb/qxcbscreen.cpp
+--- a/qtbase/src/plugins/platforms/xcb/qxcbscreen.cpp	2021-03-18 17:29:29.000000000 +0200
++++ b/qtbase/src/plugins/platforms/xcb/qxcbscreen.cpp	2022-03-31 01:38:38.545823469 +0300
+@@ -518,8 +518,7 @@
+ }
+ 
+ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDesktop,
+-                       xcb_randr_output_t outputId, xcb_randr_get_output_info_reply_t *output,
+-                       const xcb_xinerama_screen_info_t *xineramaScreenInfo, int xineramaScreenIdx)
++                       xcb_randr_output_t outputId, xcb_randr_get_output_info_reply_t *output)
+     : QXcbObject(connection)
+     , m_virtualDesktop(virtualDesktop)
+     , m_output(outputId)
+@@ -535,13 +534,6 @@
+             updateGeometry(QRect(crtc->x, crtc->y, crtc->width, crtc->height), crtc->rotation);
+             updateRefreshRate(crtc->mode);
+         }
+-    } else if (xineramaScreenInfo) {
+-        m_geometry = QRect(xineramaScreenInfo->x_org, xineramaScreenInfo->y_org,
+-                           xineramaScreenInfo->width, xineramaScreenInfo->height);
+-        m_availableGeometry = m_virtualDesktop->availableGeometry(m_geometry);
+-        m_sizeMillimeters = sizeInMillimeters(m_geometry.size(), m_virtualDesktop->dpi());
+-        if (xineramaScreenIdx > -1)
+-            m_outputName += QLatin1Char('-') + QString::number(xineramaScreenIdx);
+     }
+ 
+     if (m_geometry.isEmpty())
+diff -urN a/qtbase/src/plugins/platforms/xcb/qxcbscreen.h b/qtbase/src/plugins/platforms/xcb/qxcbscreen.h
+--- a/qtbase/src/plugins/platforms/xcb/qxcbscreen.h	2021-03-18 17:29:29.000000000 +0200
++++ b/qtbase/src/plugins/platforms/xcb/qxcbscreen.h	2022-03-31 01:37:54.493824309 +0300
+@@ -46,7 +46,6 @@
+ #include <xcb/xcb.h>
+ #include <xcb/randr.h>
+ #include <xcb/xfixes.h>
+-#include <xcb/xinerama.h>
+ 
+ #include "qxcbobject.h"
+ #include "qxcbscreen.h"
+@@ -143,8 +142,7 @@
+ {
+ public:
+     QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDesktop,
+-               xcb_randr_output_t outputId, xcb_randr_get_output_info_reply_t *outputInfo,
+-               const xcb_xinerama_screen_info_t *xineramaScreenInfo = nullptr, int xineramaScreenIdx = -1);
++               xcb_randr_output_t outputId, xcb_randr_get_output_info_reply_t *outputInfo);
+     ~QXcbScreen();
+ 
+     QString getOutputName(xcb_randr_get_output_info_reply_t *outputInfo);
+diff -urN a/qtbase/src/plugins/platforms/xcb/xcb_qpa_lib.pro b/qtbase/src/plugins/platforms/xcb/xcb_qpa_lib.pro
+--- a/qtbase/src/plugins/platforms/xcb/xcb_qpa_lib.pro	2021-03-18 17:29:29.000000000 +0200
++++ b/qtbase/src/plugins/platforms/xcb/xcb_qpa_lib.pro	2022-03-31 01:39:28.697822513 +0300
+@@ -93,7 +93,7 @@
+ 
+ QMAKE_USE += \
+     xcb xcb_icccm xcb_image xcb_keysyms xcb_randr xcb_render xcb_renderutil \
+-    xcb_shape xcb_shm xcb_sync xcb_xfixes xcb_xinerama xcb_xkb xkbcommon xkbcommon_x11
++    xcb_shape xcb_shm xcb_sync xcb_xfixes xcb_xkb xkbcommon xkbcommon_x11
+ 
+ qtConfig(system-xcb-xinput) {
+     QMAKE_USE += xcb_xinput

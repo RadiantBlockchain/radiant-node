@@ -1,16 +1,16 @@
 package=native_cctools
-$(package)_version=3764b223c011574971ee3ae09ce968ba5dc2f00f
+$(package)_version=55562e4073dea0fbfd0b20e0bf69ffe6390c7f97
 $(package)_download_path=https://github.com/tpoechtrager/cctools-port/archive
 $(package)_file_name=$($(package)_version).tar.gz
-$(package)_sha256_hash=3e35907bf376269a844df08e03cbb43e345c88125374f2228e03724b5f9a2a04
+$(package)_sha256_hash=e51995a843533a3dac155dd0c71362dd471597a2d23f13dff194c6285362f875
 $(package)_build_subdir=cctools
 $(package)_patches=ld64_disable_threading.patch
 
-$(package)_clang_version=6.0.1
+$(package)_clang_version=8.0.0
 $(package)_clang_download_path=https://releases.llvm.org/$($(package)_clang_version)
 $(package)_clang_download_file=clang+llvm-$($(package)_clang_version)-x86_64-linux-gnu-ubuntu-16.04.tar.xz
 $(package)_clang_file_name=clang-llvm-$($(package)_clang_version)-x86_64-linux-gnu-ubuntu-16.04.tar.xz
-$(package)_clang_sha256_hash=7ea204ecd78c39154d72dfc0d4a79f7cce1b2264da2551bb2eef10e266d54d91
+$(package)_clang_sha256_hash=87b88d620284d1f0573923e6f7cc89edccf11d19ebaec1cfb83b4f09ac5db09c
 
 $(package)_libtapi_version=3efb201881e7a76a21e0554906cf306432539cef
 $(package)_libtapi_download_path=https://github.com/tpoechtrager/apple-libtapi/archive
@@ -18,8 +18,8 @@ $(package)_libtapi_download_file=$($(package)_libtapi_version).tar.gz
 $(package)_libtapi_file_name=$($(package)_libtapi_version).tar.gz
 $(package)_libtapi_sha256_hash=380c1ca37cfa04a8699d0887a8d3ee1ad27f3d08baba78887c73b09485c0fbd3
 
-$(package)_extra_sources=$($(package)_clang_file_name)
-$(package)_extra_sources += $($(package)_libtapi_file_name)
+$(package)_extra_sources=$($(package)_libtapi_file_name)
+$(package)_extra_sources += $($(package)_clang_file_name)
 
 define $(package)_fetch_cmds
 $(call fetch_file,$(package),$($(package)_download_path),$($(package)_download_file),$($(package)_file_name),$($(package)_sha256_hash)) && \
@@ -42,8 +42,9 @@ define $(package)_extract_cmds
 endef
 
 define $(package)_set_vars
-  $(package)_config_opts=--target=$(host) --disable-lto-support --with-libtapi=$($(package)_extract_dir)
+  $(package)_config_opts=--target=$(host) --with-libtapi=$($(package)_extract_dir)
   $(package)_ldflags+=-Wl,-rpath=\\$$$$$$$$\$$$$$$$$ORIGIN/../lib
+  $(package)_config_opts+=--enable-lto-support --with-llvm-config=$($(package)_extract_dir)/toolchain/bin/llvm-config
   $(package)_cc=$($(package)_extract_dir)/toolchain/bin/clang
   $(package)_cxx=$($(package)_extract_dir)/toolchain/bin/clang++
 endef
@@ -74,7 +75,7 @@ define $(package)_stage_cmds
   cp -P bin/clang++ $($(package)_staging_prefix_dir)/bin/ &&\
   cp lib/libLTO.so $($(package)_staging_prefix_dir)/lib/ && \
   cp -rf lib/clang/$($(package)_clang_version)/include/* $($(package)_staging_prefix_dir)/lib/clang/$($(package)_clang_version)/include/ && \
-  cp bin/llvm-dsymutil $($(package)_staging_prefix_dir)/bin/$(host)-dsymutil && \
+  cp bin/dsymutil $($(package)_staging_prefix_dir)/bin/$(host)-dsymutil && \
   if `test -d include/c++/`; then cp -rf include/c++/ $($(package)_staging_prefix_dir)/include/; fi && \
   if `test -d lib/c++/`; then cp -rf lib/c++/ $($(package)_staging_prefix_dir)/lib/; fi
 endef
