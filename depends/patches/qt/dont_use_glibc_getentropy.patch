@@ -1,0 +1,12 @@
+diff -urN a/qtbase/src/corelib/configure.json b/qtbase/src/corelib/configure.json
+--- a/qtbase/src/corelib/configure.json	2021-03-18 17:29:29.000000000 +0200
++++ b/qtbase/src/corelib/configure.json	2022-03-28 21:54:10.039845941 +0300
+@@ -417,7 +417,7 @@
+                 "include": "unistd.h",
+                 "main": [
+                     "char buf[32];",
+-                    "(void) getentropy(buf, sizeof(buf));"
++                    "(void) z_dont_use_getentropy(buf, sizeof(buf));"
+                 ]
+             }
+         },

@@ -14,7 +14,7 @@ Minimal build requirements
 
 You can do without the `libminiupnpc-dev`, `libzmq3-dev`, and `help2man`
 packages, then you just need to respectively pass `-DENABLE_UPNP=OFF`,
-`-DBUILD_BITCOIN_ZMQ=OFF`, or `-DENABLE_MAN=OFF` on the `cmake` command line.
+`-DBUILD_RADIANT_ZMQ=OFF`, or `-DENABLE_MAN=OFF` on the `cmake` command line.
 
 BerkeleyDB 5.3 or later is required for the wallet. This can be installed with:
 

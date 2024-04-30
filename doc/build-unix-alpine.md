@@ -15,7 +15,7 @@ NOTE: Since alpine 3.12, `ninja` was replaced with `samurai`, which is not fully
 the build system, hence the need for installing it with `pip`
 
 You can do without the `db-dev`, `miniupnpc-dev`, `zeromq-dev`, and `help2man & bash` packages, then you
-just need to respectively pass `-DBUILD_RADIANT_WALLET=OFF`, `-DENABLE_UPNP=OFF`, `-DBUILD_BITCOIN_ZMQ=OFF`,
+just need to respectively pass `-DBUILD_RADIANT_WALLET=OFF`, `-DENABLE_UPNP=OFF`, `-DBUILD_RADIANT_ZMQ=OFF`,
 or `-DENABLE_MAN=OFF` on the `cmake` command line.
 
 If you want to build the GUI client `bitcoin-qt` Qt 5 is necessary.

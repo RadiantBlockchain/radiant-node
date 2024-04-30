@@ -344,7 +344,7 @@ In your `build` directory, run:
 cmake -GNinja .. \
    -DCMAKE_TOOLCHAIN_FILE=../cmake/platforms/LinuxAArch64.cmake \
    -DCMAKE_CROSSCOMPILING_EMULATOR=$(command -v qemu-aarch64-static) \
-   -DBUILD_BITCOIN_ZMQ=OFF
+   -DBUILD_RADIANT_ZMQ=OFF
 ```
 
 To run functional tests:

@@ -1,0 +1,41 @@
+diff -urN a/qtbase/src/gui/painting/qpaintengine_raster.cpp b/qtbase/src/gui/painting/qpaintengine_raster.cpp
+--- a/qtbase/src/gui/painting/qpaintengine_raster.cpp	2021-03-18 10:29:29.000000000 -0500
++++ b/qtbase/src/gui/painting/qpaintengine_raster.cpp	2022-03-27 14:53:41.000000000 -0500
+@@ -4103,22 +4103,23 @@
+     const QSpan *clipEnd = clip->m_spans + clip->count;
+ 
+     while (available && spans < end ) {
++        const short spans_y = spans->y;
+         if (clipSpans >= clipEnd) {
+             spans = end;
+             break;
+         }
+-        if (clipSpans->y > spans->y) {
++        if (clipSpans->y > spans_y) {
+             ++spans;
+             continue;
+         }
+-        if (spans->y != clipSpans->y) {
+-            if (spans->y < clip->count && clip->m_clipLines[spans->y].spans)
+-                clipSpans = clip->m_clipLines[spans->y].spans;
++        if (spans_y != clipSpans->y) {
++            if (spans_y < clip->count && clip->m_clipLines[spans_y].spans)
++                clipSpans = clip->m_clipLines[spans_y].spans;
+             else
+                 ++clipSpans;
+             continue;
+         }
+-        Q_ASSERT(spans->y == clipSpans->y);
++        Q_ASSERT(spans_y == clipSpans->y);
+ 
+         int sx1 = spans->x;
+         int sx2 = sx1 + spans->len;
+@@ -4137,7 +4138,7 @@
+         if (len) {
+             out->x = qMax(sx1, cx1);
+             out->len = qMin(sx2, cx2) - out->x;
+-            out->y = spans->y;
++            out->y = spans_y;
+             out->coverage = qt_div_255(spans->coverage * clipSpans->coverage);
+             ++out;
+             --available;
