@@ -331,7 +331,7 @@ endif()
 # The executable
 add_executable(bitcoin-qt WIN32 main.cpp)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	target_sources(bitcoin-qt PRIVATE res/bitcoin-qt-res.rc)
+	target_sources(bitcoin-qt PRIVATE res/radiant-qt-res.rc)
 endif()
 target_link_libraries(bitcoin-qt bitcoin-qt-base)
 

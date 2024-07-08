@@ -25,7 +25,11 @@ add_library(wallet
 	walletutil.cpp
 )
 
-target_link_libraries(wallet server script univalue Event::event BerkeleyDB::CXX)
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+  target_link_libraries(wallet server script univalue Event::event BerkeleyDB::CXX ws2_32)
+else()
+  target_link_libraries(wallet server script univalue Event::event BerkeleyDB::CXX)
+endif()
 
 # wallet-tool library
 add_library(wallet-tool wallettool.cpp)

@@ -27,8 +27,10 @@ add_custom_target(doc-html
 	COMMAND mkdocs build
 )
 
-option(ENABLE_MAN "Enable manpages" ON)
-if(ENABLE_MAN AND BUILD_RADIANT_DAEMON)
+if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+	option(ENABLE_MAN "Enable manpages" ON)
+endif()
+if(ENABLE_MAN AND BUILD_RADIANT_DAEMON AND NOT WIN32)
 	configure_file(
 		../cmake/utils/gen-doc-man-footer.sh.in
 		man/gen-doc-man-footer.sh

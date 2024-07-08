@@ -144,3 +144,6 @@ nbproject/
 
 #Local Development Environment - Visual Studio Code
 .vscode
+
+#Local Development Environment - MinGW64
+mingw64/
