@@ -1,6 +1,6 @@
 # Copyright (c) 2017 The Bitcoin developers
 
-project(bitcoind)
+project(radiantd)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -16,7 +16,9 @@ option(BUILD_RADIANT_ZMQ "Activate the ZeroMQ functionalities" ON)
 option(BUILD_RADIANT_CLI "Build radiant-cli" ON)
 option(BUILD_RADIANT_TX "Build radiant-tx" ON)
 option(BUILD_RADIANT_QT "Build radiant-qt" ON)
+if (NOT WIN32)
 option(BUILD_RADIANT_SEEDER "Build radiant-seeder" ON)
+endif()
 option(BUILD_LIBBITCOINCONSENSUS "Build the bitcoinconsenus shared library" ON)
 option(ENABLE_BIP70 "Enable BIP70 (payment protocol) support in GUI" ON)
 option(ENABLE_HARDENING "Harden the executables" ON)
@@ -101,7 +103,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
   add_linker_flags(-static)
 
   # _WIN32_WINNT_WIN7
-  add_compile_definitions(_WIN32_WINNT=0x0601)
+  add_compile_definitions(_WIN32_WINNT=0x0701)
 endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
@@ -468,7 +470,12 @@ add_library(common
   warnings.cpp
 )
 
-target_link_libraries(common util secp256k1)
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+  find_library(WS2_32_LIBRARY NAMES ws2_32)
+  target_link_libraries(common util secp256k1 ${WS2_32_LIBRARY})
+else()
+  target_link_libraries(common util secp256k1)
+endif()
 
 # script library
 add_library(script
@@ -631,6 +638,8 @@ if(BUILD_RADIANT_WALLET)
   add_executable(radiant-wallet bitcoin-wallet.cpp)
   if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     target_sources(radiant-wallet PRIVATE radiant-wallet-res.rc)
+    find_library(WS2_32_LIBRARY NAMES ws2_32)
+    target_link_libraries(radiant-wallet ${WS2_32_LIBRARY})
   endif()
 
   target_link_libraries(radiant-wallet wallet-tool server common bitcoinconsensus util)
@@ -693,7 +702,7 @@ if(BUILD_RADIANT_DAEMON)
   add_executable(radiantd bitcoind.cpp)
   target_link_libraries(radiantd server)
   if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    target_sources(radiantd PRIVATE bitcoind-res.rc)
+    target_sources(radiantd PRIVATE radiantd-res.rc)
   endif()
 
   add_to_symbols_check(radiantd)
@@ -706,3 +715,4 @@ endif()
 if(BUILD_RADIANT_QT)
   add_subdirectory(qt)
 endif()
+

@@ -1,3 +1,6 @@
+IDI_ICON1 ICON DISCARDABLE "icons/radiant.ico"
+IDI_ICON2 ICON DISCARDABLE "icons/radiant_testnet.ico"
+
 #include <windows.h>             // needed for VERSIONINFO
 #include <clientversion.h>       // holds the needed client version information
 
@@ -17,13 +20,13 @@ BEGIN
         BLOCK "040904E4" // U.S. English - multilingual (hex)
         BEGIN
             VALUE "CompanyName",        "Radiant"
-            VALUE "FileDescription",    "radiant-wallet (CLI tool for " PACKAGE_NAME " wallets)"
+            VALUE "FileDescription",    "radiantd (Radiant node with a JSON-RPC server)"
             VALUE "FileVersion",        VER_FILEVERSION_STR
-            VALUE "InternalName",       "radiant-wallet"
+            VALUE "InternalName",       "radiantd"
             VALUE "LegalCopyright",     COPYRIGHT_STR
             VALUE "LegalTrademarks1",   "Distributed under the MIT software license, see the accompanying file COPYING or http://www.opensource.org/licenses/mit-license.php."
-            VALUE "OriginalFilename",   "radiant-wallet.exe"
-            VALUE "ProductName",        "radiant-wallet"
+            VALUE "OriginalFilename",   "radiantd.exe"
+            VALUE "ProductName",        "radiantd"
             VALUE "ProductVersion",     VER_PRODUCTVERSION_STR
         END
     END

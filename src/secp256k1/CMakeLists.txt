@@ -90,7 +90,7 @@ endif()
 # First check if the CMAKE_C_COMPILER_TARGET is set (should be when
 # cross compiling), then CMAKE_SYSTEM_PROCESSOR as a fallback if meaningful
 # (this is not the case for ARM as the content is highly non standard).
-if(CMAKE_C_COMPILER_TARGET MATCHES "x86_64" OR CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
+if(CMAKE_C_COMPILER_TARGET MATCHES "x86_64" OR CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64" OR (MINGW AND CMAKE_SYSTEM_PROCESSOR MATCHES "AMD64"))
 	set(SECP256K1_ASM_BUILD_TARGET "x86_64")
 	set(SECP256K1_DEFAULT_USE_ASM ON)
 elseif(CMAKE_C_COMPILER_TARGET MATCHES "arm-linux-gnueabihf")
