@@ -1,6 +1,6 @@
 # Copyright (c) 2018 The Bitcoin developers
 
-project(bitcoin-qt)
+project(radiant-qt)
 
 # This ensure that AUTOMOC doesn't run on generated files.
 cmake_policy(SET CMP0071 OLD)
@@ -82,7 +82,7 @@ set(CMAKE_AUTOMOC ON)
 # Handle qrc resources
 qt5_add_resources(QRC_BITCOIN_CPP bitcoin.qrc)
 
-add_library(bitcoin-qt-base
+add_library(radiant-qt-base
 	bantablemodel.cpp
 	bitcoin.cpp
 	bitcoinaddressvalidator.cpp
@@ -134,7 +134,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	list(APPEND QT_PLUGIN_COMPONENTS QWindowsIntegrationPlugin)
 	list(APPEND QT_PLUGIN_PLATFORM_DEFINITIONS -DQT_QPA_PLATFORM_WINDOWS=1)
 
-	target_sources(bitcoin-qt-base PRIVATE winshutdownmonitor.cpp)
+	target_sources(radiant-qt-base PRIVATE winshutdownmonitor.cpp)
 endif()
 
 # OSX support
@@ -142,14 +142,14 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	list(APPEND QT_PLUGIN_COMPONENTS QCocoaIntegrationPlugin)
 	list(APPEND QT_PLUGIN_PLATFORM_DEFINITIONS -DQT_QPA_PLATFORM_COCOA=1)
 
-	target_sources(bitcoin-qt-base PRIVATE
+	target_sources(radiant-qt-base PRIVATE
 		macdockiconhandler.mm
 		macnotificationhandler.mm
 	)
 
-	set_property(TARGET bitcoin-qt-base PROPERTY AUTOMOC_MOC_OPTIONS "-DQ_OS_MAC")
+	set_property(TARGET radiant-qt-base PROPERTY AUTOMOC_MOC_OPTIONS "-DQ_OS_MAC")
 
-	target_link_libraries(bitcoin-qt-base
+	target_link_libraries(radiant-qt-base
 		"-framework Foundation"
 		"-framework ApplicationServices"
 		"-framework AppKit"
@@ -211,28 +211,28 @@ if(QT_STATIC_BUILD)
 	# including Qt's predefined plugins."
 	# So if the Qt build is static, the plugins should also be static and we
 	# need to define QT_STATICPLUGIN to tell the code to import <QTPlugin>.
-	target_compile_definitions(bitcoin-qt-base PUBLIC -DQT_STATICPLUGIN=1)
+	target_compile_definitions(radiant-qt-base PUBLIC -DQT_STATICPLUGIN=1)
 
 	# Add the platform plugin definition if required
 	# Setting this definition tells the code what is the target for Q_IMPORT_PLUGIN().
 	foreach(qt_platform_definition ${QT_PLUGIN_PLATFORM_DEFINITIONS})
-		target_compile_definitions(bitcoin-qt-base PUBLIC "${qt_platform_definition}")
+		target_compile_definitions(radiant-qt-base PUBLIC "${qt_platform_definition}")
 	endforeach()
 
 	# Link the required plugins
 	foreach(qt_plugin ${QT_PLUGIN_COMPONENTS})
-		target_link_libraries(bitcoin-qt-base Qt5::${qt_plugin})
+		target_link_libraries(radiant-qt-base Qt5::${qt_plugin})
 	endforeach()
 endif()
 
-target_link_libraries(bitcoin-qt-base
+target_link_libraries(radiant-qt-base
 	server
 	rpcclient
 	Qt5::Widgets
 	Qt5::Network
 )
 if(ENABLE_DBUS_NOTIFICATIONS)
-	target_link_libraries(bitcoin-qt-base Qt5::DBus)
+	target_link_libraries(radiant-qt-base Qt5::DBus)
 endif()
 
 if(ENABLE_BIP70)
@@ -240,19 +240,19 @@ if(ENABLE_BIP70)
 	find_package(Protobuf REQUIRED)
 	protobuf_generate_cpp(PROTOBUF_SOURCES PROTOBUF_HEADERS paymentrequest.proto)
 
-	add_library(bitcoin-qt-protobuf OBJECT
+	add_library(radiant-qt-protobuf OBJECT
 		# Protobuf codegen
 			${PROTOBUF_HEADERS}
 			${PROTOBUF_SOURCES}
 	)
 
-	target_include_directories(bitcoin-qt-protobuf PUBLIC ${Protobuf_INCLUDE_DIRS})
-	target_link_libraries(bitcoin-qt-protobuf ${Protobuf_LIBRARIES})
+	target_include_directories(radiant-qt-protobuf PUBLIC ${Protobuf_INCLUDE_DIRS})
+	target_link_libraries(radiant-qt-protobuf ${Protobuf_LIBRARIES})
 
 	# Don't run clang-tidy on generated files
 	if(ENABLE_CLANG_TIDY)
 		include(ClangTidy)
-		target_disable_clang_tidy(bitcoin-qt-protobuf)
+		target_disable_clang_tidy(radiant-qt-protobuf)
 	endif()
 
 	# OpenSSL functionality
@@ -265,12 +265,12 @@ if(ENABLE_BIP70)
 	set(CMAKE_REQUIRED_LIBRARIES ${OPENSSL_CRYPTO_LIBRARY})
 	check_symbol_exists(EVP_MD_CTX_new "openssl/evp.h" HAVE_DECL_EVP_MD_CTX_NEW)
 	if(HAVE_DECL_EVP_MD_CTX_NEW)
-		target_compile_definitions(bitcoin-qt-base PRIVATE HAVE_DECL_EVP_MD_CTX_NEW=1)
+		target_compile_definitions(radiant-qt-base PRIVATE HAVE_DECL_EVP_MD_CTX_NEW=1)
 	endif()
 
-	target_link_libraries(bitcoin-qt-base
+	target_link_libraries(radiant-qt-base
 		OpenSSL::SSL
-		bitcoin-qt-protobuf
+		radiant-qt-protobuf
 	)
 endif()
 
@@ -279,8 +279,8 @@ if(BUILD_RADIANT_WALLET)
 	# Automoc option.
 	set(AUTOMOC_MOC_OPTIONS -DENABLE_WALLET=1)
 
-	# Add wallet functionality to bitcoin-qt
-	target_sources(bitcoin-qt-base
+	# Add wallet functionality to radiant-qt
+	target_sources(radiant-qt-base
 		PRIVATE
 			addressbookpage.cpp
 			addresstablemodel.cpp
@@ -312,35 +312,35 @@ if(BUILD_RADIANT_WALLET)
 			walletview.cpp
 	)
 
-	# Add BIP70 functionality to bitcoin-qt
+	# Add BIP70 functionality to radiant-qt
 	if(ENABLE_BIP70)
-		target_sources(bitcoin-qt-base
+		target_sources(radiant-qt-base
 			PRIVATE
 				paymentrequestplus.cpp
 		)
 	endif()
 
-	target_link_libraries(bitcoin-qt-base wallet)
+	target_link_libraries(radiant-qt-base wallet)
 
 	if(ENABLE_QRCODE)
 		find_package(QREncode REQUIRED)
-		target_link_libraries(bitcoin-qt-base QREncode::qrencode)
+		target_link_libraries(radiant-qt-base QREncode::qrencode)
 	endif()
 endif()
 
 # The executable
-add_executable(bitcoin-qt WIN32 main.cpp)
+add_executable(radiant-qt WIN32 main.cpp)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	target_sources(bitcoin-qt PRIVATE res/radiant-qt-res.rc)
+	target_sources(radiant-qt PRIVATE res/radiant-qt-res.rc)
 endif()
-target_link_libraries(bitcoin-qt bitcoin-qt-base)
+target_link_libraries(radiant-qt radiant-qt-base)
 
 include(BinaryTest)
-add_to_symbols_check(bitcoin-qt)
-add_to_security_check(bitcoin-qt)
+add_to_symbols_check(radiant-qt)
+add_to_security_check(radiant-qt)
 
 include(InstallationHelper)
-install_target(bitcoin-qt)
+install_target(radiant-qt)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	set(BITCOINQT_BUNDLE_ICON "res/icons/bitcoin.icns")
@@ -359,7 +359,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	set(EMPTY_LPROJ_FILE "${CMAKE_CURRENT_BINARY_DIR}/empty.lproj")
 	file(TOUCH "${EMPTY_LPROJ_FILE}")
 
-	target_sources(bitcoin-qt PRIVATE
+	target_sources(radiant-qt PRIVATE
 		"${BITCOINQT_BUNDLE_ICON}"
 		"${INFO_PLIST_STRINGS_PATH}"
 		"${EMPTY_LPROJ_FILE}"
@@ -370,7 +370,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 		"${EMPTY_LPROJ_FILE}"
 	)
 
-	set_target_properties(bitcoin-qt PROPERTIES
+	set_target_properties(radiant-qt PROPERTIES
 		MACOSX_BUNDLE ON
 		OUTPUT_NAME "${BITCOIN_QT_OSX_BUNDLE_NAME}"
 		MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/share/qt/Info.plist.cmake.in"
@@ -409,11 +409,11 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 		OUTPUT
 			"${STRIPPED_BUNDLE}"
 		COMMAND
-			${CMAKE_COMMAND} -E copy_directory "$<TARGET_BUNDLE_DIR:bitcoin-qt>" "${STRIPPED_BUNDLE}"
+			${CMAKE_COMMAND} -E copy_directory "$<TARGET_BUNDLE_DIR:radiant-qt>" "${STRIPPED_BUNDLE}"
 		COMMAND
 			${CMAKE_STRIP} -u -r "${STRIPPED_BUNDLE}/Contents/MacOS/${BITCOIN_QT_OSX_BUNDLE_NAME}"
 		DEPENDS
-			bitcoin-qt
+			radiant-qt
 	)
 
 	include(DoOrFail)

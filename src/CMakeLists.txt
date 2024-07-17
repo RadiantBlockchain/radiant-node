@@ -19,7 +19,7 @@ option(BUILD_RADIANT_QT "Build radiant-qt" ON)
 if (NOT WIN32)
 option(BUILD_RADIANT_SEEDER "Build radiant-seeder" ON)
 endif()
-option(BUILD_LIBBITCOINCONSENSUS "Build the bitcoinconsenus shared library" ON)
+option(BUILD_LIBRADIANTCONSENSUS "Build the bitcoinconsenus shared library" ON)
 option(ENABLE_BIP70 "Enable BIP70 (payment protocol) support in GUI" ON)
 option(ENABLE_HARDENING "Harden the executables" ON)
 option(ENABLE_REDUCE_EXPORTS "Reduce the amount of exported symbols" OFF)
@@ -493,8 +493,8 @@ add_library(script
 
 target_link_libraries(script common)
 
-# libbitcoinconsensus
-add_library(bitcoinconsensus
+# libradiantconsensus
+add_library(radiantconsensus
   arith_uint256.cpp
   hash.cpp
   primitives/transaction.cpp
@@ -503,17 +503,17 @@ add_library(bitcoinconsensus
   util/strencodings.cpp
 )
 
-target_link_libraries(bitcoinconsensus script)
+target_link_libraries(radiantconsensus script)
 
 include(InstallationHelper)
-if(BUILD_LIBBITCOINCONSENSUS)
-  target_compile_definitions(bitcoinconsensus
+if(BUILD_LIBRADIANTCONSENSUS)
+  target_compile_definitions(radiantconsensus
     PUBLIC
       BUILD_BITCOIN_INTERNAL
       HAVE_CONSENSUS_LIB
   )
 
-  install_shared_library(bitcoinconsensus
+  install_shared_library(radiantconsensus
     script/bitcoinconsensus.cpp
     PUBLIC_HEADER script/bitcoinconsensus.h
   )
@@ -590,7 +590,7 @@ find_package(Event ${EVENT_MIN_VERSION} REQUIRED COMPONENTS event)
 
 target_link_libraries(server
   Event::event
-  bitcoinconsensus
+  radiantconsensus
   leveldb
   memenv
 )
@@ -642,7 +642,7 @@ if(BUILD_RADIANT_WALLET)
     target_link_libraries(radiant-wallet ${WS2_32_LIBRARY})
   endif()
 
-  target_link_libraries(radiant-wallet wallet-tool server common bitcoinconsensus util)
+  target_link_libraries(radiant-wallet wallet-tool server common radiantconsensus util)
 
   add_to_symbols_check(radiant-wallet)
   add_to_security_check(radiant-wallet)
@@ -689,7 +689,7 @@ if(BUILD_RADIANT_TX)
     target_sources(radiant-tx PRIVATE radiant-tx-res.rc)
   endif()
 
-  target_link_libraries(radiant-tx bitcoinconsensus)
+  target_link_libraries(radiant-tx radiantconsensus)
 
   add_to_symbols_check(radiant-tx)
   add_to_security_check(radiant-tx)
