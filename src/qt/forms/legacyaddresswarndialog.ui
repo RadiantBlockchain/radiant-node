@@ -12,7 +12,7 @@
       <bool>true</bool>
      </property>
      <property name="text">
-      <string>You have entered a legacy 'P2PKH' Bitcoin address.&lt;br/&gt;&lt;br/&gt;We cannot confirm automatically if this address is a valid Radiant address. You should only proceed if you know that it is.&lt;br/&gt;&lt;br/&gt;Are you sure that the address you entered is a Radiant (BCH) address, as opposed to a Bitcoin (BTC) address, for instance?</string>
+      <string>You have entered a legacy 'P2PKH' Bitcoin address.&lt;br/&gt;&lt;br/&gt;We cannot confirm automatically if this address is a valid Radiant address. You should only proceed if you know that it is.&lt;br/&gt;&lt;br/&gt;Are you sure that the address you entered is a Radiant (RXD) address, as opposed to a Bitcoin (BTC) address, for instance?</string>
      </property>
      <property name="visible">
       <bool>false</bool>
@@ -25,7 +25,7 @@
       <bool>true</bool>
      </property>
      <property name="text">
-      <string>You have entered a legacy 'P2SH' Bitcoin address.&lt;br/&gt;&lt;br/&gt;We cannot confirm automatically if this address is a valid Radiant address. You should only proceed if you know that it is. Legacy P2SH addresses are most likely to be Bitcoin (BTC) SegWit addresses, which are not valid on the Radiant chain.&lt;br/&gt;&lt;br/&gt;Are you sure that the address you entered is a Radiant (BCH) address?</string>
+      <string>You have entered a legacy 'P2SH' Bitcoin address.&lt;br/&gt;&lt;br/&gt;We cannot confirm automatically if this address is a valid Radiant address. You should only proceed if you know that it is. Legacy P2SH addresses are most likely to be Bitcoin (BTC) SegWit addresses, which are not valid on the Radiant chain.&lt;br/&gt;&lt;br/&gt;Are you sure that the address you entered is a Radiant (RXD) address?</string>
      </property>
      <property name="visible">
       <bool>false</bool>

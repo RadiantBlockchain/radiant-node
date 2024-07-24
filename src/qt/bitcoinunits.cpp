@@ -15,19 +15,17 @@ BitcoinUnits::BitcoinUnits(QObject *parent)
 
 QList<BitcoinUnits::Unit> BitcoinUnits::availableUnits() {
     QList<BitcoinUnits::Unit> unitlist;
-    unitlist.append(BCH);
-    unitlist.append(mBCH);
-    unitlist.append(uBCH);
-    unitlist.append(SAT);
+    unitlist.append(RXD);
+    unitlist.append(mRXD);
+    unitlist.append(photons);
     return unitlist;
 }
 
 bool BitcoinUnits::valid(int unit) {
     switch (unit) {
-        case BCH:
-        case mBCH:
-        case uBCH:
-        case SAT:
+        case RXD:
+        case mRXD:
+        case photons:
             return true;
         default:
             return false;
@@ -36,14 +34,12 @@ bool BitcoinUnits::valid(int unit) {
 
 QString BitcoinUnits::ticker(int unit) {
     switch (unit) {
-        case BCH:
-            return QString("BCH");
-        case mBCH:
-            return QString("mBCH");
-        case uBCH:
-            return QString::fromUtf8("μBCH");
-        case SAT:
-            return QString("sat");
+        case RXD:
+            return QString("RXD");
+        case mRXD:
+            return QString("mRXD");
+        case photons:
+            return QString::fromUtf8("photons");
         default:
             return QString("???");
     }
@@ -52,14 +48,12 @@ QString BitcoinUnits::ticker(int unit) {
 QString BitcoinUnits::description(int unit) {
     constexpr auto thinUtf8 = BitcoinSpaces::thinUtf8;
     switch (unit) {
-        case BCH:
-            return QObject::tr("bitcoins");
-        case mBCH:
-            return QObject::tr("millibitcoins") + " (1 / 1" + thinUtf8 + "000)";
-        case uBCH:
-            return QObject::tr("microbitcoins/bits") + " (1 / 1" + thinUtf8 + "000" + thinUtf8 + "000)";
-        case SAT:
-            return QObject::tr("satoshis") + " (1 / 100" + thinUtf8 + "000" + thinUtf8 + "000)";
+        case RXD:
+            return QObject::tr("Radiant");
+        case mRXD:
+            return QObject::tr("milliRadiant") + " (1 / 1" + thinUtf8 + "000)";
+        case photons:
+            return QObject::tr("photons") + " (1 / 1" + thinUtf8 + "000" + thinUtf8 + "000)";
         default:
             return QString("???");
     }
@@ -67,14 +61,12 @@ QString BitcoinUnits::description(int unit) {
 
 qint64 BitcoinUnits::factor(int unit) {
     switch (unit) {
-        case BCH:
+        case RXD:
             return 100000000;
-        case mBCH:
+        case mRXD:
             return 100000;
-        case uBCH:
+        case photons:
             return 100;
-        case SAT:
-            return 1;
         default:
             return 100000000;
     }
@@ -82,14 +74,12 @@ qint64 BitcoinUnits::factor(int unit) {
 
 int BitcoinUnits::decimals(int unit) {
     switch (unit) {
-        case BCH:
+        case RXD:
             return 8;
-        case mBCH:
+        case mRXD:
             return 5;
-        case uBCH:
+        case photons:
             return 2;
-        case SAT:
-            return 0;
         default:
             return 0;
     }

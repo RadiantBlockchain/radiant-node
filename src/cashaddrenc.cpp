@@ -8,6 +8,7 @@
 #include <pubkey.h>
 #include <script/script.h>
 #include <util/strencodings.h>
+#include <key_io.h> // Include key_io for legacy address encoding/decoding
 
 #include <boost/variant/static_visitor.hpp>
 
@@ -18,66 +19,22 @@ namespace {
 // Convert the data part to a 5 bit representation.
 template <class T>
 std::vector<uint8_t> PackAddrData(const T &id, uint8_t type) {
-    uint8_t version_byte(type << 3);
-    size_t size = id.size();
-    uint8_t encoded_size = 0;
-    switch (size * 8) {
-        case 160:
-            encoded_size = 0;
-            break;
-        case 192:
-            encoded_size = 1;
-            break;
-        case 224:
-            encoded_size = 2;
-            break;
-        case 256:
-            encoded_size = 3;
-            break;
-        case 320:
-            encoded_size = 4;
-            break;
-        case 384:
-            encoded_size = 5;
-            break;
-        case 448:
-            encoded_size = 6;
-            break;
-        case 512:
-            encoded_size = 7;
-            break;
-        default:
-            throw std::runtime_error(
-                "Error packing cashaddr: invalid address length");
-    }
-    version_byte |= encoded_size;
-    std::vector<uint8_t> data = {version_byte};
-    data.insert(data.end(), std::begin(id), std::end(id));
-
-    std::vector<uint8_t> converted;
-    // Reserve the number of bytes required for a 5-bit packed version of a
-    // hash, with version byte.  Add half a byte(4) so integer math provides
-    // the next multiple-of-5 that would fit all the data.
-    converted.reserve(((size + 1) * 8 + 4) / 5);
-    ConvertBits<8, 5, true>([&](uint8_t c) { converted.push_back(c); },
-                            std::begin(data), std::end(data));
-
-    return converted;
+    (void)id; // Unused in legacy address support
+    (void)type; // Unused in legacy address support
+    return {};
 }
 
-// Implements encoding of CTxDestination using cashaddr.
+// Implements encoding of CTxDestination using legacy address.
 class CashAddrEncoder : public boost::static_visitor<std::string> {
 public:
     CashAddrEncoder(const CChainParams &p) : params(p) {}
 
     std::string operator()(const CKeyID &id) const {
-        std::vector<uint8_t> data = PackAddrData(id, PUBKEY_TYPE);
-        return cashaddr::Encode(params.CashAddrPrefix(), data);
+        return EncodeLegacyAddr(id, params);
     }
 
     std::string operator()(const CScriptID &id) const {
-        std::vector<uint8_t> data = PackAddrData(id, SCRIPT_TYPE);
-        return cashaddr::Encode(params.CashAddrPrefix(), data);
+        return EncodeLegacyAddr(id, params);
     }
 
     std::string operator()(const CNoDestination &) const { return ""; }
@@ -88,89 +45,29 @@ private:
 
 } // namespace
 
-std::string EncodeCashAddr(const CTxDestination &dst,
-                           const CChainParams &params) {
+std::string EncodeCashAddr(const CTxDestination &dst, const CChainParams &params) {
     return boost::apply_visitor(CashAddrEncoder(params), dst);
 }
 
-std::string EncodeCashAddr(const std::string &prefix,
-                           const CashAddrContent &content) {
-    std::vector<uint8_t> data = PackAddrData(content.hash, content.type);
-    return cashaddr::Encode(prefix, data);
+std::string EncodeCashAddr(const std::string &prefix, const CashAddrContent &content) {
+    (void)prefix; // Unused
+    (void)content; // Unused
+    return "";
 }
 
-CTxDestination DecodeCashAddr(const std::string &addr,
-                              const CChainParams &params) {
-    CashAddrContent content =
-        DecodeCashAddrContent(addr, params.CashAddrPrefix());
-    if (content.hash.size() == 0) {
-        return CNoDestination{};
-    }
-
-    return DecodeCashAddrDestination(content);
+CTxDestination DecodeCashAddr(const std::string &addr, const CChainParams &params) {
+    return DecodeLegacyAddr(addr, params);
 }
 
-CashAddrContent DecodeCashAddrContent(const std::string &addr,
-                                      const std::string &expectedPrefix) {
-    std::string prefix;
-    std::vector<uint8_t> payload;
-    std::tie(prefix, payload) = cashaddr::Decode(addr, expectedPrefix);
-
-    if (prefix != expectedPrefix) {
-        return {};
-    }
-
-    if (payload.empty()) {
-        return {};
-    }
-
-    std::vector<uint8_t> data;
-    data.reserve(payload.size() * 5 / 8);
-    if (!ConvertBits<5, 8, false>([&](uint8_t c) { data.push_back(c); },
-                                  begin(payload), end(payload))) {
-        return {};
-    }
-
-    // Decode type and size from the version.
-    uint8_t version = data[0];
-    if (version & 0x80) {
-        // First bit is reserved.
-        return {};
-    }
-
-    auto type = CashAddrType((version >> 3) & 0x1f);
-    uint32_t hash_size = 20 + 4 * (version & 0x03);
-    if (version & 0x04) {
-        hash_size *= 2;
-    }
-
-    // Check that we decoded the exact number of bytes we expected.
-    if (data.size() != hash_size + 1) {
-        return {};
-    }
-
-    // Pop the version.
-    data.erase(data.begin());
-    return {type, std::move(data)};
+CashAddrContent DecodeCashAddrContent(const std::string &addr, const std::string &expectedPrefix) {
+    (void)addr; // Unused
+    (void)expectedPrefix; // Unused
+    return {};
 }
 
 CTxDestination DecodeCashAddrDestination(const CashAddrContent &content) {
-    if (content.hash.size() != 20) {
-        // Only 20 bytes hash are supported now.
-        return CNoDestination{};
-    }
-
-    uint160 hash;
-    std::copy(begin(content.hash), end(content.hash), hash.begin());
-
-    switch (content.type) {
-        case PUBKEY_TYPE:
-            return CKeyID(hash);
-        case SCRIPT_TYPE:
-            return CScriptID(hash);
-        default:
-            return CNoDestination{};
-    }
+    (void)content; // Unused
+    return CNoDestination{};
 }
 
 // PackCashAddrContent allows for testing PackAddrData in unittests due to

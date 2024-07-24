@@ -28,7 +28,7 @@ public:
     ~HelpMessageDialog();
 
     static QString versionText();
-    static constexpr const char* headerText = "Usage:  bitcoin-qt [command-line options]\n";
+    static constexpr const char* headerText = "Usage:  radiant-qt [command-line options]\n";
 
 private:
     Ui::HelpMessageDialog *ui;

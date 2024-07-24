@@ -5,7 +5,7 @@
 
 #pragma once
 
-// Cashaddr is an address format inspired by bech32.
+// RXD is an address format inspired by legcay Bitcoin.
 
 #include <cstdint>
 #include <string>

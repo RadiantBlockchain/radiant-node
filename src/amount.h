@@ -146,7 +146,7 @@ inline constexpr Amount SATOSHI = Amount::satoshi();
 inline constexpr Amount CASH = 100 * SATOSHI;
 inline constexpr Amount COIN = 100'000'000 * SATOSHI;
 
-inline const std::string CURRENCY_UNIT = "RAD";
+inline const std::string CURRENCY_UNIT = "RXD";
 
 /**
  * No amount larger than this (in satoshi) is valid.
