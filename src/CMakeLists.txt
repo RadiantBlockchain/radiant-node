@@ -396,6 +396,11 @@ if(ENABLE_GLIBC_BACK_COMPAT)
 endif()
 
 # Target specific configs
+IF(CMAKE_CROSSCOMPILING)
+  set(Boost_USE_STATIC_LIBS ON)
+  set(Boost_USE_STATIC_RUNTIME ON)
+endif()
+
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
   set(Boost_THREADAPI win32)
 
