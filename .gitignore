@@ -147,3 +147,8 @@ nbproject/
 
 #Local Development Environment - MinGW64
 mingw64/
+
+.idea
+cmake-build-debug
+cmake
+data

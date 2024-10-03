@@ -9,8 +9,10 @@ LABEL version="1.0.0"
 LABEL description="Docker image for radiantd node"
 
 ARG DEBIAN_FRONTEND=nointeractive
+RUN sed -i 's|http://archive.ubuntu.com/ubuntu|http://mirrors.edge.kernel.org/ubuntu|g' /etc/apt/sources.list
 RUN apt update
 RUN apt-get install -y curl
+
 RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
 RUN apt-get install -y nodejs
 
@@ -29,7 +31,6 @@ ENV PACKAGES="\
   libjansson-dev \
   libevent-dev \
   uthash-dev \
-  nodejs \
   vim \
   libboost-chrono-dev \
   libboost-filesystem-dev \
@@ -38,7 +39,7 @@ ENV PACKAGES="\
   libevent-dev \
   libminiupnpc-dev \
   libssl-dev \
-  libzmq3-dev \ 
+  libzmq3-dev \
   help2man \
   ninja-build \
   python3 \
@@ -49,10 +50,8 @@ ENV PACKAGES="\
   opencl-headers \
   ocl-icd-opencl-dev\
 "
-# Note can remove the opencl and ocl packages above when not building on a system for GPU/mining
-# Included only for reference purposes if this container would be used for mining as well.
 
-RUN apt update && apt install --no-install-recommends -y $PACKAGES  && \
+RUN apt update && apt install --no-install-recommends -y $PACKAGES && \
     rm -rf /var/lib/apt/lists/* && \
     apt clean
 
@@ -65,20 +64,34 @@ RUN apt update && apt install --no-install-recommends -y $PACKAGES  && \
 # RUN ./bootstrap
 # RUN make
 # RUN make install
- 
+
 # Install radiant-node
 WORKDIR /root
-RUN git clone --depth 1 --branch v1.3.0 https://github.com/radiantblockchain/radiant-node.git
+#RUN git clone --depth 1 --branch v1.3.0 https://github.com/radiantblockchain/radiant-node.git
+COPY . /root/radiant-node
 RUN mkdir /root/radiant-node/build
 WORKDIR /root/radiant-node/build
 RUN cmake -GNinja .. -DBUILD_RADIANT_QT=OFF
+
+RUN apt-get update
+RUN apt-get install -y dos2unix
+
+# Ensure scripts have correct line endings and permissions
+RUN find /root/radiant-node/build /root/radiant-node/cmake/utils /root/radiant-node/share -type f \( -name "*.sh" -o -name "*.py" \) -exec dos2unix {} \; -exec chmod +x {} \;
+
 RUN ninja
 RUN ninja install
 
 WORKDIR /root/radiant-node/build/src
 
+# Runtime environment variables from the .env file
+ENV RPC_USER=${RPC_USER}
+ENV RPC_PASSWORD=${RPC_PASSWORD}
+ENV RPC_WORKQUEUE=${RPC_WORKQUEUE}
+ENV RPC_THREADS=${RPC_THREADS}
+ENV RPC_ALLOW_IP=${RPC_ALLOW_IP}
+ENV TX_INDEX=${TX_INDEX}
+
 EXPOSE 7332 7333
- 
-ENTRYPOINT ["radiantd", "-rpcworkqueue=32", "-rpcthreads=16", "-rest", "-server", "-rpcallowip=0.0.0.0/0",  "-txindex=1", "-rpcuser=dockeruser", "-rpcpassword=dockerpass"]
-  
- 
+
+ENTRYPOINT ["radiantd", "-rpcworkqueue=${RPC_WORKQUEUE}", "-rpcthreads=${RPC_THREADS}", "-rest", "-server", "-rpcallowip=${RPC_ALLOW_IP}", "-txindex=${TX_INDEX}", "-rpcuser=${RPC_USER}", "-rpcpassword=${RPC_PASSWORD}"]

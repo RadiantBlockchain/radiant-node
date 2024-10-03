@@ -1,0 +1,16 @@
+version: "3"
+services:
+  radiant_node:
+    build: .
+    container_name: radiant_node_container
+    ports:
+      - "7332:7332"
+      - "7333:7333"
+      - "17443:17443"
+    volumes:
+      - ./data:/root/.radiant  # Mount local Windows folder ./data to the container's /root/.radiant
+    env_file:                     # Load environment variables from the .env file
+      - .env
+    network_mode: "host"
+    stop_grace_period: 60s
+    entrypoint: ["radiantd", "-regtest", "-rpcworkqueue=${RPC_WORKQUEUE}", "-rpcthreads=${RPC_THREADS}", "-rpcbind=0.0.0.0", "-rest", "-server", "-rpcallowip=${RPC_ALLOW_IP}",  "-txindex=${TX_INDEX}", "-rpcuser=${RPC_USER}", "-rpcpassword=${RPC_PASSWORD}", "-maxconnections=200"]
